@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "identityapp1": {
+      "connectionInfo": "Регистрация приложения: OnlyUp, клиент: Каталог по умолчанию (klimenkov2006outlook.onmicrosoft.com - Microsoft Entra ID)",
+      "type": "identityapp.default"
+    },
+    "secrets1": {
+      "type": "secrets.user",
+      "dynamicId": null
+    }
+  }
+}

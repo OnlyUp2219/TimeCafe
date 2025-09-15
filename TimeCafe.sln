@@ -1,17 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11010.61 d18.0
+VisualStudioVersion = 18.0.11010.61
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.UI", "TimeCafe.UI\TimeCafe.UI.csproj", "{E325DA95-A09B-F081-8B8E-F95FF0E88621}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.UI", "DesktopApp\TimeCafe.UI\TimeCafe.UI.csproj", "{E325DA95-A09B-F081-8B8E-F95FF0E88621}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Core", "TimeCafe.Core\TimeCafe.Core.csproj", "{C1F8F578-E45F-02DE-DBA0-43ABEE89E447}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Core", "Services\Main\Main.TimeCafe.Core\TimeCafe.Core.csproj", "{C1F8F578-E45F-02DE-DBA0-43ABEE89E447}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Persistence", "TimeCafe.Persistence\TimeCafe.Persistence.csproj", "{7342198D-4964-4207-A19E-7FEA3233306B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Persistence", "Services\Main\Main.TimeCafe.Persistence\TimeCafe.Persistence.csproj", "{7342198D-4964-4207-A19E-7FEA3233306B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Application", "TimeCafe.Application\TimeCafe.Application.csproj", "{28926F84-952B-46D2-9014-4A6C271A306C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Application", "Services\Main\Main.TimeCafe.Application\TimeCafe.Application.csproj", "{28926F84-952B-46D2-9014-4A6C271A306C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Common", "TimeCafe.Common\TimeCafe.Common.csproj", "{0AE2D81F-7E92-45EE-ADC3-4FF708A2F31C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeCafe.Common", "Services\Main\Main.TimeCafe.Common\TimeCafe.Common.csproj", "{0AE2D81F-7E92-45EE-ADC3-4FF708A2F31C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{F93731A0-5DE5-4B83-BF52-69C2151283DE}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Auth", "Auth", "{33EBC97E-DA62-41C1-BD1C-0831A91BE5E6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cad", "Cad", "{6394B70B-431A-4A7A-8E13-08D063AFC48D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main.TimeCafe.API", "Services\Main\Main.TimeCafe.API\Main.TimeCafe.API.csproj", "{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +103,18 @@ Global
 		{0AE2D81F-7E92-45EE-ADC3-4FF708A2F31C}.Release|x64.Build.0 = Release|Any CPU
 		{0AE2D81F-7E92-45EE-ADC3-4FF708A2F31C}.Release|x86.ActiveCfg = Release|Any CPU
 		{0AE2D81F-7E92-45EE-ADC3-4FF708A2F31C}.Release|x86.Build.0 = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|arm64.Build.0 = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|x64.Build.0 = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Debug|x86.Build.0 = Debug|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|arm64.ActiveCfg = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|arm64.Build.0 = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|x64.ActiveCfg = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|x64.Build.0 = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|x86.ActiveCfg = Release|Any CPU
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +129,7 @@ Global
 		{D4B47A47-5915-41AE-9148-08640F744B9E} = {F93731A0-5DE5-4B83-BF52-69C2151283DE}
 		{33EBC97E-DA62-41C1-BD1C-0831A91BE5E6} = {F93731A0-5DE5-4B83-BF52-69C2151283DE}
 		{6394B70B-431A-4A7A-8E13-08D063AFC48D} = {F93731A0-5DE5-4B83-BF52-69C2151283DE}
+		{8DEE4FB6-3E35-46EC-87B6-73BA02EF8923} = {3544500A-D123-4590-9658-1765094A7E18}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {795744BB-5BCC-42C7-ADFD-5B26192C92DD}
