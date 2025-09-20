@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Clients.Command;
+namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record SetClientDraftCommand(int ClientId) : IRequest<bool>;
 

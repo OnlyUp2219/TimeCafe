@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Visits.Get;
+namespace Main.TimeCafe.Application.CQRS.Visits.Get;
 
 public record GetActiveVisitByClientQuery(int ClientId) : IRequest<Visit>;
 

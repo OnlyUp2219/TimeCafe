@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Visits.Command;
+namespace Main.TimeCafe.Application.CQRS.Visits.Command;
 
 public record ExitClientCommand(int VisitId) : IRequest<Visit>;
 

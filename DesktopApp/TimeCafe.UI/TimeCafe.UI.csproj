@@ -149,11 +149,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TimeCafe.Application\TimeCafe.Application.csproj" />
-    <ProjectReference Include="..\TimeCafe.Core\TimeCafe.Core.csproj" />
-    <ProjectReference Include="..\TimeCafe.Persistence\TimeCafe.Persistence.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -218,6 +213,13 @@
   
   <ItemGroup>
     <Folder Include="Views\UserGridContentDialogs\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Application\Main.TimeCafe.Application.csproj" />
+    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
+    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Core\Main.TimeCafe.Core.csproj" />
+    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Persistence\Main.TimeCafe.Persistence.csproj" />
   </ItemGroup>
   
   <ItemGroup>

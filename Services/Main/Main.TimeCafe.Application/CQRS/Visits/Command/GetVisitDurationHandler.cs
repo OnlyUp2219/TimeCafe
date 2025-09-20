@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Visits.Command;
+namespace Main.TimeCafe.Application.CQRS.Visits.Command;
 
 public record GetVisitDurationCommand(Visit Visit) : IRequest<TimeSpan>;
 

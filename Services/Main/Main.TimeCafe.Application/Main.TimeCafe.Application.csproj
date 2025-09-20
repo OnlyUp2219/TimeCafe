@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <RootNamespace>Main.TimeCafe.Application</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TimeCafe.Common\TimeCafe.Common.csproj" />
-    <ProjectReference Include="..\TimeCafe.Core\TimeCafe.Core.csproj" />
+    <ProjectReference Include="..\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
+    <ProjectReference Include="..\Main.TimeCafe.Core\Main.TimeCafe.Core.csproj" />
   </ItemGroup>
+
 
 </Project>

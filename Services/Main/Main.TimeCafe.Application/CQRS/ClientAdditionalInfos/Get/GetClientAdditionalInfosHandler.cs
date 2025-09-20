@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.ClientAdditionalInfos.Get;
+﻿namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Get;
 public record class GetClientAdditionalInfosQuery(int clientId) : IRequest<IEnumerable<ClientAdditionalInfo>>;
 public record class GetClientAdditionalInfosHandler : IRequestHandler<GetClientAdditionalInfosQuery, IEnumerable<ClientAdditionalInfo>>
 {

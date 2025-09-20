@@ -1,5 +1,5 @@
 using CommunityToolkit.WinUI.UI.Controls;
-using TimeCafe.Application.CQRS.Clients.Get;
+
 
 
 namespace TimeCafe.UI.ViewModels;

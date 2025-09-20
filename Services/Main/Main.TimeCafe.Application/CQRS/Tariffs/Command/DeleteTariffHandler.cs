@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.Tariffs.Command;
+﻿namespace Main.TimeCafe.Application.CQRS.Tariffs.Command;
 public record class DeleteTariffСommand(int tariffId) : IRequest<bool>;
 public class DeleteTariffHandler : IRequestHandler<DeleteTariffСommand, bool>
 {

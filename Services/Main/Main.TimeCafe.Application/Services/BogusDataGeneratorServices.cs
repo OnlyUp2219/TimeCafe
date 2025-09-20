@@ -1,6 +1,6 @@
 using Bogus;
 
-namespace TimeCafe.Application.Services;
+namespace Main.TimeCafe.Application.Services;
 
 public class BogusDataGeneratorServices
 {

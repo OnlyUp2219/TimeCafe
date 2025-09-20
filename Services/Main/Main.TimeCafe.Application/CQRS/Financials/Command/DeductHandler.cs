@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Financials.Command;
+namespace Main.TimeCafe.Application.CQRS.Financials.Command;
 
 public record DeductCommand(int ClientId, decimal Amount, int? VisitId = null, string? Comment = null) : IRequest<FinancialTransaction>;
 

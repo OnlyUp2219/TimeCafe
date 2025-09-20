@@ -2,7 +2,7 @@
 using System.Text;
 using TimeCafe.Core.Contracts.Services.File;
 
-namespace TimeCafe.Application.Services;
+namespace Main.TimeCafe.Application.Services;
 
 public class FileService : IFileService
 {

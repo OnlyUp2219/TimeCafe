@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.ClientAdditionalInfos.Get;
+﻿namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Get;
 
 public record class GetClientAdditionalInfoByIdQuery(int infoId) : IRequest<ClientAdditionalInfo>;
 

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using TimeCafe.Application.Services;
 
 
 namespace TimeCafe.UI.ViewModels;

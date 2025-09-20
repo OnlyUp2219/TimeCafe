@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.BillingTypes.Get;
+﻿namespace Main.TimeCafe.Application.CQRS.BillingTypes.Get;
 public record GetBillingTypesQuery : IRequest<IEnumerable<BillingType>>;
 
 public class GetBillingTypesHandler : IRequestHandler<GetBillingTypesQuery, IEnumerable<BillingType>>

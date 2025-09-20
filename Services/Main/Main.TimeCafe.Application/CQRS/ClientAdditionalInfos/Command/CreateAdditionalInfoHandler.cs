@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
+﻿namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
 public record class CreateAdditionalInfoCommand(ClientAdditionalInfo info) : IRequest<ClientAdditionalInfo>;
 public class CreateAdditionalInfoHandler : IRequestHandler<CreateAdditionalInfoCommand, ClientAdditionalInfo>
 {

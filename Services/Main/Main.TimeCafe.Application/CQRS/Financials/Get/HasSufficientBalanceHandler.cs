@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Financials.Get;
+namespace Main.TimeCafe.Application.CQRS.Financials.Get;
 
 public record HasSufficientBalanceQuery(int ClientId, decimal RequiredAmount) : IRequest<bool>;
 

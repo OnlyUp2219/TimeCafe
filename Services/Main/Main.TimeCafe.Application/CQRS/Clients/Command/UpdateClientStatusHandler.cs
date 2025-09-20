@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Clients.Command;
+namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record UpdateClientStatusCommand(int ClientId, int StatusId) : IRequest<bool>;
 

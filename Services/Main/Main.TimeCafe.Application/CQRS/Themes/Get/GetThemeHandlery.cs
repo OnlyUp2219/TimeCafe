@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.Themes.Get;
+﻿namespace Main.TimeCafe.Application.CQRS.Themes.Get;
 
 public record class GetThemeQuery() : IRequest<IEnumerable<Theme>>;
 public class GetThemeHandlery : IRequestHandler<GetThemeQuery, IEnumerable<Theme>>

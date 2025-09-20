@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Financials.Get;
+namespace Main.TimeCafe.Application.CQRS.Financials.Get;
 
 public record GetClientFinancialTransactionsQuery(int ClientId, int? Limit = null) : IRequest<IEnumerable<FinancialTransaction>>;
 

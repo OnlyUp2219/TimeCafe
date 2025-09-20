@@ -1,4 +1,4 @@
-﻿namespace TimeCafe.Application.CQRS.Tariffs.Get;
+﻿namespace Main.TimeCafe.Application.CQRS.Tariffs.Get;
 public record class GetTotalPageTariffQuery() : IRequest<int>;
 public class GetTotalPageTariffHandler : IRequestHandler<GetTotalPageTariffQuery, int>
 {

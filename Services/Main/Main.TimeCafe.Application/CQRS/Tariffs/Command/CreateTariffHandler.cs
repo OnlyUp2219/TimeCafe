@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Tariffs.Command;
+namespace Main.TimeCafe.Application.CQRS.Tariffs.Command;
 
 public record class CreateTariffCommand(Tariff tariff) : IRequest<Tariff>;
 

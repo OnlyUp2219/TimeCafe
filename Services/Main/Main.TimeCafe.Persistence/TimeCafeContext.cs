@@ -37,24 +37,23 @@ public partial class TimeCafeContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            optionsBuilder.UseSqlServer("Data Source=(localdb)\\MSSQLLocalDB;Database=TimeCafe;Integrated Security=True;TrustServerCertificate=False");
+            optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=Main.TimeCafe;Username=postgres;Password=");
         }
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.UseCollation("Cyrillic_General_CI_AS");
-
         modelBuilder.Entity<BillingType>(entity =>
         {
             entity.HasKey(e => e.BillingTypeId).HasName("PK__BillingT__5233EF23A53230B5");
 
             entity.HasIndex(e => e.BillingTypeName, "IX_BillingTypes_Name")
                 .IsUnique()
-                .HasFilter("([BillingTypeName] IS NOT NULL)");
+                .HasFilter("\"BillingTypeName\" IS NOT NULL");
 
             entity.Property(e => e.BillingTypeName)
                 .IsRequired()
-                .HasMaxLength(20);
+                .HasMaxLength(20)
+                .HasColumnType("varchar(20)");
 
             // Сидирование типов тарификации
             entity.HasData(
@@ -69,28 +68,34 @@ public partial class TimeCafeContext : DbContext
 
             entity.HasIndex(e => e.AccessCardNumber, "IX_Clients_AccessCardNumber")
                 .IsUnique()
-                .HasFilter("([AccessCardNumber] IS NOT NULL)");
+                .HasFilter("\"AccessCardNumber\" IS NOT NULL");
 
             entity.HasIndex(e => e.Email, "IX_Clients_Email")
                 .IsUnique()
-                .HasFilter("([Email] IS NOT NULL)");
+                .HasFilter("\"Email\" IS NOT NULL");
 
             entity.HasIndex(e => e.PhoneNumber, "IX_Clients_PhoneNumber")
                 .IsUnique()
-                .HasFilter("([PhoneNumber] IS NOT NULL)");
+                .HasFilter("\"PhoneNumber\" IS NOT NULL");
 
-            entity.Property(e => e.AccessCardNumber).HasMaxLength(20);
+            entity.Property(e => e.AccessCardNumber).HasMaxLength(20).HasColumnType("varchar(20)");
+            entity.Property(e => e.BirthDate).HasColumnType("date");
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Email).HasMaxLength(100);
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp");
+            entity.Property(e => e.Email).HasMaxLength(100).HasColumnType("varchar(100)");
             entity.Property(e => e.FirstName)
                 .IsRequired()
-                .HasMaxLength(50);
-            entity.Property(e => e.LastName).HasMaxLength(50);
-            entity.Property(e => e.MiddleName).HasMaxLength(50);
-            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
-            entity.Property(e => e.RefusalReason).HasMaxLength(1000);
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
+            entity.Property(e => e.LastName).HasMaxLength(50).HasColumnType("varchar(50)");
+            entity.Property(e => e.MiddleName).HasMaxLength(50).HasColumnType("varchar(50)");
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20).HasColumnType("varchar(20)");
+            entity.Property(e => e.Photo).HasColumnType("bytea");
+            entity.Property(e => e.RefusalReason).HasMaxLength(1000).HasColumnType("text");
+
+            entity.HasIndex(e => e.GenderId);
+            entity.HasIndex(e => e.StatusId);
 
             entity.HasOne(d => d.Gender).WithMany(p => p.Clients)
                 .HasForeignKey(d => d.GenderId)
@@ -108,11 +113,14 @@ public partial class TimeCafeContext : DbContext
             entity.ToTable("ClientAdditionalInfo");
 
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp");
             entity.Property(e => e.InfoText)
                 .IsRequired()
-                .HasMaxLength(1000);
+                .HasMaxLength(1000)
+                .HasColumnType("text");
+
+            entity.HasIndex(e => e.ClientId);
 
             entity.HasOne(d => d.Client).WithMany(p => p.ClientAdditionalInfos)
                 .HasForeignKey(d => d.ClientId)
@@ -126,7 +134,8 @@ public partial class TimeCafeContext : DbContext
 
             entity.Property(e => e.StatusName)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
 
             // Сидирование статусов клиента
             entity.HasData(
@@ -140,10 +149,14 @@ public partial class TimeCafeContext : DbContext
         {
             entity.HasKey(e => e.TransactionId).HasName("PK__Financia__55433A6B57033591");
 
+            entity.HasIndex(e => e.ClientId);
             entity.HasIndex(e => e.TransactionDate, "IX_FinancialTransactions_TransactionDate");
+            entity.HasIndex(e => e.TransactionTypeId);
+            entity.HasIndex(e => e.VisitId);
 
-            entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.TransactionDate).HasColumnType("datetime");
+            entity.Property(e => e.Amount).HasColumnType("numeric(10, 2)");
+            entity.Property(e => e.Comment).HasColumnType("text");
+            entity.Property(e => e.TransactionDate).HasColumnType("timestamp");
 
             entity.HasOne(d => d.Client).WithMany(p => p.FinancialTransactions)
                 .HasForeignKey(d => d.ClientId)
@@ -163,13 +176,14 @@ public partial class TimeCafeContext : DbContext
         {
             entity.HasKey(e => e.GenderId).HasName("PK__Genders__4E24E9F72615BBD8");
 
-            entity.HasIndex(e => e.GenderName, "UQ__Genders__F7C1771527CC73EB").IsUnique();
-
             entity.Property(e => e.GenderName)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
 
-            // Сидирование гендеров
+            entity.HasIndex(e => e.GenderName).IsUnique().HasDatabaseName("UQ__Genders__F7C1771527CC73EB");
+
+            // Сидирование полов
             entity.HasData(
                 new Gender { GenderId = 1, GenderName = "Мужской" },
                 new Gender { GenderId = 2, GenderName = "Женский" },
@@ -179,15 +193,13 @@ public partial class TimeCafeContext : DbContext
 
         modelBuilder.Entity<PhoneConfirmation>(entity =>
         {
-            entity.HasKey(e => e.ConfirmationId).HasName("PK__PhoneCon__262D285D0713E163");
+            entity.HasKey(e => e.ConfirmationId).HasName("PK__PhoneConf__9B4F4D6A6E9A7B4E");
 
-            entity.Property(e => e.ConfirmationCode)
-                .IsRequired()
-                .HasMaxLength(5);
-            entity.Property(e => e.GeneratedTime).HasColumnType("datetime");
-            entity.Property(e => e.PhoneNumber)
-                .IsRequired()
-                .HasMaxLength(20);
+            entity.Property(e => e.ConfirmationCode).HasMaxLength(10).HasColumnType("varchar(10)");
+            entity.Property(e => e.GeneratedTime).HasColumnType("timestamp");
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20).HasColumnType("varchar(20)");
+
+            entity.HasIndex(e => e.ClientId);
 
             entity.HasOne(d => d.Client).WithMany(p => p.PhoneConfirmations)
                 .HasForeignKey(d => d.ClientId)
@@ -197,32 +209,32 @@ public partial class TimeCafeContext : DbContext
 
         modelBuilder.Entity<Tariff>(entity =>
         {
-            entity.HasKey(e => e.TariffId).HasName("PK__Tariffs__EBAF9DB359050E55");
+            entity.HasKey(e => e.TariffId).HasName("PK__Tariffs__E3E2E6E5A4F4E6F7");
 
-            entity.ToTable(tb => tb.HasTrigger("TRG_Tariffs_UpdateLastModified"));
-
+            entity.HasIndex(e => e.BillingTypeId);
             entity.HasIndex(e => e.TariffName, "IX_Tariffs_TariffName")
                 .IsUnique()
-                .HasFilter("([TariffName] IS NOT NULL)");
+                .HasFilter("\"TariffName\" IS NOT NULL");
+            entity.HasIndex(e => e.ThemeId);
 
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.LastModified)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.DescriptionTitle).HasMaxLength(100).HasColumnType("varchar(100)");
+            entity.Property(e => e.Description).HasMaxLength(1000).HasColumnType("text");
+            entity.Property(e => e.Icon).HasColumnType("bytea");
             entity.Property(e => e.TariffName)
                 .IsRequired()
-                .HasMaxLength(50);
-            entity.Property(e => e.DescriptionTitle)
-                .HasMaxLength(100);
-            entity.Property(e => e.Description)
-                .HasMaxLength(1000);
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp");
+            entity.Property(e => e.LastModified)
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp");
+            entity.Property(e => e.Price).HasColumnType("numeric(10,2)");
 
             entity.HasOne(d => d.BillingType).WithMany(p => p.Tariffs)
                 .HasForeignKey(d => d.BillingTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .IsRequired()
                 .HasConstraintName("FK_Tariffs_BillingTypes");
 
             entity.HasOne(d => d.Theme).WithMany(p => p.Tariffs)
@@ -234,22 +246,23 @@ public partial class TimeCafeContext : DbContext
         {
             entity.HasKey(e => e.ThemeId).HasName("PK__Themes__FBB3E4D9A31F20F0");
 
-            entity.HasIndex(e => e.ThemeName, "IX_Themes_ThemeName")
-                .IsUnique()
-                .HasFilter("([ThemeName] IS NOT NULL)");
-
-            entity.Property(e => e.ThemeName)
-                .IsRequired()
-                .HasMaxLength(50);
-            entity.Property(e => e.TechnicalName)
-                .IsRequired()
-                .HasMaxLength(50);
-
             entity.HasIndex(e => e.TechnicalName, "IX_Themes_TechnicalName")
                 .IsUnique()
-                .HasFilter("([TechnicalName] IS NOT NULL)");
+                .HasFilter("\"TechnicalName\" IS NOT NULL");
+            entity.HasIndex(e => e.ThemeName, "IX_Themes_ThemeName")
+                .IsUnique()
+                .HasFilter("\"ThemeName\" IS NOT NULL");
 
-            // Сидирование цветовых тем
+            entity.Property(e => e.TechnicalName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
+            entity.Property(e => e.ThemeName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasColumnType("varchar(50)");
+
+            // Сидирование цветовых тем (из AddThemeSeeding)
             entity.HasData(
                 new Theme { ThemeId = 1, ThemeName = "Красный", TechnicalName = "Red" },
                 new Theme { ThemeId = 2, ThemeName = "Оранжевый", TechnicalName = "Orange" },
@@ -282,11 +295,12 @@ public partial class TimeCafeContext : DbContext
 
             entity.HasIndex(e => e.TransactionTypeName, "IX_TransactionTypes_Name")
                 .IsUnique()
-                .HasFilter("([TransactionTypeName] IS NOT NULL)");
+                .HasFilter("\"TransactionTypeName\" IS NOT NULL");
 
             entity.Property(e => e.TransactionTypeName)
                 .IsRequired()
-                .HasMaxLength(20);
+                .HasMaxLength(20)
+                .HasColumnType("varchar(20)");
 
             // Сидирование типов транзакций
             entity.HasData(
@@ -299,13 +313,15 @@ public partial class TimeCafeContext : DbContext
         {
             entity.HasKey(e => e.VisitId).HasName("PK__Visits__4D3AA1DEECB6D8F4");
 
+            entity.HasIndex(e => e.BillingTypeId);
+            entity.HasIndex(e => e.ClientId);
             entity.HasIndex(e => e.EntryTime, "IX_Visits_EntryTime");
-
             entity.HasIndex(e => e.ExitTime, "IX_Visits_ExitTime");
+            entity.HasIndex(e => e.TariffId);
 
-            entity.Property(e => e.EntryTime).HasColumnType("datetime");
-            entity.Property(e => e.ExitTime).HasColumnType("datetime");
-            entity.Property(e => e.VisitCost).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.EntryTime).HasColumnType("timestamp");
+            entity.Property(e => e.ExitTime).HasColumnType("timestamp");
+            entity.Property(e => e.VisitCost).HasColumnType("numeric(10, 2)");
 
             entity.HasOne(d => d.BillingType).WithMany(p => p.Visits)
                 .HasForeignKey(d => d.BillingTypeId)

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Windowing;
 using Serilog;
 using StackExchange.Redis;
-using System.Reflection;
 using TimeCafe.Application;
 using TimeCafe.Core.Contracts.Services.File;
 

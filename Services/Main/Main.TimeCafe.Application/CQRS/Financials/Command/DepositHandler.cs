@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Financials.Command;
+namespace Main.TimeCafe.Application.CQRS.Financials.Command;
 
 public record DepositCommand(int ClientId, decimal Amount, string? Comment = null) : IRequest<FinancialTransaction>;
 

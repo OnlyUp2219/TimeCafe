@@ -1,4 +1,4 @@
-namespace TimeCafe.Application.CQRS.Clients.Get;
+namespace Main.TimeCafe.Application.CQRS.Clients.Get;
 
 public record GetClientByIdQuery(int ClientId) : IRequest<Client?>;
 
