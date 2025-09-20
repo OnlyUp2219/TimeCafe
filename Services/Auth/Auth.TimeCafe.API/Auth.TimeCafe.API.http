@@ -1,0 +1,6 @@
+@Auth.TimeCafe.API_HostAddress = http://localhost:5249
+
+GET {{Auth.TimeCafe.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
