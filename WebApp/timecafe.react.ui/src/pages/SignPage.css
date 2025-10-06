@@ -1,0 +1,26 @@
+h2 {
+    text-align: center;
+}
+
+.signin_root {
+    justify-content: center;
+    align-content: center;
+    text-align: start;
+    flex-wrap: wrap;
+}
+
+.signin_card {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-content: stretch;
+    flex-wrap: wrap;
+    gap: 16px;
+    max-width: 500px;
+    min-width: 300px;
+    width: 100%;
+    border: 1px solid var(--colorNeutralStroke1);
+    padding: var(--spacingHorizontalXXXL);
+    border-radius: var(--borderRadiusXLarge);
+    box-sizing: border-box;
+}
