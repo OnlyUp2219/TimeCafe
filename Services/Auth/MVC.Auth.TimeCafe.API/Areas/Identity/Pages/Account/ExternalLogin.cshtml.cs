@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
-namespace MVC.Auth.TimeCafe.API_.Areas.Identity.Pages.Account
+namespace MVC.Auth.TimeCafe.API.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel

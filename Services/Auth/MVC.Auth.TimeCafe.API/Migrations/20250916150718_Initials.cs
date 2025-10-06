@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MVC.Auth.TimeCafe.API_.Migrations
+namespace MVC.Auth.TimeCafe.API.Migrations
 {
     /// <inheritdoc />
     public partial class Initials : Migration

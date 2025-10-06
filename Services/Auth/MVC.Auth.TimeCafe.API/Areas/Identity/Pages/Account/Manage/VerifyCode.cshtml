@@ -1,0 +1,50 @@
+﻿@page
+@model MVC.Auth.TimeCafe.API.Areas.Identity.Pages.Account.Manage.VerifyCodeModel
+@{
+    ViewData["Title"] = "Подтверждение телефона";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            @if (!string.IsNullOrEmpty(Model.Input.Code))
+            {
+                <div class="mb-3 text-info">
+                    <strong>Текущий токен для проверки:</strong> @Model.Input.Code
+                </div>
+            }
+
+            <input asp-for="Input.PhoneNumber"  />
+            <input asp-for="Input.Token"  />
+
+            <div class="form-group mb-3">
+                <label for="userCode">Код из SMS</label>
+                <input asp-for="UserEnteredCode" id="userCode" class="form-control" />
+                <span asp-validation-for="UserEnteredCode" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Подтвердить</button>
+        </form>
+
+        <a asp-page="./VerifyCode"
+           asp-page-handler="GenerateSms"
+           asp-route-phoneNumber="@Model.Input.PhoneNumber"
+           class="btn btn-outline-primary mt-2">
+            Отправить код ещё раз
+        </a>
+
+
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

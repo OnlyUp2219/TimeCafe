@@ -4,8 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>aspnet-MVC.Auth.TimeCafe.API_-6628c34c-241d-4639-8aeb-ef65d7f308d5</UserSecretsId>
-    <RootNamespace>MVC.Auth.TimeCafe.API_</RootNamespace>
+    <UserSecretsId>aspnet-MVC.Auth.TimeCafe.API-6628c34c-241d-4639-8aeb-ef65d7f308d5</UserSecretsId>
+    <RootNamespace>MVC.Auth.TimeCafe.API</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,10 +17,12 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="Twilio" Version="7.13.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Services\" />
+    <Folder Include="Views\PhoneVerification\" />
   </ItemGroup>
 
 </Project>

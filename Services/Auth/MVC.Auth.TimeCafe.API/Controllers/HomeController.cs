@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using MVC.Auth.TimeCafe.API_.Models;
+using MVC.Auth.TimeCafe.API.Models;
 using System.Diagnostics;
 
-namespace MVC.Auth.TimeCafe.API_.Controllers
+namespace MVC.Auth.TimeCafe.API.Controllers
 {
     public class HomeController : Controller
     {

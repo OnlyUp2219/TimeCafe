@@ -1,0 +1,5 @@
+/* Visual Studio Settings File */
+{
+  "environment.documents.saveDocsAsUnicodeWhenDataLoss": false,
+  "environment.documents.saveWithSpecificEncoding": false
+}

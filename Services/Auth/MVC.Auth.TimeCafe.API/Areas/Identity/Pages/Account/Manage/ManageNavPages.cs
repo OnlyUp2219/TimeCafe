@@ -5,7 +5,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace  MVC.Auth.TimeCafe.API_.Areas.Identity.Pages.Account.Manage
+namespace MVC.Auth.TimeCafe.API.Areas.Identity.Pages.Account.Manage
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -61,6 +61,9 @@ namespace  MVC.Auth.TimeCafe.API_.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public static string TwoFactorAuthentication => "TwoFactorAuthentication";
 
+
+        public static string VerifyCode => "VerifyCode";
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -109,6 +112,7 @@ namespace  MVC.Auth.TimeCafe.API_.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public static string TwoFactorAuthenticationNavClass(ViewContext viewContext) => PageNavClass(viewContext, TwoFactorAuthentication);
 
+
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
@@ -119,5 +123,9 @@ namespace  MVC.Auth.TimeCafe.API_.Areas.Identity.Pages.Account.Manage
                 ?? System.IO.Path.GetFileNameWithoutExtension(viewContext.ActionDescriptor.DisplayName);
             return string.Equals(activePage, page, StringComparison.OrdinalIgnoreCase) ? "active" : null;
         }
+
+        public static string VerifyCodeNavClass(ViewContext viewContext) => PageNavClass(viewContext, VerifyCode);
+
+
     }
 }

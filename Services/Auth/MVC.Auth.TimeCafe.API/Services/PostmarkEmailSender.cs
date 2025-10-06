@@ -4,9 +4,9 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
-using MVC.Auth.TimeCafe.API_.Models;
+using MVC.Auth.TimeCafe.API.Models;
 
-namespace MVC.Auth.TimeCafe.API_.Services
+namespace MVC.Auth.TimeCafe.API.Services
 {
 	public sealed class PostmarkEmailSender : IEmailSender
 	{

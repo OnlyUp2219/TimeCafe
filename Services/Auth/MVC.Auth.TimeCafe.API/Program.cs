@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using MVC.Auth.TimeCafe.API_.Data;
-using MVC.Auth.TimeCafe.API_.Models;
-using MVC.Auth.TimeCafe.API_.Services;
+using MVC.Auth.TimeCafe.API.Areas.Identity.Pages.Account.Manage;
+using MVC.Auth.TimeCafe.API.Controllers;
+using MVC.Auth.TimeCafe.API.Data;
+using MVC.Auth.TimeCafe.API.Models;
+using MVC.Auth.TimeCafe.API.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,21 +25,27 @@ var microsoft = builder.Configuration.GetSection("Authentication:Microsoft");
 builder.Services.AddAuthentication().
     AddGoogle(op =>
     {
-        op.ClientId = google["ClientId"];
-        op.ClientSecret = google["ClientSecret"];
+        op.ClientId = google["ClientId"] ?? "";
+        op.ClientSecret = google["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-google";
     })
     .AddMicrosoftAccount(op =>
     {
-        op.ClientId = microsoft["ClientId"];
-        op.ClientSecret = microsoft["ClientSecret"];
+        op.ClientId = microsoft["ClientId"] ?? "";
+        op.ClientSecret = microsoft["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-microsoft";
     });
 
 // Postmark email sender registration
 builder.Services.Configure<PostmarkOptions>(builder.Configuration.GetSection("Postmark"));
+builder.Services.Configure<TwilioSettings>(builder.Configuration.GetSection("Twilio"));
 builder.Services.AddHttpClient();
 builder.Services.AddTransient<IEmailSender, PostmarkEmailSender>();
+
+
+
+builder.Services.AddTransient<PhoneVerificationModel>();
+builder.Services.AddTransient<VerifyCodeModel>();
 
 var app = builder.Build();
 

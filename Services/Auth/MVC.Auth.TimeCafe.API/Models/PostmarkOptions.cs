@@ -1,4 +1,4 @@
-namespace MVC.Auth.TimeCafe.API_.Models
+namespace MVC.Auth.TimeCafe.API.Models
 {
 	public sealed class PostmarkOptions
 	{

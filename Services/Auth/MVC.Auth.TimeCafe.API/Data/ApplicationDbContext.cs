@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace MVC.Auth.TimeCafe.API_.Data
+namespace MVC.Auth.TimeCafe.API.Data
 {
     public class ApplicationDbContext : IdentityDbContext
     {
