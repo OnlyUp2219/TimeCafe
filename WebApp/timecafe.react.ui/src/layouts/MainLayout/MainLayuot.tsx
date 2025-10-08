@@ -4,8 +4,9 @@ import "./MainLayout.css";
 import { Header } from "../../components/Header/Header";
 import { Sidebar } from "../../components/Sidebar/Sidebar";
 import { Footer } from "../../components/Footer/Footer";
+import { Outlet } from "react-router-dom";
 
-export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const MainLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
     return (
@@ -21,7 +22,7 @@ export const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }
                     onOpenChange={(open: boolean) => setIsSidebarOpen(open)}
                 />
 
-                <main className="main-layout__main">{children}</main>
+                <main className="main-layout__main"><Outlet /></main>
             </div>
 
             <Footer />

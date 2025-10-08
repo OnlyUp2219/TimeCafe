@@ -1,0 +1,61 @@
+.personal-data-root {
+    justify-content: center;
+    align-content: center;
+    text-align: start;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.personal-data-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.personal-data-photo {
+    max-width: 200px;
+    border-radius: 8px;
+}
+
+.personal-data-actions {
+    display: flex;
+    gap: 12px;
+}
+
+
+.row{
+    display:flex;
+    flex-direction:row;
+    gap:12px;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+
+}
+
+.full-width-input {
+    width: 100%;
+}
+
+.dark-green {
+    background: var(--colorStatusSuccessBackground1) !important;
+    color: var(--colorStatusSuccessForeground1) !important;
+}
+
+.pumpkin {
+    color: var(--colorStatusWarningBackground1) !important;
+    color: var(--colorStatusWarningForeground1) !important;
+}
+
+.beige {
+    color: var(--colorStatusNeutralBackground1) !important;
+    color: var(--colorStatusNeutralForeground1) !important;
+}
+
+.dark-red {
+    color: var(--colorStatusDangerBackground1) !important;
+    color: var(--colorStatusDangerForeground1) !important;
+}

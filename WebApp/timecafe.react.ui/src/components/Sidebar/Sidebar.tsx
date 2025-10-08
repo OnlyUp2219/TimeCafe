@@ -7,11 +7,11 @@ import {
     NavItem,
     Tooltip,
     useRestoreFocusSource,
-    useRestoreFocusTarget,
     type NavDrawerProps,
 } from "@fluentui/react-components";
-import type { JSXElement } from "@fluentui/react-components";
+import type { OnNavItemSelectData } from "@fluentui/react-components";
 import "./Sidebar.css";
+import { useNavigate } from "react-router-dom";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -33,27 +33,29 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onOpenChange }) => {
 
     React.useEffect(() => {
         const match = window.matchMedia("(max-width: 720px)");
-
         if (match.matches) {
             setType("overlay");
         }
-
         match.addEventListener("change", onMediaQueryChange);
-
         return () => match.removeEventListener("change", onMediaQueryChange);
     }, [onMediaQueryChange]);
 
-    // all Drawers need manual focus restoration attributes
-    // unless (as in the case of some inline drawers, you do not want automatic focus restoration)
-    const restoreFocusTargetAttributes = useRestoreFocusTarget();
     const restoreFocusSourceAttributes = useRestoreFocusSource();
 
+
+    const [selectedValue, setSelectedValue] = React.useState<string>("1");
+
+    const handleItemSelect = (event: Event | React.SyntheticEvent<Element, Event>, data: OnNavItemSelectData) => {
+        setSelectedValue(data.value as string);
+    };
+    const navigate = useNavigate();
 
     return (
         <aside className="app-sidebar">
             <NavDrawer
                 defaultSelectedValue="1"
-                defaultSelectedCategoryValue=""
+                onNavItemSelect={handleItemSelect}
+                selectedValue={selectedValue}
                 type={type}
                 {...restoreFocusSourceAttributes}
                 separator
@@ -72,9 +74,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onOpenChange }) => {
                 </NavDrawerHeader>
 
                 <NavDrawerBody>
-                    <NavItem value="1">Главная</NavItem>
-                    <NavItem value="2">О нас</NavItem>
-                    <NavItem value="3">Контакты</NavItem>
+                    <NavItem value="1" onClick={() => navigate("home")}>Главная</NavItem>
+                    <NavItem value="2" onClick={() => navigate("personal-data")}>Персональные данные</NavItem>
+                    <NavItem value="3" onClick={() => navigate("home")}>Тестовоя</NavItem>
                 </NavDrawerBody>
             </NavDrawer>
         </aside>

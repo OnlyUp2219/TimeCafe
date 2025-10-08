@@ -5,6 +5,7 @@ import { SignPage } from "./pages/SignPage";
 import { Home } from "./pages/Home";
 import { AuthLayout } from "./layouts/AuthLayout/AuthLayuot";
 import { MainLayout } from "./layouts/MainLayout/MainLayuot";
+import { PersonalData } from "./pages/PersonalData";
 
 export default function App() {
     return (
@@ -12,25 +13,20 @@ export default function App() {
         <div className="app_root">
             <BrowserRouter>
                 <Routes>
+                    <Route element={<AuthLayout />}>
+                        <Route path="sign" element={<SignPage />} />
+                        <Route path="login" element={<LoginPage />} />
+                    </Route>
+
+                    <Route element={<MainLayout />}>
+                        <Route path="home" element={<Home />} />
+                        <Route path="personal-data" element={<PersonalData />} />
+                    </Route>
+
                     <Route path="*" element={<LoginPage />} />
-                    <Route
-                        path="sign"
-                        element={
-                            <AuthLayout>
-                                <SignPage />
-                            </AuthLayout>
-                        }
-                    />
-                    <Route
-                        path="home"
-                        element={
-                            <MainLayout>
-                                <Home />
-                            </MainLayout>
-                        }
-                    />
                 </Routes>
             </BrowserRouter>
+
         </div>
     )
 }
