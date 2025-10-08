@@ -1,4 +1,10 @@
-.home-root{
+.home_root{
     justify-content:center;
     align-content:center;
+
+    text-align:center;
+}
+
+p{
+    font-size: 28px;
 }

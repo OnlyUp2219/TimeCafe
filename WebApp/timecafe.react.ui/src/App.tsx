@@ -1,9 +1,10 @@
 import './App.css'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-//import { StartPage } from "./pages/StartPage";
 import { LoginPage } from "./pages/LoginPage";
 import { SignPage } from "./pages/SignPage";
-import { Home } from "./pages/home";
+import { Home } from "./pages/Home";
+import { AuthLayout } from "./layouts/AuthLayout/AuthLayuot";
+import { MainLayout } from "./layouts/MainLayout/MainLayuot";
 
 export default function App() {
     return (
@@ -12,8 +13,22 @@ export default function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="*" element={<LoginPage />} />
-                    <Route path="sign" element={<SignPage />} />
-                    <Route path="home" element={<Home />} />
+                    <Route
+                        path="sign"
+                        element={
+                            <AuthLayout>
+                                <SignPage />
+                            </AuthLayout>
+                        }
+                    />
+                    <Route
+                        path="home"
+                        element={
+                            <MainLayout>
+                                <Home />
+                            </MainLayout>
+                        }
+                    />
                 </Routes>
             </BrowserRouter>
         </div>

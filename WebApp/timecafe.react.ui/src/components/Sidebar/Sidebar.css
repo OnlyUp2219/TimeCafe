@@ -1,0 +1,8 @@
+.app-sidebar {
+    grid-area: aside;
+    background: var(--colorNeutralBackground1);
+
+    --colorNeutralBackground4: #ffffff;
+
+}
+

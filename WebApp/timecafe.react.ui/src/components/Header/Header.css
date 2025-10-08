@@ -1,0 +1,25 @@
+.app-header {
+    grid-area: header;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    background: var(--colorNeutralBackground1);
+
+}
+
+.app-header__left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.app-header__title {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.app-header__right {
+    display: flex;
+    align-items: center;
+}

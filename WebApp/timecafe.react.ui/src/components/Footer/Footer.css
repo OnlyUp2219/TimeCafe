@@ -1,0 +1,8 @@
+.app-footer {
+    grid-area: footer;
+    text-align: center;
+    padding: 1rem;
+    background: var(--colorNeutralBackground1);
+    border-top: 1px solid var(--colorNeutralStroke1);
+    font-size: 0.9rem;
+}

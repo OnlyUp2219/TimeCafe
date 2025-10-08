@@ -1,0 +1,15 @@
+.auth-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: var(--colorNeutralBackground2);
+}
+
+.auth-layout__main {
+    width: 400px;
+    background: white;
+    padding: 2rem;
+    box-shadow: var(--shadow4);
+    border-radius: 8px;
+}

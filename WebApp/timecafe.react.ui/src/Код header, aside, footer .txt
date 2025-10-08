@@ -1,0 +1,115 @@
+import * as React from "react";
+import {
+    NavDrawer,
+    NavDrawerHeader,
+    NavDrawerBody,
+    NavItem,
+    NavSectionHeader,
+    Hamburger,
+    makeStyles,
+    shorthands,
+    tokens,
+    Button,
+    useRestoreFocusTarget,
+    Tooltip
+} from "@fluentui/react-components";
+
+const useStyles = makeStyles({
+    layout: {
+        display: "grid",
+        gridTemplateAreas: `
+      "header header"
+      "aside main"
+      "footer footer"
+    `,
+        gridTemplateRows: "auto 1fr auto",
+        gridTemplateColumns: "240px 1fr",
+        height: "100vh",
+        ...shorthands.gap(tokens.spacingHorizontalM),
+        backgroundColor: tokens.colorNeutralBackground2
+    },
+    header: {
+        gridArea: "header",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: tokens.spacingHorizontalM,
+        backgroundColor: tokens.colorNeutralBackground1,
+        boxShadow: tokens.shadow4
+    },
+    aside: {
+        gridArea: "aside",
+        backgroundColor: tokens.colorNeutralBackground1,
+        boxShadow: tokens.shadow2
+    },
+    main: {
+        gridArea: "main",
+        padding: tokens.spacingHorizontalM,
+    },
+    footer: {
+        gridArea: "footer",
+        textAlign: "center",
+        padding: tokens.spacingHorizontalM,
+        backgroundColor: tokens.colorNeutralBackground1,
+        borderTop: `1px solid ${tokens.colorNeutralStroke1}`
+    }
+});
+
+const App = () => {
+    const styles = useStyles();
+
+    const [isOpen, setIsOpen] = React.useState(true);
+
+
+    // Tabster prop used to restore focus to the navigation trigger for overlay nav drawers
+    const restoreFocusTargetAttributes = useRestoreFocusTarget();
+
+
+
+
+    return (
+        <div className={styles.layout}>
+            {/* HEADER */}
+            <header className={styles.header}>
+                <Hamburger
+                    onClick={() => setIsOpen(!isOpen)}
+                    {...restoreFocusTargetAttributes}
+                    aria-expanded={isOpen}
+                />
+                <h1>Моё приложение</h1>
+                <Button appearance="primary">Войти</Button>
+            </header>
+
+            {/* ASIDE */}
+            <aside className={styles.aside}>
+                <NavDrawer open={isOpen}>
+                    <NavDrawerHeader>
+                        <Tooltip content="Close Navigation" relationship="label">
+                            <Hamburger onClick={() => setIsOpen(!isOpen)} />
+                        </Tooltip>
+                    </NavDrawerHeader>
+                    <NavDrawerBody>
+                        <NavSectionHeader>Основное</NavSectionHeader>
+                        <NavItem value="1">Главная</NavItem>
+                        <NavItem value="2">О нас</NavItem>
+                        <NavItem value="3">Контакты</NavItem>
+                    </NavDrawerBody>
+                </NavDrawer>
+            </aside>
+
+
+            {/* MAIN */}
+            <main className={styles.main}>
+                <h2>Добро пожаловать!</h2>
+                <p>Здесь основное содержимое страницы.</p>
+            </main>
+
+            {/* FOOTER */}
+            <footer className={styles.footer}>
+                © 2025 – Все права защищены.
+            </footer>
+        </div>
+    );
+};
+
+export default App;
