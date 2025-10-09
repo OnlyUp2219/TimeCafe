@@ -1,15 +1,12 @@
+using Auth.TimeCafe.API.Data;
+using Auth.TimeCafe.Core;
+using Auth.TimeCafe.Infrastructure.Services;
+using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Auth.TimeCafe.API.Data;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.Options;
-using System.Net.Http;
-using Auth.TimeCafe.Infrastructure.Services;
-using Auth.TimeCafe.Core.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,20 +20,31 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services
     .AddIdentityCore<IdentityUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = true;
+        options.SignIn.RequireConfirmedAccount = false;
+        options.SignIn.RequireConfirmedPhoneNumber = false;
+
+        options.User.RequireUniqueEmail = true;
+
         options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
         options.Password.RequiredLength = 6;
+        options.Password.RequiredUniqueChars = 0;
     })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
-    .AddDefaultTokenProviders();
+    .AddDefaultTokenProviders()
+    .AddErrorDescriber<RussianIdentityErrorDescriber>();
 
-// Postmark email sender - регистрируем как Singleton
-builder.Services.Configure<PostmarkOptions>(builder.Configuration.GetSection("Postmark"));
-builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IEmailSender<IdentityUser>, PostmarkEmailSender>();
+builder.Services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();
+
+//builder.Services.Configure<PostmarkOptions>(builder.Configuration.GetSection("Postmark"));
+//builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IEmailSender<IdentityUser>, NullEmailSender>();
+
+
 
 // Authentication: JWT + external providers
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -90,7 +98,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "TimeCafe Auth API", Version = "v1" });
-    
+
     c.AddSecurityDefinition("Bearer", new()
     {
         Name = "Authorization",
@@ -100,7 +108,7 @@ builder.Services.AddSwaggerGen(c =>
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     });
-    
+
     c.AddSecurityRequirement(new()
     {
         {
@@ -117,15 +125,22 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS (Blazor client)
-var corsPolicyName = "blazor-client";
+// CORS 
+var corsPolicyName = "react-client";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsPolicyName, p =>
-        p.AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetIsOriginAllowed(_ => true));
+        p.AllowAnyHeader().
+        AllowAnyMethod().
+        AllowCredentials().
+        WithOrigins("http://localhost:9301"));
 });
 
+builder.Services.AddCarter();
+
 var app = builder.Build();
+
+// Carter
 
 // Swagger UI
 if (app.Environment.IsDevelopment())
@@ -139,6 +154,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.MapCarter();
 app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
@@ -149,4 +165,7 @@ app.MapIdentityApi<IdentityUser>();
 // Внешние логины
 app.MapControllers();
 
+
 app.Run();
+
+
