@@ -7,7 +7,6 @@ export const LoginPage = () => {
 
     const navigate = useNavigate();
     return (
-        <div className="login_root">
             <div className="login_card">
                 <h2>Вход</h2>
                 <Field label="Имя пользователя" required>
@@ -26,6 +25,5 @@ export const LoginPage = () => {
                 <Button icon={<div className="icons8-google"></div>} appearance="outline" onClick={() => navigate("/sign")}>Google</Button>
                 <Button icon={<div className="icons8-microsoft"></div>} appearance="outline" onClick={() => navigate("/sign")}>Microsoft</Button>
             </div>
-        </div>
     )
 }

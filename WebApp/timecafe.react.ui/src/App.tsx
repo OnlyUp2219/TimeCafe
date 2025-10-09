@@ -16,14 +16,14 @@ export default function App() {
                     <Route element={<AuthLayout />}>
                         <Route path="sign" element={<SignPage />} />
                         <Route path="login" element={<LoginPage />} />
+                        <Route path="*" element={<LoginPage />} />
                     </Route>
 
                     <Route element={<MainLayout />}>
                         <Route path="home" element={<Home />} />
                         <Route path="personal-data" element={<PersonalData />} />
                     </Route>
-
-                    <Route path="*" element={<LoginPage />} />
+                    
                 </Routes>
             </BrowserRouter>
 
