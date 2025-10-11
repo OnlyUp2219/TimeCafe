@@ -1,5 +1,5 @@
-h2{
-    text-align:center;
+h2 {
+    text-align: center;
 }
 
 .login_root {
@@ -11,14 +11,14 @@ h2{
 
 .login_card {
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     justify-content: stretch;
     align-content: stretch;
     flex-wrap: wrap;
     gap: 16px;
 
     max-width: 500px;
-    min-width: 300px;
+    min-width: 250px;
     width: 100%;
 
     border: 1px solid var(--colorNeutralStroke1);

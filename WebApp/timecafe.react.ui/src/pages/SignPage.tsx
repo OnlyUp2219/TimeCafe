@@ -1,8 +1,10 @@
-import { Button, Input, Link, Field } from '@fluentui/react-components';
-import { useNavigate } from "react-router-dom";
+import {Button, Input, Link, Field} from '@fluentui/react-components';
+import {useNavigate} from "react-router-dom";
 import * as React from 'react';
 import "./SignPage.css";
-import { faker } from '@faker-js/faker';
+import {faker} from '@faker-js/faker';
+import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
+import {registerUser} from "../api/auth.ts";
 
 export const SignPage = () => {
     const navigate = useNavigate();
@@ -15,7 +17,13 @@ export const SignPage = () => {
     React.useEffect(() => {
         setUsername(faker.internet.username());
         setEmail(faker.internet.email());
-        setPassword(faker.internet.password({ length: 10 }));
+        const pwd =
+            faker.string.alpha({length: 1, casing: "upper"}) +
+            faker.string.alphanumeric({length: 4}) +
+            faker.string.numeric({length: 1});
+
+        setPassword(pwd);
+        setConfirmPassword(pwd);
     }, []);
 
 
@@ -28,37 +36,20 @@ export const SignPage = () => {
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     const validate = () => {
-        const newErrors = {
-            username: "",
-            email: "",
-            password: "",
-            confirmPassword: "",
-        };
 
-        if (!username.trim())
-            newErrors.username = "Введите имя пользователя.";
-        if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-            newErrors.email = "Введите корректный email.";
+        const usernameError = validateUsername(username);
 
-        const passwordErrors = [];
-        if (password.length < 6) {
-            passwordErrors.push("Пароль должен содержать не менее 6 символов.");
-        }
-        if (!/\d/.test(password)) {
-            passwordErrors.push("Пароль должен содержать хотя бы 1 цифру.");
-        }
-        if (!/[a-zа-яё]/i.test(password)) {
-            passwordErrors.push("Пароль должен содержать хотя бы 1 букву.");
-        }
-        newErrors.password = passwordErrors.map((error, index) => `${index + 1}) ${error}`).join(" ");
+        const emailError = validateEmail(email);
+        const passwordError = validatePassword(password);
+        const confirmPasswordError = validateConfirmPassword(confirmPassword, password);
 
-        if (confirmPassword !== password) {
-            newErrors.confirmPassword = "Пароли не совпадают.";
-        }
-
-        setErrors(newErrors);
-
-        return !Object.values(newErrors).some(e => e);
+        setErrors({
+            username: usernameError,
+            email: emailError,
+            password: passwordError,
+            confirmPassword: confirmPasswordError
+        });
+        return !emailError && !passwordError && !confirmPasswordError && !usernameError;
     };
 
     const handleSubmit = async () => {
@@ -66,52 +57,24 @@ export const SignPage = () => {
 
         setIsSubmitting(true);
         try {
-            const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
-            const res = await fetch(`${apiBase}/registerWithUsername`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userName: username,
-                    email,
-                    password
-                })
-            });
+            await registerUser({userName: username, email, password});
+            navigate("/login");
+        } catch (err: any) {
+            if (err && typeof err === "object" && !Array.isArray(err)) {
+                const e = err as Record<string, unknown>;
+                setErrors(prev => ({
+                    ...prev,
+                    email: String(err.email ?? ""),
+                    password: String(err.password ?? ""),
+                    username: String(err.username ?? "")
+                }));
 
-
-            if (res.ok) {
-                console.log('register OK', res.status);
-                navigate("/login");
-                return;
-            }
-
-            let body: any = null;
-            try { body = await res.json(); } catch (e) { console.warn('non-json response', e); }
-
-            const newErrors = { username: "", email: "", password: "", confirmPassword: "" };
-            if (body && body.errors) {
-                for (const [key, value] of Object.entries(body.errors)) {
-                    const arr = Array.isArray(value) ? value : [value];
-
-                    arr.forEach((e: { code?: string; description?: string }) => {
-                        const code = e.code?.toLowerCase();
-                        const msg = e.description ?? String(e);
-
-                        if (code?.includes('password')) newErrors.password += (newErrors.password ? ' ' : '') + msg;
-                        else if (code?.includes('email')) newErrors.email += (newErrors.email ? ' ' : '') + msg;
-                        else newErrors.username += (newErrors.username ? ' ' : '') + msg;
-                    });
+                if (!e.email && !e.password && !e.username) {
+                    setErrors(prev => ({...prev, username: String(err)}));
                 }
             } else {
-                newErrors.username = `Ошибка регистрации (${res.status})`;
+                setErrors(prev => ({...prev, username: String(err)}));
             }
-
-
-
-
-            setErrors(newErrors);
-        } catch (err) {
-            console.error('register error', err);
-            setErrors(prev => ({ ...prev, username: 'Ошибка соединения с сервером' }));
         } finally {
             setIsSubmitting(false);
         }
@@ -136,14 +99,14 @@ export const SignPage = () => {
             </Field>
 
             <Field
-                label="Email"
+                label="Почта"
                 required
                 validationState={errors.email ? "error" : undefined}
                 validationMessage={errors.email}>
                 <Input
                     value={email}
                     onChange={(_, data) => setEmail(data.value)}
-                    placeholder="Введите email" />
+                    placeholder="Введите почту"/>
             </Field>
 
             <Field
@@ -174,7 +137,7 @@ export const SignPage = () => {
                 />
             </Field>
 
-            <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} >
+            <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting}>
                 Зарегистрироваться
             </Button>
 
