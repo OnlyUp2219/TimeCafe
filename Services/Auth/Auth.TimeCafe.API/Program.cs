@@ -1,5 +1,4 @@
-using Auth.TimeCafe.API.Data;
-using Auth.TimeCafe.Core;
+using Auth.TimeCafe.Infrastructure.Data;
 using Auth.TimeCafe.Infrastructure.Services;
 using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,7 +25,7 @@ builder.Services
         options.User.RequireUniqueEmail = true;
 
         options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
+        options.Password.RequireLowercase = false;
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
         options.Password.RequiredLength = 6;
@@ -47,6 +46,7 @@ builder.Services.AddSingleton<IEmailSender<IdentityUser>, NullEmailSender>();
 
 
 // Authentication: JWT + external providers
+builder.Services.AddScoped<IJwtService, JwtService>();
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var issuer = jwtSection["Issuer"];
 var audience = jwtSection["Audience"];
@@ -133,14 +133,16 @@ builder.Services.AddCors(options =>
         p.AllowAnyHeader().
         AllowAnyMethod().
         AllowCredentials().
-        WithOrigins("http://localhost:9301"));
+        WithOrigins("http://127.0.0.1:9301", 
+        "http://localhost:9301"));
 });
 
+// Carter
 builder.Services.AddCarter();
 
 var app = builder.Build();
 
-// Carter
+
 
 // Swagger UI
 if (app.Environment.IsDevelopment())
@@ -154,10 +156,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.MapCarter();
 app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapCarter();
 
 // Встроенные Identity API эндпоинты
 app.MapIdentityApi<IdentityUser>();
