@@ -1,10 +1,23 @@
 import * as React from "react";
-import { Button, Text, Title2, Subtitle1, Image, Avatar, Body1, Body2, Tag, Field, Input, Radio, RadioGroup, } from "@fluentui/react-components";
+import {
+    Button,
+    Text,
+    Title2,
+    Subtitle1,
+    Image,
+    Avatar,
+    Body1,
+    Body2,
+    Tag,
+    Field,
+    Input,
+    Radio,
+    RadioGroup,
+} from "@fluentui/react-components";
 import "./PersonalData.css";
-import { useState } from "react";
-import { CheckmarkFilled } from '@fluentui/react-icons';
+import {useState} from "react";
+import {CheckmarkFilled} from '@fluentui/react-icons';
 
-// Интерфейс для данных клиента на основе модели C#
 interface Client {
     clientId: number;
     firstName: string;
@@ -17,18 +30,17 @@ interface Client {
     accessCardNumber: string;
     statusId?: number;
     refusalReason?: string;
-    photo?: string; // base64 или URL для фото
+    photo?: string;
     createdAt: string;
 }
 
 export const PersonalData: React.FC = () => {
-    // Заглушка для данных клиента
     const client: Client = {
         clientId: 1,
         firstName: "Даниил",
         lastName: "Иванов",
         middleName: "Иванович",
-        genderId: 1, // Предположим, 1 = мужской
+        genderId: 1,
         email: "ivan@example.com",
         birthDate: "1990-01-01",
         phoneNumber: "+7 (999) 123-45-67",
@@ -79,13 +91,17 @@ export const PersonalData: React.FC = () => {
             <div className="personal-data-section">
 
                 <div className="row">
-                    <Avatar initials={getInitials(client).toString()} color={getStatusClass(client.statusId)} name="darkGreen avatar" size={128} />
+                    <Avatar initials={getInitials(client).toString()} color={getStatusClass(client.statusId)}
+                            name="darkGreen avatar" size={128}/>
                     <div>
                         <Subtitle1 block truncate wrap={false}>
-                            <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName && <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
+                            <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName &&
+                            <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
                         </Subtitle1>
-                        <Body1 as="p" block  >
-                            <strong>Статус:</strong> <Tag className={getStatusClass(client.statusId)} shape="circular" appearance="outline" size="extra-small">{getStatusText(client.statusId)}</Tag>
+                        <Body1 as="p" block>
+                            <strong>Статус:</strong> <Tag className={getStatusClass(client.statusId)} shape="circular"
+                                                          appearance="outline"
+                                                          size="extra-small">{getStatusText(client.statusId)}</Tag>
 
                         </Body1>
                         <Body1 as="p" block>
@@ -104,7 +120,7 @@ export const PersonalData: React.FC = () => {
                             type="email"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
                     </div>
                 </Field>
 
@@ -119,7 +135,7 @@ export const PersonalData: React.FC = () => {
                             type="tel"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
                     </div>
                 </Field>
 
@@ -137,11 +153,11 @@ export const PersonalData: React.FC = () => {
                 )}
 
                 {client.genderId && (
-                    <Field label="Пол" >
+                    <Field label="Пол">
                         <RadioGroup>
-                            <Radio value="Мужчина" label="Мужчина" />
-                            <Radio value="Женщина" label="Женщина" />
-                            <Radio value="Другое" label="Другое" />
+                            <Radio value="Мужчина" label="Мужчина"/>
+                            <Radio value="Женщина" label="Женщина"/>
+                            <Radio value="Другое" label="Другое"/>
                         </RadioGroup>
                     </Field>
                 )}

@@ -12,9 +12,12 @@
   "dependencies": {
     "@fluentui/react-components": "^9.71.0",
     "@griffel/react": "^1.5.30",
+    "@reduxjs/toolkit": "^2.9.0",
     "add": "^2.0.6",
+    "axios": "^1.12.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.3",
     "yarn": "^1.22.22"
   },

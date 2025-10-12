@@ -13,6 +13,13 @@ export const SignPage = () => {
     const [password, setPassword] = React.useState("");
     const [email, setEmail] = React.useState("");
     const [confirmPassword, setConfirmPassword] = React.useState("");
+    const [errors, setErrors] = React.useState({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+    });
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
 
     React.useEffect(() => {
         setUsername(faker.internet.username());
@@ -26,23 +33,11 @@ export const SignPage = () => {
         setConfirmPassword(pwd);
     }, []);
 
-
-    const [errors, setErrors] = React.useState({
-        username: "",
-        email: "",
-        password: "",
-        confirmPassword: "",
-    });
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-
     const validate = () => {
-
         const usernameError = validateUsername(username);
-
         const emailError = validateEmail(email);
         const passwordError = validatePassword(password);
         const confirmPasswordError = validateConfirmPassword(confirmPassword, password);
-
         setErrors({
             username: usernameError,
             email: emailError,
@@ -57,23 +52,24 @@ export const SignPage = () => {
 
         setIsSubmitting(true);
         try {
-            await registerUser({userName: username, email, password});
+            await registerUser({username, email, password});
             navigate("/login");
         } catch (err: any) {
-            if (err && typeof err === "object" && !Array.isArray(err)) {
-                const e = err as Record<string, unknown>;
-                setErrors(prev => ({
-                    ...prev,
-                    email: String(err.email ?? ""),
-                    password: String(err.password ?? ""),
-                    username: String(err.username ?? "")
-                }));
+            const newErrors = {email: "", password: "", username: "", confirmPassword: ""};
 
-                if (!e.email && !e.password && !e.username) {
-                    setErrors(prev => ({...prev, username: String(err)}));
-                }
+            if (Array.isArray(err)) {
+                // err - массив IdentityError { Code, Description }
+                err.forEach((e: { code: string; description: string }) => {
+                    const code = e.code.toLowerCase();
+                    if (code.includes("email")) newErrors.email += e.description + " ";
+                    else if (code.includes("password")) newErrors.password += e.description + " ";
+                    else if (code.includes("username")) newErrors.username += e.description + " ";
+                });
+                setErrors(newErrors);
             } else {
-                setErrors(prev => ({...prev, username: String(err)}));
+                const message = err instanceof Error ? err.message : String(err);
+                newErrors.username = message;
+                setErrors(newErrors);
             }
         } finally {
             setIsSubmitting(false);

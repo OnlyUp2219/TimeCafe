@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import './LoginPage.css'
 import * as React from "react";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
+import {loginUser} from "../api/auth.ts";
 
 export const LoginPage = () => {
 
@@ -27,10 +28,31 @@ export const LoginPage = () => {
         if (!validate()) return;
 
         setIsSubmitting(true);
+        try {
+            await loginUser({email, password});
+            navigate("/home");
+        } catch (err: any) {
+            const newErrors = {email: "", password: ""};
 
-        navigate("/home")
-        setIsSubmitting(false);
-    }
+            if (Array.isArray(err)) {
+                err.forEach((e: { code: string; description: string }) => {
+                    const code = e.code.toLowerCase();
+                    if (code.includes("email")) newErrors.email += e.description + " ";
+                    else if (code.includes("password")) newErrors.password += e.description + " ";
+                    else newErrors.email += e.description + " ";
+                });
+            } else {
+                const message = err instanceof Error ? err.message : String(err);
+                newErrors.email = message;
+            }
+            setErrors(newErrors);
+        } finally {
+            setIsSubmitting(false);
+            console.log("accessToken:", localStorage.getItem("accessToken"));
+            console.log("refreshToken:", localStorage.getItem("refreshToken"));
+
+        }
+    };
 
 
     return (
@@ -65,7 +87,7 @@ export const LoginPage = () => {
                 <Link onClick={() => navigate("/sign")}>Забыли пароль?</Link>
             </div>
 
-            <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting}>Войти</Button>
+            <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Войти</Button>
 
             <Link onClick={() => navigate("/sign")}>Зарегистрироваться</Link>
 
