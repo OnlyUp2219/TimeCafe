@@ -11,10 +11,11 @@ import {
 } from "@fluentui/react-components";
 import type {OnNavItemSelectData} from "@fluentui/react-components";
 import "./Sidebar.css";
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "../../store/uiSlice.ts";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
+import {useEffect} from "react";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -23,6 +24,22 @@ export const Sidebar: React.FC = () => {
 
     const dispatch = useDispatch();
     const isOpen = useSelector((state: RootState) => state.ui.isSideBarOpen);
+    const location = useLocation();
+
+    useEffect(() => {
+        const navIdFromState = location.state?.navId;
+        if (navIdFromState) {
+            dispatch(setSelectedNav(navIdFromState));
+        } else {
+            const navItem = navItems.find(item => item.path === location.pathname);
+            if (navItem) {
+                dispatch(setSelectedNav(navItem.id));
+            } else {
+                dispatch(setSelectedNav("1"));
+            }
+        }
+    }, [location]);
+
 
     const handleOpenChange = (open: boolean) => {
         dispatch(setSidebarOpen(open));
@@ -52,13 +69,21 @@ export const Sidebar: React.FC = () => {
     const handleItemSelect = (_: unknown, data: OnNavItemSelectData) => {
         const value = data.value as string;
         dispatch(setSelectedNav(value));
+
+
     };
     const navigate = useNavigate();
+
+    const navItems = [
+        {id: "1", label: "Главная", path: "/home"},
+        {id: "2", label: "Персональные данные", path: "/personal-data"},
+        {id: "3", label: "Тестовая", path: "/home"},
+    ];
+
 
     return (
         <aside className="app-sidebar">
             <NavDrawer
-                defaultSelectedValue="1"
                 onNavItemSelect={handleItemSelect}
                 selectedValue={selectedValue}
                 type={type}
@@ -79,9 +104,20 @@ export const Sidebar: React.FC = () => {
                 </NavDrawerHeader>
 
                 <NavDrawerBody>
-                    <NavItem value="1" onClick={() => navigate("home")}>Главная</NavItem>
-                    <NavItem value="2" onClick={() => navigate("personal-data")}>Персональные данные</NavItem>
-                    <NavItem value="3" onClick={() => navigate("home")}>Тестовоя</NavItem>
+                    {navItems.map((item) => (
+                        <NavItem
+                            value={item.id}
+                            key={item.id}
+                            onClick={() => {
+                                if (selectedValue !== item.id) {
+                                    dispatch(setSelectedNav(item.id));
+                                    navigate(item.path, {state: {navId: item.id}});
+                                }
+                            }}
+                        >
+                            {item.label}
+                        </NavItem>
+                    ))}
                 </NavDrawerBody>
             </NavDrawer>
         </aside>

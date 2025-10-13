@@ -34,9 +34,7 @@ export const Home = () => {
 
     const handleClearAccessJwt = () => {
         localStorage.removeItem("accessToken");
-        // localStorage.removeItem("refreshToken");
         setAccessToken(null);
-        // setRefreshToken(null);
         setProtectedResult(null);
     };
 
