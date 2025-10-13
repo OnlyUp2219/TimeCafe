@@ -4,6 +4,7 @@ import './LoginPage.css'
 import * as React from "react";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
+import {useEffect} from "react";
 
 export const LoginPage = () => {
 
@@ -17,6 +18,11 @@ export const LoginPage = () => {
     });
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+    useEffect(() => {
+        setEmail("klim@gmail.com");
+        setPassword("string1");
+    }, []);
+
     const validate = () => {
         const emailError = validateEmail(email);
         const passwordError = validatePassword(password);
@@ -25,6 +31,7 @@ export const LoginPage = () => {
     };
 
     const handleSubmit = async () => {
+
         if (!validate()) return;
 
         setIsSubmitting(true);

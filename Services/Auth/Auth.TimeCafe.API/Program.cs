@@ -22,7 +22,7 @@ builder.Services
         options.SignIn.RequireConfirmedAccount = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
 
-        options.User.RequireUniqueEmail = true;
+        options.User.RequireUniqueEmail = false;
 
         options.Password.RequireDigit = true;
         options.Password.RequireLowercase = false;
@@ -74,6 +74,15 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
             ClockSkew = TimeSpan.FromMinutes(1)
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                context.Token = context.Request.Cookies["Access-Token"];
+                return Task.CompletedTask;
+            }
+        };
     })
     .AddCookie(IdentityConstants.ExternalScheme)
     .AddGoogle(op =>
@@ -109,20 +118,20 @@ builder.Services.AddSwaggerGen(c =>
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
     });
 
-    c.AddSecurityRequirement(new()
-    {
-        {
-            new()
-            {
-                Reference = new()
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            Array.Empty<string>()
-        }
-    });
+    //c.AddSecurityRequirement(new()
+    //{
+    //    {
+    //        new()
+    //        {
+    //            Reference = new()
+    //            {
+    //                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+    //                Id = "Bearer"
+    //            }
+    //        },
+    //        Array.Empty<string>()
+    //    }
+    //});
 });
 
 // CORS 
@@ -133,7 +142,7 @@ builder.Services.AddCors(options =>
         p.AllowAnyHeader().
         AllowAnyMethod().
         AllowCredentials().
-        WithOrigins("http://127.0.0.1:9301", 
+        WithOrigins("http://127.0.0.1:9301",
         "http://localhost:9301"));
 });
 
