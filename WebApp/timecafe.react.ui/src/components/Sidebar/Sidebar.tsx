@@ -9,24 +9,29 @@ import {
     useRestoreFocusSource,
     type NavDrawerProps,
 } from "@fluentui/react-components";
-import type { OnNavItemSelectData } from "@fluentui/react-components";
+import type {OnNavItemSelectData} from "@fluentui/react-components";
 import "./Sidebar.css";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
+import {setSelectedNav, setSidebarOpen, toggleSidebar} from "../../store/uiSlice.ts";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../../store";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
-interface SidebarProps {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-}
 
+export const Sidebar: React.FC = () => {
 
-export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onOpenChange }) => {
+    const dispatch = useDispatch();
+    const isOpen = useSelector((state: RootState) => state.ui.isSideBarOpen);
+
+    const handleOpenChange = (open: boolean) => {
+        dispatch(setSidebarOpen(open));
+    };
 
     const [type, setType] = React.useState<DrawerType>("inline");
 
     const onMediaQueryChange = React.useCallback(
-        ({ matches }: { matches: boolean }) =>
+        ({matches}: { matches: boolean }) =>
             setType(matches ? "overlay" : "inline"),
         [setType]
     );
@@ -42,11 +47,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onOpenChange }) => {
 
     const restoreFocusSourceAttributes = useRestoreFocusSource();
 
+    const selectedValue = useSelector((state: RootState) => state.ui.selectedNav);
 
-    const [selectedValue, setSelectedValue] = React.useState<string>("1");
-
-    const handleItemSelect = (event: Event | React.SyntheticEvent<Element, Event>, data: OnNavItemSelectData) => {
-        setSelectedValue(data.value as string);
+    const handleItemSelect = (_: unknown, data: OnNavItemSelectData) => {
+        const value = data.value as string;
+        dispatch(setSelectedNav(value));
     };
     const navigate = useNavigate();
 
@@ -61,13 +66,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onOpenChange }) => {
                 separator
                 position="start"
                 open={isOpen}
-                onOpenChange={(_, { open }) => onOpenChange(open)}
+                onOpenChange={(_, {open}) => handleOpenChange(open)}
                 className="sidebar"
             >
                 <NavDrawerHeader>
                     <div>
                         <Tooltip content="Close Navigation" relationship="label">
-                            <Hamburger onClick={() => onOpenChange(!isOpen)} />
+                            <Hamburger onClick={() => dispatch(toggleSidebar())}/>
                         </Tooltip>
                         Основное
                     </div>
