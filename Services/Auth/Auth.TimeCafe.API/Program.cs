@@ -1,3 +1,4 @@
+using Auth.TimeCafe.API.Endpoints;
 using Auth.TimeCafe.Infrastructure.Data;
 using Auth.TimeCafe.Infrastructure.Services;
 using Carter;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -104,35 +106,17 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Swagger param 
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "TimeCafe Auth API", Version = "v1" });
-
-    c.AddSecurityDefinition("Bearer", new()
-    {
-        Name = "Authorization",
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "Bearer",
-        BearerFormat = "JWT",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\""
-    });
-
-    //c.AddSecurityRequirement(new()
-    //{
-    //    {
-    //        new()
-    //        {
-    //            Reference = new()
-    //            {
-    //                Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-    //                Id = "Bearer"
-    //            }
-    //        },
-    //        Array.Empty<string>()
-    //    }
-    //});
+    c.EnableAnnotations();
+    c.ExampleFilters();
 });
+builder.Services.AddSwaggerExamples();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<RegisterDtoExample>();
+
 
 // CORS 
 var corsPolicyName = "react-client";
@@ -151,8 +135,6 @@ builder.Services.AddCarter();
 
 var app = builder.Build();
 
-
-
 // Swagger UI
 if (app.Environment.IsDevelopment())
 {
@@ -166,8 +148,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapCarter();
 
 // Встроенные Identity API эндпоинты

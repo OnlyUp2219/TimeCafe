@@ -1,15 +1,6 @@
-﻿using Auth.TimeCafe.Infrastructure.Services;
-using Carter;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints;
-
-public record RegisterDto(string Username, string Email, string Password);
-public record LoginDto(string Email, string Password);
-public record JwtRefreshRequest(string RefreshToken);
-public record class TokensDto(string AccessToken, string RefreshToken);
-
 
 public class CreateRegistry : ICarterModule
 {
@@ -33,7 +24,10 @@ public class CreateRegistry : ICarterModule
             var tokens = await jwtService.GenerateTokens(user);
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
-        });
+        })
+            .RequireAuthorization()
+            .WithTags("Authentication")
+            .WithName("Register");
 
         app.MapPost("/login-jwt", async (
             UserManager<IdentityUser> userManager,
@@ -50,7 +44,9 @@ public class CreateRegistry : ICarterModule
             context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
-        });
+        })
+            .WithTags("Authentication")
+            .WithName("Login");
 
         app.MapPost("/refresh-token-jwt", async (
             IJwtService jwtService,
@@ -62,15 +58,24 @@ public class CreateRegistry : ICarterModule
             context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
-        });
+        })
+            .WithTags("Authentication")
+            .WithName("RefreshToken");
 
-        app.MapGet("/protected-test", [Microsoft.AspNetCore.Authorization.Authorize]
-        async (UserManager<IdentityUser> userManager, System.Security.Claims.ClaimsPrincipal user) =>
+        app.MapGet("/protected-test",
+        async (
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user) =>
         {
-            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null) return Results.Unauthorized();
             var u = await userManager.FindByIdAsync(userId);
             return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
-        });
+        })
+            .RequireAuthorization()
+            .WithTags("Authentication")
+            .WithName("Test401");
+
     }
 }
+

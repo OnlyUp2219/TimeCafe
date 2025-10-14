@@ -4,11 +4,17 @@ namespace Auth.TimeCafe.Infrastructure.Services;
 
 public class RussianIdentityErrorDescriber : IdentityErrorDescriber
 {
-    public override IdentityError DuplicateUserName(string userName) =>
-        new() { Code = nameof(DuplicateUserName), Description = $"Имя пользователя '{userName}' уже используется." };
+    public override IdentityError DuplicateUserName(string userName) 
+        => new() { 
+            Code = nameof(DuplicateUserName), 
+            Description = $"Имя пользователя '{userName}' уже используется."
+        };
 
-    public override IdentityError DuplicateEmail(string email) =>
-        new() { Code = nameof(DuplicateEmail), Description = $"Email '{email}' уже используется." };
+    public override IdentityError DuplicateEmail(string email) 
+        => new() { 
+            Code = nameof(DuplicateEmail), 
+            Description = $"Email '{email}' уже используется." 
+        };
 
     public override IdentityError PasswordRequiresLower()
           => new IdentityError

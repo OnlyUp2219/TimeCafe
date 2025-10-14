@@ -1,0 +1,10 @@
+﻿global using Swashbuckle.AspNetCore.Filters;
+global using Swashbuckle.AspNetCore.Swagger;
+global using Swashbuckle.AspNetCore.Annotations;
+global using Auth.TimeCafe.Application.DTO;
+global using Auth.TimeCafe.Core.Models;
+global using Auth.TimeCafe.Infrastructure.Services;
+global using Auth.TimeCafe.Infrastructure.Data;
+global using Carter;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Mvc;
