@@ -1,10 +1,8 @@
 import * as React from "react";
 import {
     Button,
-    Text,
     Title2,
     Subtitle1,
-    Image,
     Avatar,
     Body1,
     Body2,
@@ -15,21 +13,21 @@ import {
     RadioGroup,
 } from "@fluentui/react-components";
 import "./PersonalData.css";
-import {useState} from "react";
-import {CheckmarkFilled} from '@fluentui/react-icons';
+import { useState } from "react";
+import { CheckmarkFilled } from '@fluentui/react-icons';
 
 interface Client {
     clientId: number;
     firstName: string;
     lastName: string;
     middleName?: string;
-    genderId?: number;
     email: string;
-    birthDate?: string;
-    phoneNumber: string;
-    accessCardNumber: string;
-    statusId?: number;
-    refusalReason?: string;
+    emailConfirmed?: boolean;
+    genderId?: number;
+    birthDate?: Date;
+    phoneNumber?: string;
+    phoneNumberConfirmed?: boolean | null;
+    accessCardNumber?: string;
     photo?: string;
     createdAt: string;
 }
@@ -40,14 +38,14 @@ export const PersonalData: React.FC = () => {
         firstName: "Даниил",
         lastName: "Иванов",
         middleName: "Иванович",
-        genderId: 1,
         email: "ivan@example.com",
-        birthDate: "1990-01-01",
+        emailConfirmed: false,
+        genderId: 1,
+        birthDate: new Date(),
         phoneNumber: "+7 (999) 123-45-67",
-        accessCardNumber: "123456789",
-        statusId: 4,
-        refusalReason: null,
+        phoneNumberConfirmed: true,
         photo: "https://via.placeholder.com/200",
+        accessCardNumber: "123456789",
         createdAt: "2023-01-01T12:00:00",
     };
 
@@ -59,20 +57,20 @@ export const PersonalData: React.FC = () => {
         return parts.join("");
     };
 
-    const getStatusText = (statusId?: number): string => {
-        const statusMap: { [key: number]: string } = {
-            1: "Активный",
-            2: "Требует активности",
-            3: "Неактивный",
+    const getStatusText = (phoneNumberConfirmed?: boolean | null): string => {
+        const statusMap: Record<string, string> = {
+            "true": "Активный",
+            "false": "Требует активности",
+            "null": "Неактивный"
         };
-        return statusMap[statusId] || "Ошибка";
+        return statusMap[String(phoneNumberConfirmed)] || "Ошибка";
     };
 
 
-    const getStatusClass = (statusId?: number): string => {
-        if (statusId === 1) return "dark-green";
-        if (statusId === 2) return "pumpkin";
-        if (statusId === 3) return "beige";
+    const getStatusClass = (confirmed?: boolean | null): string => {
+        if (confirmed === true) return "dark-green";
+        if (confirmed === false) return "pumpkin";
+        if (confirmed == null) return "beige";
         return "dark-red";
     };
 
@@ -91,17 +89,17 @@ export const PersonalData: React.FC = () => {
             <div className="personal-data-section">
 
                 <div className="row">
-                    <Avatar initials={getInitials(client).toString()} color={getStatusClass(client.statusId)}
-                            name="darkGreen avatar" size={128}/>
+                    <Avatar initials={getInitials(client).toString()} color={getStatusClass(client.phoneNumberConfirmed)}
+                        name="darkGreen avatar" size={128} />
                     <div>
                         <Subtitle1 block truncate wrap={false}>
                             <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName &&
-                            <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
+                                <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
                         </Subtitle1>
                         <Body1 as="p" block>
-                            <strong>Статус:</strong> <Tag className={getStatusClass(client.statusId)} shape="circular"
-                                                          appearance="outline"
-                                                          size="extra-small">{getStatusText(client.statusId)}</Tag>
+                            <strong>Статус:</strong> <Tag className={getStatusClass(client.phoneNumberConfirmed)} shape="circular"
+                                appearance="outline"
+                                size="extra-small">{getStatusText(client.phoneNumberConfirmed)}</Tag>
 
                         </Body1>
                         <Body1 as="p" block>
@@ -120,12 +118,12 @@ export const PersonalData: React.FC = () => {
                             type="email"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
                     </div>
                 </Field>
 
 
-                <Field label="Телефона">
+                <Field label="Телефон">
                     <div className="input-with-button">
                         <Input
                             value={phone}
@@ -135,32 +133,28 @@ export const PersonalData: React.FC = () => {
                             type="tel"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
                     </div>
                 </Field>
 
 
-                {client.birthDate && (
 
-                    <Field label="Дата рождения">
-                        <Input
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            placeholder="Введите номер телефона"
-                            type="date"
-                        />
-                    </Field>
-                )}
+                <Field label="Дата рождения">
+                    <Input
+                        value={date ? date.toISOString().split("T")[0] : ""}
+                        onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
+                        placeholder="Введите номер телефона"
+                        type="date"
+                    />
+                </Field>
 
-                {client.genderId && (
-                    <Field label="Пол">
-                        <RadioGroup>
-                            <Radio value="Мужчина" label="Мужчина"/>
-                            <Radio value="Женщина" label="Женщина"/>
-                            <Radio value="Другое" label="Другое"/>
-                        </RadioGroup>
-                    </Field>
-                )}
+                <Field label="Пол">
+                    <RadioGroup>
+                        <Radio value="Мужчина" label="Мужчина" />
+                        <Radio value="Женщина" label="Женщина" />
+                        <Radio value="Другое" label="Другое" />
+                    </RadioGroup>
+                </Field>
 
                 <Body2><strong>Номер карты доступа:</strong> {client.accessCardNumber}</Body2>
 
