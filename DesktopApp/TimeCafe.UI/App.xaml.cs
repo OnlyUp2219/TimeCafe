@@ -94,7 +94,7 @@ public partial class App : Microsoft.UI.Xaml.Application
             //db.Execute("FLUSHDB"); 
 #endif
 
-            services.AddDbContext<TimeCafeContext>(options => options.UseSqlServer(context.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+            services.AddDbContext<TimeCafeContext>(options => options.UseNpgsql(context.Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
 
             //// Register MediatR
             //var assembly = typeof(GetGendersQuery).Assembly;
