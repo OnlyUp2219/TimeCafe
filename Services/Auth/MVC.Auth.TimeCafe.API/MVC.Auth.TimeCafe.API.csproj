@@ -25,4 +25,8 @@
     <Folder Include="Views\PhoneVerification\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Auth.TimeCafe.Infrastructure\Auth.TimeCafe.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

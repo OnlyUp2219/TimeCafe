@@ -77,14 +77,19 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(1)
         };
 
-        options.Events = new JwtBearerEvents
+        #if (DEBUG)
         {
-            OnMessageReceived = context =>
+            options.Events = new JwtBearerEvents
             {
-                context.Token = context.Request.Cookies["Access-Token"];
-                return Task.CompletedTask;
-            }
-        };
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["Access-Token"];
+                    return Task.CompletedTask;
+                }
+            };
+        }
+        #endif
+
     })
     .AddCookie(IdentityConstants.ExternalScheme)
     .AddGoogle(op =>

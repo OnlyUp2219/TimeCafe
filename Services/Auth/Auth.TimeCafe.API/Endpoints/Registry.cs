@@ -25,7 +25,6 @@ public class CreateRegistry : ICarterModule
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
         })
-            .RequireAuthorization()
             .WithTags("Authentication")
             .WithName("Register");
 
@@ -41,7 +40,11 @@ public class CreateRegistry : ICarterModule
                 { errors = new[] { new { code = "InvalidCredentials", description = "Неверный email или пароль" } } });
 
             var tokens = await jwtService.GenerateTokens(user);
+
+            #if DEBUG
             context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
+            #endif
+
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
         })
