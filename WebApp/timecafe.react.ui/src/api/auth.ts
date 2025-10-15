@@ -11,6 +11,10 @@ export interface LoginRequest {
     password: string;
 }
 
+export interface EmailRequest {
+    email: string;
+}
+
 export interface ApiError {
     [key: string]: string[] | string;
 }
@@ -51,7 +55,7 @@ export async function loginUser(data: LoginRequest): Promise<void> {
         if (axios.isAxiosError(error)) {
 
             const res = error.response;
-            
+
             if (res?.data?.errors) {
                 const errors: ApiError = res.data.errors;
                 throw errors;
@@ -81,25 +85,28 @@ export async function refreshToken(): Promise<void> {
         // Todo Если refresh не удался — нужно разлогинить пользователя
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        
         throw new Error("Не удалось обновить токен");
     }
 }
 
-
-axios.interceptors.response.use(
-    response => response,
-    async error => {
-        if (error.response?.status === 401) {
-            try {
-                await refreshToken();
-                const config = error.config;
-                config.headers["Authorization"] = `Bearer ${localStorage.getItem("accessToken")}`;
-                return axios(config);
-            } catch {
-                window.location.href = "/login";
+export async function forgotPassword(data: EmailRequest): Promise<void> {
+    try {
+        await axios.post(`${apiBase}/forgotPassword`, data, {
+            headers: {"Content-Type": "application/json"},
+        })
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const res = error.response;
+            if (res?.data?.errors) {
+                const errors: ApiError = res.data.errors;
+                throw errors;
             }
+            throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }
-        return Promise.reject(error);
+        throw new Error("Неизвестная ошибка при попытке отправить сообщение на почту");
     }
-);
+}
+
+
 

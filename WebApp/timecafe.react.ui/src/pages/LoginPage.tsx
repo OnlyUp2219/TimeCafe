@@ -61,9 +61,12 @@ export const LoginPage = () => {
         }
     };
 
+    const forgotPasswordSubmit = async () => {
+        navigate("/resetPassword");
+    }
 
     return (
-        <div className="login_card">
+        <div className="auth_card">
             <h2>Вход</h2>
             <Field label="Почта"
                    required
@@ -91,7 +94,7 @@ export const LoginPage = () => {
                     />
                 </Field>
 
-                <Link onClick={() => navigate("/sign")}>Забыли пароль?</Link>
+                <Link onClick={forgotPasswordSubmit}>Забыли пароль?</Link>
             </div>
 
             <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Войти</Button>

@@ -53,7 +53,7 @@ export const SignPage = () => {
         setIsSubmitting(true);
         try {
             await registerUser({username, email, password});
-            navigate("/login");
+            navigate("/home");
         } catch (err: any) {
             const newErrors = {email: "", password: "", username: "", confirmPassword: ""};
 
@@ -78,7 +78,7 @@ export const SignPage = () => {
 
     return (
 
-        <div className="signin_card">
+        <div className="auth_card">
             <h2>Регистрация</h2>
 
             <Field
