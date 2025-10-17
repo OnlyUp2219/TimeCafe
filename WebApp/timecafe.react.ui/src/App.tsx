@@ -7,6 +7,7 @@ import {AuthLayout} from "./layouts/AuthLayout/AuthLayuot";
 import {MainLayout} from "./layouts/MainLayout/MainLayuot";
 import {PersonalData} from "./pages/PersonalData";
 import {ResetPassword} from "./pages/resetPassword/ResetPassword.tsx";
+import {ResetPasswordEmail} from "./pages/resetPassword/ResetPasswordEmail.tsx";
 
 export default function App() {
     return (
@@ -18,6 +19,8 @@ export default function App() {
                         <Route path="sign" element={<SignPage/>}/>
                         <Route path="login" element={<LoginPage/>}/>
                         <Route path={"resetPassword"} element={<ResetPassword/>}/>
+                        <Route path={"resetPasswordEmail"} element={<ResetPasswordEmail/>}/>
+
                         <Route path="*" element={<LoginPage/>}/>
                     </Route>
 
