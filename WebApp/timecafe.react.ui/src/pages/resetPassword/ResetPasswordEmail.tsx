@@ -4,10 +4,13 @@ import {Button, Field, Input, Subtitle1, Text} from "@fluentui/react-components"
 import {validateEmail} from "../../utility/validate.ts";
 import {forgotPassword} from "../../api/auth.ts";
 import {useEffect} from "react";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
+import {parseErrorMessage} from "../../utility/errors.ts";
 
 
 export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
+    const {showToast, ToasterElement} = useProgressToast();
 
     const [email, setEmail] = React.useState("");
     const [errors, setErrors] = React.useState({
@@ -45,8 +48,8 @@ export const ResetPasswordEmail = () => {
                     if (code.includes("email")) newErrors.email += e.description + " ";
                 });
             } else {
-                const message = err instanceof Error ? err.message : String(err);
-                newErrors.email = message;
+                const message = parseErrorMessage(err);
+                showToast(message, "error");
             }
             setErrors(newErrors);
         } finally {
@@ -57,6 +60,8 @@ export const ResetPasswordEmail = () => {
     if (isSent) {
         return (
             <div className="auth_card p-6">
+                {ToasterElement}
+
                 <Subtitle1 align="center" style={{marginBottom: 16}}>Сообщение отправлено!</Subtitle1>
 
                 <Text>

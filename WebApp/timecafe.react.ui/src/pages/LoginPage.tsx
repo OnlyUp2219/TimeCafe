@@ -4,11 +4,11 @@ import './LoginPage.css'
 import * as React from "react";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
-import {useEffect} from "react";
+import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 
 export const LoginPage = () => {
-
     const navigate = useNavigate();
+    const {showToast, ToasterElement} = useProgressToast();
 
     const [password, setPassword] = React.useState("");
     const [email, setEmail] = React.useState("");
@@ -17,11 +17,6 @@ export const LoginPage = () => {
         password: "",
     });
     const [isSubmitting, setIsSubmitting] = React.useState(false);
-
-    useEffect(() => {
-        setEmail("klim@gmail.com");
-        setPassword("string1");
-    }, []);
 
     const validate = () => {
         const emailError = validateEmail(email);
@@ -50,7 +45,7 @@ export const LoginPage = () => {
                 });
             } else {
                 const message = err instanceof Error ? err.message : String(err);
-                newErrors.email = message;
+                showToast(message, "error", "Ошибка");
             }
             setErrors(newErrors);
         } finally {
@@ -67,6 +62,8 @@ export const LoginPage = () => {
 
     return (
         <div className="auth_card">
+            {ToasterElement}
+
             <Subtitle1 align={"center"}>Вход</Subtitle1>
             <Field label="Почта"
                    required

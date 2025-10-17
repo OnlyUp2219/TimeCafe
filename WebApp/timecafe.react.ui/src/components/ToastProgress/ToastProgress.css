@@ -1,0 +1,19 @@
+.toast-error {
+    background-color: var(--colorStatusDangerBackground1) !important;
+    border-color: var(--colorStatusDangerBorderActive) !important;
+}
+
+.toast-success {
+    background-color: var(--colorStatusSuccessBackground1) !important;
+    border-color: var(--colorStatusSuccessBorderActive) !important;
+}
+
+.toast-warning {
+    background-color: var(--colorStatusWarningBackground1) !important;
+    border-color: var(--colorStatusWarningBorderActive) !important;
+}
+
+.toast-info {
+    background-color: var(--colorNeutralBackground1) !important;
+    border-color: var(--colorNeutralBorderActive) !important;
+}

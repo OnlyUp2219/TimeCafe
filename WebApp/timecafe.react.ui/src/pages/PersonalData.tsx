@@ -10,11 +10,11 @@ import {
     Field,
     Input,
     Radio,
-    RadioGroup,
+    RadioGroup, type AvatarNamedColor,
 } from "@fluentui/react-components";
 import "./PersonalData.css";
-import { useState } from "react";
-import { CheckmarkFilled } from '@fluentui/react-icons';
+import {useState} from "react";
+import {CheckmarkFilled} from '@fluentui/react-icons';
 
 interface Client {
     clientId: number;
@@ -89,17 +89,19 @@ export const PersonalData: React.FC = () => {
             <div className="personal-data-section">
 
                 <div className="row">
-                    <Avatar initials={getInitials(client).toString()} color={getStatusClass(client.phoneNumberConfirmed)}
-                        name="darkGreen avatar" size={128} />
+                    <Avatar initials={getInitials(client).toString()}
+                            color={getStatusClass(client.phoneNumberConfirmed) as AvatarNamedColor}
+                            name="darkGreen avatar" size={128}/>
                     <div>
                         <Subtitle1 block truncate wrap={false}>
                             <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName &&
-                                <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
+                            <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
                         </Subtitle1>
                         <Body1 as="p" block>
-                            <strong>Статус:</strong> <Tag className={getStatusClass(client.phoneNumberConfirmed)} shape="circular"
-                                appearance="outline"
-                                size="extra-small">{getStatusText(client.phoneNumberConfirmed)}</Tag>
+                            <strong>Статус:</strong> <Tag className={getStatusClass(client.phoneNumberConfirmed)}
+                                                          shape="circular"
+                                                          appearance="outline"
+                                                          size="extra-small">{getStatusText(client.phoneNumberConfirmed)}</Tag>
 
                         </Body1>
                         <Body1 as="p" block>
@@ -118,7 +120,7 @@ export const PersonalData: React.FC = () => {
                             type="email"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
                     </div>
                 </Field>
 
@@ -133,10 +135,9 @@ export const PersonalData: React.FC = () => {
                             type="tel"
 
                         />
-                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled />} />
+                        <Button appearance="outline" onClick={handleSubmit} icon={<CheckmarkFilled/>}/>
                     </div>
                 </Field>
-
 
 
                 <Field label="Дата рождения">
@@ -150,9 +151,9 @@ export const PersonalData: React.FC = () => {
 
                 <Field label="Пол">
                     <RadioGroup>
-                        <Radio value="Мужчина" label="Мужчина" />
-                        <Radio value="Женщина" label="Женщина" />
-                        <Radio value="Другое" label="Другое" />
+                        <Radio value="Мужчина" label="Мужчина"/>
+                        <Radio value="Женщина" label="Женщина"/>
+                        <Radio value="Другое" label="Другое"/>
                     </RadioGroup>
                 </Field>
 

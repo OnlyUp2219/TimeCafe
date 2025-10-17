@@ -5,9 +5,11 @@ import "./SignPage.css";
 import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
 import {registerUser} from "../api/auth.ts";
+import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 
 export const SignPage = () => {
     const navigate = useNavigate();
+    const {showToast, ToasterElement} = useProgressToast();
 
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
@@ -20,6 +22,7 @@ export const SignPage = () => {
         confirmPassword: "",
     });
     const [isSubmitting, setIsSubmitting] = React.useState(false);
+
 
     React.useEffect(() => {
         setUsername(faker.internet.username());
@@ -66,10 +69,10 @@ export const SignPage = () => {
                     else if (code.includes("username")) newErrors.username += e.description + " ";
                 });
                 setErrors(newErrors);
+                showToast("Ошибка при регистрации. Проверьте введённые данные.", "error", "Ошибка");
             } else {
                 const message = err instanceof Error ? err.message : String(err);
-                newErrors.username = message;
-                setErrors(newErrors);
+                showToast(message, "error", "Ошибка");
             }
         } finally {
             setIsSubmitting(false);
@@ -79,6 +82,10 @@ export const SignPage = () => {
     return (
 
         <div className="auth_card">
+
+            {ToasterElement}
+
+
             <Subtitle1 align={"center"}>Регистрация</Subtitle1>
 
             <Field
@@ -138,6 +145,7 @@ export const SignPage = () => {
             </Button>
 
             <Link onClick={() => navigate("/login")}>Войти</Link>
+
         </div>
 
     );

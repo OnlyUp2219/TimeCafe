@@ -3,11 +3,13 @@ import * as React from "react";
 import {Button, Field, Input, Subtitle1} from "@fluentui/react-components";
 import {validateConfirmPassword, validateEmail, validatePassword} from "../../utility/validate.ts";
 import {resetPassword} from "../../api/auth.ts";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 
 
 export const ResetPassword = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const {showToast, ToasterElement} = useProgressToast();
 
     const [email, setEmail] = React.useState("");
     const [resetCode, setResetCode] = React.useState("");
@@ -60,7 +62,7 @@ export const ResetPassword = () => {
                     : err instanceof Error
                         ? err.message
                         : String(err);
-                newErrors.email = message;
+                showToast(message, "error", "Ошибка");
             }
             setErrors(newErrors);
         } finally {
@@ -71,6 +73,8 @@ export const ResetPassword = () => {
 
     return (
         <div className="auth_card">
+            {ToasterElement}
+
             <Subtitle1 align={"center"}>Восстановление пароля!</Subtitle1>
 
             <Field label="Почта"

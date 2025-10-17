@@ -1,10 +1,11 @@
 import * as React from 'react';
 import "./Home.css"
-import {Button, Spinner} from "@fluentui/react-components";
+import {Button, Spinner, type ToastIntent} from "@fluentui/react-components";
 import {useEffect} from "react";
 import {refreshToken as refreshTokenApi} from "../api/auth.ts";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
+import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 
 
 export const Home = () => {
@@ -67,14 +68,25 @@ export const Home = () => {
         }
     };
 
+    const {showToast, ToasterElement} = useProgressToast();
+
+    const handleClick = () => {
+        const intents: ToastIntent[] = ["success", "error", "warning", "info"];
+        const intent = intents[Math.floor(Math.random() * intents.length)];
+        showToast(`Случайный toast с intent: ${intent}`, intent);
+    };
+
+
     if (checkingAuth) {
         return <Spinner size={"huge"}/>;
     }
 
     return (
-        <div className="home_root">
-            <h1>Добро пожаловать!</h1>
-            <p>На главную страницу</p>
+        <div className="home_root gap-[16px]">
+            <div>
+                <h1>Добро пожаловать!</h1>
+                <p>На главную страницу</p>
+            </div>
 
             <div style={{marginTop: 20}}>
                 <div>
@@ -98,6 +110,11 @@ export const Home = () => {
 
                 {refreshResult && <div>Refresh: {refreshResult}</div>}
                 {protectedResult && <div>Protected result: {protectedResult}</div>}
+            </div>
+
+            <div>
+                <Button onClick={handleClick}>Показать случайный toast</Button>
+                {ToasterElement}
             </div>
         </div>
     );
