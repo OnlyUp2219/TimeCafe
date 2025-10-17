@@ -74,15 +74,12 @@ public sealed class PostmarkEmailSender : IEmailSender<IdentityUser>
         if (string.IsNullOrWhiteSpace(_options.FrontendBaseUrl))
             throw new InvalidOperationException("Postmark FrontendBaseUrl is not configured.");
 
-        var token = Uri.EscapeDataString(resetLink.Split("code=").Last());
-
-
-        var frontendLink = $"{_options.FrontendBaseUrl}/forgotPassword?email={Uri.EscapeDataString(email)}&code={token}";
 
         var subject = "Сброс пароля";
         var htmlMessage = $"<p>Для сброса пароля перейдите по <a href='{resetLink}'>этой ссылке</a>.</p>";
-        await SendEmailAsync(email, subject, htmlMessage);
+        //await SendEmailAsync(email, subject, htmlMessage);
     }
+
 
     public async Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode)
     {
@@ -117,3 +114,4 @@ public sealed class PostmarkEmailSender : IEmailSender<IdentityUser>
         return new string(array, 0, arrayIndex).Trim();
     }
 }
+

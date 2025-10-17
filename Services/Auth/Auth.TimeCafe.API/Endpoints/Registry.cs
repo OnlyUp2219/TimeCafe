@@ -1,4 +1,7 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
+using System.Security.Claims;
+using System.Text;
 
 namespace Auth.TimeCafe.API.Endpoints;
 
@@ -41,9 +44,9 @@ public class CreateRegistry : ICarterModule
 
             var tokens = await jwtService.GenerateTokens(user);
 
-            #if DEBUG
+#if DEBUG
             context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
-            #endif
+#endif
 
 
             return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
@@ -79,6 +82,41 @@ public class CreateRegistry : ICarterModule
             .WithTags("Authentication")
             .WithName("Test401");
 
+
+        app.MapPost("/forgot-password-link", async (
+            [FromBody] ResetPasswordEmailRequest request,
+            UserManager<IdentityUser> userManager,
+            IEmailSender<IdentityUser> emailSender,
+            IOptions<PostmarkOptions> postmarkOptions) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Email))
+                return Results.BadRequest(new { errors = new { email = "Email is required" } });
+
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+                return Results.Ok(); 
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+            var frontendBaseUrl = postmarkOptions.Value.FrontendBaseUrl;
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            if (string.IsNullOrWhiteSpace(frontendBaseUrl))
+                return Results.Problem("FrontendBaseUrl is not configured");
+
+            var callbackUrl = $"{frontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
+
+            //await emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
+            //return Results.Ok(new { message = "Ссылка для сброса пароля отправлена" });
+            return Results.Ok( new { callbackUrl } );
+
+        })
+            .WithTags("Authentication")
+            .WithName("ForgotPassword");
+
     }
 }
 
+public class ResetPasswordEmailRequest
+{
+    public string Email { get; set; } = string.Empty;
+}

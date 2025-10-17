@@ -1,4 +1,4 @@
-import {Button, Input, Link, Field, Divider} from '@fluentui/react-components'
+import {Button, Input, Link, Field, Divider, Subtitle1} from '@fluentui/react-components'
 import {useNavigate} from "react-router-dom";
 import './LoginPage.css'
 import * as React from "react";
@@ -57,17 +57,17 @@ export const LoginPage = () => {
             setIsSubmitting(false);
             console.log("accessToken:", localStorage.getItem("accessToken"));
             console.log("refreshToken:", localStorage.getItem("refreshToken"));
-
         }
+
     };
 
     const forgotPasswordSubmit = async () => {
-        navigate("/resetPassword");
+        navigate("/resetPasswordEmail");
     }
 
     return (
         <div className="auth_card">
-            <h2>Вход</h2>
+            <Subtitle1 align={"center"}>Вход</Subtitle1>
             <Field label="Почта"
                    required
                    validationState={errors.email ? "error" : undefined}

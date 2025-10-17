@@ -23,6 +23,7 @@ builder.Services
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
+        
 
         options.User.RequireUniqueEmail = false;
 
@@ -41,9 +42,13 @@ builder.Services
 
 builder.Services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();
 
-//builder.Services.Configure<PostmarkOptions>(builder.Configuration.GetSection("Postmark"));
-//builder.Services.AddHttpClient();
-builder.Services.AddSingleton<IEmailSender<IdentityUser>, NullEmailSender>();
+#if true
+builder.Services.Configure<PostmarkOptions>(builder.Configuration.GetSection("Postmark"));
+builder.Services.AddSingleton<IEmailSender<IdentityUser>, PostmarkEmailSender>();
+builder.Services.AddHttpClient();
+#endif
+
+//builder.Services.AddSingleton<IEmailSender<IdentityUser>, NullEmailSender>();
 
 
 
@@ -77,7 +82,7 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(1)
         };
 
-        #if (DEBUG)
+#if (DEBUG)
         {
             options.Events = new JwtBearerEvents
             {
@@ -88,7 +93,7 @@ builder.Services
                 }
             };
         }
-        #endif
+#endif
 
     })
     .AddCookie(IdentityConstants.ExternalScheme)

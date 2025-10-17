@@ -1,4 +1,4 @@
-import {Button, Input, Link, Field} from '@fluentui/react-components';
+import {Button, Input, Link, Field, Subtitle1} from '@fluentui/react-components';
 import {useNavigate} from "react-router-dom";
 import * as React from 'react';
 import "./SignPage.css";
@@ -79,7 +79,7 @@ export const SignPage = () => {
     return (
 
         <div className="auth_card">
-            <h2>Регистрация</h2>
+            <Subtitle1 align={"center"}>Регистрация</Subtitle1>
 
             <Field
                 label="Имя пользователя"

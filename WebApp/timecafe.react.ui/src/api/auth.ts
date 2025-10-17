@@ -11,8 +11,14 @@ export interface LoginRequest {
     password: string;
 }
 
-export interface EmailRequest {
+export interface ResetPasswordEmailRequest {
     email: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    resetCode: string;
+    newPassword: string;
 }
 
 export interface ApiError {
@@ -23,9 +29,13 @@ const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 
 export async function registerUser(data: RegisterRequest): Promise<void> {
     try {
-        await axios.post(`${apiBase}/registerWithUsername`, data, {
+        const res = await axios.post(`${apiBase}/registerWithUsername`, data, {
             headers: {"Content-Type": "application/json"},
         });
+
+        const tokens = res.data as { accessToken: string; refreshToken: string };
+        localStorage.setItem("accessToken", tokens.accessToken);
+        localStorage.setItem("refreshToken", tokens.refreshToken);
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
@@ -85,14 +95,34 @@ export async function refreshToken(): Promise<void> {
         // Todo Если refresh не удался — нужно разлогинить пользователя
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        
+
         throw new Error("Не удалось обновить токен");
     }
 }
 
-export async function forgotPassword(data: EmailRequest): Promise<void> {
+export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{ callbackUrl: string }> {
     try {
-        await axios.post(`${apiBase}/forgotPassword`, data, {
+        const response = await axios.post<{ callbackUrl: string }>(`${apiBase}/forgot-password-link`, data, {
+            headers: {"Content-Type": "application/json"},
+        });
+
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const res = error.response;
+            if (res?.data?.errors) {
+                const errors: ApiError = res.data.errors;
+                throw errors;
+            }
+            throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
+        }
+        throw new Error("Неизвестная ошибка при попытке отправить сообщение на почту");
+    }
+}
+
+export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
+    try {
+        await axios.post(`${apiBase}/resetPassword`, data, {
             headers: {"Content-Type": "application/json"},
         })
     } catch (error) {
@@ -107,6 +137,4 @@ export async function forgotPassword(data: EmailRequest): Promise<void> {
         throw new Error("Неизвестная ошибка при попытке отправить сообщение на почту");
     }
 }
-
-
 

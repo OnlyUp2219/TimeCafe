@@ -1,23 +1,32 @@
 import * as React from 'react';
 import "./Home.css"
-import {Button} from "@fluentui/react-components";
+import {Button, Spinner} from "@fluentui/react-components";
 import {useEffect} from "react";
 import {refreshToken as refreshTokenApi} from "../api/auth.ts";
 import axios from "axios";
+import {useNavigate} from "react-router-dom";
 
 
 export const Home = () => {
+    const navigate = useNavigate();
+
     const [accessToken, setAccessToken] = React.useState<string | null>(null);
     const [refreshToken, setRefreshToken] = React.useState<string | null>(null);
     const [refreshResult, setRefreshResult] = React.useState<string | null>(null);
     const [protectedResult, setProtectedResult] = React.useState<string | null>(null);
+    const [checkingAuth, setCheckingAuth] = React.useState(true);
 
     useEffect(() => {
-        const a = localStorage.getItem("accessToken") || null;
-        const r = localStorage.getItem("refreshToken") || null;
-        setAccessToken(a);
-        setRefreshToken(r);
-    }, []);
+        const a = localStorage.getItem("accessToken");
+        const r = localStorage.getItem("refreshToken");
+        if (!a) {
+            navigate("/login");
+        } else {
+            setAccessToken(a);
+            setRefreshToken(r);
+        }
+        setCheckingAuth(false);
+    }, [navigate]);
 
     const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 
@@ -58,6 +67,9 @@ export const Home = () => {
         }
     };
 
+    if (checkingAuth) {
+        return <Spinner size={"huge"}/>;
+    }
 
     return (
         <div className="home_root">

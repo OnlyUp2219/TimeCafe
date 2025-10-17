@@ -1,21 +1,32 @@
-import {useNavigate} from "react-router-dom";
+import {useLocation, useNavigate} from "react-router-dom";
 import * as React from "react";
-import {Button, Field, Input} from "@fluentui/react-components";
+import {Button, Field, Input, Subtitle1} from "@fluentui/react-components";
 import {validateConfirmPassword, validateEmail, validatePassword} from "../../utility/validate.ts";
+import {resetPassword} from "../../api/auth.ts";
 
 
 export const ResetPassword = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const [password, setPassword] = React.useState("");
     const [email, setEmail] = React.useState("");
+    const [resetCode, setResetCode] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [confirmPassword, setConfirmPassword] = React.useState("");
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [errors, setErrors] = React.useState({
         email: "",
         password: "",
         confirmPassword: "",
     });
-    const [confirmPassword, setConfirmPassword] = React.useState("");
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    React.useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const emailParam = params.get("email");
+        const codeParam = params.get("code");
+        if (emailParam) setEmail(emailParam);
+        if (codeParam) setResetCode(codeParam);
+    }, [location.search]);
 
     const validate = () => {
         const emailError = validateEmail(email);
@@ -26,19 +37,42 @@ export const ResetPassword = () => {
         return !emailError && !passwordError && !confirmPasswordError;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validate()) return;
 
         setIsSubmitting(true);
         try {
+            await resetPassword({email, resetCode, newPassword: password});
             navigate("/login");
+        } catch (err: any) {
+            const newErrors = {email: "", password: "", confirmPassword: ""};
+
+            if (Array.isArray(err)) {
+                err.forEach((e: { code: string; description: string }) => {
+                    const code = e.code.toLowerCase();
+                    if (code.includes("email")) newErrors.email += e.description + " ";
+                    else if (code.includes("password")) newErrors.password += e.description + " ";
+                    else newErrors.email += e.description + " ";
+                });
+            } else {
+                const message = err && typeof err === "object"
+                    ? Object.values(err).flat().join(" ")
+                    : err instanceof Error
+                        ? err.message
+                        : String(err);
+                newErrors.email = message;
+            }
+            setErrors(newErrors);
         } finally {
             setIsSubmitting(false);
         }
     };
 
+
     return (
         <div className="auth_card">
+            <Subtitle1 align={"center"}>Восстановление пароля!</Subtitle1>
+
             <Field label="Почта"
                    required
                    validationState={errors.email ? "error" : undefined}
@@ -46,9 +80,17 @@ export const ResetPassword = () => {
             >
                 <Input
                     value={email}
-                    placeholder="Введите почту"
                     type="email"
-                    onChange={(_, data) => setEmail(data.value)}
+                    disabled
+                />
+            </Field>
+
+            <Field label="Код"
+                   required
+            >
+                <Input
+                    value={resetCode}
+                    disabled
                 />
             </Field>
 
@@ -78,15 +120,18 @@ export const ResetPassword = () => {
                 />
             </Field>
 
-            <div className="flex row align-items-center col-12">
-                <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Новый
-                    пароль!</Button>
 
-                <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Новый
-                    пароль!</Button>
+            <div className="flex w-full justify-between flex-wrap gap-x-[48px] gap-y-[16px]">
+                <Button className="flex-[1]" appearance="secondary" onClick={() => navigate(-1)}
+                        disabled={isSubmitting}
+                        type="button">Назад</Button>
+
+                <Button className="flex-[1.5]" appearance="primary" onClick={handleSubmit} disabled={isSubmitting}
+                        type="button">Восстановить</Button>
             </div>
-
 
         </div>
     )
 }
+
+
