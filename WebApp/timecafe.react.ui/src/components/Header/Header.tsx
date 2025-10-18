@@ -1,13 +1,15 @@
 import * as React from "react";
-import { Hamburger, Button, Avatar} from "@fluentui/react-components";
+import {Hamburger, Button, Avatar} from "@fluentui/react-components";
 import "./Header.css";
+import {LogOut} from "../../api/auth.ts";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
     isSidebarOpen?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onMenuToggle, isSidebarOpen }) => {
+
+export const Header: React.FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => {
     return (
         <header className="app-header">
             <div className="app-header__left">
@@ -22,9 +24,9 @@ export const Header: React.FC<HeaderProps> = ({ onMenuToggle, isSidebarOpen }) =
                 <h1 className="app-header__title">TimeCafe</h1>
             </div>
 
-            <div className="app-header__right">
+            <div className="app-header__right gap-[12px]">
                 <Avatar/>
-                <Button appearance="primary">Войти</Button>
+                <Button appearance="primary" onClick={() => LogOut()}>Выйти</Button>
             </div>
         </header>
     );

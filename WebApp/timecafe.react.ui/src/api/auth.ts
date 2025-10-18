@@ -92,7 +92,6 @@ export async function refreshToken(): Promise<void> {
         localStorage.setItem("refreshToken", tokens.refreshToken);
 
     } catch {
-        // Todo Если refresh не удался — нужно разлогинить пользователя
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
 
@@ -138,3 +137,12 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     }
 }
 
+export async function LogOut(): Promise<void> {
+    try {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.reload();
+    } catch (error) {
+        throw new Error("Неизвестная ошибка при выходе");
+    }
+}
