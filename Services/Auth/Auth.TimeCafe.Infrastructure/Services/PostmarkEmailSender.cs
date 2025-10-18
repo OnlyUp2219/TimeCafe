@@ -77,7 +77,7 @@ public sealed class PostmarkEmailSender : IEmailSender<IdentityUser>
 
         var subject = "Сброс пароля";
         var htmlMessage = $"<p>Для сброса пароля перейдите по <a href='{resetLink}'>этой ссылке</a>.</p>";
-        //await SendEmailAsync(email, subject, htmlMessage);
+        await SendEmailAsync(email, subject, htmlMessage);
     }
 
 

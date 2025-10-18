@@ -1,6 +1,7 @@
 using Auth.TimeCafe.API.Endpoints;
 using Auth.TimeCafe.Infrastructure.Data;
 using Auth.TimeCafe.Infrastructure.Services;
+using Auth.TimeCafe.API.Services;
 using Carter;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
+using Auth.TimeCafe.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,7 @@ builder.Services
     {
         options.SignIn.RequireConfirmedAccount = false;
         options.SignIn.RequireConfirmedPhoneNumber = false;
-        
+
 
         options.User.RequireUniqueEmail = false;
 
@@ -53,6 +55,7 @@ builder.Services.AddHttpClient();
 
 
 // Authentication: JWT + external providers
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var issuer = jwtSection["Issuer"];
@@ -100,15 +103,15 @@ builder.Services
     .AddGoogle(op =>
     {
         var google = builder.Configuration.GetSection("Authentication:Google");
-        op.ClientId = google["ClientId"];
-        op.ClientSecret = google["ClientSecret"];
+        op.ClientId = google["ClientId"] ?? "";
+        op.ClientSecret = google["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-google";
     })
     .AddMicrosoftAccount(op =>
     {
         var ms = builder.Configuration.GetSection("Authentication:Microsoft");
-        op.ClientId = ms["ClientId"];
-        op.ClientSecret = ms["ClientSecret"];
+        op.ClientId = ms["ClientId"] ?? "";
+        op.ClientSecret = ms["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-microsoft";
     });
 
@@ -145,6 +148,14 @@ builder.Services.AddCarter();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var roleService = scope.ServiceProvider.GetRequiredService<IUserRoleService>();
+    await roleService.EnsureRolesCreatedAsync();
+    await SeedData.SeedAdminAsync(scope.ServiceProvider);
+}
+
+
 // Swagger UI
 if (app.Environment.IsDevelopment())
 {
@@ -169,7 +180,6 @@ app.MapIdentityApi<IdentityUser>();
 
 // Внешние логины
 app.MapControllers();
-
 
 app.Run();
 

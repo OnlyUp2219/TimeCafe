@@ -8,11 +8,12 @@ using System.Security.Cryptography;
 using System.Text;
 using Auth.TimeCafe.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using Auth.TimeCafe.Core.Services;
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 
 
-public record AuthResponse(string AccessToken, string RefreshToken, int ExpiresIn);
+public record AuthResponse(string AccessToken, string RefreshToken, string Role, int ExpiresIn);
 
 public interface IJwtService
 {
@@ -25,11 +26,13 @@ public class JwtService : IJwtService
 {
     private readonly IConfiguration _configuration;
     private readonly ApplicationDbContext _context;
+    private readonly IUserRoleService _userRoleService;
 
-    public JwtService(IConfiguration configuration, ApplicationDbContext context)
+    public JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService)
     {
         _configuration = configuration;
         _context = context;
+        _userRoleService = userRoleService;
     }
 
     public async Task<AuthResponse> GenerateTokens(IdentityUser user)
@@ -38,11 +41,14 @@ public class JwtService : IJwtService
         var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
         var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
 
+        var roles = await _userRoleService.GetUserRolesAsync(user);
+        var userRole = roles.FirstOrDefault() ?? "client";
 
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty)
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim(ClaimTypes.Role, userRole)
         };
 
         var token = new JwtSecurityToken(
@@ -53,7 +59,6 @@ public class JwtService : IJwtService
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
         );
 
-        // Генерация refresh токена
         var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         var tokenEntity = new RefreshToken
         {
@@ -66,9 +71,11 @@ public class JwtService : IJwtService
         _context.RefreshTokens.Add(tokenEntity);
         await _context.SaveChangesAsync();
 
+
         return new AuthResponse(
             AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
             RefreshToken: refreshToken,
+            Role: userRole,
             ExpiresIn: (int)(expires - DateTime.UtcNow).TotalSeconds
         );
     }
@@ -106,9 +113,9 @@ public class JwtService : IJwtService
             .FirstOrDefaultAsync(t => t.Token == refreshToken && !t.IsRevoked);
 
         if (tokenEntity == null || tokenEntity.Expires < DateTime.UtcNow)
-            return null; 
+            return null;
 
-        tokenEntity.IsRevoked = true; 
+        tokenEntity.IsRevoked = true;
 
         var newTokens = await GenerateTokens(tokenEntity.User);
         await _context.SaveChangesAsync();
