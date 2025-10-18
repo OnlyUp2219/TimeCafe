@@ -1,15 +1,17 @@
 .main-layout {
     display: flex;
     flex-direction: column;
-
 }
 
 .main-layout__content {
     display: flex;
     flex: 1;
+    overflow: hidden;
 }
 
 .main-layout__main {
     flex: 1;
     padding: 1rem;
+    min-width: 0;
+    overflow: auto;
 }

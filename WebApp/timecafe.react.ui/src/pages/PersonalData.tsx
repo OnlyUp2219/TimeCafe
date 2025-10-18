@@ -92,10 +92,9 @@ export const PersonalData: React.FC = () => {
                     <Avatar initials={getInitials(client).toString()}
                             color={getStatusClass(client.phoneNumberConfirmed) as AvatarNamedColor}
                             name="darkGreen avatar" size={128}/>
-                    <div>
-                        <Subtitle1 block truncate wrap={false}>
-                            <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName &&
-                            <Subtitle1 as={"span"}>{client.middleName}</Subtitle1>}
+                    <div className="">
+                        <Subtitle1 block truncate>
+                            <strong>ФИО:</strong> {client.firstName} {client.lastName} {client.middleName || ""}
                         </Subtitle1>
                         <Body1 as="p" block>
                             <strong>Статус:</strong> <Tag className={getStatusClass(client.phoneNumberConfirmed)}

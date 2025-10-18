@@ -68,6 +68,7 @@ export const useProgressToast = () => {
         const dismiss = () => dismissToast(toastId);
         setLimit(limit ?? 3);
         console.log(`Статус - ${intent}, стиль - ${getToastColors(intent)}`);
+        console.log(`Сообщение - ${message}`);
 
         dispatchToast(
             <Toast className={getToastColors(intent)}>

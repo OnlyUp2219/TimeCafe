@@ -1,6 +1,8 @@
 import {Navigate} from "react-router-dom";
-import {refreshToken} from "../api/auth"; // твоя функция обновления
 import * as React from "react";
+import {refreshToken} from "../../api/auth.ts";
+import type {JSX} from "react";
+import {Spinner} from "@fluentui/react-components";
 
 interface PrivateRouteProps {
     children: JSX.Element;
@@ -12,6 +14,8 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
 
     React.useEffect(() => {
         const checkAuth = async () => {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
             const access = localStorage.getItem("accessToken");
             const refresh = localStorage.getItem("refreshToken");
 
@@ -33,7 +37,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
         checkAuth();
     }, []);
 
-    if (loading) return <div>Проверка авторизации...</div>;
+    if (loading) return <Spinner size={"huge"}/>;
 
     return allowed ? children : <Navigate to="/login" replace/>;
 };
