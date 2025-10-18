@@ -1,4 +1,6 @@
 import axios from "axios";
+import {clearTokens, setAccessToken, setRefreshToken} from "../store/authSlice.ts";
+import type {AppDispatch} from "../store";
 
 export interface RegisterRequest {
     username: string;
@@ -27,22 +29,21 @@ export interface ApiError {
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 
-export async function registerUser(data: RegisterRequest): Promise<void> {
+export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<void> {
     try {
         const res = await axios.post(`${apiBase}/registerWithUsername`, data, {
             headers: {"Content-Type": "application/json"},
         });
 
         const tokens = res.data as { accessToken: string; refreshToken: string };
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
+        dispatch(setAccessToken(tokens.accessToken));
+        dispatch(setRefreshToken(tokens.refreshToken));
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
             if (res?.data?.errors) {
-                const errors: ApiError = res.data.errors;
-                throw errors;
+                throw res.data.errors;
             }
 
             throw new Error(`Ошибка регистрации (${res?.status ?? "нет ответа"})`);
@@ -51,24 +52,21 @@ export async function registerUser(data: RegisterRequest): Promise<void> {
     }
 }
 
-export async function loginUser(data: LoginRequest): Promise<void> {
+export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Promise<void> {
     try {
         const res = await axios.post(`${apiBase}/login-jwt`, data, {
             headers: {"Content-Type": "application/json"},
-        })
+        });
 
         const tokens = res.data as { accessToken: string; refreshToken: string };
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
-
+        dispatch(setAccessToken(tokens.accessToken));
+        dispatch(setRefreshToken(tokens.refreshToken));
     } catch (error) {
         if (axios.isAxiosError(error)) {
-
             const res = error.response;
 
             if (res?.data?.errors) {
-                const errors: ApiError = res.data.errors;
-                throw errors;
+                throw res.data.errors;
             }
 
             throw new Error(`Ошибка входа (${res?.status ?? "нет ответа"})`);
@@ -77,9 +75,7 @@ export async function loginUser(data: LoginRequest): Promise<void> {
     }
 }
 
-
-export async function refreshToken(): Promise<void> {
-    const refreshToken = localStorage.getItem("refreshToken");
+export async function refreshToken(refreshToken: string, dispatch: AppDispatch): Promise<void> {
     if (!refreshToken) throw new Error("Нет refresh токена");
 
     try {
@@ -88,13 +84,10 @@ export async function refreshToken(): Promise<void> {
         });
 
         const tokens = res.data as { accessToken: string; refreshToken: string };
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
-
+        dispatch(setAccessToken(tokens.accessToken));
+        dispatch(setRefreshToken(tokens.refreshToken));
     } catch {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-
+        dispatch(clearTokens());
         throw new Error("Не удалось обновить токен");
     }
 }
@@ -110,8 +103,7 @@ export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{
         if (axios.isAxiosError(error)) {
             const res = error.response;
             if (res?.data?.errors) {
-                const errors: ApiError = res.data.errors;
-                throw errors;
+                throw res.data.errors;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }
@@ -123,7 +115,7 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     try {
         await axios.post(`${apiBase}/resetPassword`, data, {
             headers: {"Content-Type": "application/json"},
-        })
+        });
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
@@ -137,10 +129,9 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     }
 }
 
-export async function LogOut(): Promise<void> {
+export async function LogOut(dispatch: AppDispatch): Promise<void> {
     try {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        dispatch(clearTokens());
         window.location.reload();
     } catch (error) {
         throw new Error("Неизвестная ошибка при выходе");

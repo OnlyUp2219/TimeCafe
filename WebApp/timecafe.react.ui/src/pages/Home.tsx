@@ -6,28 +6,27 @@ import {refreshToken as refreshTokenApi} from "../api/auth.ts";
 import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../store";
+import {clearAccessToken, clearRefreshToken} from "../store/authSlice.ts";
 
 
 export const Home = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+    const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
 
-    const [accessToken, setAccessToken] = React.useState<string | null>(null);
-    const [refreshToken, setRefreshToken] = React.useState<string | null>(null);
     const [refreshResult, setRefreshResult] = React.useState<string | null>(null);
     const [protectedResult, setProtectedResult] = React.useState<string | null>(null);
     const [userRole, setUserRole] = React.useState<string | null>(null);
     const [functionResult, setFunctionResult] = React.useState<string | null>(null);
 
     useEffect(() => {
-        const a = localStorage.getItem("accessToken");
-        const r = localStorage.getItem("refreshToken");
-
-        if (!a) {
+        if (!accessToken) {
             navigate("/login");
         } else {
-            setAccessToken(a);
-            setRefreshToken(r);
-            setUserRole(getRoleFromToken(a));
+            setUserRole(getRoleFromToken(accessToken));
         }
     }, [navigate]);
 
@@ -36,8 +35,7 @@ export const Home = () => {
     const handleRefresh = async () => {
         setRefreshResult(null);
         try {
-            await refreshTokenApi();
-            setAccessToken(localStorage.getItem("accessToken"));
+            await refreshTokenApi(refreshToken, dispatch);
             setRefreshResult("OK");
         } catch (e: any) {
             setRefreshResult(String(e?.message ?? e));
@@ -45,25 +43,21 @@ export const Home = () => {
     };
 
     const handleClearAccessJwt = () => {
-        localStorage.removeItem("accessToken");
-        setAccessToken(null);
+        dispatch(clearAccessToken())
         setProtectedResult(null);
     };
 
     const handleClearRefreshJwt = () => {
-        localStorage.removeItem("refreshToken");
-        setRefreshToken(null);
+        dispatch(clearRefreshToken())
         setProtectedResult(null);
     };
 
     const callProtected = async () => {
         setProtectedResult(null);
         try {
-            const token = localStorage.getItem("accessToken");
             const res = await axios.get(`${apiBase}/protected-test`, {
-                headers: {Authorization: `Bearer ${token}`},
+                headers: {Authorization: `Bearer ${accessToken}`},
             });
-            setAccessToken(localStorage.getItem("accessToken"));
             setProtectedResult(res.data);
         } catch (e: any) {
             setProtectedResult(String(e?.message ?? e));
@@ -76,7 +70,10 @@ export const Home = () => {
         setFunctionResult(null);
         try {
             const res = await axios.get(`${apiBase}/Functions/public-function`, {
-                headers: {"Content-Type": "application/json"},
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${accessToken}`
+                },
             });
             setFunctionResult(res.data);
         } catch (e: any) {
@@ -135,13 +132,13 @@ export const Home = () => {
                     <b>Access token:</b>
                 </div>
                 <pre style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>
-                    {accessToken ?? "<empty>"}
+                    {accessToken ?? "Токена отсутствует"}
                 </pre>
                 <div>
                     <b>Refresh token:</b>
                 </div>
                 <pre style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>
-                    {refreshToken ?? "<empty>"}
+                    {refreshToken ?? "Токена отсутствует"}
                 </pre>
 
                 <div className="flex flex-wrap gap-[12px]">

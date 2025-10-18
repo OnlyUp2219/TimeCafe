@@ -2,6 +2,7 @@ import * as React from "react";
 import {Hamburger, Button, Avatar} from "@fluentui/react-components";
 import "./Header.css";
 import {LogOut} from "../../api/auth.ts";
+import {useDispatch} from "react-redux";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
@@ -10,6 +11,7 @@ interface HeaderProps {
 
 
 export const Header: React.FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => {
+    const dispatch = useDispatch();
     return (
         <header className="app-header">
             <div className="app-header__left">
@@ -26,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => 
 
             <div className="app-header__right gap-[12px]">
                 <Avatar/>
-                <Button appearance="primary" onClick={() => LogOut()}>Выйти</Button>
+                <Button appearance="primary" onClick={() => LogOut(dispatch)}>Выйти</Button>
             </div>
         </header>
     );

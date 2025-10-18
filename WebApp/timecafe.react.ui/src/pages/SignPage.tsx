@@ -6,9 +6,11 @@ import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
 import {registerUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {useDispatch} from "react-redux";
 
 export const SignPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const {showToast, ToasterElement} = useProgressToast();
 
     const [username, setUsername] = React.useState("");
@@ -55,7 +57,7 @@ export const SignPage = () => {
 
         setIsSubmitting(true);
         try {
-            await registerUser({username, email, password});
+            await registerUser({username, email, password}, dispatch);
             navigate("/home");
         } catch (err: any) {
             const newErrors = {email: "", password: "", username: "", confirmPassword: ""};

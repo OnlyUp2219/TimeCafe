@@ -5,10 +5,16 @@ import * as React from "react";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../store";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
+    const dispatch = useDispatch();
+    const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
+    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+
 
     const [password, setPassword] = React.useState("");
     const [email, setEmail] = React.useState("");
@@ -31,7 +37,7 @@ export const LoginPage = () => {
 
         setIsSubmitting(true);
         try {
-            await loginUser({email, password});
+            await loginUser({email, password}, dispatch);
             navigate("/home");
         } catch (err: any) {
             const newErrors = {email: "", password: ""};
@@ -50,8 +56,8 @@ export const LoginPage = () => {
             setErrors(newErrors);
         } finally {
             setIsSubmitting(false);
-            console.log("accessToken:", localStorage.getItem("accessToken"));
-            console.log("refreshToken:", localStorage.getItem("refreshToken"));
+            console.log("accessToken:", accessToken);
+            console.log("refreshToken:", refreshToken);
         }
 
     };

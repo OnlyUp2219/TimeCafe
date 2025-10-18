@@ -1,7 +1,10 @@
 import axios from "axios";
-import {refreshToken} from "./auth.ts";
+import {refreshToken as refreshTokenApi} from "./auth.ts";
+import {store} from "../store";
+import type {AppDispatch} from "../store";
 
 let isRefreshing = false;
+
 axios.interceptors.response.use(
     response => response,
     async error => {
@@ -16,15 +19,23 @@ axios.interceptors.response.use(
 
             try {
                 isRefreshing = true;
-                await refreshToken();
-                isRefreshing = false;
+                const state = store.getState();
+                const refreshToken = state.auth.refreshToken;
+                const dispatch: AppDispatch = store.dispatch;
 
-                originalRequest.headers["Authorization"] =
-                    `Bearer ${localStorage.getItem("accessToken")}`;
+                await refreshTokenApi(refreshToken, dispatch);
+
+                const updatedState = store.getState();
+                const newAccessToken = updatedState.auth.accessToken;
+
+                originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+                isRefreshing = false;
                 return axios(originalRequest);
             } catch {
                 isRefreshing = false;
                 window.location.href = "/login";
+                return Promise.reject(error);
             }
         }
 

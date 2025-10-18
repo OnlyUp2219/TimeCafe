@@ -110,6 +110,8 @@ export const ResetPasswordEmail = () => {
     if (!isSent) {
         return (
             <div className="auth_card">
+                {ToasterElement}
+
                 <Subtitle1 align={"center"}>Забыли пароль?</Subtitle1>
 
                 <Field label="Почта"
