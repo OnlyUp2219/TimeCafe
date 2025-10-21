@@ -7,6 +7,7 @@ export default defineConfig({
     plugins: [plugin(), tailwindcss()],
     build: {
         sourcemap: true,
+        minify: 'terser',
     },
     server: {
         host: '127.0.0.1',

@@ -9,6 +9,7 @@ import {PersonalData} from "./pages/PersonalData";
 import {ResetPassword} from "./pages/resetPassword/ResetPassword.tsx";
 import {ResetPasswordEmail} from "./pages/resetPassword/ResetPasswordEmail.tsx";
 import {PrivateRoute} from "./components/PrivateRoute/PrivateRoute.tsx";
+import {ExternalCallback} from "./pages/ExternalCallback.tsx";
 
 export default function App() {
     return (
@@ -21,7 +22,7 @@ export default function App() {
                         <Route path="login" element={<LoginPage/>}/>
                         <Route path={"resetPassword"} element={<ResetPassword/>}/>
                         <Route path={"resetPasswordEmail"} element={<ResetPasswordEmail/>}/>
-
+                        <Route path="external-callback" element={<ExternalCallback/>}/>
                         <Route path="*" element={<LoginPage/>}/>
                     </Route>
 

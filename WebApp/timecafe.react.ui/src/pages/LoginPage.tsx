@@ -1,12 +1,12 @@
 import {Button, Input, Link, Field, Divider, Subtitle1} from '@fluentui/react-components'
 import {useNavigate} from "react-router-dom";
 import './LoginPage.css'
-import * as React from "react";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../store";
+import {useState} from "react";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -15,14 +15,24 @@ export const LoginPage = () => {
     const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
-
-    const [password, setPassword] = React.useState("");
-    const [email, setEmail] = React.useState("");
-    const [errors, setErrors] = React.useState({
+    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [errors, setErrors] = useState({
         email: "",
         password: "",
     });
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
+    const returnUrl = `${window.location.origin}/external-callback`;
+
+    const handleGoogleLogin = () => {
+        window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+    };
+
+    const handleMicrosoftLogin = () => {
+        window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
+    };
 
     const validate = () => {
         const emailError = validateEmail(email);
@@ -107,9 +117,9 @@ export const LoginPage = () => {
             <Divider appearance="brand" className="divider">или</Divider>
 
             <Button icon={<div className="icons8-google"></div>} appearance="outline"
-                    onClick={() => navigate("/sign")}>Google</Button>
+                    onClick={handleGoogleLogin}>Google</Button>
             <Button icon={<div className="icons8-microsoft"></div>} appearance="outline"
-                    onClick={() => navigate("/sign")}>Microsoft</Button>
+                    onClick={handleMicrosoftLogin}>Microsoft</Button>
         </div>
     )
 }

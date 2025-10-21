@@ -1,15 +1,12 @@
-import * as React from 'react';
-import "./Home.css"
-import {Button, type ToastIntent} from "@fluentui/react-components";
-import {useEffect} from "react";
+import {Button, Subtitle1, Subtitle2, Text, Title1, type ToastIntent} from "@fluentui/react-components";
+import {useEffect, useState} from "react";
 import {refreshToken as refreshTokenApi} from "../api/auth.ts";
 import axios from "axios";
-import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../store";
 import {clearAccessToken, clearRefreshToken} from "../store/authSlice.ts";
-
+import {useNavigate} from "react-router-dom";
 
 export const Home = () => {
     const navigate = useNavigate();
@@ -17,18 +14,18 @@ export const Home = () => {
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
     const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
 
-    const [refreshResult, setRefreshResult] = React.useState<string | null>(null);
-    const [protectedResult, setProtectedResult] = React.useState<string | null>(null);
-    const [userRole, setUserRole] = React.useState<string | null>(null);
-    const [functionResult, setFunctionResult] = React.useState<string | null>(null);
+    const [refreshResult, setRefreshResult] = useState<string | null>(null);
+    const [protectedResult, setProtectedResult] = useState<string | null>(null);
+    const [userRole, setUserRole] = useState<string | null>(null);
+    const [functionResult, setFunctionResult] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!accessToken) {
-            navigate("/login");
+        if (!accessToken && !refreshToken) {
+            navigate("/login", {replace: true});
         } else {
             setUserRole(getRoleFromToken(accessToken));
         }
-    }, [navigate]);
+    }, [accessToken, refreshToken, navigate]);
 
     const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 
@@ -121,25 +118,21 @@ export const Home = () => {
         <div className="home_root flex flex-col gap-[16px]">
             {ToasterElement}
 
-            <div>
-                <h1>Добро пожаловать!</h1>
-                <p>На главную страницу</p>
-                <h2>Ваша роль: {userRole}</h2>
+            <div className="flex flex-col gap-[12px] content-center flex-wrap">
+                <Title1 align={"center"}>Добро пожаловать!</Title1>
+                <Subtitle1 align={"center"}>На главную страницу</Subtitle1>
+                <Subtitle2 align={"center"}>Ваша роль: {userRole}</Subtitle2>
             </div>
 
-            <div className="flex flex-col">
-                <div>
-                    <b>Access token:</b>
-                </div>
-                <pre style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>
-                    {accessToken ?? "Токена отсутствует"}
-                </pre>
-                <div>
-                    <b>Refresh token:</b>
-                </div>
-                <pre style={{whiteSpace: "pre-wrap", wordBreak: "break-all"}}>
-                    {refreshToken ?? "Токена отсутствует"}
-                </pre>
+            <div className="flex flex-col wrap-anywhere">
+                <Text wrap={true}>
+                    <strong>Access token:</strong>{" "}
+                    {accessToken !== null && accessToken !== undefined ? accessToken.slice(0, 50) + "..." : "Загрузка..."}
+                    <br/>
+                    <br/>
+                    <strong>Refresh token:</strong>{" "}
+                    {refreshToken !== null && refreshToken !== undefined ? refreshToken.slice(0, 50) + "..." : "Загрузка..."}
+                </Text>
 
                 <div className="flex flex-wrap gap-[12px]">
                     <Button onClick={handleRefresh}>Refresh token</Button>

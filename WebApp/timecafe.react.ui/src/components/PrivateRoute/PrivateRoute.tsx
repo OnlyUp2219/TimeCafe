@@ -19,9 +19,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
 
     React.useEffect(() => {
         const checkAuth = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-
+            // await new Promise(resolve => setTimeout(resolve, 1000));
             if (accessToken) {
                 setAllowed(true);
             } else if (refreshToken) {
@@ -38,7 +36,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
         };
 
         checkAuth();
-    }, []);
+    }, [dispatch, /*accessToken, refreshToken*/]);
 
     if (loading) return <Spinner size={"huge"}/>;
 

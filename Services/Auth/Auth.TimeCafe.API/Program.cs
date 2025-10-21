@@ -1,15 +1,10 @@
-using Auth.TimeCafe.API.Endpoints;
-using Auth.TimeCafe.Infrastructure.Data;
-using Auth.TimeCafe.Infrastructure.Services;
 using Auth.TimeCafe.API.Services;
-using Carter;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Swashbuckle.AspNetCore.Filters;
-using System.Text;
 using Auth.TimeCafe.Core.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,6 +101,14 @@ builder.Services
         op.ClientId = google["ClientId"] ?? "";
         op.ClientSecret = google["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-google";
+        op.Events.OnRemoteFailure = context =>
+        {
+            var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
+            returnUrl = string.IsNullOrEmpty(returnUrl) ? "http://127.0.0.1:9301/external-callback" : returnUrl;
+            context.Response.Redirect($"{returnUrl}?error=access_denied");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        };
     })
     .AddMicrosoftAccount(op =>
     {
@@ -113,6 +116,14 @@ builder.Services
         op.ClientId = ms["ClientId"] ?? "";
         op.ClientSecret = ms["ClientSecret"] ?? "";
         op.CallbackPath = "/signin-microsoft";
+        op.Events.OnRemoteFailure = context =>
+        {
+            var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
+            returnUrl = string.IsNullOrEmpty(returnUrl) ? "http://127.0.0.1:9301/external-callback" : returnUrl;
+            context.Response.Redirect($"{returnUrl}?error=access_denied");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        };
     });
 
 builder.Services.AddAuthorization();

@@ -1,32 +1,31 @@
 import {Button, Input, Link, Field, Subtitle1} from '@fluentui/react-components';
 import {useNavigate} from "react-router-dom";
-import * as React from 'react';
-import "./SignPage.css";
 import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
 import {registerUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch} from "react-redux";
+import {useEffect, useState} from "react";
 
 export const SignPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const {showToast, ToasterElement} = useProgressToast();
 
-    const [username, setUsername] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [email, setEmail] = React.useState("");
-    const [confirmPassword, setConfirmPassword] = React.useState("");
-    const [errors, setErrors] = React.useState({
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [errors, setErrors] = useState({
         username: "",
         email: "",
         password: "",
         confirmPassword: "",
     });
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-    React.useEffect(() => {
+    useEffect(() => {
         setUsername(faker.internet.username());
         setEmail(faker.internet.email());
         const pwd =
@@ -87,9 +86,7 @@ export const SignPage = () => {
 
             {ToasterElement}
 
-
             <Subtitle1 align={"center"}>Регистрация</Subtitle1>
-
             <Field
                 label="Имя пользователя"
                 required
