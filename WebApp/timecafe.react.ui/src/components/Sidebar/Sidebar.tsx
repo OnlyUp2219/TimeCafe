@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
     Hamburger,
     NavDrawer,
@@ -10,17 +9,16 @@ import {
     type NavDrawerProps,
 } from "@fluentui/react-components";
 import type {OnNavItemSelectData} from "@fluentui/react-components";
-import "./Sidebar.css";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "../../store/uiSlice.ts";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
-import {useEffect} from "react";
+import {type FC, useCallback, useEffect, useState} from "react";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
 
-export const Sidebar: React.FC = () => {
+export const Sidebar: FC = () => {
 
     const dispatch = useDispatch();
     const isOpen = useSelector((state: RootState) => state.ui.isSideBarOpen);
@@ -45,15 +43,15 @@ export const Sidebar: React.FC = () => {
         dispatch(setSidebarOpen(open));
     };
 
-    const [type, setType] = React.useState<DrawerType>("inline");
+    const [type, setType] = useState<DrawerType>("inline");
 
-    const onMediaQueryChange = React.useCallback(
+    const onMediaQueryChange = useCallback(
         ({matches}: { matches: boolean }) =>
             setType(matches ? "overlay" : "inline"),
         [setType]
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
         const match = window.matchMedia("(max-width: 720px)");
         if (match.matches) {
             setType("overlay");

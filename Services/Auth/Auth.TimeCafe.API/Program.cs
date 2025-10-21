@@ -151,7 +151,9 @@ builder.Services.AddCors(options =>
         AllowAnyMethod().
         AllowCredentials().
         WithOrigins("http://127.0.0.1:9301",
-        "http://localhost:9301"));
+        "http://localhost:9301", 
+        "http://127.0.0.1:4173",
+        "http://localhost:4173"));
 });
 
 // Carter

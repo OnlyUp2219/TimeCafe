@@ -1,9 +1,8 @@
 import {useNavigate} from "react-router-dom";
-import * as React from "react";
 import {Button, Field, Input, Subtitle1, Text} from "@fluentui/react-components";
 import {validateEmail} from "../../utility/validate.ts";
 import {forgotPassword} from "../../api/auth.ts";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {parseErrorMessage} from "../../utility/errors.ts";
 
@@ -12,13 +11,13 @@ export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
 
-    const [email, setEmail] = React.useState("");
-    const [errors, setErrors] = React.useState({
+    const [email, setEmail] = useState("");
+    const [errors, setErrors] = useState({
         email: "",
     });
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [isSent, setIsSent] = React.useState(false);
-    const [link, setLink] = React.useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSent, setIsSent] = useState(false);
+    const [link, setLink] = useState("");
 
 
     useEffect(() => {

@@ -1,14 +1,14 @@
-import * as React from "react";
 import {useDispatch} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {setAccessToken, setRefreshToken} from "../store/authSlice.ts";
 import {Spinner} from "@fluentui/react-components";
+import {useEffect} from "react";
 
 export const ExternalCallback = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const hash = window.location.hash;
         if (hash) {
             const params = new URLSearchParams(hash.substring(1));

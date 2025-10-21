@@ -1,7 +1,7 @@
-import * as React from "react";
 import "./Footer.css";
+import type {FC} from "react";
 
-export const Footer: React.FC = () => {
+export const Footer: FC = () => {
     return (
         <footer className="app-footer">
             © 2025 – Все права защищены.

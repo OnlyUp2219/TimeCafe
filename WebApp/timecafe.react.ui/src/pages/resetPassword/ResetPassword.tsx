@@ -1,9 +1,9 @@
 import {useLocation, useNavigate} from "react-router-dom";
-import * as React from "react";
 import {Button, Field, Input, Subtitle1} from "@fluentui/react-components";
 import {validateConfirmPassword, validateEmail, validatePassword} from "../../utility/validate.ts";
 import {resetPassword} from "../../api/auth.ts";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
+import {useEffect, useState} from "react";
 
 
 export const ResetPassword = () => {
@@ -11,18 +11,18 @@ export const ResetPassword = () => {
     const location = useLocation();
     const {showToast, ToasterElement} = useProgressToast();
 
-    const [email, setEmail] = React.useState("");
-    const [resetCode, setResetCode] = React.useState("");
-    const [password, setPassword] = React.useState("");
-    const [confirmPassword, setConfirmPassword] = React.useState("");
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [errors, setErrors] = React.useState({
+    const [email, setEmail] = useState("");
+    const [resetCode, setResetCode] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [errors, setErrors] = useState({
         email: "",
         password: "",
         confirmPassword: "",
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         const params = new URLSearchParams(location.search);
         const emailParam = params.get("email");
         const codeParam = params.get("code");

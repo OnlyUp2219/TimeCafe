@@ -5,7 +5,7 @@ import {FluentProvider, webLightTheme} from '@fluentui/react-components'
 import {Provider} from "react-redux";
 import {persistor, store} from "./store";
 import {PersistGate} from "redux-persist/integration/react";
-import './api/Interceptors.ts';
+import './api/interceptors.ts';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

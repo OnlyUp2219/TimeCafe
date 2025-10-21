@@ -1,6 +1,5 @@
 import {Button, Input, Link, Field, Divider, Subtitle1} from '@fluentui/react-components'
 import {useNavigate} from "react-router-dom";
-import './LoginPage.css'
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";

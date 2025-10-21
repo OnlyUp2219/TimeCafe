@@ -1,7 +1,6 @@
 import {Navigate} from "react-router-dom";
-import * as React from "react";
 import {refreshToken as refreshTokenApi} from "../../api/auth.ts";
-import {type JSX, useState} from "react";
+import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
@@ -17,7 +16,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
     const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const checkAuth = async () => {
             // await new Promise(resolve => setTimeout(resolve, 1000));
             if (accessToken) {
