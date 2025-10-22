@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Mvc;
 using Auth.TimeCafe.API.Services;
 
 namespace Auth.TimeCafe.API.Controllers;

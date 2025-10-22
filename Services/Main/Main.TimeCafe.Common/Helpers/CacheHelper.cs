@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using TimeCafe.Common.Utilities;
 
-namespace TimeCafe.Common.Helpers;
+namespace Main.TimeCafe.Common.Helpers;
 
 public static class CacheHelper
 {

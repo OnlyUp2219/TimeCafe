@@ -1,7 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+
 using System.Reflection;
 
-namespace TimeCafe.Application;
+namespace Main.TimeCafe.Application;
 
 public static class CqrsDependencyInjection
 {

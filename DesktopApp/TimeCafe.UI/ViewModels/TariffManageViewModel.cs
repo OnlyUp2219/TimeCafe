@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.WinUI.UI.Controls;
+
 using System.Diagnostics;
 
 namespace TimeCafe.UI.ViewModels;

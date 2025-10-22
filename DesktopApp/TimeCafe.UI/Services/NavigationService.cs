@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.WinUI.UI.Animations;
+
 using Microsoft.UI.Xaml.Navigation;
+
 using System.Diagnostics.CodeAnalysis;
 
 namespace TimeCafe.UI.Services;

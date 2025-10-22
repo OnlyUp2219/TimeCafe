@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+
 using TimeCafe.UI.Utilities.Helpers;
 
 namespace TimeCafe.UI.Services;

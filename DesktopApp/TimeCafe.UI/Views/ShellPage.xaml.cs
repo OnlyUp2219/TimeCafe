@@ -1,6 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+
 using Microsoft.UI.Xaml.Input;
+
 using TimeCafe.UI.Utilities.Helpers;
+
 using Windows.System;
 
 namespace TimeCafe.UI.Views;

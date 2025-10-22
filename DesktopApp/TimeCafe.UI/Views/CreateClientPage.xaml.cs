@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xaml.Interactivity;
+
 using Windows.Media.Core;
 
 namespace TimeCafe.UI.Views;

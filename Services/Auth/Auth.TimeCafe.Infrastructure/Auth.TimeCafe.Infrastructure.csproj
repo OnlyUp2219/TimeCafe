@@ -21,7 +21,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Auth.TimeCafe.Core\Auth.TimeCafe.Core.csproj" />
+	  <ProjectReference Include="..\Auth.TimeCafe.Domain\Auth.TimeCafe.Domain.csproj" />
 	</ItemGroup>
 
 </Project>

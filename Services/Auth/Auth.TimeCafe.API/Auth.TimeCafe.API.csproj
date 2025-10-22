@@ -33,7 +33,7 @@
 
 	<ItemGroup>
 	<ProjectReference Include="..\Auth.TimeCafe.Application\Auth.TimeCafe.Application.csproj" />
-	<ProjectReference Include="..\Auth.TimeCafe.Core\Auth.TimeCafe.Core.csproj" />
+	<ProjectReference Include="..\Auth.TimeCafe.Domain\Auth.TimeCafe.Domain.csproj" />
 	<ProjectReference Include="..\Auth.TimeCafe.Infrastructure\Auth.TimeCafe.Infrastructure.csproj" />
   </ItemGroup>
 

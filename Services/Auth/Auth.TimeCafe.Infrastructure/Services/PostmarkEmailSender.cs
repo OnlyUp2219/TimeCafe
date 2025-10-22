@@ -1,11 +1,7 @@
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using Auth.TimeCafe.Core.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Options;
+
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 

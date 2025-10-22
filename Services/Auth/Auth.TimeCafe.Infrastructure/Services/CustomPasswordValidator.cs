@@ -1,11 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Auth.TimeCafe.Infrastructure.Services;
+﻿namespace Auth.TimeCafe.Infrastructure.Services;
 
 public class CustomPasswordValidator : IPasswordValidator<IdentityUser>
 {

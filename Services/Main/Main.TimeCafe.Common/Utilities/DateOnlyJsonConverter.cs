@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace TimeCafe.Common.Utilities;
+namespace Main.TimeCafe.Common.Utilities;
 
 public class DateOnlyJsonConverter : JsonConverter<DateOnly>
 {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+
 using System.Security.Claims;
 using System.Text;
 
@@ -94,7 +95,7 @@ public class CreateRegistry : ICarterModule
 
             var user = await userManager.FindByEmailAsync(request.Email);
             if (user == null)
-                return Results.Ok(); 
+                return Results.Ok();
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             var frontendBaseUrl = postmarkOptions.Value.FrontendBaseUrl;
@@ -107,7 +108,7 @@ public class CreateRegistry : ICarterModule
 
             //await emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
             //return Results.Ok(new { message = "Ссылка для сброса пароля отправлена" });
-            return Results.Ok( new { callbackUrl } );
+            return Results.Ok(new { callbackUrl });
 
         })
             .WithTags("Authentication")

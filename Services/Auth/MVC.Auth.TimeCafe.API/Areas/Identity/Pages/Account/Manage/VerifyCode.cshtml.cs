@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+
 using MVC.Auth.TimeCafe.API.Models;
+
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
@@ -65,7 +67,7 @@ public class VerifyCodeModel : PageModel
         if (Input.PhoneNumber == null || Input.Token == null)
         {
             ModelState.AddModelError("", "Что-то пошло не так. Попробуйте снова.");
-        TempData.Keep();
+            TempData.Keep();
 
             return Page();
         }

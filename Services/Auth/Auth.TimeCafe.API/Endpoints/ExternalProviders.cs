@@ -1,5 +1,6 @@
 ﻿// Updated ExternalProviders.cs with prompt for account selection
 using Microsoft.AspNetCore.Authentication;
+
 using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints;
@@ -11,14 +12,14 @@ public class ExternalProviders : ICarterModule
         app.MapGet("/authenticate/login/google", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
-            properties.Items.Add("prompt", "select_account"); 
+            properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, new[] { "Google" });
         })
             .WithTags("ExternalProviders"); ;
         app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
-            properties.Items.Add("prompt", "select_account");  
+            properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, new[] { "Microsoft" });
         })
             .WithTags("ExternalProviders");

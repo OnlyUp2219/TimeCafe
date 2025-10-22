@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml.Media.Animation;
+
 using TimeCafe.UI.Utilities.Helpers;
 
 namespace TimeCafe.UI.Styles.Controls;

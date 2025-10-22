@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Data;
+
 using Windows.UI;
 
 namespace TimeCafe.UI.Utilities.Converters;

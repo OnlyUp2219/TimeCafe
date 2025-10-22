@@ -1,14 +1,10 @@
-﻿using Auth.TimeCafe.Core.Models;
-using Microsoft.AspNetCore.Identity;
+﻿using Auth.TimeCafe.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
-using Auth.TimeCafe.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using Auth.TimeCafe.Core.Services;
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 

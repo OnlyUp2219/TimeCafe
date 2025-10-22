@@ -1,4 +1,5 @@
 ﻿namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
+
 public record class DeleteAdditionalInfoCommand(int infoId) : IRequest<bool>;
 public class DeleteAdditionalInfoHandler : IRequestHandler<DeleteAdditionalInfoCommand, bool>
 {

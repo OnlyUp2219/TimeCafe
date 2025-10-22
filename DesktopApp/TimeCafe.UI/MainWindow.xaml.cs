@@ -1,5 +1,7 @@
 ﻿using Microsoft.UI.Windowing;
+
 using TimeCafe.UI.Utilities.Helpers;
+
 using Windows.UI.ViewManagement;
 
 namespace TimeCafe.UI;

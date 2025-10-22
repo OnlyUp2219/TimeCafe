@@ -1,4 +1,5 @@
 ﻿namespace Main.TimeCafe.Application.CQRS.BillingTypes.Get;
+
 public record GetBillingTypeByIdQuery(int BillingTypeId) : IRequest<BillingType?>;
 
 public class GetBillingTypeByIdHandler : IRequestHandler<GetBillingTypeByIdQuery, BillingType?>

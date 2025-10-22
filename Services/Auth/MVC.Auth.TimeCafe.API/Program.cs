@@ -1,7 +1,9 @@
 using Auth.TimeCafe.Infrastructure.Data;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+
 using MVC.Auth.TimeCafe.API.Areas.Identity.Pages.Account.Manage;
 
 using MVC.Auth.TimeCafe.API.Models;

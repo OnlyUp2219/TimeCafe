@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MVC.Auth.TimeCafe.API.Models;
+
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
-using Twilio.Types;
 
 
 namespace MVC.Auth.TimeCafe.API.Controllers;
@@ -21,7 +19,7 @@ public class PhoneVerificationController : Controller
     {
         _accountSid = configuration["Twilio:AccountSid"] ?? "";
         _authToken = configuration["Twilio:AuthToken"] ?? "";
-        _twilioPhoneNumber = configuration["Twilio:TwilioPhoneNumber"]?? "";
+        _twilioPhoneNumber = configuration["Twilio:TwilioPhoneNumber"] ?? "";
         _userManager = userManager;
     }
     private async Task GenerateSms(string phoneNumber, IdentityUser user)

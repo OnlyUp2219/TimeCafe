@@ -1,4 +1,4 @@
-namespace TimeCafe.Common.Constants;
+namespace Main.TimeCafe.Common.Constants;
 
 public static class CacheKeys
 {

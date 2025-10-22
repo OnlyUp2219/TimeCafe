@@ -1,8 +1,8 @@
 using Auth.TimeCafe.API.Services;
-using Auth.TimeCafe.Core.Services;
+using Auth.TimeCafe.Domain.Services;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -151,7 +151,7 @@ builder.Services.AddCors(options =>
         AllowAnyMethod().
         AllowCredentials().
         WithOrigins("http://127.0.0.1:9301",
-        "http://localhost:9301", 
+        "http://localhost:9301",
         "http://127.0.0.1:4173",
         "http://localhost:4173"));
 });

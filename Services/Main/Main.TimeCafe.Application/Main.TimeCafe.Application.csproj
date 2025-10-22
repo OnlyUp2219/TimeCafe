@@ -1,28 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+	<TargetFramework>net9.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
 	  <RootNamespace>Main.TimeCafe.Application</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="CQRS\Visits\" />
-    <Folder Include="Dtos\" />
+	<Folder Include="CQRS\Visits\" />
+	<Folder Include="Dtos\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MediatR" Version="13.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
-    <PackageReference Include="StackExchange.Redis" Version="2.9.17" />
+	<PackageReference Include="MediatR" Version="13.0.0" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
+	<PackageReference Include="StackExchange.Redis" Version="2.9.17" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
-    <ProjectReference Include="..\Main.TimeCafe.Core\Main.TimeCafe.Core.csproj" />
+	<ProjectReference Include="..\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
+	<ProjectReference Include="..\Main.TimeCafe.Domain\Main.TimeCafe.Domain.csproj" />
   </ItemGroup>
 
 

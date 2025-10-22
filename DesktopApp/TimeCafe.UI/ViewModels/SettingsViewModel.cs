@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using System.Windows.Input;
+
 using TimeCafe.UI.Utilities.Helpers;
+
 using Windows.ApplicationModel;
 
 namespace TimeCafe.UI.ViewModels;

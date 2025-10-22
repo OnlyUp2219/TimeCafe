@@ -9,7 +9,7 @@ public class PhoneVerificationModel
     public string PhoneNumber { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Введите код")]
-    public string Code { get; set; } = string.Empty; 
+    public string Code { get; set; } = string.Empty;
 
     public string Token { get; set; } = string.Empty;
 }

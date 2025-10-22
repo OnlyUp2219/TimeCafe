@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Auth.TimeCafe.Infrastructure.Data;
@@ -11,7 +9,7 @@ public static class SeedData
     {
         var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-        
+
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
         var admin = configuration.GetSection("Seed:Admin");
 

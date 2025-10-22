@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+
 using MVC.Auth.TimeCafe.API.Models;
+
 using System.Diagnostics;
 
 namespace MVC.Auth.TimeCafe.API.Controllers

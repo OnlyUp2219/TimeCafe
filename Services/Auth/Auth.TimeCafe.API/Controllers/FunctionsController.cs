@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.TimeCafe.API.Controllers;
 
@@ -15,7 +14,7 @@ public class FunctionsController : ControllerBase
     }
 
     [HttpGet("admin-function")]
-    [Authorize(Roles = "admin")] 
+    [Authorize(Roles = "admin")]
     public IActionResult AdminFunction()
     {
         return Ok("Эта функция доступна только администраторам!");

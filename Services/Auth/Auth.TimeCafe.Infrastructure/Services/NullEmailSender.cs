@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Auth.TimeCafe.Infrastructure.Services;
+﻿namespace Auth.TimeCafe.Infrastructure.Services;
 
 public class NullEmailSender : IEmailSender<IdentityUser>
 {

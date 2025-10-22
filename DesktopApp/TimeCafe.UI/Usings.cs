@@ -1,5 +1,6 @@
 ﻿global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
+
 global using Main.TimeCafe.Application.CQRS.BillingTypes.Get;
 global using Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
 global using Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Get;
@@ -13,16 +14,16 @@ global using Main.TimeCafe.Application.CQRS.Themes.Get;
 global using Main.TimeCafe.Application.CQRS.Visits.Command;
 global using Main.TimeCafe.Application.CQRS.Visits.Get;
 global using Main.TimeCafe.Application.Services;
+
 global using MediatR;
+
 global using Microsoft.UI.Xaml;
 global using Microsoft.UI.Xaml.Controls;
 global using Microsoft.UI.Xaml.Media;
+
 global using System.Collections.ObjectModel;
 global using System.Text;
-global using TimeCafe.Core.Contracts.Services.Clients;
-global using TimeCafe.Core.Models;
-global using TimeCafe.Persistence;
-global using TimeCafe.Persistence.Services.ClientServices;
+
 global using TimeCafe.UI.Activation;
 global using TimeCafe.UI.Behaviors;
 global using TimeCafe.UI.Contracts.Services;
@@ -35,4 +36,5 @@ global using TimeCafe.UI.Utilities.Extensions;
 global using TimeCafe.UI.ViewModels;
 global using TimeCafe.UI.Views;
 global using TimeCafe.UI.Views.CreateClientPages;
+
 global using WinUIEx;
