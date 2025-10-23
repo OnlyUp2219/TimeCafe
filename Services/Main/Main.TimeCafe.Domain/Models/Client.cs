@@ -2,7 +2,7 @@
 
 public partial class Client
 {
-    public int UserId { get; set; }
+    public int ClientId { get; set; }
 
     public string FirstName { get; set; }
 

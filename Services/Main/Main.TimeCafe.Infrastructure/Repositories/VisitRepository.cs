@@ -1,5 +1,4 @@
-using Main.TimeCafe.Common.Constants;
-using Main.TimeCafe.Common.Helpers;
+using Main.TimeCafe.Domain.Constants;
 using Main.TimeCafe.Infrastructure;
 
 namespace Main.TimeCafe.Infrastructure.Repositories;

@@ -5,3 +5,4 @@ global using Main.TimeCafe.Domain.Models;
 global using Main.TimeCafe.Domain.Enums;
 global using Main.TimeCafe.Domain.Contracts.Repositories;
 global using Main.TimeCafe.Domain.Contracts.Services.Clients;
+global using BuildingBlocks.Helpers;

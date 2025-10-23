@@ -134,12 +134,10 @@
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
 	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.10" />
 	<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
 	<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
 	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
@@ -218,7 +216,6 @@
   
   <ItemGroup>
 	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Application\Main.TimeCafe.Application.csproj" />
-	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
 	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Domain\Main.TimeCafe.Domain.csproj" />
 	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Infrastructure\Main.TimeCafe.Infrastructure.csproj" />
   </ItemGroup>

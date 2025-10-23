@@ -1,11 +1,3 @@
-using Auth.TimeCafe.API.Services;
-using Auth.TimeCafe.Domain.Services;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext
@@ -158,6 +150,16 @@ builder.Services.AddCors(options =>
 
 // Carter
 builder.Services.AddCarter();
+
+// MassTransit
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost");
+        cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
+    });
+});
 
 var app = builder.Build();
 
