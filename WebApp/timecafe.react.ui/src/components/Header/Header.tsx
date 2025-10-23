@@ -1,8 +1,8 @@
-import * as React from "react";
 import {Hamburger, Button, Avatar} from "@fluentui/react-components";
 import "./Header.css";
 import {LogOut} from "../../api/auth.ts";
 import {useDispatch} from "react-redux";
+import type {FC} from "react";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 
-export const Header: React.FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => {
+export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => {
     const dispatch = useDispatch();
     return (
         <header className="app-header">

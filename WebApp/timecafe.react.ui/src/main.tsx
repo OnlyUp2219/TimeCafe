@@ -5,13 +5,13 @@ import {FluentProvider, webLightTheme} from '@fluentui/react-components'
 import {Provider} from "react-redux";
 import {persistor, store} from "./store";
 import {PersistGate} from "redux-persist/integration/react";
-import './api/interceptors.ts';
+import "./index.css"
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
-                <FluentProvider theme={webLightTheme} style={{width: '100%', height: '100%'}}>
+                <FluentProvider theme={webLightTheme} className="FluentProvider">
                     <App/>
                 </FluentProvider>
             </PersistGate>
