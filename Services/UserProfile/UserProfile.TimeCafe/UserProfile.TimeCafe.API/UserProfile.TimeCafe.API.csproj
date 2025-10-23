@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="MassTransit" Version="8.5.5" />
+	<PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
 	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
 	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
@@ -17,6 +19,12 @@
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UserProfile.TimeCafe.Application\UserProfile.TimeCafe.Application.csproj" />
+    <ProjectReference Include="..\UserProfile.TimeCafe.Domain\UserProfile.TimeCafe.Domain.csproj" />
+    <ProjectReference Include="..\UserProfile.TimeCafe.Infrastructure\UserProfile.TimeCafe.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
