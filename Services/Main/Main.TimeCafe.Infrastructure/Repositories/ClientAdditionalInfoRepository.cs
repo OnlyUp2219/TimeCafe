@@ -1,7 +1,8 @@
 using Main.TimeCafe.Common.Constants;
 using Main.TimeCafe.Common.Helpers;
+using Main.TimeCafe.Infrastructure;
 
-namespace Main.TimeCafe.Persistence.Repositories;
+namespace Main.TimeCafe.Infrastructure.Repositories;
 
 public class ClientAdditionalInfoRepository : IClientAdditionalInfoRepository
 {

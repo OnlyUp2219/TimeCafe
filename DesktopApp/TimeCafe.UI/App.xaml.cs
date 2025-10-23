@@ -1,13 +1,10 @@
 ﻿using Main.TimeCafe.Application;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.UI.Windowing;
-
 using Serilog;
-
 using StackExchange.Redis;
 
 

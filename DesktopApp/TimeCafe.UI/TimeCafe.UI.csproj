@@ -1,252 +1,253 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>TimeCafe.UI</RootNamespace>
-    <ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Platforms>x86;x64;arm64</Platforms>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+	<RootNamespace>TimeCafe.UI</RootNamespace>
+	<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+	<ApplicationManifest>app.manifest</ApplicationManifest>
+	<Platforms>x86;x64;arm64</Platforms>
+	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	<UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <DefaultLanguage>ru-RU</DefaultLanguage>
+	<EnableMsixTooling>true</EnableMsixTooling>
+	<DefaultLanguage>ru-RU</DefaultLanguage>
 	  <UseRidGraph>true</UseRidGraph>
 	  <PlatformTarget>AnyCPU</PlatformTarget>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>preview</LangVersion>
+	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<LangVersion>preview</LangVersion>
 	  <NoWarn>$(NoWarn);CS8618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="Assets\BadgeLogo.scale-100.png" />
-    <Content Remove="Assets\BadgeLogo.scale-125.png" />
-    <Content Remove="Assets\BadgeLogo.scale-150.png" />
-    <Content Remove="Assets\BadgeLogo.scale-200.png" />
-    <Content Remove="Assets\BadgeLogo.scale-400.png" />
-    <Content Remove="Assets\Image\generated_image 2.png" />
-    <Content Remove="Assets\Image\generated_image.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-16.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-24.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-256.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-32.png" />
-    <Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-48.png" />
-    <Content Remove="Assets\StoreLogo.scale-100.png" />
-    <Content Remove="Assets\WindowIcon.ico" />
+	<Content Remove="Assets\BadgeLogo.scale-100.png" />
+	<Content Remove="Assets\BadgeLogo.scale-125.png" />
+	<Content Remove="Assets\BadgeLogo.scale-150.png" />
+	<Content Remove="Assets\BadgeLogo.scale-200.png" />
+	<Content Remove="Assets\BadgeLogo.scale-400.png" />
+	<Content Remove="Assets\Image\generated_image 2.png" />
+	<Content Remove="Assets\Image\generated_image.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-16.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-24.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-256.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-32.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-lightunplated_targetsize-48.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-16.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-24.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-256.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-32.png" />
+	<Content Remove="Assets\Square44x44Logo.altform-unplated_targetsize-48.png" />
+	<Content Remove="Assets\StoreLogo.scale-100.png" />
+	<Content Remove="Assets\WindowIcon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Assets\Fonts\vagroundcyrillic.ttf" />
-    <None Remove="Assets\HelpContent\sample1.mp4" />
-    <None Remove="Assets\HelpContent\sample2.mp4" />
-    <None Remove="Assets\Imagebackground\flexy-image-1750441429684 %281%29.png" />
-    <None Remove="Assets\Imagebackground\flexy-image-1750441434932 %281%29.png" />
-    <None Remove="Assets\Imagebackground\flexy-image-1750441471864 %281%29.png" />
-    <None Remove="Assets\Imagebackground\flexy-image-1750441826717 %281%29.png" />
-    <None Remove="Assets\Imagebackground\flexy-image-1750441827699.png" />
-    <None Remove="Assets\LargeTile.scale-100.png" />
-    <None Remove="Assets\LargeTile.scale-125.png" />
-    <None Remove="Assets\LargeTile.scale-150.png" />
-    <None Remove="Assets\LargeTile.scale-200.png" />
-    <None Remove="Assets\LargeTile.scale-400.png" />
-    <None Remove="Assets\SmallTile.scale-100.png" />
-    <None Remove="Assets\SmallTile.scale-125.png" />
-    <None Remove="Assets\SmallTile.scale-150.png" />
-    <None Remove="Assets\SmallTile.scale-200.png" />
-    <None Remove="Assets\SmallTile.scale-400.png" />
-    <None Remove="Assets\SplashScreen.scale-100.png" />
-    <None Remove="Assets\SplashScreen.scale-125.png" />
-    <None Remove="Assets\SplashScreen.scale-150.png" />
-    <None Remove="Assets\SplashScreen.scale-200.png" />
-    <None Remove="Assets\SplashScreen.scale-400.png" />
-    <None Remove="Assets\Square150x150Logo.scale-100.png" />
-    <None Remove="Assets\Square150x150Logo.scale-125.png" />
-    <None Remove="Assets\Square150x150Logo.scale-150.png" />
-    <None Remove="Assets\Square150x150Logo.scale-200.png" />
-    <None Remove="Assets\Square150x150Logo.scale-400.png" />
-    <None Remove="Assets\Square44x44Logo.scale-100.png" />
-    <None Remove="Assets\Square44x44Logo.scale-125.png" />
-    <None Remove="Assets\Square44x44Logo.scale-150.png" />
-    <None Remove="Assets\Square44x44Logo.scale-200.png" />
-    <None Remove="Assets\Square44x44Logo.scale-400.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-16.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-16_altform-lightunplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-16_altform-unplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-24.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-24_altform-lightunplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-256.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-256_altform-unplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-32.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-32_altform-lightunplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-32_altform-unplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-48.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png" />
-    <None Remove="Assets\Square44x44Logo.targetsize-48_altform-unplated.png" />
-    <None Remove="Assets\StoreLogo.scale-125.png" />
-    <None Remove="Assets\StoreLogo.scale-150.png" />
-    <None Remove="Assets\StoreLogo.scale-200.png" />
-    <None Remove="Assets\StoreLogo.scale-400.png" />
-    <None Remove="Assets\Wide310x150Logo.scale-100.png" />
-    <None Remove="Assets\Wide310x150Logo.scale-125.png" />
-    <None Remove="Assets\Wide310x150Logo.scale-150.png" />
-    <None Remove="Assets\Wide310x150Logo.scale-200.png" />
-    <None Remove="Assets\Wide310x150Logo.scale-400.png" />
-    <None Remove="Converters.xaml" />
-    <None Remove="Styles\Controls\AdaptiveGridView_ItemContainerStyle.xaml" />
-    <None Remove="Styles\ThemeColor.xaml" />
-    <None Remove="Views\CreateClientPage\PhoneVerificationConfirm.xaml" />
-    <None Remove="Views\CreateClientPage\UserGrid.xaml" />
-    <None Remove="Views\CreateClientPage\UserGridDetailPage.xaml" />
-    <None Remove="Views\TariffManagePage.xaml" />
+	<None Remove="Assets\Fonts\vagroundcyrillic.ttf" />
+	<None Remove="Assets\HelpContent\sample1.mp4" />
+	<None Remove="Assets\HelpContent\sample2.mp4" />
+	<None Remove="Assets\Imagebackground\flexy-image-1750441429684 %281%29.png" />
+	<None Remove="Assets\Imagebackground\flexy-image-1750441434932 %281%29.png" />
+	<None Remove="Assets\Imagebackground\flexy-image-1750441471864 %281%29.png" />
+	<None Remove="Assets\Imagebackground\flexy-image-1750441826717 %281%29.png" />
+	<None Remove="Assets\Imagebackground\flexy-image-1750441827699.png" />
+	<None Remove="Assets\LargeTile.scale-100.png" />
+	<None Remove="Assets\LargeTile.scale-125.png" />
+	<None Remove="Assets\LargeTile.scale-150.png" />
+	<None Remove="Assets\LargeTile.scale-200.png" />
+	<None Remove="Assets\LargeTile.scale-400.png" />
+	<None Remove="Assets\SmallTile.scale-100.png" />
+	<None Remove="Assets\SmallTile.scale-125.png" />
+	<None Remove="Assets\SmallTile.scale-150.png" />
+	<None Remove="Assets\SmallTile.scale-200.png" />
+	<None Remove="Assets\SmallTile.scale-400.png" />
+	<None Remove="Assets\SplashScreen.scale-100.png" />
+	<None Remove="Assets\SplashScreen.scale-125.png" />
+	<None Remove="Assets\SplashScreen.scale-150.png" />
+	<None Remove="Assets\SplashScreen.scale-200.png" />
+	<None Remove="Assets\SplashScreen.scale-400.png" />
+	<None Remove="Assets\Square150x150Logo.scale-100.png" />
+	<None Remove="Assets\Square150x150Logo.scale-125.png" />
+	<None Remove="Assets\Square150x150Logo.scale-150.png" />
+	<None Remove="Assets\Square150x150Logo.scale-200.png" />
+	<None Remove="Assets\Square150x150Logo.scale-400.png" />
+	<None Remove="Assets\Square44x44Logo.scale-100.png" />
+	<None Remove="Assets\Square44x44Logo.scale-125.png" />
+	<None Remove="Assets\Square44x44Logo.scale-150.png" />
+	<None Remove="Assets\Square44x44Logo.scale-200.png" />
+	<None Remove="Assets\Square44x44Logo.scale-400.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-16.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-16_altform-lightunplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-16_altform-unplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-24.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-24_altform-lightunplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-256.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-256_altform-lightunplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-256_altform-unplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-32.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-32_altform-lightunplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-32_altform-unplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-48.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-48_altform-lightunplated.png" />
+	<None Remove="Assets\Square44x44Logo.targetsize-48_altform-unplated.png" />
+	<None Remove="Assets\StoreLogo.scale-125.png" />
+	<None Remove="Assets\StoreLogo.scale-150.png" />
+	<None Remove="Assets\StoreLogo.scale-200.png" />
+	<None Remove="Assets\StoreLogo.scale-400.png" />
+	<None Remove="Assets\Wide310x150Logo.scale-100.png" />
+	<None Remove="Assets\Wide310x150Logo.scale-125.png" />
+	<None Remove="Assets\Wide310x150Logo.scale-150.png" />
+	<None Remove="Assets\Wide310x150Logo.scale-200.png" />
+	<None Remove="Assets\Wide310x150Logo.scale-400.png" />
+	<None Remove="Converters.xaml" />
+	<None Remove="Styles\Controls\AdaptiveGridView_ItemContainerStyle.xaml" />
+	<None Remove="Styles\ThemeColor.xaml" />
+	<None Remove="Views\CreateClientPage\PhoneVerificationConfirm.xaml" />
+	<None Remove="Views\CreateClientPage\UserGrid.xaml" />
+	<None Remove="Views\CreateClientPage\UserGridDetailPage.xaml" />
+	<None Remove="Views\TariffManagePage.xaml" />
   </ItemGroup>
 
 
   <ItemGroup>
-    <Manifest Include="$(ApplicationManifest)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="AutoMapper" Version="15.0.1" />
-    <PackageReference Include="Bogus" Version="35.6.3" />
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.250618-build.2154" />
-    <PackageReference Include="CommunityToolkit.Labs.WinUI.OpacityMaskView" Version="0.1.250618-build.2154" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.2.250402" />
-    <PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.250402" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
-    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
-    <PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.250402" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-    <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3485.44" />
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.250907003" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="WinUIEx" Version="2.8.0" />
+	<Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <Page Update="Converters.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\TariffManagePage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\ThemeColor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\CreateClientPage\UserGridDetailPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\CreateClientPage\UserGridPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\CreateClientPage\PhoneVerificationConfirm.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\Controls\AdaptiveGridView_ItemContainerStyle.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\Controls\ButtonRadio.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Styles\Controls\CopyButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
+	<PackageReference Include="AutoMapper" Version="15.0.1" />
+	<PackageReference Include="Bogus" Version="35.6.4" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.250618-build.2154" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.OpacityMaskView" Version="0.1.250618-build.2154" />
+	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+	<PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2" />
+	<PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.2.250402" />
+	<PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.250402" />
+	<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
+	<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
+	<PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.250402" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+	  <PrivateAssets>all</PrivateAssets>
+	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+	  <PrivateAssets>all</PrivateAssets>
+	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	</PackageReference>
+	<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.10" />
+	<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
+	<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
+	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
+	<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+	<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+	<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+	<PackageReference Include="WinUIEx" Version="2.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<None Update="appsettings.json">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
+	<Page Update="Converters.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Views\TariffManagePage.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Styles\ThemeColor.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Views\CreateClientPage\UserGridDetailPage.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Views\CreateClientPage\UserGridPage.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Views\CreateClientPage\PhoneVerificationConfirm.xaml">
+	  <SubType>Designer</SubType>
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Styles\Controls\AdaptiveGridView_ItemContainerStyle.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Styles\Controls\ButtonRadio.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
+	<Page Update="Styles\Controls\CopyButton.xaml">
+	  <Generator>MSBuild:Compile</Generator>
+	</Page>
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <ProjectCapability Include="Msix" />
+	<ProjectCapability Include="Msix" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
-    <WebView2UseWinRT>False</WebView2UseWinRT>
-    <WebView2LoaderPreference>Dynamic</WebView2LoaderPreference>
-    <WebView2EnableCsWinRTProjection>True</WebView2EnableCsWinRTProjection>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
-    <PackageCertificateKeyFile>TimeCafe_TemporaryKey.pfx</PackageCertificateKeyFile>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
-    <AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundle>Never</AppxBundle>
-    <AppInstallerUri>C:\Users\Asus\Desktop\Установщик</AppInstallerUri>
+	<WebView2UseWinRT>False</WebView2UseWinRT>
+	<WebView2LoaderPreference>Dynamic</WebView2LoaderPreference>
+	<WebView2EnableCsWinRTProjection>True</WebView2EnableCsWinRTProjection>
+	<GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+	<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+	<PackageCertificateKeyFile>TimeCafe_TemporaryKey.pfx</PackageCertificateKeyFile>
+	<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+	<AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+	<AppxSymbolPackageEnabled>True</AppxSymbolPackageEnabled>
+	<GenerateTestArtifacts>True</GenerateTestArtifacts>
+	<AppxBundle>Never</AppxBundle>
+	<AppInstallerUri>C:\Users\Asus\Desktop\Установщик</AppInstallerUri>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-    <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
+	<HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
   
   <ItemGroup>
-    <PRIResource Remove="Strings\en-US\Resources.resw" />
+	<PRIResource Remove="Strings\en-US\Resources.resw" />
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Views\UserGridContentDialogs\" />
+	<Folder Include="Views\UserGridContentDialogs\" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Application\Main.TimeCafe.Application.csproj" />
-    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
-    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Core\Main.TimeCafe.Core.csproj" />
-    <ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Persistence\Main.TimeCafe.Infrastructure.csproj" />
+	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Application\Main.TimeCafe.Application.csproj" />
+	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Common\Main.TimeCafe.Common.csproj" />
+	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Domain\Main.TimeCafe.Domain.csproj" />
+	<ProjectReference Include="..\..\Services\Main\Main.TimeCafe.Infrastructure\Main.TimeCafe.Infrastructure.csproj" />
   </ItemGroup>
   
   <ItemGroup>
-    <Content Update="Assets\Documentation\client-details.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\clients.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\finance.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\index.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\navigation.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\settings.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\tariffs.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Update="Assets\Documentation\visitors.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+	<Content Update="Assets\Documentation\client-details.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\clients.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\finance.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\index.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\navigation.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\settings.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\tariffs.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Update="Assets\Documentation\visitors.html">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 
 

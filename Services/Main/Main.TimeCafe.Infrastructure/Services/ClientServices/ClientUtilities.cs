@@ -1,4 +1,4 @@
-namespace Main.TimeCafe.Persistence.Services.ClientServices;
+namespace Main.TimeCafe.Infrastructure.Services.ClientServices;
 
 public class ClientUtilities : IClientUtilities
 {

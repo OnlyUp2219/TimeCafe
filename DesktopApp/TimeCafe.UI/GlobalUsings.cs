@@ -15,6 +15,17 @@ global using Main.TimeCafe.Application.CQRS.Visits.Command;
 global using Main.TimeCafe.Application.CQRS.Visits.Get;
 global using Main.TimeCafe.Application.Services;
 
+global using Main.TimeCafe.Domain.Contracts.Services.File;
+global using Main.TimeCafe.Domain.Contracts.Services.Clients;
+global using Main.TimeCafe.Domain.Enums;
+global using Main.TimeCafe.Domain.Models;
+
+global using Main.TimeCafe.Infrastructure.Repositories;
+global using Main.TimeCafe.Infrastructure.Services.ClientServices;
+global using Main.TimeCafe.Infrastructure;
+
+
+
 global using MediatR;
 
 global using Microsoft.UI.Xaml;
@@ -28,7 +39,6 @@ global using TimeCafe.UI.Activation;
 global using TimeCafe.UI.Behaviors;
 global using TimeCafe.UI.Contracts.Services;
 global using TimeCafe.UI.Contracts.ViewModels;
-global using TimeCafe.UI.Enums;
 global using TimeCafe.UI.Models;
 global using TimeCafe.UI.Services;
 global using TimeCafe.UI.Utilities;

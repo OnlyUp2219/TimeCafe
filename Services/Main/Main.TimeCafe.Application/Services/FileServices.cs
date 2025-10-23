@@ -1,6 +1,5 @@
-﻿using Newtonsoft.Json;
-
-using System.Text;
+﻿using System.Text;
+using Newtonsoft.Json;
 
 namespace Main.TimeCafe.Application.Services;
 

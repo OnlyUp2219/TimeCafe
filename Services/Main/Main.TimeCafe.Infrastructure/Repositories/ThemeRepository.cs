@@ -1,7 +1,7 @@
 using Main.TimeCafe.Common.Constants;
 using Main.TimeCafe.Common.Helpers;
 
-namespace Main.TimeCafe.Persistence.Repositories;
+namespace Main.TimeCafe.Infrastructure.Repositories;
 
 public class ThemeRepository : IThemeRepository
 {

@@ -1,4 +1,4 @@
-﻿namespace Main.TimeCafe.Persistence;
+﻿namespace Main.TimeCafe.Infrastructure;
 
 public partial class TimeCafeContext : DbContext
 {

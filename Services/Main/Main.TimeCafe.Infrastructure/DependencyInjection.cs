@@ -1,8 +1,8 @@
-using Main.TimeCafe.Persistence.Repositories;
+using Main.TimeCafe.Infrastructure.Repositories;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Main.TimeCafe.Persistence;
+namespace Main.TimeCafe.Infrastructure;
 
 public static class DependencyInjection
 {

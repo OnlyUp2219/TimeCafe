@@ -11,7 +11,7 @@
     xmlns:local="using:TimeCafe.UI.Views"
     xmlns:localModels="using:TimeCafe.UI.Models"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:TimeCafe.Core.Models"
+xmlns:models="using:Main.TimeCafe.Domain.Models"
     xmlns:pagination="using:TimeCafe.UI.Controls"
     xmlns:toolkit="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
