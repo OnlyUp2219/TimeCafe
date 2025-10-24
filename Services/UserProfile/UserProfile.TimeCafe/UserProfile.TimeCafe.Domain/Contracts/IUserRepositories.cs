@@ -4,12 +4,13 @@ namespace UserProfile.TimeCafe.Domain.Contracts;
 
 public interface IUserRepositories
 {
-    Task<IEnumerable<Profile>> GetAllProfiles();
-    Task<IEnumerable<Profile>> GetProfilesPage(int pageNumber, int pageSize);
-    Task<int> GetTotalPage();
-    Task<Profile> GetClientById(int clientId);
-    Task<Profile> CreateProfile(Profile client);
-    Task<Profile> UpdateProfile(Profile client);
-    Task<bool> DeleteProfilet(int clientId);
+    Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken? cancellationToken);
+    Task<IEnumerable<Profile?>> GetProfilesPageAsync(int pageNumber, int pageSize, CancellationToken? cancellationToken);
+    Task<int> GetTotalPageAsync(CancellationToken? cancellationToken);
+    Task<Profile?> GetProfileByIdAsync(string userId, CancellationToken? cancellationToken);
+    Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken? cancellationToken);
+    Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken);
+    Task DeleteProfileAsync(string userId, CancellationToken? cancellationToken);
+    Task CreateEmptyAsync(string userId, CancellationToken? cancellationToken);
 
 }
