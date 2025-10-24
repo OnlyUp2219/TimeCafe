@@ -137,3 +137,16 @@ export async function LogOut(dispatch: AppDispatch): Promise<void> {
         throw new Error("Неизвестная ошибка при выходе");
     }
 }
+
+export async function logoutServer(refreshToken: string | null, dispatch: AppDispatch): Promise<void> {
+    try {
+        if (refreshToken) {
+            await axios.post(`${apiBase}/logout`, { refreshToken }, {
+                headers: { "Content-Type": "application/json" }
+            });
+        }
+    } catch (e) {
+    } finally {
+        dispatch(clearTokens());
+    }
+}

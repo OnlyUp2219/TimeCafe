@@ -1,6 +1,6 @@
 import {Button, Subtitle1, Subtitle2, Text, Title1, type ToastIntent} from "@fluentui/react-components";
 import {useEffect, useState} from "react";
-import {refreshToken as refreshTokenApi} from "../api/auth.ts";
+import {refreshToken as refreshTokenApi, logoutServer} from "../api/auth.ts";
 import axios from "axios";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch, useSelector} from "react-redux";
@@ -103,6 +103,16 @@ export const Home = () => {
         showToast(`Случайный toast с intent: ${intent}`, intent);
     };
 
+    const handleLogout = async () => {
+        try {
+            await logoutServer(refreshToken, dispatch);
+            showToast("Вы вышли из системы", "info");
+            navigate("/login", { replace: true });
+        } catch (e: any) {
+            showToast(`Ошибка выхода: ${e?.message ?? e}`, "error");
+        }
+    };
+
 
     const getRoleFromToken = (token: string | null) => {
         if (!token) return "client";
@@ -139,6 +149,7 @@ export const Home = () => {
                     <Button onClick={handleClearAccessJwt}>Clear JWT Access</Button>
                     <Button onClick={handleClearRefreshJwt}>Clear JWT Refresh</Button>
                     <Button onClick={callProtected}>Call protected endpoint</Button>
+                    <Button onClick={handleLogout}>Logout</Button>
                 </div>
 
                 {refreshResult && <div>Refresh: {refreshResult}</div>}

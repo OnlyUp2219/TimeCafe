@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
-
 using System.Security.Claims;
-using System.Text;
 
 namespace Auth.TimeCafe.API.Endpoints;
 
@@ -114,10 +112,45 @@ public class CreateRegistry : ICarterModule
             .WithTags("Authentication")
             .WithName("ForgotPassword");
 
+        // Logout: revoke provided refresh token (if exists) without issuing new tokens
+        app.MapPost("/logout", async (
+            [FromBody] LogoutRequest request,
+            ApplicationDbContext db,
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal principal) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return Results.BadRequest(new { errors = new { refreshToken = "Refresh token is required" } });
+
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            var entity = await db.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == request.RefreshToken && !t.IsRevoked);
+
+            if (entity != null)
+            {
+                if (userId != null && entity.UserId != userId)
+                    return Results.Unauthorized();
+
+                entity.IsRevoked = true;
+                await db.SaveChangesAsync();
+            }
+
+            return Results.Ok(new { message = "Logged out", revoked = entity != null });
+        })
+            .RequireAuthorization()
+            .WithTags("Authentication")
+            .WithName("Logout");
+
     }
 }
 
 public class ResetPasswordEmailRequest
 {
     public string Email { get; set; } = string.Empty;
+}
+
+public class LogoutRequest
+{
+    public string RefreshToken { get; set; } = string.Empty;
 }
