@@ -1,0 +1,38 @@
+digraph external_oauth_flow {
+  rankdir=TB;
+  node [shape=rectangle, width=1, height=0.5, fixedsize=true, fontname="GOST Type A,Arial", fontsize=10];
+  /* Узлы */
+  UI     [label="UI\nВнешний вход"];
+  START  [label="GET /auth\n/login/provider"];
+  REDIR  [label="Redirect\nOAuth провайдер"];
+  CB     [label="Callback\n/provider/callback"];
+  CLAIMS [label="Извлечь\nclaims"];
+  DECUSR [shape=diamond, label="Есть\nпользователь?"];
+  CREATE [label="Создать +\nроль"];
+  LOAD   [label="Загрузить\nпрофиль"];
+  READY  [label="Пользователь\nготов"];
+  TOKENS [label="Выдать\nтокены"];
+  RET    [label="Redirect\nreturnUrl#tokens"];
+
+  /* Ряды для змейки */
+  { rank=same; UI; START }
+  { rank=same; REDIR; CB }
+  { rank=same; CLAIMS; DECUSR }
+  { rank=same; CREATE; LOAD }
+  { rank=same; READY; TOKENS }
+  { rank=same; RET }
+
+  /* Поток */
+  UI -> START -> REDIR -> CB -> CLAIMS -> DECUSR;
+  DECUSR -> CREATE [label="Нет"];
+  DECUSR -> LOAD   [label="Да"];
+  CREATE -> READY;
+  LOAD -> READY;
+  READY -> TOKENS -> RET;
+
+  /* Невидимые связи для контроля положения (формирование змейки) */
+  START -> CB [style=invis, weight=1];
+  CB -> DECUSR [style=invis, weight=1];
+  CLAIMS -> LOAD [style=invis, weight=1];
+  LOAD -> TOKENS [style=invis, weight=1];
+}

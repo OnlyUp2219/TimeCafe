@@ -1,0 +1,32 @@
+digraph register_flow {
+  rankdir=TB;
+  node [shape=rectangle, width=1, height=0.5, fixedsize=true, fontname="GOST Type A,Arial", fontsize=10];
+  /* Узлы */
+  UI   [label="UI\nРегистрация"];
+  REG  [label="POST /register"];
+  DEC  [shape=diamond, label="Есть\nпользователь?"]; 
+  ERR  [label="409\nConflict"];
+  CREATE [label="Создать\nучет"];
+  SAVE [label="Сохранить\nБД"];
+  EVENT [label="Событие\nUserReg"];
+  TOKENS [label="Выдать\nтокены"];
+  OK [label="200\nTokens"];
+
+  /* Ряды для змейки (чередование позиций) */
+  { rank=same; UI; REG }
+  { rank=same; DEC; ERR }
+  { rank=same; CREATE; SAVE }
+  { rank=same; EVENT; TOKENS }
+  { rank=same; OK }
+
+  /* Логический поток */
+  UI -> REG -> DEC;
+  DEC -> ERR [label="Да"];
+  DEC -> CREATE [label="Нет"];
+  CREATE -> SAVE -> EVENT -> TOKENS -> OK;
+
+  /* Невидимые связи для формирования змейки */
+  REG -> ERR [style=invis, weight=1];
+  ERR -> CREATE [style=invis, weight=1];
+  SAVE -> TOKENS [style=invis, weight=1];
+}

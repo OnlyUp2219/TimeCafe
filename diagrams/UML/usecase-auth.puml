@@ -1,0 +1,87 @@
+@startuml UseCasesAuth
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam usecase {
+  BackgroundColor White
+  BorderColor #555555
+  ArrowColor #555555
+}
+
+actor "Пользователь" as User
+actor "Администратор" as Admin
+actor "Внешний провайдер" as ExtProv
+
+rectangle "Auth API" {
+  usecase "Регистрация\n(/registerWithUsername)" as UC_Register
+  usecase "Логин\n(/login-jwt)" as UC_Login
+  usecase "Refresh токена\n(/refresh-token-jwt)" as UC_Refresh
+  usecase "Запрос ссылки\nдля сброса пароля\n(/forgot-password-link)" as UC_Forgot
+  usecase "Доступ к защищенному\nресурсу (/protected-test)" as UC_Protected
+  usecase "Выход (Logout)\n(/logout)" as UC_Logout
+  usecase "Внешний логин: Redirect\n(/authenticate/login/{provider})" as UC_ExternalRedirect
+  usecase "Внешний логин: Callback\n(/authenticate/login/{provider}/callback)" as UC_ExternalCallback
+  usecase "Создать администратора\n(/admin/create)" as UC_AdminCreate
+  usecase "Выдать токены" as UC_IssueTokens
+  usecase "Проверка \nrefresh токена" as UC_CheckRefresh
+}
+
+' Акторы инициируют основные сценарии
+User --> UC_Register
+User --> UC_Login
+User --> UC_Refresh
+User --> UC_Forgot
+User --> UC_Protected
+User --> UC_Logout
+User --> UC_ExternalRedirect
+User --> UC_ExternalCallback
+
+Admin --> UC_AdminCreate
+ExtProv -[#blue]-> UC_ExternalCallback
+
+' Повторно используемые подфункции
+UC_Register ..> UC_IssueTokens : <<include>>
+UC_Login ..> UC_IssueTokens : <<include>>
+UC_ExternalCallback ..> UC_IssueTokens : <<include>>
+UC_Refresh ..> UC_CheckRefresh : <<include>>
+UC_Refresh ..> UC_IssueTokens : <<include>>
+
+' Расширения (опциональные продолжения)
+UC_Protected ..> UC_Refresh : <<extend>>
+UC_Logout ..> UC_CheckRefresh : <<include>>
+
+' Заметки
+note right of UC_IssueTokens
+Генерация Access + Refresh
+Role определяется через IUserRoleService
+Refresh сохраняется в БД
+end note
+
+note bottom of UC_CheckRefresh
+Валидация не ревокнут ли токен,
+срок действия, затем ревокация
+и выдача нового набора
+end note
+
+note top of UC_ExternalRedirect
+OAuth challenge через внешний
+провайдер (Google/Microsoft)
+end note
+
+note top of UC_ExternalCallback
+Получение email / provider key,
+создание пользователя, роли client,
+выдача пары токенов
+end note
+
+note right of ExtProv
+Синие линии показывают внешний источник аутентификации
+end note
+
+note left of UC_Logout
+Ревокация переданного refresh,
+клиент очищает локальные токены
+end note
+
+@enduml

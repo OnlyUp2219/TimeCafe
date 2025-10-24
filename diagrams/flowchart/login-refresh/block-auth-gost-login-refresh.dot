@@ -1,0 +1,50 @@
+digraph login_refresh_flow {
+  rankdir=TB;
+  node [shape=rectangle, width=1, height=0.5, fixedsize=true, fontname="GOST Type A,Arial", fontsize=10];
+  /* Узлы */
+  LOGIN   [label="UI\nЛогин"];
+  POSTL   [label="POST /login"];
+  DECUSR  [shape=diamond, label="Есть\nпользователь?"];
+  ERR401  [label="401"];
+  DECPASS [shape=diamond, label="Пароль\nверен?"];
+  ISSUE   [label="Токены\nвыдать"];
+  OK200   [label="200 Tokens"];
+  STORE   [label="Store\nrefresh"];
+  EXPA    [label="Access\nистек"];
+  POSTR   [label="POST /refresh"];
+  DECRF   [shape=diamond, label="Refresh\nвалиден?"];
+  ERR401R [label="401\nLogin"];
+  ROTATE  [label="Ротация"];
+  NEW200  [label="200 New"];
+
+  /* Ряды: для змейки чередуем порядок в рангах */
+  { rank=same; LOGIN; POSTL }
+  { rank=same; DECUSR; ERR401 }
+  { rank=same; DECPASS; ISSUE }
+  { rank=same; OK200; STORE }
+  { rank=same; EXPA; POSTR }
+  { rank=same; DECRF; ERR401R }
+  { rank=same; ROTATE; NEW200 }
+
+  /* Основные переходы (логический поток) */
+  LOGIN -> POSTL -> DECUSR;
+  DECUSR -> DECPASS [label="Да"];
+  DECUSR -> ERR401 [label="Нет"];
+  DECPASS -> ISSUE [label="Да"];
+  DECPASS -> ERR401 [label="Нет"];
+  ISSUE -> OK200;
+  OK200 -> STORE;
+  STORE -> EXPA;
+  EXPA -> POSTR;
+  POSTR -> DECRF;
+  DECRF -> ROTATE [label="Да"];
+  DECRF -> ERR401R [label="Нет"];
+  ROTATE -> NEW200;
+
+  /* Невидимые ребра помогают формировать змейку: связываем правые узлы с левыми следующих рядов */
+  POSTL -> DECPASS [style=invis, weight=1];
+  ERR401 -> DECPASS [style=invis, weight=1];
+  ISSUE -> EXPA [style=invis, weight=1];
+  STORE -> EXPA [style=invis, weight=1];
+  NEW200 -> /* конец */ NEW200 [style=invis, weight=1];
+}
