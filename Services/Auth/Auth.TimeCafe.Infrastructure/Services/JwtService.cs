@@ -18,18 +18,11 @@ public interface IJwtService
     Task<AuthResponse?> RefreshTokens(string refreshToken);
 }
 
-public class JwtService : IJwtService
+public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
 {
-    private readonly IConfiguration _configuration;
-    private readonly ApplicationDbContext _context;
-    private readonly IUserRoleService _userRoleService;
-
-    public JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService)
-    {
-        _configuration = configuration;
-        _context = context;
-        _userRoleService = userRoleService;
-    }
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ApplicationDbContext _context = context;
+    private readonly IUserRoleService _userRoleService = userRoleService;
 
     public async Task<AuthResponse> GenerateTokens(IdentityUser user)
     {

@@ -1,18 +1,12 @@
 namespace Auth.TimeCafe.API.Services;
 
-public class UserRoleService : IUserRoleService
+public class UserRoleService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager) : IUserRoleService
 {
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+    private readonly UserManager<IdentityUser> _userManager = userManager;
 
     public static readonly string AdminRole = "admin";
     public static readonly string ClientRole = "client";
-
-    public UserRoleService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
-    {
-        _roleManager = roleManager;
-        _userManager = userManager;
-    }
 
     public async Task EnsureRolesCreatedAsync()
     {

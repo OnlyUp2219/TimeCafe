@@ -1,17 +1,10 @@
-using Auth.TimeCafe.API.Services;
-
 namespace Auth.TimeCafe.API.Controllers;
 
 [ApiController]
 [Route("admin")]
-public class AdminController : ControllerBase
+public class AdminController(AdminService adminService) : ControllerBase
 {
-    private readonly AdminService _adminService;
-
-    public AdminController(AdminService adminService)
-    {
-        _adminService = adminService;
-    }
+    private readonly AdminService _adminService = adminService;
 
     [HttpPost("create")]
     public async Task<IActionResult> Create([FromBody] CreateAdminRequest request)

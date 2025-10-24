@@ -5,16 +5,10 @@ using System.Text.Json;
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-public sealed class PostmarkEmailSender : IEmailSender<IdentityUser>
+public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<IdentityUser>
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly PostmarkOptions _options;
-
-    public PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options)
-    {
-        _httpClientFactory = httpClientFactory;
-        _options = options.Value;
-    }
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly PostmarkOptions _options = options.Value;
 
     public async Task SendEmailAsync(string email, string subject, string htmlMessage)
     {
