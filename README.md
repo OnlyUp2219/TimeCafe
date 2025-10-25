@@ -106,51 +106,6 @@ public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(...)
 
 ---
 
-## 🛠️ Быстрый старт
-
-### Предварительные требования
-
-- .NET 9.0 SDK
-- Node.js & npm
-- JDK (для UML)
-- Graphviz (для диаграмм)
-
-### Сборка и запуск
-
-<details>
-<summary>Десктопное приложение</summary>
-
-```powershell
-cd DesktopApp/TimeCafe.UI
-dotnet build
-start TimeCafe.UI.exe
-```
-
-</details>
-
-<details>
-<summary>Веб-клиент</summary>
-
-```powershell
-cd WebApp/timecafe.react.ui
-npm install
-npm run dev
-```
-
-</details>
-
-<details>
-<summary>Микросервисы</summary>
-
-```powershell
-cd Services/Main/Main.TimeCafe.API
-dotnet run
-```
-
-</details>
-
----
-
 ## 🧩 Используемые технологии
 
 - **Backend**: ASP.NET Core, C#, Entity Framework
@@ -218,10 +173,6 @@ dotnet run
 - **Desktop**: WinUI3
 - **DevOps**: Docker, CI/CD, Graphviz, PlantUML
 
-## Диаграммы и документация
-
-- UML-диаграммы: `diagramClass-auth.md`, `sequence-auth.md`, `usecase-auth.puml`
-- Документация по авторизации: `Services/Auth/Identity-Guide.md`
 
 ## Авторы и контакты
 
