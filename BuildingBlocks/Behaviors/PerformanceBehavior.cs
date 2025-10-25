@@ -1,7 +1,3 @@
-using MediatR;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Behaviors;
 
 public class PerformanceBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>

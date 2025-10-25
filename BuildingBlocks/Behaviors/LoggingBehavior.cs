@@ -1,7 +1,3 @@
-using MediatR;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Behaviors;
 
 public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
@@ -22,7 +18,7 @@ public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, 
         {
             payload = JsonSerializer.Serialize(request);
         }
-        catch { /* ignore serialization issues */ }
+        catch { }
 
         _logger.LogInformation("Handling {RequestName} Payload={Payload}", requestName, payload);
         var response = await next();

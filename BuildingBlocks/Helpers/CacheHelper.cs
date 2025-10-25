@@ -1,10 +1,3 @@
-﻿using BuildingBlocks.Utilities;
-
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
 namespace BuildingBlocks.Helpers;
 
 public static class CacheHelper

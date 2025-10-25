@@ -22,9 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UserProfile.TimeCafe.Application\UserProfile.TimeCafe.Application.csproj" />
-    <ProjectReference Include="..\UserProfile.TimeCafe.Domain\UserProfile.TimeCafe.Domain.csproj" />
-    <ProjectReference Include="..\UserProfile.TimeCafe.Infrastructure\UserProfile.TimeCafe.Infrastructure.csproj" />
+	<ProjectReference Include="..\UserProfile.TimeCafe.Application\UserProfile.TimeCafe.Application.csproj" />
+	<ProjectReference Include="..\UserProfile.TimeCafe.Domain\UserProfile.TimeCafe.Domain.csproj" />
+	<ProjectReference Include="..\UserProfile.TimeCafe.Infrastructure\UserProfile.TimeCafe.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

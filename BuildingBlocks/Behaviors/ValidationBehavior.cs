@@ -1,7 +1,3 @@
-using FluentValidation;
-using MediatR;
-using Microsoft.Extensions.Logging;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Behaviors;
 
 public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
