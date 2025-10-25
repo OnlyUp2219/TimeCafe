@@ -1,22 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using UserProfile.TimeCafe.API.Middleware;
+using UserProfile.TimeCafe.API.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddMassTransit(x =>
-{
-
-   x.AddConsumer<UserRegisteredConsumer>();
-
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        cfg.Host("rabbitmq://localhost");
-
-        cfg.ReceiveEndpoint("user-register-queue", e =>
-        {
-            e.ConfigureConsumer<UserRegisteredConsumer>(context);
-        });
-    });
-});
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 builder.Services.AddDbContext<ApplicationDbContext>(op => op.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepositories, UserRepositories>();
