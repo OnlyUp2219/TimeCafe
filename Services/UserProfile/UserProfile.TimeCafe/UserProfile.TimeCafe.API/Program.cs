@@ -12,6 +12,8 @@ builder.Services.AddScoped<IUserRepositories, UserRepositories>();
 
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.Run();
 
 
