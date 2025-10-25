@@ -1,2 +1,3 @@
-﻿namespace Auth.TimeCafe.Domain.Events;
+namespace Auth.TimeCafe.Domain.Events;
+
 public record UserRegisteredEvent(string UserId, string Email);

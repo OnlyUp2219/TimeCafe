@@ -1,5 +1,3 @@
-﻿using UserProfile.TimeCafe.Domain.Models;
-
 namespace UserProfile.TimeCafe.Infrastructure.Repositories;
 
 public class UserRepositories(ApplicationDbContext context, IDistributedCache cache, ILogger<UserRepositories> logger) : IUserRepositories
@@ -113,7 +111,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
     public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
         _logger.LogInformation("Обновление профиля для UserId {UserId}", profile.UserId);
-        var existingClient = await _context.Profiles.FindAsync(profile.UserId) ?? 
+        var existingClient = await _context.Profiles.FindAsync(profile.UserId) ??
             throw new KeyNotFoundException($"Клиент с ID {profile.UserId} не найден");
 
         _context.Entry(existingClient).CurrentValues.SetValues(profile);
@@ -159,10 +157,10 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
         var exist = await _context.Profiles
             .AnyAsync(u => u.UserId == userId, cancellationToken ?? CancellationToken.None)
             .ConfigureAwait(false);
-        if (exist) 
+        if (exist)
             return;
 
-        _context.Profiles.Add( new Profile()
+        _context.Profiles.Add(new Profile()
         {
             UserId = userId,
             FirstName = "",

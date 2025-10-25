@@ -10,6 +10,6 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-app.Run();
+await app.RunAsync();
 
 

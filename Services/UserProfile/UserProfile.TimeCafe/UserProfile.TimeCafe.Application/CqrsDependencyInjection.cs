@@ -1,7 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
-using UserProfile.TimeCafe.Application.CQRS.Behaviors;
-
 namespace UserProfile.TimeCafe.Application;
 
 public static class CqrsDependencyInjection

@@ -1,6 +1,3 @@
-using Main.TimeCafe.Infrastructure.Repositories;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Main.TimeCafe.Infrastructure;
 

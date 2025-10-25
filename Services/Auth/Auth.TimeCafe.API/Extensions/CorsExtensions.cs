@@ -2,11 +2,11 @@ namespace Auth.TimeCafe.API.Extensions;
 
 public static class CorsExtensions
 {
-    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, IConfiguration configuration, string? corsPolicyName)
+    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, string? corsPolicyName)
     {
         services.AddCors(options =>
         {
-            options.AddPolicy(corsPolicyName, p =>
+            options.AddPolicy(corsPolicyName ?? "", p =>
                 p.AllowAnyHeader().
                 AllowAnyMethod().
                 AllowCredentials().

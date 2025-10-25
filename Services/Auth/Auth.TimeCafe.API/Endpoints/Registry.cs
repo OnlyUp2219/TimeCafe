@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+
 using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints;

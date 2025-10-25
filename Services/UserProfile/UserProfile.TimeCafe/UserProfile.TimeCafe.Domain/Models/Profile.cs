@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace UserProfile.TimeCafe.Domain.Models;
 
@@ -30,7 +30,7 @@ public enum Gender : byte
 
 public enum ProfileStatus : byte
 {
-    Pending = 0,    
+    Pending = 0,
     Completed = 1,
     Banned = 2
 }

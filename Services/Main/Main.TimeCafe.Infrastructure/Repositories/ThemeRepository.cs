@@ -1,6 +1,3 @@
-
-using Main.TimeCafe.Domain.Constants;
-
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
 public class ThemeRepository : IThemeRepository

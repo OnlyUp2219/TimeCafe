@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Identity;
-
 namespace Auth.TimeCafe.Domain.Services;
 
 public interface IUserRoleService

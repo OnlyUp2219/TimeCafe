@@ -1,7 +1,3 @@
-using Main.TimeCafe.Infrastructure;
-
-using System.Text.RegularExpressions;
-
 namespace Main.TimeCafe.Infrastructure.Services.ClientServices;
 
 public class ClientValidation : IClientValidation

@@ -10,7 +10,7 @@ public static class AuthenticationExtensions
         var jwtSection = configuration.GetSection("Jwt");
         var issuer = jwtSection["Issuer"];
         var audience = jwtSection["Audience"];
-        var signingKey = jwtSection["SigningKey"] ?? 
+        var signingKey = jwtSection["SigningKey"] ??
             throw new InvalidOperationException("Jwt:SigningKey missing");
         var keyBytes = Encoding.UTF8.GetBytes(signingKey);
 
@@ -36,7 +36,7 @@ public static class AuthenticationExtensions
                     ClockSkew = TimeSpan.FromMinutes(1)
                 };
 
-                #if (DEBUG)
+#if (DEBUG)
                 {
                     options.Events = new JwtBearerEvents
                     {
@@ -47,7 +47,7 @@ public static class AuthenticationExtensions
                         }
                     };
                 }
-                #endif
+#endif
 
             })
             .AddCookie(IdentityConstants.ExternalScheme)

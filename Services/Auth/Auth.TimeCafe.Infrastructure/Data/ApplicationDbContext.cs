@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
-
 namespace Auth.TimeCafe.Infrastructure.Data
 {
     public class ApplicationDbContext : IdentityDbContext

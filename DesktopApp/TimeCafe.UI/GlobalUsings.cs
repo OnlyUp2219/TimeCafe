@@ -1,4 +1,4 @@
-﻿global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
 
 global using Main.TimeCafe.Application.CQRS.BillingTypes.Get;
@@ -14,17 +14,12 @@ global using Main.TimeCafe.Application.CQRS.Themes.Get;
 global using Main.TimeCafe.Application.CQRS.Visits.Command;
 global using Main.TimeCafe.Application.CQRS.Visits.Get;
 global using Main.TimeCafe.Application.Services;
-
-global using Main.TimeCafe.Domain.Contracts.Services.File;
 global using Main.TimeCafe.Domain.Contracts.Services.Clients;
+global using Main.TimeCafe.Domain.Contracts.Services.File;
 global using Main.TimeCafe.Domain.Enums;
 global using Main.TimeCafe.Domain.Models;
-
-global using Main.TimeCafe.Infrastructure.Repositories;
-global using Main.TimeCafe.Infrastructure.Services.ClientServices;
 global using Main.TimeCafe.Infrastructure;
-
-
+global using Main.TimeCafe.Infrastructure.Services.ClientServices;
 
 global using MediatR;
 

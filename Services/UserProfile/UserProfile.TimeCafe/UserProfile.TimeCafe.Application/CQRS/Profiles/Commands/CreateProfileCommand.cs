@@ -1,22 +1,16 @@
-using MediatR;
 using Microsoft.Extensions.Logging;
-using UserProfile.TimeCafe.Domain.Models;
+
 using UserProfile.TimeCafe.Domain.Contracts;
+using UserProfile.TimeCafe.Domain.Models;
 
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
 public record CreateProfileCommand(string UserId, string FirstName, string LastName, Gender Gender) : IRequest<Profile?>;
 
-public class CreateProfileCommandHandler : IRequestHandler<CreateProfileCommand, Profile?>
+public class CreateProfileCommandHandler(IUserRepositories repository, ILogger<CreateProfileCommandHandler> logger) : IRequestHandler<CreateProfileCommand, Profile?>
 {
-    private readonly IUserRepositories _repository;
-    private readonly ILogger<CreateProfileCommandHandler> _logger;
-
-    public CreateProfileCommandHandler(IUserRepositories repository, ILogger<CreateProfileCommandHandler> logger)
-    {
-        _repository = repository;
-        _logger = logger;
-    }
+    private readonly IUserRepositories _repository = repository;
+    private readonly ILogger<CreateProfileCommandHandler> _logger = logger;
 
     public async Task<Profile?> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
     {

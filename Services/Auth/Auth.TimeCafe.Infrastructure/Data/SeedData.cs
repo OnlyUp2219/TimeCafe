@@ -1,6 +1,3 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
 namespace Auth.TimeCafe.Infrastructure.Data;
 
 public static class SeedData

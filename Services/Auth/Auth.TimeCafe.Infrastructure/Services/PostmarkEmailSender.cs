@@ -1,8 +1,3 @@
-using Microsoft.Extensions.Options;
-
-using System.Net.Http.Headers;
-using System.Text.Json;
-
 namespace Auth.TimeCafe.Infrastructure.Services;
 
 public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<IdentityUser>
