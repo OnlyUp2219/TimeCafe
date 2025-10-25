@@ -1,4 +1,5 @@
-using Auth.TimeCafe.API.Extensions;
+
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ builder.Services.AddSwaggerConfiguration(builder.Configuration);
 
 // CORS 
 var corsPolicyName = builder.Configuration.GetSection("CORS");
-builder.Services.AddCorsConfiguration(builder.Configuration, corsPolicyName["PolicyName"]);
+builder.Services.AddCorsConfiguration( corsPolicyName["PolicyName"]);
 
 // Carter
 builder.Services.AddCarter();
@@ -51,7 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(corsPolicyName["PolicyName"]);
+app.UseCors(corsPolicyName["PolicyName"] ?? "");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -64,6 +65,4 @@ app.MapIdentityApi<IdentityUser>();
 // Внешние логины
 app.MapControllers();
 
-app.Run();
-
-
+await app.RunAsync();

@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Http;
-
-using System.Net;
 
 namespace BuildingBlocks.Middleware;
 

@@ -1,7 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-using UserProfile.TimeCafe.API.Middleware;
-using UserProfile.TimeCafe.API.Extensions;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRabbitMqMessaging(builder.Configuration);

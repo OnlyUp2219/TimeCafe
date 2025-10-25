@@ -1,4 +1,4 @@
-namespace UserProfile.TimeCafe.Application.CQRS.Behaviors;
+namespace BuildingBlocks.Behaviors;
 
 public class ErrorHandlingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
