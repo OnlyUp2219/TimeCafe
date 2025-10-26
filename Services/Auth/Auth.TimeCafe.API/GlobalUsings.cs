@@ -23,3 +23,6 @@ global using Microsoft.IdentityModel.Tokens;
 global using Swashbuckle.AspNetCore.Filters;
 
 global using System.Text;
+global using Microsoft.AspNetCore.Authentication;
+
+global using System.Security.Claims;

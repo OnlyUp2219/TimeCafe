@@ -107,7 +107,7 @@ export const Home = () => {
         try {
             await logoutServer(refreshToken, dispatch);
             showToast("Вы вышли из системы", "info");
-            navigate("/login", { replace: true });
+            navigate("/login", {replace: true});
         } catch (e: any) {
             showToast(`Ошибка выхода: ${e?.message ?? e}`, "error");
         }
@@ -137,7 +137,7 @@ export const Home = () => {
             <div className="flex flex-col wrap-anywhere">
                 <Text wrap={true}>
                     <strong>Access token:</strong>{" "}
-                    {accessToken !== null && accessToken !== undefined ? accessToken.slice(0, 50) + "..." : "Загрузка..."}
+                    {accessToken !== null && accessToken !== undefined ? accessToken.slice(0, 500) + "..." : "Загрузка..."}
                     <br/>
                     <br/>
                     <strong>Refresh token:</strong>{" "}

@@ -12,6 +12,10 @@ builder.Services.AddIdentityConfiguration(builder.Configuration);
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
 builder.Services.AddAuthorization();
+
+// Email sender
+builder.Services.AddEmailSender(builder.Configuration);
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -25,8 +29,8 @@ builder.Services.AddCorsConfiguration( corsPolicyName["PolicyName"]);
 // Carter
 builder.Services.AddCarter();
 
-// MassTransit
-builder.Services.AddRabbitMqMessaging(builder.Configuration);
+// MassTransit (отключён для разработки без RabbitMQ)
+// builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 var app = builder.Build();
 

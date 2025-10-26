@@ -113,7 +113,6 @@ public class CreateRegistry : ICarterModule
             .WithTags("Authentication")
             .WithName("ForgotPassword");
 
-        // Logout: revoke provided refresh token (if exists) without issuing new tokens
         app.MapPost("/logout", async (
             [FromBody] LogoutRequest request,
             ApplicationDbContext db,

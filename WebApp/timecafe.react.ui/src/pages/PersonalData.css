@@ -2,12 +2,14 @@
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
+    height: 100%;
 }
 
 .personal-data-section {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex: 1;
 }
 
 .personal-data-photo {

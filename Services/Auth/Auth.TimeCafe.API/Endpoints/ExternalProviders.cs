@@ -1,9 +1,4 @@
-﻿// Updated ExternalProviders.cs with prompt for account selection
-using Microsoft.AspNetCore.Authentication;
-
-using System.Security.Claims;
-
-namespace Auth.TimeCafe.API.Endpoints;
+﻿namespace Auth.TimeCafe.API.Endpoints;
 
 public class ExternalProviders : ICarterModule
 {

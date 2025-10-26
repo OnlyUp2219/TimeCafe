@@ -1,39 +1,25 @@
 import {
-    Button,
-    Title2,
+    Title1,
     Subtitle1,
     Avatar,
     Body1,
-    Body2,
     Tag,
-    Field,
-    Input,
-    Radio,
-    RadioGroup, type AvatarNamedColor,
+    type AvatarNamedColor,
     Card,
+    TabList,
+    Tab,
 } from "@fluentui/react-components";
 import "./PersonalData.css";
-import {createElement, type FC, useState} from "react";
-import {CheckmarkFilled, DismissFilled, type FluentIcon} from '@fluentui/react-icons';
-
-interface Client {
-    clientId: number;
-    firstName: string;
-    lastName: string;
-    middleName?: string;
-    email: string;
-    emailConfirmed?: boolean;
-    genderId?: number;
-    birthDate?: Date;
-    phoneNumber?: string;
-    phoneNumberConfirmed?: boolean | null;
-    accessCardNumber?: string;
-    photo?: string;
-    createdAt: string;
-}
+import {type FC, useState} from "react";
+import {useDispatch} from "react-redux";
+import type {AppDispatch} from "../store";
+import {updateClientProfile} from "../store/clientSlice";
+import {ChangePasswordForm} from "../components/ChangePasswordForm";
+import {PersonalInfoForm} from "../components/PersonalInfoForm";
+import type {ClientInfo} from "../types/client";
 
 export const PersonalData: FC = () => {
-    const client: Client = {
+    const client: ClientInfo = {
         clientId: 1,
         firstName: "Даниил",
         lastName: "Иванов",
@@ -49,7 +35,7 @@ export const PersonalData: FC = () => {
         createdAt: "2023-01-01T12:00:00",
     };
 
-    const getInitials = (client: Client): string => {
+    const getInitials = (client: ClientInfo): string => {
         const parts = [
             client.firstName ? client.firstName[0] : "",
             client.lastName ? client.lastName[0] : "",
@@ -73,23 +59,14 @@ export const PersonalData: FC = () => {
         return "dark-red";
     };
 
-    const getStatusIcon = (Confirmed?: boolean | null): FluentIcon => {
-        if (Confirmed) return CheckmarkFilled;
-        else return DismissFilled;
-    }
-
-
-    const [email, setEmail] = useState(client.email);
-    const [phone, setPhone] = useState(client.phoneNumber);
-    const [date, setDate] = useState(client.birthDate);
-    const handleSubmit = () => {
-        console.log("Email submitted:", email);
-    };
+    const [activeTab, setActiveTab] = useState<'info' | 'password'>('info');
+    const [clientState, setClientState] = useState<ClientInfo>(client);
+    const dispatch = useDispatch<AppDispatch>();
 
 
     return (
-        <div className="personal-data-root gap-[22px]">
-            <Title2>Персональные данные</Title2>
+        <div className="personal-data-root gap-[16px]">
+            <Title1>Персональные данные</Title1>
             <div className="personal-data-section">
                 <Card className="row flex-wrap">
                     <Avatar initials={getInitials(client).toString()}
@@ -108,77 +85,51 @@ export const PersonalData: FC = () => {
 
                         </Body1>
                         <Body1 as="p" block>
-                            <strong>Дата регистрации:</strong> {new Date(client.createdAt).toLocaleDateString()}
+                            <strong>Дата
+                                регистрации:</strong> {client.createdAt ? new Date(client.createdAt).toLocaleDateString() : "—"}
                         </Body1>
                     </div>
                 </Card>
 
-                <Card>
-                    <div className="flex w-full gap-[12px]
-                    justify-stretch flex-wrap flex-row">
-                        <div className="flex-1">
-                            <Field label="Электронная почта" className="w-full">
-                                <div className="input-with-button">
-                                    <Input
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Введите почту"
-                                        className="w-full"
-                                        type="email"
-                                    />
-                                    <Tag appearance="outline" icon={createElement(getStatusIcon(client.emailConfirmed))}
-                                         className={`custom-tag ${getStatusClass(client.emailConfirmed)}`}/>
-                                </div>
-                            </Field>
 
-                            <Field label="Телефон">
-                                <div className="input-with-button">
-                                    <Input
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        placeholder="Введите номер телефона"
-                                        className="w-full"
-                                        type="tel"
+                <TabList selectedValue={activeTab}
+                         appearance="subtle-circular"
+                         onTabSelect={(_, data) => setActiveTab(data.value as 'info' | 'password')}>
+                    <Tab value="info">Персональные данные</Tab>
+                    <Tab value="password">Пароль</Tab>
+                </TabList>
 
-                                    />
-                                    <Tag appearance="outline"
-                                         icon={createElement(getStatusIcon(client.phoneNumberConfirmed))}
-                                         className={`custom-tag ${getStatusClass(client.phoneNumberConfirmed)}`}/>
-                                </div>
-                            </Field>
-                        </div>
-
-                        <div className="flex-1">
-                            <Field label="Дата рождения">
-                                <Input
-                                    value={date ? date.toISOString().split("T")[0] : ""}
-                                    onChange={(e) => setDate(e.target.value ? new Date(e.target.value) : undefined)}
-                                    placeholder="Введите номер телефона"
-                                    type="date"
-                                    className="w-full"
-                                />
-                            </Field>
-
-                            <Field label="Пол">
-                                <RadioGroup>
-                                    <Radio value="Мужчина" label="Мужчина"/>
-                                    <Radio value="Женщина" label="Женщина"/>
-                                    <Radio value="Другое" label="Другое"/>
-                                </RadioGroup>
-                            </Field>
-                        </div>
-                    </div>
-                </Card>
-
-
-                <Body2><strong>Номер карты доступа:</strong> {client.accessCardNumber}</Body2>
-
-                <Button appearance="primary">
-                    Скачать данные
-                </Button>
+                {activeTab === 'info' && (
+                    <PersonalInfoForm
+                        className="flex-1"
+                        client={clientState}
+                        onChange={(changed) => setClientState(prev => ({...prev, ...changed}))}
+                        onSave={(updated) => {
+                            setClientState(prev => ({
+                                ...prev,
+                                ...updated,
+                                createdAt: prev.createdAt
+                            }));
+                            dispatch(updateClientProfile({
+                                email: updated.email,
+                                phoneNumber: updated.phoneNumber,
+                                birthDate: updated.birthDate,
+                                genderId: updated.genderId,
+                            }));
+                        }}
+                        showDownloadButton
+                    />
+                )}
+                {activeTab === 'password' && (
+                    <ChangePasswordForm
+                        className="flex-1"
+                        showCancelButton
+                        onCancel={() => setActiveTab('info')}
+                        redirectToLoginOnSuccess
+                        autoClearTokensOnSuccess
+                    />
+                )}
             </div>
-
-
         </div>
     );
 };

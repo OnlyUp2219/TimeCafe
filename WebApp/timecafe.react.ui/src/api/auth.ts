@@ -1,6 +1,7 @@
 import axios from "axios";
 import {clearTokens, setAccessToken, setRefreshToken} from "../store/authSlice.ts";
 import type {AppDispatch} from "../store";
+import {store} from "../store";
 
 export interface RegisterRequest {
     username: string;
@@ -20,6 +21,11 @@ export interface ResetPasswordEmailRequest {
 export interface ResetPasswordRequest {
     email: string;
     resetCode: string;
+    newPassword: string;
+}
+
+export interface ChangePasswordRequest {
+    currentPassword: string;
     newPassword: string;
 }
 
@@ -148,5 +154,32 @@ export async function logoutServer(refreshToken: string | null, dispatch: AppDis
     } catch (e) {
     } finally {
         dispatch(clearTokens());
+    }
+}
+
+export async function changePassword(data: ChangePasswordRequest): Promise<void> {
+    const state = store.getState();
+    const accessToken = state.auth?.accessToken;
+    
+    if (!accessToken) {
+        throw new Error("Требуется авторизация");
+    }
+
+    try {
+        await axios.post(`${apiBase}/account/change-password`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const res = error.response;
+            if (res?.data?.errors) {
+                throw res.data;
+            }
+            throw new Error(`Ошибка смены пароля (${res?.status ?? "нет ответа"})`);
+        }
+        throw new Error("Неизвестная ошибка при смене пароля");
     }
 }
