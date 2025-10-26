@@ -361,3 +361,20 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# --- Secrets & configuration (added) ---
+# Ignore all appsettings JSON (with potential секреты)
+**/appsettings*.json
+# Keep example templates if you decide завести их
+!**/appsettings.example.json
+
+# Local aggregated secrets files
+secrets.local.*
+
+# Common environment variable files
+.env
+.env.*
+*.env
+
+# Optional: uncomment if you ever generate JSON dumps of secrets
+# secrets.export.json
