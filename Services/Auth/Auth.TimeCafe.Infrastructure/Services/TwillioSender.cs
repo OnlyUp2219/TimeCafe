@@ -1,13 +1,16 @@
 using Auth.TimeCafe.Domain.Contracts;
 
+using Microsoft.Extensions.Logging;
+
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-public class TwilioSender : ITwilioSender
+public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
 {
+    private readonly ILogger<TwilioSender> _logger = logger;
     public async Task<PhoneVerificationModel?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token)
     {
         TwilioClient.Init(accountSid, authToken);
@@ -23,9 +26,12 @@ public class TwilioSender : ITwilioSender
             return new PhoneVerificationModel
             {
                 PhoneNumber = phoneNumber,
-                Code = token,
+                Code = string.Empty
             };
         }
+
+        _logger.LogError("Twilio ошибка при отправке SMS на {PhoneNumber}: ErrorCode={ErrorCode}, ErrorMessage={ErrorMessage}",
+            phoneNumber, message.ErrorCode, message.ErrorMessage);
 
         return null;
     }
