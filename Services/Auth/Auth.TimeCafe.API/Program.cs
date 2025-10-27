@@ -16,6 +16,8 @@ builder.Services.AddAuthorization();
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);
 
+builder.Services.AddSmsServices();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 

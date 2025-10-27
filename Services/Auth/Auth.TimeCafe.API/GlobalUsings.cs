@@ -4,6 +4,7 @@ global using Auth.TimeCafe.Application.DTO;
 global using Auth.TimeCafe.Domain.Events;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Services;
+global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 
@@ -26,3 +27,7 @@ global using System.Text;
 global using Microsoft.AspNetCore.Authentication;
 
 global using System.Security.Claims;
+
+global using Auth.TimeCafe.Application.CQRS.Sender.Queries;
+
+global using MediatR;

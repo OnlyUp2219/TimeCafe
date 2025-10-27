@@ -1,9 +1,9 @@
-﻿namespace Auth.TimeCafe.Application.DTO;
+namespace Auth.TimeCafe.Application.DTO;
 
 public record LoginDto(string Email, string Password);
 
 public class LoginDtoExample : IExamplesProvider<LoginDto>
 {
     public LoginDto GetExamples() =>
-        new LoginDto("user@example.com", "123456");
+        new("user@example.com", "123456");
 }

@@ -1,4 +1,4 @@
-﻿using Auth.TimeCafe.Application.DTO;
+using Auth.TimeCafe.Application.DTO;
 
 namespace Auth.TimeCafe.Application.DTO
 {
@@ -20,7 +20,7 @@ namespace Auth.TimeCafe.Application.DTO
 public class UserDtoExamples : IExamplesProvider<UserDto>
 {
     public UserDto GetExamples() =>
-    new UserDto(
+    new(
         "Daniil",
         "Klimenkov",
         "Andreevich",
