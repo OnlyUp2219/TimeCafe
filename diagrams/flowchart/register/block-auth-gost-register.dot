@@ -4,29 +4,34 @@ digraph register_flow {
   /* Узлы */
   UI   [label="UI\nРегистрация"];
   REG  [label="POST /register"];
-  DEC  [shape=diamond, label="Есть\nпользователь?"]; 
-  ERR  [label="409\nConflict"];
-  CREATE [label="Создать\nучет"];
+  VALID [shape=diamond, label="Валидация\nданных?"]; 
+  ERR_VALID  [label="400\nBad Request"];
+  CREATE [label="Создать\nучет + хеш"];
+  DEC  [shape=diamond, label="Успех\nсоздания?"]; 
+  ERR_EXIST  [label="400\nОшибки"];
   SAVE [label="Сохранить\nБД"];
-  EVENT [label="Событие\nUserReg"];
   TOKENS [label="Выдать\nтокены"];
   OK [label="200\nTokens"];
 
   /* Ряды для змейки (чередование позиций) */
   { rank=same; UI; REG }
-  { rank=same; DEC; ERR }
-  { rank=same; CREATE; SAVE }
-  { rank=same; EVENT; TOKENS }
-  { rank=same; OK }
+  { rank=same; VALID; ERR_VALID }
+  { rank=same; CREATE; DEC }
+  { rank=same; ERR_EXIST; SAVE }
+  { rank=same; TOKENS; OK }
 
   /* Логический поток */
-  UI -> REG -> DEC;
-  DEC -> ERR [label="Да"];
-  DEC -> CREATE [label="Нет"];
-  CREATE -> SAVE -> EVENT -> TOKENS -> OK;
+  UI -> REG -> VALID;
+  VALID -> ERR_VALID [label="Нет"];
+  VALID -> CREATE [label="Да"];
+  CREATE -> DEC;
+  DEC -> ERR_EXIST [label="Нет"];
+  DEC -> SAVE [label="Да"];
+  SAVE -> TOKENS -> OK;
 
   /* Невидимые связи для формирования змейки */
-  REG -> ERR [style=invis, weight=1];
-  ERR -> CREATE [style=invis, weight=1];
-  SAVE -> TOKENS [style=invis, weight=1];
+  REG -> ERR_VALID [style=invis, weight=1];
+  ERR_VALID -> CREATE [style=invis, weight=1];
+  CREATE -> ERR_EXIST [style=invis, weight=1];
+  ERR_EXIST -> TOKENS [style=invis, weight=1];
 }

@@ -45,6 +45,7 @@ public class ExternalProviders : ICarterModule
                 {
                     UserName = email,
                     Email = email,
+                    EmailConfirmed = true
                 };
 
                 var createResult = await userManager.CreateAsync(user);
@@ -55,6 +56,10 @@ public class ExternalProviders : ICarterModule
                 }
 
                 await userManager.AddToRoleAsync(user, "client");
+            }
+            else if (!user.EmailConfirmed)
+            {
+                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
             }
 
             var info = new UserLoginInfo("Google", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Google");
@@ -109,6 +114,7 @@ public class ExternalProviders : ICarterModule
                 {
                     UserName = email,
                     Email = email,
+                    EmailConfirmed = true
                 };
 
                 var createResult = await userManager.CreateAsync(user);
@@ -119,6 +125,10 @@ public class ExternalProviders : ICarterModule
                 }
 
                 await userManager.AddToRoleAsync(user, "client");
+            }
+            else if (!user.EmailConfirmed)
+            {
+                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
             }
 
             var info = new UserLoginInfo("Microsoft", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Microsoft");

@@ -2,37 +2,53 @@ digraph external_oauth_flow {
   rankdir=TB;
   node [shape=rectangle, width=1, height=0.5, fixedsize=true, fontname="GOST Type A,Arial", fontsize=10];
   /* Узлы */
-  UI     [label="UI\nВнешний вход"];
-  START  [label="GET /auth\n/login/provider"];
-  REDIR  [label="Redirect\nOAuth провайдер"];
-  CB     [label="Callback\n/provider/callback"];
-  CLAIMS [label="Извлечь\nclaims"];
-  DECUSR [shape=diamond, label="Есть\nпользователь?"];
-  CREATE [label="Создать +\nроль"];
-  LOAD   [label="Загрузить\nпрофиль"];
-  READY  [label="Пользователь\nготов"];
-  TOKENS [label="Выдать\nтокены"];
-  RET    [label="Redirect\nreturnUrl#tokens"];
+  UI      [label="UI\nВнешний вход"];
+  REDIR   [label="GET /auth\n/login/provider"];
+  CHLNG   [label="Challenge\nпровайдер"];
+  AUTH    [label="OAuth\nаутентификация"];
+  CB      [label="GET callback"];
+  CHK     [shape=diamond, label="Auth\nуспешна?"];
+  ERR401  [label="401\nUnauthorized"];
+  EMAIL   [label="Извлечь\nemail"];
+  CHKEML  [shape=diamond, label="Email\nесть?"];
+  ERRBAD  [label="400\nBad Request"];
+  FIND    [label="Найти\nпользователя"];
+  CHKUSR  [shape=diamond, label="Найден?"];
+  CREATE  [label="Создать +\nроль client"];
+  LINK    [label="Связать\nлогин"];
+  TOKENS  [label="Выдать\nтокены"];
+  RETRN   [label="Redirect\nreturnUrl"];
 
   /* Ряды для змейки */
-  { rank=same; UI; START }
-  { rank=same; REDIR; CB }
-  { rank=same; CLAIMS; DECUSR }
-  { rank=same; CREATE; LOAD }
-  { rank=same; READY; TOKENS }
-  { rank=same; RET }
+  { rank=same; UI; REDIR }
+  { rank=same; CHLNG; AUTH }
+  { rank=same; CB; CHK }
+  { rank=same; ERR401; EMAIL }
+  { rank=same; CHKEML; ERRBAD }
+  { rank=same; FIND; CHKUSR }
+  { rank=same; CREATE; LINK }
+  { rank=same; TOKENS; RETRN }
 
   /* Поток */
-  UI -> START -> REDIR -> CB -> CLAIMS -> DECUSR;
-  DECUSR -> CREATE [label="Нет"];
-  DECUSR -> LOAD   [label="Да"];
-  CREATE -> READY;
-  LOAD -> READY;
-  READY -> TOKENS -> RET;
+  UI -> REDIR -> CHLNG -> AUTH -> CB -> CHK;
+  CHK -> ERR401 [label="Нет"];
+  CHK -> EMAIL [label="Да"];
+  EMAIL -> CHKEML;
+  CHKEML -> ERRBAD [label="Нет"];
+  CHKEML -> FIND [label="Да"];
+  FIND -> CHKUSR;
+  CHKUSR -> CREATE [label="Нет"];
+  CHKUSR -> LINK [label="Да"];
+  CREATE -> LINK;
+  LINK -> TOKENS -> RETRN;
 
-  /* Невидимые связи для контроля положения (формирование змейки) */
-  START -> CB [style=invis, weight=1];
-  CB -> DECUSR [style=invis, weight=1];
-  CLAIMS -> LOAD [style=invis, weight=1];
-  LOAD -> TOKENS [style=invis, weight=1];
+  /* Невидимые связи для змейки */
+  REDIR -> CB [style=invis, weight=1];
+  AUTH -> CB [style=invis, weight=1];
+  CHK -> CHKEML [style=invis, weight=1];
+  ERR401 -> CHKEML [style=invis, weight=1];
+  CHKEML -> CHKUSR [style=invis, weight=1];
+  ERRBAD -> CHKUSR [style=invis, weight=1];
+  CHKUSR -> TOKENS [style=invis, weight=1];
+  LINK -> TOKENS [style=invis, weight=1];
 }

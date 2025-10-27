@@ -1,50 +1,47 @@
 digraph login_refresh_flow {
   rankdir=TB;
   node [shape=rectangle, width=1, height=0.5, fixedsize=true, fontname="GOST Type A,Arial", fontsize=10];
-  /* Узлы */
+  /* Узлы LOGIN */
   LOGIN   [label="UI\nЛогин"];
   POSTL   [label="POST /login"];
-  DECUSR  [shape=diamond, label="Есть\nпользователь?"];
-  ERR401  [label="401"];
-  DECPASS [shape=diamond, label="Пароль\nверен?"];
-  ISSUE   [label="Токены\nвыдать"];
-  OK200   [label="200 Tokens"];
-  STORE   [label="Store\nrefresh"];
-  EXPA    [label="Access\nистек"];
+  CHKCRED [shape=diamond, label="Email +\nпароль OK?"];
+  ERRBAD  [label="400\nBad Request"];
+  GENTKN  [label="Генерация\nтокенов"];
+  OKLOGIN [label="200\nTokens"];
+  
+  /* Узлы REFRESH */
+  CLNT    [label="Клиент\nAccess истек"];
   POSTR   [label="POST /refresh"];
-  DECRF   [shape=diamond, label="Refresh\nвалиден?"];
-  ERR401R [label="401\nLogin"];
-  ROTATE  [label="Ротация"];
-  NEW200  [label="200 New"];
+  CHKRF   [shape=diamond, label="Refresh\nвалиден?"];
+  ERR401  [label="401\nUnauthorized"];
+  NEWTKN  [label="Новые\nтокены"];
+  OKREFRSH [label="200\nNew Tokens"];
 
-  /* Ряды: для змейки чередуем порядок в рангах */
+  /* Ряды для змейки */
   { rank=same; LOGIN; POSTL }
-  { rank=same; DECUSR; ERR401 }
-  { rank=same; DECPASS; ISSUE }
-  { rank=same; OK200; STORE }
-  { rank=same; EXPA; POSTR }
-  { rank=same; DECRF; ERR401R }
-  { rank=same; ROTATE; NEW200 }
+  { rank=same; CHKCRED; ERRBAD }
+  { rank=same; GENTKN; OKLOGIN }
+  { rank=same; CLNT; POSTR }
+  { rank=same; CHKRF; ERR401 }
+  { rank=same; NEWTKN; OKREFRSH }
 
-  /* Основные переходы (логический поток) */
-  LOGIN -> POSTL -> DECUSR;
-  DECUSR -> DECPASS [label="Да"];
-  DECUSR -> ERR401 [label="Нет"];
-  DECPASS -> ISSUE [label="Да"];
-  DECPASS -> ERR401 [label="Нет"];
-  ISSUE -> OK200;
-  OK200 -> STORE;
-  STORE -> EXPA;
-  EXPA -> POSTR;
-  POSTR -> DECRF;
-  DECRF -> ROTATE [label="Да"];
-  DECRF -> ERR401R [label="Нет"];
-  ROTATE -> NEW200;
+  /* Логический поток LOGIN */
+  LOGIN -> POSTL -> CHKCRED;
+  CHKCRED -> ERRBAD [label="Нет"];
+  CHKCRED -> GENTKN [label="Да"];
+  GENTKN -> OKLOGIN;
+  
+  /* Логический поток REFRESH */
+  OKLOGIN -> CLNT;
+  CLNT -> POSTR -> CHKRF;
+  CHKRF -> ERR401 [label="Нет"];
+  CHKRF -> NEWTKN [label="Да"];
+  NEWTKN -> OKREFRSH;
 
-  /* Невидимые ребра помогают формировать змейку: связываем правые узлы с левыми следующих рядов */
-  POSTL -> DECPASS [style=invis, weight=1];
-  ERR401 -> DECPASS [style=invis, weight=1];
-  ISSUE -> EXPA [style=invis, weight=1];
-  STORE -> EXPA [style=invis, weight=1];
-  NEW200 -> /* конец */ NEW200 [style=invis, weight=1];
+  /* Невидимые связи для змейки */
+  POSTL -> GENTKN [style=invis, weight=1];
+  ERRBAD -> GENTKN [style=invis, weight=1];
+  OKLOGIN -> CHKRF [style=invis, weight=1];
+  POSTR -> NEWTKN [style=invis, weight=1];
+  ERR401 -> NEWTKN [style=invis, weight=1];
 }
