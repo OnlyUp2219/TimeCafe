@@ -1,5 +1,5 @@
 import {useLocation, useNavigate} from "react-router-dom";
-import {Button, Field, Input, Subtitle1} from "@fluentui/react-components";
+import {Button, Card, Field, Input, Subtitle1} from "@fluentui/react-components";
 import {validateConfirmPassword, validateEmail, validatePassword} from "../../utility/validate.ts";
 import {resetPassword} from "../../api/auth.ts";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
@@ -72,7 +72,7 @@ export const ResetPassword = () => {
 
 
     return (
-        <div className="auth_card">
+        <Card className="auth_card">
             {ToasterElement}
 
             <Subtitle1 align={"center"}>Восстановление пароля!</Subtitle1>
@@ -134,7 +134,7 @@ export const ResetPassword = () => {
                         type="button">Восстановить</Button>
             </div>
 
-        </div>
+        </Card>
     )
 }
 

@@ -28,20 +28,19 @@
 
 .auth_card {
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-content: stretch;
-    flex-wrap: wrap;
-    gap: 18px;
+    
+
+    gap: 18px !important;
 
     max-width: 500px;
     min-width: 250px;
     min-height: 500px;
 
     width: 100%;
-    border: 2px solid var(--colorNeutralStroke1);
-    padding: var(--spacingHorizontalXXXL);
-    border-radius: var(--borderRadiusXLarge);
+
+    padding: var(--spacingHorizontalXXXL) !important;
+    border-radius: var(--borderRadiusXLarge) !important;
     box-sizing: border-box;
 }
 

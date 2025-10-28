@@ -1,4 +1,4 @@
-import {Button, Input, Link, Field, Divider, Subtitle1} from '@fluentui/react-components'
+import {Button, Input, Link, Field, Divider, Subtitle1, Card} from '@fluentui/react-components'
 import {useNavigate} from "react-router-dom";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
@@ -76,7 +76,7 @@ export const LoginPage = () => {
     }
 
     return (
-        <div className="auth_card">
+        <Card className="auth_card">
             {ToasterElement}
 
             <Subtitle1 align={"center"}>Вход</Subtitle1>
@@ -119,6 +119,6 @@ export const LoginPage = () => {
                     onClick={handleGoogleLogin}>Google</Button>
             <Button icon={<div className="icons8-microsoft"></div>} appearance="outline"
                     onClick={handleMicrosoftLogin}>Microsoft</Button>
-        </div>
+        </Card>
     )
 }

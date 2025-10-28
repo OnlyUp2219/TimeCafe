@@ -1,4 +1,4 @@
-import {Button, Input, Link, Field, Subtitle1} from '@fluentui/react-components';
+import {Button, Input, Link, Field, Subtitle1, Card} from '@fluentui/react-components';
 import {useNavigate} from "react-router-dom";
 import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
@@ -82,7 +82,7 @@ export const SignPage = () => {
 
     return (
 
-        <div className="auth_card">
+        <Card className="auth_card">
 
             {ToasterElement}
 
@@ -145,7 +145,7 @@ export const SignPage = () => {
 
             <Link onClick={() => navigate("/login")}>Войти</Link>
 
-        </div>
+        </Card>
 
     );
 };

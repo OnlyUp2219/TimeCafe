@@ -8,14 +8,14 @@ public class ExternalProviders : ICarterModule
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
-            return Results.Challenge(properties, new[] { "Google" });
+            return Results.Challenge(properties, ["Google"]);
         })
             .WithTags("ExternalProviders"); ;
         app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
-            return Results.Challenge(properties, new[] { "Microsoft" });
+            return Results.Challenge(properties, ["Microsoft"]);
         })
             .WithTags("ExternalProviders");
 

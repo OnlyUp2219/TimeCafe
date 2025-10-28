@@ -16,7 +16,11 @@ builder.Services.AddAuthorization();
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);
 
+// SMS services (Twilio + Rate Limiting)
 builder.Services.AddSmsServices();
+
+// CQRS (MediatR + Pipeline Behaviors)
+builder.Services.AddUserProfileCqrs();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -26,7 +30,7 @@ builder.Services.AddSwaggerConfiguration(builder.Configuration);
 
 // CORS 
 var corsPolicyName = builder.Configuration.GetSection("CORS");
-builder.Services.AddCorsConfiguration( corsPolicyName["PolicyName"]);
+builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
 
 // Carter
 builder.Services.AddCarter();

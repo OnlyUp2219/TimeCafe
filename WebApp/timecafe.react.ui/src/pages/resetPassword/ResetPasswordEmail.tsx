@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import {Button, Field, Input, Subtitle1, Text} from "@fluentui/react-components";
+import {Button, Card, Field, Input, Subtitle1, Text} from "@fluentui/react-components";
 import {validateEmail} from "../../utility/validate.ts";
 import {forgotPassword} from "../../api/auth.ts";
 import {useEffect, useState} from "react";
@@ -58,7 +58,7 @@ export const ResetPasswordEmail = () => {
 
     if (isSent) {
         return (
-            <div className="auth_card p-6">
+            <Card className="auth_card p-6">
                 {ToasterElement}
 
                 <Subtitle1 align="center" style={{marginBottom: 16}}>Сообщение отправлено!</Subtitle1>
@@ -101,14 +101,14 @@ export const ResetPasswordEmail = () => {
                         Изменить email
                     </Button>
                 </div>
-            </div>
+            </Card>
         );
     }
 
 
     if (!isSent) {
         return (
-            <div className="auth_card">
+            <Card className="auth_card">
                 {ToasterElement}
 
                 <Subtitle1 align={"center"}>Забыли пароль?</Subtitle1>
@@ -134,7 +134,7 @@ export const ResetPasswordEmail = () => {
                             type="button">Продолжить</Button>
                 </div>
 
-            </div>
+            </Card>
         )
     }
 }
