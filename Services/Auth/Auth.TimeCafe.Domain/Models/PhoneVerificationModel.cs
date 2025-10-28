@@ -10,5 +10,7 @@ public class PhoneVerificationModel
 
     [Required(ErrorMessage = "Введите код")]
     public string Code { get; set; } = string.Empty;
+    
+    public string? CaptchaToken { get; set; }
 }
 

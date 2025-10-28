@@ -27,3 +27,21 @@ export function validatePassword(password: string): string {
         errors.push("Пароль должен содержать хотя бы 1 букву.");
     return errors.join(" ");
 }
+
+export function validatePhoneNumber(phoneNumber: string): string {
+    const cleaned = phoneNumber.replace(/\D/g, "");
+    
+    if (!phoneNumber.trim())
+        return "Введите номер телефона.";
+    
+    if (cleaned.length < 10)
+        return "Номер телефона должен содержать минимум 10 цифр.";
+    
+    if (cleaned.length > 15)
+        return "Номер телефона слишком длинный.";
+    
+    if (!/^[+]?[0-9\s\-()]+$/.test(phoneNumber))
+        return "Номер телефона содержит недопустимые символы.";
+    
+    return "";
+}

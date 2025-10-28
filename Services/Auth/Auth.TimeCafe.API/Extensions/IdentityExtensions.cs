@@ -25,6 +25,11 @@ public static class IdentityExtensions
         .AddDefaultTokenProviders()
         .AddErrorDescriber<RussianIdentityErrorDescriber>();
 
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromMinutes(10);
+        });
+
         services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();
 
         return services;

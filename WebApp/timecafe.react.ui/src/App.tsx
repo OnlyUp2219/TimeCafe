@@ -2,6 +2,7 @@
 import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
 import {lazy} from 'react';
 import './App.css';
+import "./api/interceptors.ts"
 
 const LoginPage = lazy(() => import('./pages/LoginPage').then(module => ({default: module.LoginPage})));
 const SignPage = lazy(() => import('./pages/SignPage').then(module => ({default: module.SignPage})));

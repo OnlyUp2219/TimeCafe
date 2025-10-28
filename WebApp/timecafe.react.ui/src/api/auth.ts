@@ -29,11 +29,24 @@ export interface ChangePasswordRequest {
     newPassword: string;
 }
 
+export interface PhoneCodeRequest {
+    phoneNumber: string;
+    code: string;
+    captchaToken?: string;
+}
+
+export interface VerifyPhoneResponse {
+    message: string;
+    remainingAttempts?: number;
+    requiresCaptcha?: boolean;
+}
+
 export interface ApiError {
     [key: string]: string[] | string;
 }
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
+const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true"; 
 
 export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<void> {
     try {
@@ -48,8 +61,8 @@ export async function registerUser(data: RegisterRequest, dispatch: AppDispatch)
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
-            if (res?.data?.errors) {
-                throw res.data.errors;
+            if (res?.data) {
+                throw res?.data;
             }
 
             throw new Error(`Ошибка регистрации (${res?.status ?? "нет ответа"})`);
@@ -71,8 +84,8 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
-            if (res?.data?.errors) {
-                throw res.data.errors;
+            if (res?.data) {
+                throw res?.data;
             }
 
             throw new Error(`Ошибка входа (${res?.status ?? "нет ответа"})`);
@@ -108,8 +121,8 @@ export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data?.errors) {
-                throw res.data.errors;
+            if (res?.data) {
+                throw res?.data;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }
@@ -125,8 +138,8 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data?.errors) {
-                const errors: ApiError = res.data.errors;
+            if (res?.data) {
+                const errors: ApiError = res?.data;
                 throw errors;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
@@ -135,36 +148,9 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     }
 }
 
-export async function LogOut(dispatch: AppDispatch): Promise<void> {
-    try {
-        dispatch(clearTokens());
-        window.location.reload();
-    } catch (error) {
-        throw new Error("Неизвестная ошибка при выходе");
-    }
-}
-
-export async function logoutServer(refreshToken: string | null, dispatch: AppDispatch): Promise<void> {
-    try {
-        if (refreshToken) {
-            await axios.post(`${apiBase}/logout`, { refreshToken }, {
-                headers: { "Content-Type": "application/json" }
-            });
-        }
-    } catch (e) {
-    } finally {
-        dispatch(clearTokens());
-    }
-}
-
 export async function changePassword(data: ChangePasswordRequest): Promise<void> {
     const state = store.getState();
     const accessToken = state.auth?.accessToken;
-    
-    if (!accessToken) {
-        throw new Error("Требуется авторизация");
-    }
-
     try {
         await axios.post(`${apiBase}/account/change-password`, data, {
             headers: {
@@ -175,11 +161,74 @@ export async function changePassword(data: ChangePasswordRequest): Promise<void>
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data?.errors) {
+            if (res?.data) {
                 throw res.data;
             }
             throw new Error(`Ошибка смены пароля (${res?.status ?? "нет ответа"})`);
         }
         throw new Error("Неизвестная ошибка при смене пароля");
+    }
+}
+
+export async function logoutServer(refreshToken: string | null, dispatch: AppDispatch): Promise<void> {
+    try {
+        if (refreshToken) {
+            await axios.post(`${apiBase}/logout`, {refreshToken}, {
+                headers: {"Content-Type": "application/json"}
+            });
+        }
+    } catch (e) {
+    } finally {
+        dispatch(clearTokens());
+    }
+}
+
+export async function SendPhoneConfirmation(data: PhoneCodeRequest): Promise<void> {
+    const state = store.getState();
+    const accessToken = state.auth?.accessToken;
+    const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
+
+    try {
+        await axios.post(`${apiBase}${endpoint}`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const res = error.response;
+            if (res?.data) {
+                throw res?.data;
+            }
+
+            throw new Error(`Ошибка отправки кода на телефон - (${res?.status ?? "нет ответа"})`);
+        }
+        throw new Error("Неизвестная ошибка при отправке смс");
+    }
+}
+
+export async function VerifyPhoneConfirmation(data: PhoneCodeRequest): Promise<VerifyPhoneResponse> {
+    const state = store.getState();
+    const accessToken = state.auth?.accessToken;
+    const endpoint = USE_MOCK_SMS ? "/twilio/verifySMS-mock" : "/twilio/verifySMS";
+
+    try {
+        const response = await axios.post(`${apiBase}${endpoint}`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const res = error.response;
+            if (res?.data) {
+                throw res?.data;
+            }
+            throw new Error(`Ошибка подтверждение кода - (${res?.status ?? "нет ответа"})`);
+        }
+        throw new Error("Неизвестная ошибка при подтверждение кода");
     }
 }

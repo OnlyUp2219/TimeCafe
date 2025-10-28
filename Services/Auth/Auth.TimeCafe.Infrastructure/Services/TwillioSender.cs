@@ -13,26 +13,39 @@ public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
     private readonly ILogger<TwilioSender> _logger = logger;
     public async Task<PhoneVerificationModel?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token)
     {
-        TwilioClient.Init(accountSid, authToken);
-
-        var message = await MessageResource.CreateAsync(
-            body: $"Ваш код подтверждения: {token}",
-            from: new Twilio.Types.PhoneNumber(twilioPhoneNumber),
-            to: new Twilio.Types.PhoneNumber(phoneNumber)
-        );
-
-        if (message.ErrorCode == null)
+        try
         {
-            return new PhoneVerificationModel
+            TwilioClient.Init(accountSid, authToken);
+
+            var message = await MessageResource.CreateAsync(
+                body: $"Ваш код подтверждения: {token}",
+                from: new Twilio.Types.PhoneNumber(twilioPhoneNumber),
+                to: new Twilio.Types.PhoneNumber(phoneNumber)
+            );
+
+            if (message.ErrorCode == null)
             {
-                PhoneNumber = phoneNumber,
-                Code = string.Empty
-            };
+                return new PhoneVerificationModel
+                {
+                    PhoneNumber = phoneNumber,
+                    Code = string.Empty
+                };
+            }
+
+            _logger.LogError("Twilio ошибка при отправке SMS на {PhoneNumber}: ErrorCode={ErrorCode}, ErrorMessage={ErrorMessage}",
+                phoneNumber, message.ErrorCode, message.ErrorMessage);
+
+            return null;
         }
-
-        _logger.LogError("Twilio ошибка при отправке SMS на {PhoneNumber}: ErrorCode={ErrorCode}, ErrorMessage={ErrorMessage}",
-            phoneNumber, message.ErrorCode, message.ErrorMessage);
-
-        return null;
+        catch (Twilio.Exceptions.ApiException ex)
+        {
+            _logger.LogError(ex, "Twilio API ошибка при отправке SMS на {PhoneNumber}: {Message}", phoneNumber, ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Неожиданная ошибка при отправке SMS на {PhoneNumber}", phoneNumber);
+            return null;
+        }
     }
 }

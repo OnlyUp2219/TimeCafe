@@ -14,8 +14,8 @@ import {type FC, useState} from "react";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../store";
 import {updateClientProfile} from "../store/clientSlice";
-import {ChangePasswordForm} from "../components/ChangePasswordForm";
-import {PersonalInfoForm} from "../components/PersonalInfoForm";
+import {ChangePasswordForm} from "../components/PersonalDataForm/ChangePasswordForm.tsx";
+import {PersonalInfoForm} from "../components/PersonalDataForm/PersonalInfoForm.tsx";
 import type {ClientInfo} from "../types/client";
 
 export const PersonalData: FC = () => {

@@ -1,5 +1,6 @@
 global using Auth.TimeCafe.API.Extensions;
 global using Auth.TimeCafe.API.Services;
+global using Auth.TimeCafe.Application;
 global using Auth.TimeCafe.Application.DTO;
 global using Auth.TimeCafe.Domain.Events;
 global using Auth.TimeCafe.Domain.Models;

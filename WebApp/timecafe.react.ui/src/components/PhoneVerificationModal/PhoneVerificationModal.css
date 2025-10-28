@@ -1,0 +1,42 @@
+.phone-verification-modal {
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.phone-verification-modal .text-center {
+  text-align: center;
+}
+
+.phone-verification-modal .text-2xl {
+  font-size: 1.5rem;
+}
+
+.phone-verification-modal .tracking-widest {
+  letter-spacing: 0.3em;
+}
+
+.phone-verification-modal .text-gray-600 {
+  color: #6b7280;
+}
+
+.phone-verification-modal .mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.phone-verification-modal .mb-4 {
+  margin-bottom: 1rem;
+}
+
+.phone-verification-modal .mt-4 {
+  margin-top: 1rem;
+}
+
+.phone-verification-modal .w-full {
+  width: 100%;
+}
+
+.resend-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
