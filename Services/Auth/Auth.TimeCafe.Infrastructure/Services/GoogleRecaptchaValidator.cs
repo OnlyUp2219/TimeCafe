@@ -48,7 +48,12 @@ public class GoogleRecaptchaValidator : ICaptchaValidator
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonResponse);
+            
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNameCaseInsensitive = true 
+            };
+            var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonResponse, options);
 
             if (result?.Success == true)
             {

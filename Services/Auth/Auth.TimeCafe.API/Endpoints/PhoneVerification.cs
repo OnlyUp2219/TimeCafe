@@ -11,6 +11,7 @@ public class PhoneVerification : ICarterModule
             UserManager<IdentityUser> userManager,
             ClaimsPrincipal user,
             ISmsRateLimiter rateLimiter,
+            ISmsVerificationAttemptTracker attemptTracker,
             ILogger<PhoneVerification> logger,
             [FromBody] PhoneVerificationModel model
             ) =>
@@ -32,10 +33,11 @@ public class PhoneVerification : ICarterModule
             var token = await userManager.GenerateChangePhoneNumberTokenAsync(u, model.PhoneNumber);
 
             logger.LogWarning("[MOCK] Код подтверждения для {PhoneNumber}: {Token}", model.PhoneNumber, token);
+            attemptTracker.ResetAttempts(userId, model.PhoneNumber);
 
             rateLimiter.RecordSmsSent(userId);
 
-            return Results.Ok(new { phoneNumber = model.PhoneNumber, message = "SMS отправлено (mock)", token = token });
+            return Results.Ok(new { phoneNumber = model.PhoneNumber, message = "SMS отправлено (mock)", token });
         });
 
         group.MapPost("verifySMS-mock", async (
@@ -52,7 +54,7 @@ public class PhoneVerification : ICarterModule
 
             var u = await userManager.FindByIdAsync(userId);
             if (u == null) return Results.NotFound();
-            
+
             if (!attemptTracker.CanVerifyCode(userId, model.PhoneNumber))
             {
                 logger.LogWarning("[MOCK] Превышено количество попыток проверки кода для пользователя {UserId}, телефон {PhoneNumber}", userId, model.PhoneNumber);
@@ -61,15 +63,21 @@ public class PhoneVerification : ICarterModule
                     statusCode: 429
                 );
             }
-            
-            // TODO: BUG - Проверить, что requiresCaptcha: true корректно возвращается при remainingAttempts <= 3
-            // и что GoogleRecaptchaValidator правильно валидирует токен от фронтенда
+
             var remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
-            if (remaining <= 3)
+
+            if (remaining == 3)
             {
+                if (string.IsNullOrEmpty(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+
                 if (!await captchaValidator.ValidateAsync(model.CaptchaToken))
                 {
-                    logger.LogWarning("[MOCK] Неудачная проверка капчи для пользователя {UserId}", userId);
                     return Results.Json(
                         new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
                         statusCode: 400
@@ -90,12 +98,12 @@ public class PhoneVerification : ICarterModule
 
             attemptTracker.RecordFailedAttempt(userId, model.PhoneNumber);
             remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
-            
-            logger.LogWarning("[MOCK] Неудачная попытка подтверждения номера {PhoneNumber} для пользователя {UserId}. Осталось попыток: {Remaining}", 
+
+            logger.LogWarning("[MOCK] Неудачная попытка подтверждения номера {PhoneNumber} для пользователя {UserId}. Осталось попыток: {Remaining}",
                 model.PhoneNumber, userId, remaining);
-            
+
             return Results.Json(
-                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining <= 3 },
+                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
                 statusCode: 400
             );
         });
@@ -107,6 +115,7 @@ public class PhoneVerification : ICarterModule
             ClaimsPrincipal user,
             IConfiguration configuration,
             ISmsRateLimiter rateLimiter,
+            ISmsVerificationAttemptTracker attemptTracker,
             ILogger<PhoneVerification> logger,
             [FromBody] PhoneVerificationModel model
             )
@@ -137,6 +146,7 @@ public class PhoneVerification : ICarterModule
 
                 if (result != null)
                 {
+                    attemptTracker.ResetAttempts(userId, model.PhoneNumber);
                     rateLimiter.RecordSmsSent(userId);
                     return Results.Ok(new { phoneNumber = result.PhoneNumber, message = "SMS отправлено" });
                 }
@@ -159,7 +169,7 @@ public class PhoneVerification : ICarterModule
 
             var u = await userManager.FindByIdAsync(userId);
             if (u == null) return Results.NotFound();
-            
+
             if (!attemptTracker.CanVerifyCode(userId, model.PhoneNumber))
             {
                 logger.LogWarning("Превышено количество попыток проверки кода для пользователя {UserId}, телефон {PhoneNumber}", userId, model.PhoneNumber);
@@ -168,15 +178,21 @@ public class PhoneVerification : ICarterModule
                     statusCode: 429
                 );
             }
-            
-            // TODO: BUG - Проверить, что requiresCaptcha: true корректно возвращается при remainingAttempts <= 3
-            // и что GoogleRecaptchaValidator правильно валидирует токен от фронтенда
+
             var remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
-            if (remaining <= 3)
+
+            if (remaining == 3)
             {
+                if (string.IsNullOrEmpty(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+
                 if (!await captchaValidator.ValidateAsync(model.CaptchaToken))
                 {
-                    logger.LogWarning("Неудачная проверка капчи для пользователя {UserId}", userId);
                     return Results.Json(
                         new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
                         statusCode: 400
@@ -197,12 +213,9 @@ public class PhoneVerification : ICarterModule
 
             attemptTracker.RecordFailedAttempt(userId, model.PhoneNumber);
             remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
-            
-            logger.LogWarning("Неудачная попытка подтверждения номера {PhoneNumber} для пользователя {UserId}. Осталось попыток: {Remaining}", 
-                model.PhoneNumber, userId, remaining);
-            
+
             return Results.Json(
-                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining <= 3 },
+                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
                 statusCode: 400
             );
         });

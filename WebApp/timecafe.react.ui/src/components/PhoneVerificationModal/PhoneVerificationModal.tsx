@@ -1,4 +1,4 @@
-import {useState, useEffect, type FC} from "react";
+import {useState, useEffect, useRef, type FC} from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
     Dialog,
@@ -20,7 +20,7 @@ import type {PhoneCodeRequest} from "../../api/auth";
 import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
 import {validatePhoneNumber} from "../../utility/validate";
 import {getSavedRateLimit, saveRateLimit, clearRateLimit, getRemainingTime} from "./rateLimitHelpers";
-import "./PhoneVerificationModal.css";
+
 
 interface PhoneVerificationModalProps {
     isOpen: boolean;
@@ -52,8 +52,31 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
     const [countdown, setCountdown] = useState(0);
     const [canResend, setCanResend] = useState(true);
+    const [captchaKey, setCaptchaKey] = useState(0);
 
+    const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
+
+    const resetVerificationState = () => {
+        setRemainingAttempts(null);
+        setAttemptsExhausted(false);
+        setRequiresCaptcha(false);
+        setCaptchaToken(null);
+        setVerificationCode("");
+    };
+
+    const resetErrors = () => {
+        setError(null);
+        setValidationError("");
+    };
+
+    const resetCaptcha = () => {
+        setCaptchaToken(null);
+        setCaptchaKey(prev => prev + 1);
+        if (recaptchaRef.current) {
+            recaptchaRef.current.reset();
+        }
+    };
 
     useEffect(() => {
         if (countdown > 0) {
@@ -67,13 +90,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             setPhoneNumber(currentPhoneNumber);
-            setVerificationCode("");
-            setError(null);
-            setValidationError("");
-            setRemainingAttempts(null);
-            setAttemptsExhausted(false);
-            setRequiresCaptcha(false);
-            setCaptchaToken(null);
+            resetVerificationState();
+            resetErrors();
 
             const remainingTime = getRemainingTime(RATE_LIMIT_SECONDS);
             const saved = getSavedRateLimit();
@@ -90,8 +108,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         }
     }, [isOpen, currentPhoneNumber]);
     const handleSendCode = async () => {
-        setError(null);
-        setValidationError("");
+        resetErrors();
 
         const validation = validatePhoneNumber(phoneNumber);
         if (validation) {
@@ -118,6 +135,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             await SendPhoneConfirmation(data);
 
             saveRateLimit(phoneNumber, Date.now());
+            resetVerificationState();
 
             setStep("verify");
             setCountdown(RATE_LIMIT_SECONDS);
@@ -130,17 +148,13 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     const handleVerifyCode = async () => {
-        setError(null);
-        
-        // TODO: BUG - Капча появляется, но после прохождения все равно показывает ошибку "Пройдите проверку капчи"
-        // Нужно добавить логирование и проверить:
-        // 1. Корректно ли передается captchaToken в запрос
-        // 2. Правильно ли обрабатывается ответ с requiresCaptcha от бэкенда
+        resetErrors();
+
         if (requiresCaptcha && !captchaToken) {
             setError("Пройдите проверку капчи");
             return;
         }
-        
+
         setLoading(true);
 
         try {
@@ -149,13 +163,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                 code: verificationCode,
                 captchaToken: captchaToken || undefined,
             };
+
             await VerifyPhoneConfirmation(data);
 
             clearRateLimit();
-            setRemainingAttempts(null);
-            setAttemptsExhausted(false);
-            setRequiresCaptcha(false);
-            setCaptchaToken(null);
+            resetVerificationState();
 
             onSuccess(phoneNumber);
             onClose();
@@ -170,31 +182,28 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             setError(errorMessage);
             setRemainingAttempts(attempts);
             setAttemptsExhausted(exhausted);
-            
+
             if (needsCaptcha) {
                 setRequiresCaptcha(true);
-                setCaptchaToken(null);
+                resetCaptcha();
+            } else {
+                setRequiresCaptcha(false);
             }
         } finally {
             setLoading(false);
         }
     };
     const handleResendCode = async () => {
-        setVerificationCode("");
-        setError(null);
-        setValidationError("");
-        setRemainingAttempts(null);
-        setAttemptsExhausted(false);
-        setRequiresCaptcha(false);
-        setCaptchaToken(null);
+        resetVerificationState();
+        resetErrors();
+        resetCaptcha();
         await handleSendCode();
     };
 
     const handleBack = () => {
         setStep("input");
         setVerificationCode("");
-        setError(null);
-        setValidationError("");
+        resetErrors();
     };
 
     const formatCountdown = (seconds: number): string => {
@@ -222,7 +231,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                     <DialogContent>
                         {step === "input" ? (
                             <>
-                                <Body1 className="mb-4">
+                                <Body1>
                                     Введите номер телефона, на который будет отправлен код подтверждения
                                 </Body1>
                                 <Field
@@ -241,13 +250,12 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                         }}
                                         placeholder="+7 (999) 123-45-67"
                                         disabled={loading}
-                                        className="w-full"
                                     />
                                 </Field>
                             </>
                         ) : (
                             <>
-                                <Body1 className="mb-2">
+                                <Body1>
                                     Код отправлен на номер <strong>{phoneNumber}</strong>
                                 </Body1>
                                 <Field
@@ -272,44 +280,49 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                         placeholder="000000"
                                         maxLength={6}
                                         disabled={loading || attemptsExhausted}
-                                        className="w-full text-center text-2xl tracking-widest"
                                         autoFocus
                                     />
                                 </Field>
 
-                                {requiresCaptcha && RECAPTCHA_SITE_KEY && (
-                                    <div className="mt-4">
+                                {RECAPTCHA_SITE_KEY && (
+                                    <div style={{display: requiresCaptcha ? 'block' : 'none'}}>
                                         <ReCAPTCHA
+                                            key={captchaKey}
+                                            ref={recaptchaRef}
                                             sitekey={RECAPTCHA_SITE_KEY}
                                             onChange={(token) => setCaptchaToken(token)}
                                             onExpired={() => setCaptchaToken(null)}
+                                            onErrored={() => {
+                                                setCaptchaToken(null);
+                                                setError("Ошибка загрузки капчи. Попробуйте обновить страницу.");
+                                            }}
                                         />
                                     </div>
                                 )}
 
-                                <div className="resend-section mt-4">
-                                    {attemptsExhausted ? (
-                                        <Caption1 className="text-red-600">
-                                            Запросите новый код для повторной попытки
-                                        </Caption1>
-                                    ) : !canResend ? (
-                                        <Caption1 className="text-gray-600">
-                                            Отправить повторно через {formatCountdown(countdown)}
-                                        </Caption1>
-                                    ) : (
-                                        <Button
-                                            appearance="subtle"
-                                            onClick={handleResendCode}
-                                            disabled={loading}
-                                        >
-                                            Отправить код повторно
-                                        </Button>
-                                    )}
-                                </div>
+
                             </>
                         )}
                     </DialogContent>
-                    <DialogActions>
+
+                    {step === "verify" && (
+                        <DialogActions position="start">
+                            {!canResend ? (
+                                <Caption1>
+                                    Отправить повторно через {formatCountdown(countdown)}
+                                </Caption1>
+                            ) : (
+                                <Button
+                                    appearance="subtle"
+                                    onClick={handleResendCode}
+                                    disabled={loading}>
+                                    Отправить код повторно
+                                </Button>
+                            )}
+                        </DialogActions>
+                    )}
+
+                    <DialogActions position="end">
                         {step === "input" ? (
                             <>
                                 <Button appearance="secondary" onClick={onClose} disabled={loading}>
@@ -318,9 +331,10 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Button
                                     appearance="primary"
                                     onClick={handleSendCode}
-                                    disabled={loading || !phoneNumber.trim()}
+                                    disabled={loading || !phoneNumber.trim() || countdown > 0}
                                 >
-                                    {loading ? <Spinner size="tiny"/> : "Получить код"}
+                                    {loading ? <Spinner
+                                        size="tiny"/> : countdown > 0 ? `Получить код (${formatCountdown(countdown)})` : "Получить код"}
                                 </Button>
                             </>
                         ) : (

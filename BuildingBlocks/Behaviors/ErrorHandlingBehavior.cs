@@ -1,14 +1,9 @@
 namespace BuildingBlocks.Behaviors;
 
-public class ErrorHandlingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+public class ErrorHandlingBehavior<TRequest, TResponse>(ILogger<ErrorHandlingBehavior<TRequest, TResponse>> logger) : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>
 {
-    private readonly ILogger<ErrorHandlingBehavior<TRequest, TResponse>> _logger;
-
-    public ErrorHandlingBehavior(ILogger<ErrorHandlingBehavior<TRequest, TResponse>> logger)
-    {
-        _logger = logger;
-    }
+    private readonly ILogger<ErrorHandlingBehavior<TRequest, TResponse>> _logger = logger;
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
