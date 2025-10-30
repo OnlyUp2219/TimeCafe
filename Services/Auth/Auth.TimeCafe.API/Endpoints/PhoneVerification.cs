@@ -141,7 +141,7 @@ public class PhoneVerification : ICarterModule
                 string authToken = configuration["Twilio:AuthToken"] ?? "";
                 string twilioPhoneNumber = configuration["Twilio:TwilioPhoneNumber"] ?? "";
 
-                var query = new SendCommand(accountSid, authToken, twilioPhoneNumber, model.PhoneNumber, token);
+                var query = new SendSmsCommand(accountSid, authToken, twilioPhoneNumber, model.PhoneNumber, token);
                 var result = await mediator.Send(query);
 
                 if (result != null)

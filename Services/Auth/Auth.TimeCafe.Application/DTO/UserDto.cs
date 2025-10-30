@@ -1,21 +1,19 @@
-using Auth.TimeCafe.Application.DTO;
+namespace Auth.TimeCafe.Application.DTO;
 
-namespace Auth.TimeCafe.Application.DTO
-{
-    public record UserDto(
-        string FirstName,
-        string LastName,
-        string? MiddleName,
-        string Email,
-        bool EmailConfirmed,
-        int? GenderId,
-        DateTime? BirthDate,
-        string? PhoneNumber,
-        bool? PhoneNumberConfirmed,
-        byte[]? Photo,
-        string? AccessCardNumber
-        );
-}
+public record UserDto(
+    string FirstName,
+    string LastName,
+    string? MiddleName,
+    string Email,
+    bool EmailConfirmed,
+    int? GenderId,
+    DateTime? BirthDate,
+    string? PhoneNumber,
+    bool? PhoneNumberConfirmed,
+    byte[]? Photo,
+    string? AccessCardNumber
+    );
+
 
 public class UserDtoExamples : IExamplesProvider<UserDto>
 {

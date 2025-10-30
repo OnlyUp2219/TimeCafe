@@ -29,9 +29,9 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(ClaimTypes.Role, userRole)
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(ClaimTypes.Role, userRole)
         };
 
         var token = new JwtSecurityToken(

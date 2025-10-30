@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services.Email;
 
 public class NullEmailSender : IEmailSender<IdentityUser>
 {

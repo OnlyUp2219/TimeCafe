@@ -2,17 +2,12 @@ using Auth.TimeCafe.Domain.Contracts;
 
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services.Phone;
 
-public class SmsRateLimiter : ISmsRateLimiter
+public class SmsRateLimiter(IMemoryCache cache) : ISmsRateLimiter
 {
-    private readonly IMemoryCache _cache;
+    private readonly IMemoryCache _cache = cache;
     private readonly TimeSpan _throttleTime = TimeSpan.FromMinutes(1);
-
-    public SmsRateLimiter(IMemoryCache cache)
-    {
-        _cache = cache;
-    }
 
     public bool CanSendSms(string userId)
     {

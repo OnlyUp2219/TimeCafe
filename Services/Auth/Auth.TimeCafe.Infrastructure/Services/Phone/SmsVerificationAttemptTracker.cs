@@ -1,18 +1,14 @@
 using Auth.TimeCafe.Domain.Contracts;
+
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services.Phone;
 
-public class SmsVerificationAttemptTracker : ISmsVerificationAttemptTracker
+public class SmsVerificationAttemptTracker(IMemoryCache cache) : ISmsVerificationAttemptTracker
 {
-    private readonly IMemoryCache _cache;
+    private readonly IMemoryCache _cache = cache;
     private const int MaxAttempts = 5;
     private const int AttemptWindowMinutes = 10;
-
-    public SmsVerificationAttemptTracker(IMemoryCache cache)
-    {
-        _cache = cache;
-    }
 
     public bool CanVerifyCode(string userId, string phoneNumber)
     {

@@ -6,7 +6,7 @@ using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
 
-namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services.Phone;
 
 public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
 {
