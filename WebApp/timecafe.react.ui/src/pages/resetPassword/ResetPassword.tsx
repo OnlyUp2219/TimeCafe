@@ -5,7 +5,6 @@ import {resetPassword} from "../../api/auth.ts";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {useEffect, useState} from "react";
 
-
 export const ResetPassword = () => {
     const navigate = useNavigate();
     const location = useLocation();

@@ -6,7 +6,6 @@ import {useEffect, useState} from "react";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {parseErrorMessage} from "../../utility/errors.ts";
 
-
 export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
@@ -17,9 +16,10 @@ export const ResetPasswordEmail = () => {
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
-    const [link, setLink] = useState("");
+    const [link, setLink] = useState<string | null>(null);
+    const useMockEmail = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
-
+    // Todo убрать после тестов
     useEffect(() => {
         setEmail("klimenkokov1@timecafesharp.ru");
     }, []);
@@ -37,7 +37,7 @@ export const ResetPasswordEmail = () => {
         try {
             const res = await forgotPassword({email});
             setIsSent(true);
-            setLink(res.callbackUrl);
+            setLink(res.callbackUrl ?? null);
         } catch (err: any) {
             const newErrors = {email: ""};
 
@@ -67,9 +67,11 @@ export const ResetPasswordEmail = () => {
                     Письмо для сброса пароля отправлено на <strong>{email}</strong>.
                 </Text>
 
-                <Text className="flex flex-wrap break-words">
-                    <a className="break-all hyphens-auto" href={link}>Ссылка </a> для сброса пароля.
-                </Text>
+                {useMockEmail && link && (
+                    <Text className="flex flex-wrap break-words">
+                        <a className="break-all hyphens-auto" href={link}>Ссылка</a> для сброса пароля (Mock режим).
+                    </Text>
+                )}
 
                 <Text>
                     Проверьте свой почтовый ящик, включая папку "Спам". Ссылка для восстановления пароля действительна

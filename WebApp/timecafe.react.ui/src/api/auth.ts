@@ -46,7 +46,8 @@ export interface ApiError {
 }
 
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
-const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true"; 
+const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
+const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true"; 
 
 export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<void> {
     try {
@@ -111,9 +112,11 @@ export async function refreshToken(refreshToken: string, dispatch: AppDispatch):
     }
 }
 
-export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{ callbackUrl: string }> {
+export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{ message?: string; callbackUrl?: string }> {
+    const endpoint = USE_MOCK_EMAIL ? "/forgot-password-link-mock" : "/forgot-password-link";
+    
     try {
-        const response = await axios.post<{ callbackUrl: string }>(`${apiBase}/forgot-password-link`, data, {
+        const response = await axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}${endpoint}`, data, {
             headers: {"Content-Type": "application/json"},
         });
 

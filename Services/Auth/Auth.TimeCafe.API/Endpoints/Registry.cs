@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
-
 using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints;
@@ -83,36 +80,6 @@ public class CreateRegistry : ICarterModule
             .WithName("Test401");
 
 
-        app.MapPost("/forgot-password-link", async (
-            [FromBody] ResetPasswordEmailRequest request,
-            UserManager<IdentityUser> userManager,
-            IEmailSender<IdentityUser> emailSender,
-            IOptions<PostmarkOptions> postmarkOptions) =>
-        {
-            if (string.IsNullOrWhiteSpace(request.Email))
-                return Results.BadRequest(new { errors = new { email = "Email is required" } });
-
-            var user = await userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                return Results.Ok();
-
-            var token = await userManager.GeneratePasswordResetTokenAsync(user);
-            var frontendBaseUrl = postmarkOptions.Value.FrontendBaseUrl;
-            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-            if (string.IsNullOrWhiteSpace(frontendBaseUrl))
-                return Results.Problem("FrontendBaseUrl is not configured");
-
-            var callbackUrl = $"{frontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
-
-            //await emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
-            //return Results.Ok(new { message = "Ссылка для сброса пароля отправлена" });
-            return Results.Ok(new { callbackUrl });
-
-        })
-            .WithTags("Authentication")
-            .WithName("ForgotPassword");
-
         app.MapPost("/logout", async (
             [FromBody] LogoutRequest request,
             ApplicationDbContext db,
@@ -145,12 +112,5 @@ public class CreateRegistry : ICarterModule
     }
 }
 
-public class ResetPasswordEmailRequest
-{
-    public string Email { get; set; } = string.Empty;
-}
-
-public class LogoutRequest
-{
-    public string RefreshToken { get; set; } = string.Empty;
-}
+public record class LogoutRequest(string RefreshToken);
+public record JwtRefreshRequest(string RefreshToken);
