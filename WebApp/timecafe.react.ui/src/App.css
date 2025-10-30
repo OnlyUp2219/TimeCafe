@@ -29,7 +29,6 @@
 .auth_card {
     display: flex;
     justify-content: center;
-    
 
     gap: 18px !important;
 
@@ -133,4 +132,20 @@
     padding: 1rem;
     border-top: 1px solid var(--colorNeutralStroke1);
     font-size: 0.9rem;
+}
+
+
+.button-action {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    column-gap: 48px;
+    row-gap: 16px;
+}
+
+@media (max-width: 480px) {
+    .button-action {
+        flex-direction: column;
+    }
 }

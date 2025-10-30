@@ -41,13 +41,9 @@ export interface VerifyPhoneResponse {
     requiresCaptcha?: boolean;
 }
 
-export interface ApiError {
-    [key: string]: string[] | string;
-}
-
 const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
-const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true"; 
+const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
 export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<void> {
     try {
@@ -112,9 +108,14 @@ export async function refreshToken(refreshToken: string, dispatch: AppDispatch):
     }
 }
 
-export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{ message?: string; callbackUrl?: string }> {
+export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{
+    message?: string;
+    callbackUrl?: string
+}> {
     const endpoint = USE_MOCK_EMAIL ? "/forgot-password-link-mock" : "/forgot-password-link";
-    
+    console.log("Using endpoint:", endpoint);
+    console.log(data);
+    console.log(Date.now());
     try {
         const response = await axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}${endpoint}`, data, {
             headers: {"Content-Type": "application/json"},
@@ -142,8 +143,7 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
         if (axios.isAxiosError(error)) {
             const res = error.response;
             if (res?.data) {
-                const errors: ApiError = res?.data;
-                throw errors;
+                throw res?.data;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }

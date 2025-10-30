@@ -1,7 +1,7 @@
 global using Auth.TimeCafe.API.Extensions;
 global using Auth.TimeCafe.API.Services;
 global using Auth.TimeCafe.Application;
-global using Auth.TimeCafe.Application.CQRS.Sender.Queries;
+global using Auth.TimeCafe.Application.CQRS.Sender.Commands;
 global using Auth.TimeCafe.Application.DTO;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Events;

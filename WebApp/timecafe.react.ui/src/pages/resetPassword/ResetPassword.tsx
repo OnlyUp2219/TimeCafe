@@ -105,6 +105,7 @@ export const ResetPassword = () => {
                     value={password}
                     placeholder="Введите пароль"
                     type="password"
+                    autoComplete="new-password"
                     onChange={(_, data) => setPassword(data.value)}
                 />
             </Field>
@@ -118,6 +119,7 @@ export const ResetPassword = () => {
                 <Input
                     type="password"
                     value={confirmPassword}
+                    autoComplete="new-password"
                     onChange={(_, data) => setConfirmPassword(data.value)}
                     placeholder="Повторите пароль"
                 />

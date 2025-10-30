@@ -1,6 +1,4 @@
-using Auth.TimeCafe.Domain.Contracts;
-
-namespace Auth.TimeCafe.Application.CQRS.Sender.Queries;
+namespace Auth.TimeCafe.Application.CQRS.Sender.Commands;
 
 public record class SendSmsCommand(string AccountSid, string AuthToken, string TwilioPhoneNumber, string PhoneNumber, string Token) : IRequest<PhoneVerificationModel?>;
 

@@ -1,3 +1,4 @@
+global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
 
 global using BuildingBlocks.Behaviors;

@@ -8,17 +8,28 @@ public class ForgotPasswordCommandHandler(
     UserManager<IdentityUser> userManager,
     IEmailSender<IdentityUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
+    IRateLimiter rateLimiter,
     ILogger<ForgotPasswordCommandHandler> logger) : IRequestHandler<ForgotPasswordCommand, ForgotPasswordResult>
 {
     private readonly UserManager<IdentityUser> _userManager = userManager;
     private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    private readonly IRateLimiter _rateLimiter = rateLimiter;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
 
     public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
             return new ForgotPasswordResult(false, Error: "Email is required");
+
+        if (!_rateLimiter.CanProceed($"email_{request.Email}"))
+        {
+            var remainingSeconds = _rateLimiter.GetRemainingSeconds($"email_{request.Email}");
+            return new ForgotPasswordResult(
+                false, 
+                Error: $"Пожалуйста, подождите {remainingSeconds} секунд перед повторной отправкой письма"
+            );
+        }
 
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
@@ -40,6 +51,9 @@ public class ForgotPasswordCommandHandler(
             try
             {
                 await _emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
+                
+                _rateLimiter.RecordAction($"email_{request.Email}");
+                
                 return new ForgotPasswordResult(true, Message: "Ссылка для сброса пароля отправлена");
             }
             catch (Exception ex)

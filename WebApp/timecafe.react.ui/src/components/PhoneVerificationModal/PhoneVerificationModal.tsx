@@ -19,7 +19,7 @@ import {SendPhoneConfirmation, VerifyPhoneConfirmation} from "../../api/auth";
 import type {PhoneCodeRequest} from "../../api/auth";
 import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
 import {validatePhoneNumber} from "../../utility/validate";
-import {getSavedRateLimit, saveRateLimit, clearRateLimit, getRemainingTime} from "./rateLimitHelpers";
+import {RateLimiter} from "../../utility/rateLimitHelpers";
 
 
 interface PhoneVerificationModalProps {
@@ -31,7 +31,8 @@ interface PhoneVerificationModalProps {
 
 type Step = "input" | "verify";
 
-const RATE_LIMIT_SECONDS = 60;
+const smsRateLimiter = new RateLimiter("sms_rate_limit");
+const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_SMS_RATE_LIMIT_SECONDS || "60");
 
 export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             isOpen,
@@ -93,10 +94,10 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             resetVerificationState();
             resetErrors();
 
-            const remainingTime = getRemainingTime(RATE_LIMIT_SECONDS);
-            const saved = getSavedRateLimit();
+            const remainingTime = smsRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
+            const saved = smsRateLimiter.getSavedRateLimit();
 
-            if (remainingTime > 0 && saved.phoneNumber === currentPhoneNumber) {
+            if (remainingTime > 0 && saved.identifier === currentPhoneNumber) {
                 setStep("verify");
                 setCountdown(remainingTime);
                 setCanResend(false);
@@ -116,9 +117,9 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             return;
         }
 
-        const remainingTime = getRemainingTime(RATE_LIMIT_SECONDS);
-        const saved = getSavedRateLimit();
-        if (remainingTime > 0 && saved.phoneNumber === phoneNumber) {
+        const remainingTime = smsRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
+        const saved = smsRateLimiter.getSavedRateLimit();
+        if (remainingTime > 0 && saved.identifier === phoneNumber) {
             setStep("verify");
             setCountdown(remainingTime);
             setCanResend(false);
@@ -134,7 +135,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             };
             await SendPhoneConfirmation(data);
 
-            saveRateLimit(phoneNumber, Date.now());
+            smsRateLimiter.saveRateLimit(phoneNumber, Date.now());
             resetVerificationState();
 
             setStep("verify");
@@ -166,7 +167,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
             await VerifyPhoneConfirmation(data);
 
-            clearRateLimit();
+            smsRateLimiter.clearRateLimit();
             resetVerificationState();
 
             onSuccess(phoneNumber);

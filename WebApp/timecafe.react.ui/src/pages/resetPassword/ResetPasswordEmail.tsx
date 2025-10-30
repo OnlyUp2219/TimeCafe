@@ -5,6 +5,10 @@ import {forgotPassword} from "../../api/auth.ts";
 import {useEffect, useState} from "react";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {parseErrorMessage} from "../../utility/errors.ts";
+import {RateLimiter} from "../../utility/rateLimitHelpers.ts";
+
+const emailRateLimiter = new RateLimiter("email_rate_limit");
+const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_EMAIL_RATE_LIMIT_SECONDS || "60");
 
 export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
@@ -17,6 +21,7 @@ export const ResetPasswordEmail = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
     const [link, setLink] = useState<string | null>(null);
+    const [remainingTime, setRemainingTime] = useState(0);
     const useMockEmail = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
     // Todo убрать после тестов
@@ -24,6 +29,29 @@ export const ResetPasswordEmail = () => {
         setEmail("klimenkokov1@timecafesharp.ru");
     }, []);
 
+    useEffect(() => {
+        if (email) {
+            const saved = emailRateLimiter.getSavedRateLimit();
+
+            if (saved.identifier === email) {
+                const remaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
+                setRemainingTime(remaining);
+
+                if (remaining > 0) {
+                    const interval = setInterval(() => {
+                        const newRemaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
+                        setRemainingTime(newRemaining);
+                        if (newRemaining === 0) {
+                            clearInterval(interval);
+                        }
+                    }, 1000);
+                    return () => clearInterval(interval);
+                }
+            } else {
+                setRemainingTime(0);
+            }
+        }
+    }, [email]);
     const validate = () => {
         const emailError = validateEmail(email);
         setErrors({email: emailError});
@@ -33,9 +61,24 @@ export const ResetPasswordEmail = () => {
     const handleSubmit = async () => {
         if (!validate()) return;
 
+        if (remainingTime > 0) {
+            setIsSent(true);
+            return;
+        }
+
+        if (!emailRateLimiter.canProceed(email, RATE_LIMIT_SECONDS)) {
+            const remaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
+            showToast(`Подождите ${remaining} сек. перед повторной отправкой`, "warning");
+            return;
+        }
+
         setIsSubmitting(true);
         try {
             const res = await forgotPassword({email});
+
+            emailRateLimiter.saveRateLimit(email, Date.now());
+            setRemainingTime(RATE_LIMIT_SECONDS);
+
             setIsSent(true);
             setLink(res.callbackUrl ?? null);
         } catch (err: any) {
@@ -78,9 +121,10 @@ export const ResetPasswordEmail = () => {
                     ограниченное время.
                 </Text>
 
-                <div className="flex flex-col gap-[12px] mb-4">
+                <div className="button-action">
                     <Button
-                        appearance="primary"
+                        className="flex-[1]"
+                        appearance="secondary"
                         onClick={() => window.open("https://mail.google.com", "_blank")}
                         type="button"
                     >
@@ -88,19 +132,12 @@ export const ResetPasswordEmail = () => {
                     </Button>
 
                     <Button
-                        appearance="secondary"
+                        className="flex-[1.5]"
+                        appearance="primary"
                         onClick={() => navigate("/login")}
                         type="button"
                     >
-                        Продолжить в приложении
-                    </Button>
-
-                    <Button
-                        appearance="transparent"
-                        onClick={() => setIsSent(false)}
-                        type="button"
-                    >
-                        Изменить email
+                        Продолжить
                     </Button>
                 </div>
             </Card>
@@ -119,21 +156,36 @@ export const ResetPasswordEmail = () => {
                        required
                        validationState={errors.email ? "error" : undefined}
                        validationMessage={errors.email}
+                       hint={remainingTime > 0
+                           ? `Повторная отправка через ${remainingTime} сек.`
+                           : ""}
                 >
                     <Input
                         value={email}
                         placeholder="Введите почту"
                         type="email"
                         onChange={(_, data) => setEmail(data.value)}
+                        disabled={remainingTime > 0}
                     />
                 </Field>
 
-                <div className="flex w-full justify-between flex-wrap gap-x-[48px] gap-y-[16px]">
-                    <Button className="flex-[1]" appearance="secondary" onClick={() => navigate(-1)}
+                <div className="button-action">
+                    <Button className="flex-[1] "
+                            appearance="secondary"
+                            onClick={() => navigate(-1)}
                             type="button">Назад</Button>
 
-                    <Button className="flex-[1.5]" appearance="primary" onClick={handleSubmit} disabled={isSubmitting}
-                            type="button">Продолжить</Button>
+                    <Button
+                        className="flex-[1.5]"
+                        appearance="primary"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        type="button"
+                    >
+                        {remainingTime > 0
+                            ? `К сообщению`
+                            : "Продолжить"}
+                    </Button>
                 </div>
 
             </Card>
