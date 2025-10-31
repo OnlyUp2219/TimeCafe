@@ -8,14 +8,12 @@ public class ForgotPasswordCommandHandler(
     UserManager<IdentityUser> userManager,
     IEmailSender<IdentityUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
-    IRateLimiter rateLimiter,
-    ILogger<ForgotPasswordCommandHandler> logger) : IRequestHandler<ForgotPasswordCommand, Result<ForgotPasswordResponse>>
+    IRateLimiter rateLimiter) : IRequestHandler<ForgotPasswordCommand, Result<ForgotPasswordResponse>>
 {
     private readonly UserManager<IdentityUser> _userManager = userManager;
     private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly IRateLimiter _rateLimiter = rateLimiter;
-    private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
 
     public async Task<Result<ForgotPasswordResponse>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
@@ -43,7 +41,6 @@ public class ForgotPasswordCommandHandler(
 
         if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
         {
-            _logger.LogError("FrontendBaseUrl не настроен в конфигурации Postmark");
             return Result<ForgotPasswordResponse>.Failure("Конфигурация не настроена");
         }
 
@@ -60,9 +57,8 @@ public class ForgotPasswordCommandHandler(
                     new ForgotPasswordResponse(Message: "Ссылка для сброса пароля отправлена")
                 );
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
                 return Result<ForgotPasswordResponse>.Failure("Ошибка при отправке письма");
             }
         }

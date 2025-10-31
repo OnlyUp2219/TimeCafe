@@ -12,16 +12,32 @@ public class CreateRegistry : ICarterModule
             IMediator mediator,
             [FromBody] RegisterDto dto) =>
         {
-            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password);
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
             var result = await mediator.Send(command);
 
             if (!result.IsSuccess)
                 return Results.BadRequest(new { errors = result.Errors });
 
-            return Results.Ok(result.Data);
+            return Results.Ok(new { message = result.Data });
         })
             .WithTags("Authentication")
             .WithName("Register");
+
+        app.MapPost("/registerWithUsername-mock", async (
+            IMediator mediator,
+            [FromBody] RegisterDto dto) =>
+        {
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
+            var result = await mediator.Send(command);
+
+            if (!result.IsSuccess)
+                return Results.BadRequest(new { errors = result.Errors });
+
+            return Results.Ok(new { message = result.Data!.Message, confirmLink = result.Data.ConfirmLink });
+        })
+            .WithTags("Authentication")
+            .WithName("RegisterMock")
+            .WithSummary("Mock: Возвращает ссылку подтверждения без отправки email");
 
         app.MapPost("/login-jwt", async (
             IMediator mediator,

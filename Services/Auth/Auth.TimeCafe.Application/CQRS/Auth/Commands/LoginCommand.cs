@@ -13,13 +13,12 @@ public class LoginCommandHandler(
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         
-        if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
+        if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password) || !user.EmailConfirmed)
         {
             return Result<TokensDto>.Failure(new List<string> { "Неверный email или пароль" });
         }
 
         var tokens = await _jwtService.GenerateTokens(user);
-
         return Result<TokensDto>.Success(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
     }
 }
