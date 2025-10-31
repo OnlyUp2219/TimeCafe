@@ -14,6 +14,7 @@ const ResetPassword = lazy(() => import('./pages/resetPassword/ResetPassword').t
 const ResetPasswordEmail = lazy(() => import('./pages/resetPassword/ResetPasswordEmail').then(module => ({default: module.ResetPasswordEmail})));
 const PrivateRoute = lazy(() => import('./components/PrivateRoute/PrivateRoute').then(module => ({default: module.PrivateRoute})));
 const ExternalCallback = lazy(() => import('./pages/ExternalCallback').then(module => ({default: module.ExternalCallback})));
+const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail').then(module => ({default: module.ConfirmEmail})));
 
 export default function App() {
     return (
@@ -26,6 +27,7 @@ export default function App() {
                         <Route path={"resetPassword"} element={<ResetPassword/>}/>
                         <Route path={"resetPasswordEmail"} element={<ResetPasswordEmail/>}/>
                         <Route path="external-callback" element={<ExternalCallback/>}/>
+                        <Route path="confirm-email" element={<ConfirmEmail/>}/>
                     </Route>
 
                     <Route element={<MainLayout/>}>
