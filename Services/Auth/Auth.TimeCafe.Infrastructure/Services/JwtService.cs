@@ -1,21 +1,12 @@
-
-
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-
-public record AuthResponse(string AccessToken, string RefreshToken, string Role, int ExpiresIn);
-
-public interface IJwtService
-{
-    Task<AuthResponse> GenerateTokens(IdentityUser user);
-    ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
-    Task<AuthResponse?> RefreshTokens(string refreshToken);
-}
-
-public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
+public class JwtService(
+    IConfiguration configuration,
+    IRefreshTokenRepository refreshTokenRepository,
+    IUserRoleService userRoleService) : IJwtService
 {
     private readonly IConfiguration _configuration = configuration;
-    private readonly ApplicationDbContext _context = context;
+    private readonly IRefreshTokenRepository _refreshTokenRepository = refreshTokenRepository;
     private readonly IUserRoleService _userRoleService = userRoleService;
 
     public async Task<AuthResponse> GenerateTokens(IdentityUser user)
@@ -47,13 +38,12 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         {
             Token = refreshToken,
             UserId = user.Id,
-            Expires = DateTime.UtcNow.AddDays(30), // RefreshTokenExpirationDays
+            Expires = DateTime.UtcNow.AddDays(30),
             Created = DateTime.UtcNow
         };
 
-        _context.RefreshTokens.Add(tokenEntity);
-        await _context.SaveChangesAsync();
-
+        await _refreshTokenRepository.AddAsync(tokenEntity);
+        await _refreshTokenRepository.SaveChangesAsync();
 
         return new AuthResponse(
             AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
@@ -91,17 +81,16 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
     public async Task<AuthResponse?> RefreshTokens(string refreshToken)
     {
-        var tokenEntity = await _context.RefreshTokens
-            .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.Token == refreshToken && !t.IsRevoked);
+        var tokenEntity = await _refreshTokenRepository.GetActiveTokenAsync(refreshToken);
 
-        if (tokenEntity == null || tokenEntity.Expires < DateTime.UtcNow)
+        if (tokenEntity == null)
             return null;
 
         tokenEntity.IsRevoked = true;
+        await _refreshTokenRepository.UpdateAsync(tokenEntity);
 
         var newTokens = await GenerateTokens(tokenEntity.User);
-        await _context.SaveChangesAsync();
+        await _refreshTokenRepository.SaveChangesAsync();
 
         return newTokens;
     }

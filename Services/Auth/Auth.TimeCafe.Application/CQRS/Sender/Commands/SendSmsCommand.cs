@@ -1,13 +1,20 @@
 namespace Auth.TimeCafe.Application.CQRS.Sender.Commands;
 
-public record class SendSmsCommand(string AccountSid, string AuthToken, string TwilioPhoneNumber, string PhoneNumber, string Token) : IRequest<PhoneVerificationModel?>;
+public record SendSmsCommand(
+    string AccountSid,
+    string AuthToken,
+    string TwilioPhoneNumber,
+    string PhoneNumber,
+    string Token) : IRequest<Result<PhoneVerificationModel>>;
 
-public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCommandHendler> logger) : IRequestHandler<SendSmsCommand, PhoneVerificationModel?>
+public class SendSmsCommandHandler(
+    ITwilioSender twilioSender,
+    ILogger<SendSmsCommandHandler> logger) : IRequestHandler<SendSmsCommand, Result<PhoneVerificationModel>>
 {
     private readonly ITwilioSender _twilioSender = twilioSender;
-    private readonly ILogger<SendSmsCommandHendler> _logger = logger;
+    private readonly ILogger<SendSmsCommandHandler> _logger = logger;
 
-    public async Task<PhoneVerificationModel?> Handle(SendSmsCommand request, CancellationToken cancellationToken)
+    public async Task<Result<PhoneVerificationModel>> Handle(SendSmsCommand request, CancellationToken cancellationToken)
     {
         var result = await _twilioSender.SendAsync(
             request.AccountSid,
@@ -15,12 +22,13 @@ public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCo
             request.TwilioPhoneNumber,
             request.PhoneNumber,
             request.Token);
-
+        //Todo rate limiter
         if (result == null)
         {
             _logger.LogWarning("Не удалось отправить SMS на номер {PhoneNumber}", request.PhoneNumber);
+            return Result<PhoneVerificationModel>.Failure("Не удалось отправить SMS");
         }
 
-        return result;
+        return Result<PhoneVerificationModel>.Success(result);
     }
 }

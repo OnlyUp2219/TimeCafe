@@ -146,15 +146,16 @@ public class PhoneVerification : ICarterModule
                 var query = new SendSmsCommand(accountSid, authToken, twilioPhoneNumber, model.PhoneNumber, token);
                 var result = await mediator.Send(query);
 
-                if (result != null)
+                if (!result.IsSuccess)
                 {
-                    attemptTracker.ResetAttempts(userId, model.PhoneNumber);
-                    rateLimiter.RecordAction($"sms_{userId}");
-                    return Results.Ok(new { phoneNumber = result.PhoneNumber, message = "SMS отправлено" });
+                    logger.LogError("Ошибка при отправке SMS для номера {PhoneNumber}, пользователь {UserId}: {Errors}", 
+                        model.PhoneNumber, userId, string.Join(", ", result.Errors));
+                    return Results.BadRequest(new { errors = result.Errors });
                 }
 
-                logger.LogError("Ошибка при отправке SMS для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
-                return Results.BadRequest("Ошибка при отправке SMS");
+                attemptTracker.ResetAttempts(userId, model.PhoneNumber);
+                rateLimiter.RecordAction($"sms_{userId}");
+                return Results.Ok(new { phoneNumber = result.Data!.PhoneNumber, message = "SMS отправлено" });
             });
 
         group.MapPost("verifySMS", async (

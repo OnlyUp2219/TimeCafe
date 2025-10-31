@@ -1,3 +1,4 @@
+
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Services;
@@ -22,3 +23,6 @@ global using System.Security.Claims;
 global using System.Security.Cryptography;
 global using System.Text;
 global using System.Text.Json;
+
+global using Auth.TimeCafe.Application.Contracts;
+global using Auth.TimeCafe.Application.DTO;

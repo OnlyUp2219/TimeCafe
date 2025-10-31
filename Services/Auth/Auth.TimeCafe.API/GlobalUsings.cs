@@ -8,6 +8,7 @@ global using Auth.TimeCafe.Domain.Events;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Services;
 global using Auth.TimeCafe.Infrastructure.Data;
+global using Auth.TimeCafe.Infrastructure.Data.Repositories;
 global using Auth.TimeCafe.Infrastructure.Services;
 
 global using BuildingBlocks.Middleware;

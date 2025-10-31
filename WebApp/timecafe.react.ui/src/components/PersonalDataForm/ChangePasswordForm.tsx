@@ -41,7 +41,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
-    
+
     const [currentPasswordError, setCurrentPasswordError] = useState("");
     const [newPasswordError, setNewPasswordError] = useState("");
     const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -113,9 +113,9 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     </MessageBarBody>
                 </MessageBar>
             )}
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[16px] mt-[8px]">
-                <Field 
-                    label="Текущий пароль" 
+            <form onSubmit={handleSubmit} className="flex flex-col gap-[16px] mt-[8px] ">
+                <Field
+                    label="Текущий пароль"
                     required
                     validationMessage={currentPasswordError || undefined}
                     validationState={currentPasswordError ? "error" : "none"}
@@ -131,8 +131,8 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                         disabled={loading || success}
                     />
                 </Field>
-                <Field 
-                    label="Новый пароль" 
+                <Field
+                    label="Новый пароль"
                     required
                     validationMessage={newPasswordError || undefined}
                     validationState={newPasswordError ? "error" : "none"}
@@ -148,8 +148,8 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                         disabled={loading || success}
                     />
                 </Field>
-                <Field 
-                    label="Подтвердите новый пароль" 
+                <Field
+                    label="Подтвердите новый пароль"
                     required
                     validationMessage={confirmPasswordError || undefined}
                     validationState={confirmPasswordError ? "error" : "none"}
@@ -165,12 +165,13 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                         disabled={loading || success}
                     />
                 </Field>
-                <div className="flex gap-[12px]">
+                <div className="button-action justify-stretch!important ">
                     <Button appearance="primary" type="submit" disabled={loading || success}>
                         {loading ? "Сохранение..." : "Сменить пароль"}
                     </Button>
                     {showCancelButton && (
-                        <Button appearance="secondary" type="button" onClick={onCancel} disabled={loading}>
+                        <Button appearance="secondary" type="button" onClick={onCancel}
+                                disabled={loading}>
                             Отмена
                         </Button>
                     )}
