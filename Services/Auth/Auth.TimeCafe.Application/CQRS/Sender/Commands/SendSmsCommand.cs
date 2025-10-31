@@ -26,7 +26,7 @@ public class SendSmsCommandHandler(
         if (result == null)
         {
             _logger.LogWarning("Не удалось отправить SMS на номер {PhoneNumber}", request.PhoneNumber);
-            return Result<PhoneVerificationModel>.Failure("Не удалось отправить SMS");
+            return Result<PhoneVerificationModel>.Critical("Не удалось отправить SMS. Попробуйте позже.");
         }
 
         return Result<PhoneVerificationModel>.Success(result);

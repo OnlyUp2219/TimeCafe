@@ -26,14 +26,34 @@ public class RegisterCommandHandler(
         };
 
         var result = await _userManager.CreateAsync(user, request.Password);
-        
+
         if (!result.Succeeded)
         {
-            var errors = result.Errors.Select(e => e.Description).ToList();
+            var errors = result.Errors.Select(e =>
+            {
+                // Определяем поле на основе кода ошибки Identity
+                string? field = e.Code.ToLower() switch
+                {
+                    var code when code.Contains("email") => "email",
+                    var code when code.Contains("password") => "password",
+                    var code when code.Contains("username") => "username",
+                    _ => null
+                };
+
+                // Определяем тип ошибки
+                var errorType = e.Code switch
+                {
+                    "DuplicateUserName" or "DuplicateEmail" => ErrorType.Conflict,
+                    _ => ErrorType.Validation
+                };
+
+                return new ErrorDetail(errorType, $"Identity.{e.Code}", e.Description, field);
+            }).ToList();
+
             return Result<RegisterResponseDto>.Failure(errors);
         }
         var confirmationToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var frontendBase = _configuration["Frontend:BaseUrl"] ?? "http://127.0.0.1:9301"; 
+        var frontendBase = _configuration["Frontend:BaseUrl"] ?? "http://127.0.0.1:9301";
         var confirmLink = $"{frontendBase}/confirm-email?userId={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(confirmationToken)}";
 
         if (request.SendEmail)
@@ -43,7 +63,7 @@ public class RegisterCommandHandler(
         }
 
         return Result<RegisterResponseDto>.Success(new RegisterResponseDto(
-            "Пользователь создан. Проверьте почту для подтверждения email.", 
+            "Пользователь создан. Проверьте почту для подтверждения email.",
             confirmLink));
     }
 }

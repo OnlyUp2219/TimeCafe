@@ -18,19 +18,21 @@ public class ForgotPasswordCommandHandler(
     public async Task<Result<ForgotPasswordResponse>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
-            return Result<ForgotPasswordResponse>.Failure("Email обязателен");
+            return Result<ForgotPasswordResponse>.ValidationError("email", "Email обязателен");
 
         if (!_rateLimiter.CanProceed($"email_{request.Email}"))
         {
             var remainingSeconds = _rateLimiter.GetRemainingSeconds($"email_{request.Email}");
-            return Result<ForgotPasswordResponse>.Failure(
-                $"Пожалуйста, подождите {remainingSeconds} секунд перед повторной отправкой письма"
+            return Result<ForgotPasswordResponse>.RateLimit(
+                $"Пожалуйста, подождите {remainingSeconds} секунд перед повторной отправкой письма",
+                remainingSeconds
             );
         }
 
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
         {
+            // Унифицированное сообщение для предотвращения перечисления пользователей
             return Result<ForgotPasswordResponse>.Success(
                 new ForgotPasswordResponse(Message: "Если пользователь существует, письмо отправлено")
             );
@@ -41,7 +43,7 @@ public class ForgotPasswordCommandHandler(
 
         if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
         {
-            return Result<ForgotPasswordResponse>.Failure("Конфигурация не настроена");
+            return Result<ForgotPasswordResponse>.Critical("Конфигурация FrontendBaseUrl не настроена");
         }
 
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
@@ -59,7 +61,7 @@ public class ForgotPasswordCommandHandler(
             }
             catch (Exception)
             {
-                return Result<ForgotPasswordResponse>.Failure("Ошибка при отправке письма");
+                return Result<ForgotPasswordResponse>.Critical("Ошибка при отправке письма");
             }
         }
 

@@ -9,10 +9,10 @@ public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandle
     public async Task<Result<TokensDto>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var tokens = await _jwtService.RefreshTokens(request.RefreshToken);
-        
+
         if (tokens == null)
         {
-            return Result<TokensDto>.Failure(new List<string> { "Недействительный или истекший refresh token" });
+            return Result<TokensDto>.Unauthorized("Недействительный или истекший refresh token");
         }
 
         return Result<TokensDto>.Success(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
