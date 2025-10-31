@@ -6,6 +6,7 @@ import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../store";
 import {useState} from "react";
+import {parseErrorMessage} from "../utility/errors.ts";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -51,7 +52,9 @@ export const LoginPage = () => {
         } catch (err: any) {
             const newErrors = {email: "", password: ""};
 
-            if (Array.isArray(err)) {
+            if (Array.isArray(err) && err.every(e =>
+                typeof e.code === 'string' && typeof e.description === 'string'
+            )) {
                 err.forEach((e: { code: string; description: string }) => {
                     const code = e.code.toLowerCase();
                     if (code.includes("email")) newErrors.email += e.description + " ";
@@ -59,7 +62,7 @@ export const LoginPage = () => {
                     else newErrors.email += e.description + " ";
                 });
             } else {
-                const message = err instanceof Error ? err.message : String(err);
+                const message = parseErrorMessage(err)
                 showToast(message, "error", "Ошибка");
             }
             setErrors(newErrors);

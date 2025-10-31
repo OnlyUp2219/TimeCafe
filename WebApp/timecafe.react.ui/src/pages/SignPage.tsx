@@ -4,12 +4,11 @@ import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
 import {registerUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {useDispatch} from "react-redux";
 import {useEffect, useState} from "react";
+import {parseErrorMessage} from "../utility/errors.ts";
 
 export const SignPage = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const {showToast, ToasterElement} = useProgressToast();
 
     const [username, setUsername] = useState("");
@@ -27,7 +26,7 @@ export const SignPage = () => {
 
     useEffect(() => {
         setUsername(faker.internet.username());
-        setEmail(faker.internet.email());
+        setEmail("klimenkokov1@timecafesharp.ru");
         const pwd =
             faker.string.alpha({length: 1, casing: "upper"}) +
             faker.string.alphanumeric({length: 4}) +
@@ -56,13 +55,21 @@ export const SignPage = () => {
 
         setIsSubmitting(true);
         try {
-            await registerUser({username, email, password}, dispatch);
-            navigate("/home");
+            const confirmLink = await registerUser({username, email, password});
+
+            if (confirmLink) {
+                showToast(`Регистрация успешна! Ссылка: ${confirmLink}`, "success", "Успех");
+                setTimeout(() => window.location.href = confirmLink, 2000);
+            } else {
+                showToast("Регистрация успешна! Проверьте почту для подтверждения email.", "success", "Успех");
+                navigate("/login");
+            }
         } catch (err: any) {
             const newErrors = {email: "", password: "", username: "", confirmPassword: ""};
 
-            if (Array.isArray(err)) {
-                // err - массив IdentityError { Code, Description }
+            if (Array.isArray(err) && err.every(e =>
+                typeof e.code === 'string' && typeof e.description === 'string'
+            )) {
                 err.forEach((e: { code: string; description: string }) => {
                     const code = e.code.toLowerCase();
                     if (code.includes("email")) newErrors.email += e.description + " ";
@@ -72,7 +79,7 @@ export const SignPage = () => {
                 setErrors(newErrors);
                 showToast("Ошибка при регистрации. Проверьте введённые данные.", "error", "Ошибка");
             } else {
-                const message = err instanceof Error ? err.message : String(err);
+                const message = parseErrorMessage(err);
                 showToast(message, "error", "Ошибка");
             }
         } finally {
