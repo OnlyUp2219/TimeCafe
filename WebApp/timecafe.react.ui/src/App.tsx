@@ -15,6 +15,7 @@ const ResetPasswordEmail = lazy(() => import('./pages/resetPassword/ResetPasswor
 const PrivateRoute = lazy(() => import('./components/PrivateRoute/PrivateRoute').then(module => ({default: module.PrivateRoute})));
 const ExternalCallback = lazy(() => import('./pages/ExternalCallback').then(module => ({default: module.ExternalCallback})));
 const ConfirmEmail = lazy(() => import('./pages/ConfirmEmail').then(module => ({default: module.ConfirmEmail})));
+const ErrorTestPage = lazy(() => import('./pages/ErrorTestPage').then(module => ({default: module.ErrorTestPage})));
 
 export default function App() {
     return (
@@ -44,6 +45,14 @@ export default function App() {
                             element={
                                 <PrivateRoute>
                                     <PersonalData/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="error-test"
+                            element={
+                                <PrivateRoute>
+                                    <ErrorTestPage/>
                                 </PrivateRoute>
                             }
                         />

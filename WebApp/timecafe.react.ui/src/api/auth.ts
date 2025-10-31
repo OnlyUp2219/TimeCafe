@@ -62,8 +62,14 @@ export async function registerUser(data: RegisterRequest): Promise<string | unde
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
-            if (res?.data.errors) {
-                throw res?.data.errors;
+            // Новый формат с ErrorDetail
+            if (res?.data?.errors) {
+                throw res.data.errors;
+            }
+
+            // Старый формат для обратной совместимости
+            if (res?.data) {
+                throw res.data;
             }
 
             throw new Error(`Ошибка регистрации (${res?.status ?? "нет ответа"})`);
@@ -85,8 +91,14 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
-            if (res?.data.errors) {
-                throw res?.data.errors;
+            // Новый формат с ErrorDetail
+            if (res?.data?.errors) {
+                throw res.data.errors;
+            }
+
+            // Старый формат для обратной совместимости
+            if (res?.data) {
+                throw res.data;
             }
 
             throw new Error(`Ошибка входа (${res?.status ?? "нет ответа"})`);
