@@ -10,7 +10,7 @@ public class LogoutCommandHandler(IRefreshTokenRepository refreshTokenRepository
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
         {
-            return Result<bool>.Failure(new List<string> { "Refresh token обязателен" });
+            return Result<bool>.ValidationError("refreshToken", "Refresh token обязателен");
         }
 
         var tokenEntity = await _refreshTokenRepository.GetActiveTokenAsync(request.RefreshToken, cancellationToken);
@@ -22,7 +22,7 @@ public class LogoutCommandHandler(IRefreshTokenRepository refreshTokenRepository
 
         if (request.UserId != null && tokenEntity.UserId != request.UserId)
         {
-            return Result<bool>.Failure(new List<string> { "Unauthorized" });
+            return Result<bool>.Unauthorized("Недостаточно прав для отзыва данного токена");
         }
 
         tokenEntity.IsRevoked = true;

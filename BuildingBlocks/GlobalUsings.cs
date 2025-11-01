@@ -1,3 +1,4 @@
+global using BuildingBlocks.Common;
 global using BuildingBlocks.Utilities;
 
 global using FluentValidation;

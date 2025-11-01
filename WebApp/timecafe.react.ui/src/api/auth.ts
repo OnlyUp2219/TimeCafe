@@ -45,21 +45,31 @@ const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
 const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
 const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
-export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<void> {
+export async function registerUser(data: RegisterRequest): Promise<string | undefined> {
+    const endpoint = USE_MOCK_EMAIL ? "/registerWithUsername-mock" : "/registerWithUsername";
+
     try {
-        const res = await axios.post(`${apiBase}/registerWithUsername`, data, {
+        const res = await axios.post(`${apiBase}${endpoint}`, data, {
             headers: {"Content-Type": "application/json"},
         });
 
-        const tokens = res.data as { accessToken: string; refreshToken: string };
-        dispatch(setAccessToken(tokens.accessToken));
-        dispatch(setRefreshToken(tokens.refreshToken));
+        if (USE_MOCK_EMAIL && res.data.confirmLink) {
+            return res.data.confirmLink;
+        }
+
+        return undefined;
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
+            // Новый формат с ErrorDetail
+            if (res?.data?.errors) {
+                throw res.data.errors;
+            }
+
+            // Старый формат для обратной совместимости
             if (res?.data) {
-                throw res?.data;
+                throw res.data;
             }
 
             throw new Error(`Ошибка регистрации (${res?.status ?? "нет ответа"})`);
@@ -81,8 +91,14 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
         if (axios.isAxiosError(error)) {
             const res = error.response;
 
+            // Новый формат с ErrorDetail
+            if (res?.data?.errors) {
+                throw res.data.errors;
+            }
+
+            // Старый формат для обратной совместимости
             if (res?.data) {
-                throw res?.data;
+                throw res.data;
             }
 
             throw new Error(`Ошибка входа (${res?.status ?? "нет ответа"})`);
@@ -125,8 +141,8 @@ export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data) {
-                throw res?.data;
+            if (res?.data.errors) {
+                throw res?.data.errors;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }
@@ -142,8 +158,8 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data) {
-                throw res?.data;
+            if (res?.data.errors) {
+                throw res?.data.errors;
             }
             throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
         }
@@ -201,8 +217,8 @@ export async function SendPhoneConfirmation(data: PhoneCodeRequest): Promise<voi
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data) {
-                throw res?.data;
+            if (res?.data.errors) {
+                throw res?.data.errors;
             }
 
             throw new Error(`Ошибка отправки кода на телефон - (${res?.status ?? "нет ответа"})`);
@@ -227,11 +243,25 @@ export async function VerifyPhoneConfirmation(data: PhoneCodeRequest): Promise<V
     } catch (error) {
         if (axios.isAxiosError(error)) {
             const res = error.response;
-            if (res?.data) {
-                throw res?.data;
+            if (res?.data.errors) {
+                throw res?.data.errors;
             }
             throw new Error(`Ошибка подтверждение кода - (${res?.status ?? "нет ответа"})`);
         }
         throw new Error("Неизвестная ошибка при подтверждение кода");
+    }
+}
+
+export async function confirmEmail(userId: string, token: string): Promise<{ status: string }> {
+    try {
+        const response = await axios.get(`${apiBase}/auth/confirm`, {
+            params: { userId, token }
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            throw new Error(error.response?.data?.message ?? "Ошибка подтверждения email");
+        }
+        throw new Error("Ошибка подключения к серверу");
     }
 }

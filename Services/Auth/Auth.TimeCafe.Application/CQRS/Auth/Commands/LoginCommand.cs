@@ -12,14 +12,22 @@ public class LoginCommandHandler(
     public async Task<Result<TokensDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
-        
+
         if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            return Result<TokensDto>.Failure(new List<string> { "Неверный email или пароль" });
+            // Унифицированное сообщение для предотвращения перечисления пользователей
+            return Result<TokensDto>.ValidationError("email", "Неверный email или пароль");
+        }
+
+        if (!user.EmailConfirmed)
+        {
+            return Result<TokensDto>.BusinessLogic(
+                "Email.NotConfirmed",
+                "Подтвердите email перед входом. Проверьте почту."
+            );
         }
 
         var tokens = await _jwtService.GenerateTokens(user);
-
         return Result<TokensDto>.Success(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
     }
 }

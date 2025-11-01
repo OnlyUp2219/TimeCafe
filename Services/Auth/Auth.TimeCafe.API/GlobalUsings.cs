@@ -11,6 +11,7 @@ global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Data.Repositories;
 global using Auth.TimeCafe.Infrastructure.Services;
 
+global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 global using Auth.TimeCafe.Infrastructure.Services.Phone;
 
@@ -22,6 +23,7 @@ global using MediatR;
 
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.WebUtilities;

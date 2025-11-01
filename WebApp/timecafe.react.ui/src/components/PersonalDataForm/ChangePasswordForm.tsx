@@ -16,7 +16,8 @@ import type {AppDispatch} from "../../store";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "../../store/authSlice.ts";
 import {validatePassword, validateConfirmPassword} from "../../utility/validate.ts";
-import {parseErrorMessage} from "../../utility/errors.ts";
+import {useErrorHandler} from "../../hooks/useErrorHandler.ts";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;
@@ -35,45 +36,52 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                                                                     showCancelButton = false,
                                                                     className,
                                                                 }) => {
+    const {showToast} = useProgressToast();
+    const {fieldErrors, handleError, clearAllErrors} = useErrorHandler(showToast);
+
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const [currentPasswordError, setCurrentPasswordError] = useState("");
-    const [newPasswordError, setNewPasswordError] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+    const [localErrors, setLocalErrors] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    });
 
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
         setSuccess(false);
-        setCurrentPasswordError("");
-        setNewPasswordError("");
-        setConfirmPasswordError("");
+
+        setLocalErrors({
+            currentPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+        });
 
         if (!currentPassword.trim()) {
-            setCurrentPasswordError("Введите текущий пароль.");
+            setLocalErrors(prev => ({...prev, currentPassword: "Введите текущий пароль."}));
             return;
         }
 
         const newPasswordValidation = validatePassword(newPassword);
         if (newPasswordValidation) {
-            setNewPasswordError(newPasswordValidation);
+            setLocalErrors(prev => ({...prev, newPassword: newPasswordValidation}));
             return;
         }
 
         const confirmPasswordValidation = validateConfirmPassword(confirmPassword, newPassword);
         if (confirmPasswordValidation) {
-            setConfirmPasswordError(confirmPasswordValidation);
+            setLocalErrors(prev => ({...prev, confirmPassword: confirmPasswordValidation}));
             return;
         }
 
+        clearAllErrors();
         setLoading(true);
         try {
             await changePassword({currentPassword, newPassword});
@@ -87,24 +95,18 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     navigate("/login");
                 }, 1500);
             }
-        } catch (err: unknown) {
-            setError(parseErrorMessage(err) || "Ошибка при смене пароля. Проверьте текущий пароль.");
+        } catch (error) {
+            handleError(error);
         } finally {
             setLoading(false);
         }
     };
 
+    const allErrors = {...localErrors, ...fieldErrors};
+
     return (
         <Card className={className}>
             <Title2>Смена пароля</Title2>
-            {error && (
-                <MessageBar intent="error">
-                    <MessageBarBody>
-                        <MessageBarTitle>Ошибка</MessageBarTitle>
-                        {error}
-                    </MessageBarBody>
-                </MessageBar>
-            )}
             {success && (
                 <MessageBar intent="success">
                     <MessageBarBody>
@@ -117,16 +119,13 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                 <Field
                     label="Текущий пароль"
                     required
-                    validationMessage={currentPasswordError || undefined}
-                    validationState={currentPasswordError ? "error" : "none"}
+                    validationMessage={allErrors.currentPassword || undefined}
+                    validationState={allErrors.currentPassword ? "error" : "none"}
                 >
                     <Input
                         type="password"
                         value={currentPassword}
-                        onChange={(e) => {
-                            setCurrentPassword(e.target.value);
-                            setCurrentPasswordError("");
-                        }}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
                         placeholder="Введите текущий пароль"
                         disabled={loading || success}
                     />
@@ -134,16 +133,13 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                 <Field
                     label="Новый пароль"
                     required
-                    validationMessage={newPasswordError || undefined}
-                    validationState={newPasswordError ? "error" : "none"}
+                    validationMessage={allErrors.newPassword || undefined}
+                    validationState={allErrors.newPassword ? "error" : "none"}
                 >
                     <Input
                         type="password"
                         value={newPassword}
-                        onChange={(e) => {
-                            setNewPassword(e.target.value);
-                            setNewPasswordError("");
-                        }}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         placeholder="Введите новый пароль"
                         disabled={loading || success}
                     />
@@ -151,16 +147,13 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                 <Field
                     label="Подтвердите новый пароль"
                     required
-                    validationMessage={confirmPasswordError || undefined}
-                    validationState={confirmPasswordError ? "error" : "none"}
+                    validationMessage={allErrors.confirmPassword || undefined}
+                    validationState={allErrors.confirmPassword ? "error" : "none"}
                 >
                     <Input
                         type="password"
                         value={confirmPassword}
-                        onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                            setConfirmPasswordError("");
-                        }}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Введите новый пароль ещё раз"
                         disabled={loading || success}
                     />

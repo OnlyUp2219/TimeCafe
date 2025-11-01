@@ -8,31 +8,31 @@ public class ForgotPasswordCommandHandler(
     UserManager<IdentityUser> userManager,
     IEmailSender<IdentityUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
-    IRateLimiter rateLimiter,
-    ILogger<ForgotPasswordCommandHandler> logger) : IRequestHandler<ForgotPasswordCommand, Result<ForgotPasswordResponse>>
+    IRateLimiter rateLimiter) : IRequestHandler<ForgotPasswordCommand, Result<ForgotPasswordResponse>>
 {
     private readonly UserManager<IdentityUser> _userManager = userManager;
     private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly IRateLimiter _rateLimiter = rateLimiter;
-    private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
 
     public async Task<Result<ForgotPasswordResponse>> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Email))
-            return Result<ForgotPasswordResponse>.Failure("Email обязателен");
+            return Result<ForgotPasswordResponse>.ValidationError("email", "Email обязателен");
 
         if (!_rateLimiter.CanProceed($"email_{request.Email}"))
         {
             var remainingSeconds = _rateLimiter.GetRemainingSeconds($"email_{request.Email}");
-            return Result<ForgotPasswordResponse>.Failure(
-                $"Пожалуйста, подождите {remainingSeconds} секунд перед повторной отправкой письма"
+            return Result<ForgotPasswordResponse>.RateLimit(
+                $"Пожалуйста, подождите {remainingSeconds} секунд перед повторной отправкой письма",
+                remainingSeconds
             );
         }
 
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
         {
+            // Унифицированное сообщение для предотвращения перечисления пользователей
             return Result<ForgotPasswordResponse>.Success(
                 new ForgotPasswordResponse(Message: "Если пользователь существует, письмо отправлено")
             );
@@ -43,8 +43,7 @@ public class ForgotPasswordCommandHandler(
 
         if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
         {
-            _logger.LogError("FrontendBaseUrl не настроен в конфигурации Postmark");
-            return Result<ForgotPasswordResponse>.Failure("Конфигурация не настроена");
+            return Result<ForgotPasswordResponse>.Critical("Конфигурация FrontendBaseUrl не настроена");
         }
 
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
@@ -60,10 +59,9 @@ public class ForgotPasswordCommandHandler(
                     new ForgotPasswordResponse(Message: "Ссылка для сброса пароля отправлена")
                 );
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
-                return Result<ForgotPasswordResponse>.Failure("Ошибка при отправке письма");
+                return Result<ForgotPasswordResponse>.Critical("Ошибка при отправке письма");
             }
         }
 

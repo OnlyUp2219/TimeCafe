@@ -6,6 +6,7 @@ global using Auth.TimeCafe.Application.Contracts;
 
 
 global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Common;
 
 global using FluentValidation;
 

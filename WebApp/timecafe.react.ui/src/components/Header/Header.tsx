@@ -1,5 +1,4 @@
 import {Hamburger, Button, Avatar} from "@fluentui/react-components";
-import "./Header.css";
 import {logoutServer} from "../../api/auth.ts";
 import {useDispatch, useSelector} from "react-redux";
 import type {FC} from "react";

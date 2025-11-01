@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+using Auth.TimeCafe.Application.Extensions;
 using MediatR;
 
 namespace Auth.TimeCafe.API.Endpoints;
@@ -12,16 +13,26 @@ public class CreateRegistry : ICarterModule
             IMediator mediator,
             [FromBody] RegisterDto dto) =>
         {
-            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password);
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
             var result = await mediator.Send(command);
 
-            if (!result.IsSuccess)
-                return Results.BadRequest(new { errors = result.Errors });
-
-            return Results.Ok(result.Data);
+            return result.ToHttpResult();
         })
             .WithTags("Authentication")
             .WithName("Register");
+
+        app.MapPost("/registerWithUsername-mock", async (
+            IMediator mediator,
+            [FromBody] RegisterDto dto) =>
+        {
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
+            var result = await mediator.Send(command);
+
+            return result.ToHttpResult();
+        })
+            .WithTags("Authentication")
+            .WithName("RegisterMock")
+            .WithSummary("Mock: Возвращает ссылку подтверждения без отправки email");
 
         app.MapPost("/login-jwt", async (
             IMediator mediator,
@@ -32,7 +43,7 @@ public class CreateRegistry : ICarterModule
             var result = await mediator.Send(command);
 
             if (!result.IsSuccess)
-                return Results.BadRequest(new { errors = result.Errors });
+                return result.ToHttpResult();
 
 #if DEBUG
             context.Response.Cookies.Append("Access-Token", result.Data!.AccessToken);
@@ -52,7 +63,7 @@ public class CreateRegistry : ICarterModule
             var result = await mediator.Send(command);
 
             if (!result.IsSuccess)
-                return Results.Unauthorized();
+                return result.ToHttpResult();
 
             context.Response.Cookies.Append("Access-Token", result.Data!.AccessToken);
 
@@ -85,14 +96,7 @@ public class CreateRegistry : ICarterModule
             var command = new LogoutCommand(request.RefreshToken, userId);
             var result = await mediator.Send(command);
 
-            if (!result.IsSuccess)
-            {
-                if (result.Errors.Contains("Unauthorized"))
-                    return Results.Unauthorized();
-                return Results.BadRequest(new { errors = result.Errors });
-            }
-
-            return Results.Ok(new { message = "Logged out", revoked = result.Data });
+            return result.ToHttpResult();
         })
             .RequireAuthorization()
             .WithTags("Authentication")

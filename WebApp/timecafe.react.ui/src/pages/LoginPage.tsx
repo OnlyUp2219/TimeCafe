@@ -6,17 +6,19 @@ import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../store";
 import {useState} from "react";
+import {useErrorHandler} from "../hooks/useErrorHandler.ts";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
+    const {fieldErrors, handleError, clearAllErrors} = useErrorHandler(showToast);
     const dispatch = useDispatch();
     const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
-    const [errors, setErrors] = useState({
+    const [localErrors, setLocalErrors] = useState({
         email: "",
         password: "",
     });
@@ -36,7 +38,7 @@ export const LoginPage = () => {
     const validate = () => {
         const emailError = validateEmail(email);
         const passwordError = validatePassword(password);
-        setErrors({email: emailError, password: passwordError});
+        setLocalErrors({email: emailError, password: passwordError});
         return !emailError && !passwordError;
     };
 
@@ -44,25 +46,13 @@ export const LoginPage = () => {
 
         if (!validate()) return;
 
+        clearAllErrors();
         setIsSubmitting(true);
         try {
             await loginUser({email, password}, dispatch);
             navigate("/home");
-        } catch (err: any) {
-            const newErrors = {email: "", password: ""};
-
-            if (Array.isArray(err)) {
-                err.forEach((e: { code: string; description: string }) => {
-                    const code = e.code.toLowerCase();
-                    if (code.includes("email")) newErrors.email += e.description + " ";
-                    else if (code.includes("password")) newErrors.password += e.description + " ";
-                    else newErrors.email += e.description + " ";
-                });
-            } else {
-                const message = err instanceof Error ? err.message : String(err);
-                showToast(message, "error", "Ошибка");
-            }
-            setErrors(newErrors);
+        } catch (error) {
+            handleError(error);
         } finally {
             setIsSubmitting(false);
             console.log("accessToken:", accessToken);
@@ -75,6 +65,8 @@ export const LoginPage = () => {
         navigate("/resetPasswordEmail");
     }
 
+    const allErrors = {...localErrors, ...fieldErrors};
+
     return (
         <Card className="auth_card">
             {ToasterElement}
@@ -82,8 +74,8 @@ export const LoginPage = () => {
             <Subtitle1 align={"center"}>Вход</Subtitle1>
             <Field label="Почта"
                    required
-                   validationState={errors.email ? "error" : undefined}
-                   validationMessage={errors.email}
+                   validationState={allErrors.email ? "error" : undefined}
+                   validationMessage={allErrors.email}
             >
                 <Input
                     value={email}
@@ -96,8 +88,8 @@ export const LoginPage = () => {
             <div>
                 <Field label="Пароль"
                        required
-                       validationState={errors.password ? "error" : undefined}
-                       validationMessage={errors.password}>
+                       validationState={allErrors.password ? "error" : undefined}
+                       validationMessage={allErrors.password}>
                     <Input
                         value={password}
                         placeholder="Введите пароль"
