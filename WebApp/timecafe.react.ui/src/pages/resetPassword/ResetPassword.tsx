@@ -4,18 +4,20 @@ import {validateConfirmPassword, validateEmail, validatePassword} from "../../ut
 import {resetPassword} from "../../api/auth.ts";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {useEffect, useState} from "react";
+import {useErrorHandler} from "../../hooks/useErrorHandler.ts";
 
 export const ResetPassword = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const {showToast, ToasterElement} = useProgressToast();
+    const {fieldErrors, handleError, clearAllErrors} = useErrorHandler(showToast);
 
     const [email, setEmail] = useState("");
     const [resetCode, setResetCode] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [errors, setErrors] = useState({
+    const [localErrors, setLocalErrors] = useState({
         email: "",
         password: "",
         confirmPassword: "",
@@ -34,40 +36,26 @@ export const ResetPassword = () => {
         const passwordError = validatePassword(password);
         const confirmPasswordError = validateConfirmPassword(confirmPassword, password);
 
-        setErrors({email: emailError, password: passwordError, confirmPassword: confirmPasswordError});
+        setLocalErrors({email: emailError, password: passwordError, confirmPassword: confirmPasswordError});
         return !emailError && !passwordError && !confirmPasswordError;
     };
 
     const handleSubmit = async () => {
         if (!validate()) return;
 
+        clearAllErrors();
         setIsSubmitting(true);
         try {
             await resetPassword({email, resetCode, newPassword: password});
             navigate("/login");
-        } catch (err: any) {
-            const newErrors = {email: "", password: "", confirmPassword: ""};
-
-            if (Array.isArray(err)) {
-                err.forEach((e: { code: string; description: string }) => {
-                    const code = e.code.toLowerCase();
-                    if (code.includes("email")) newErrors.email += e.description + " ";
-                    else if (code.includes("password")) newErrors.password += e.description + " ";
-                    else newErrors.email += e.description + " ";
-                });
-            } else {
-                const message = err && typeof err === "object"
-                    ? Object.values(err).flat().join(" ")
-                    : err instanceof Error
-                        ? err.message
-                        : String(err);
-                showToast(message, "error", "Ошибка");
-            }
-            setErrors(newErrors);
+        } catch (error) {
+            handleError(error);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    const allErrors = {...localErrors, ...fieldErrors};
 
 
     return (
@@ -78,8 +66,8 @@ export const ResetPassword = () => {
 
             <Field label="Почта"
                    required
-                   validationState={errors.email ? "error" : undefined}
-                   validationMessage={errors.email}
+                   validationState={allErrors.email ? "error" : undefined}
+                   validationMessage={allErrors.email}
             >
                 <Input
                     value={email}
@@ -99,8 +87,8 @@ export const ResetPassword = () => {
 
             <Field label="Пароль"
                    required
-                   validationState={errors.password ? "error" : undefined}
-                   validationMessage={errors.password}>
+                   validationState={allErrors.password ? "error" : undefined}
+                   validationMessage={allErrors.password}>
                 <Input
                     value={password}
                     placeholder="Введите пароль"
@@ -113,8 +101,8 @@ export const ResetPassword = () => {
             <Field
                 label="Повторить пароль"
                 required
-                validationState={errors.confirmPassword ? "error" : undefined}
-                validationMessage={errors.confirmPassword}
+                validationState={allErrors.confirmPassword ? "error" : undefined}
+                validationMessage={allErrors.confirmPassword}
             >
                 <Input
                     type="password"

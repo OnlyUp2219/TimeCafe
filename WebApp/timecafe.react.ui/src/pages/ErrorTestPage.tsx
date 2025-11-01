@@ -14,8 +14,8 @@ export const ErrorTestPage = () => {
         setLastResult(`Тестируем: ${testName}...`);
         
         try {
-            await testFn();
-            setLastResult(`${testName}: Неожиданный успех`);
+            const response = await testFn();
+            setLastResult(`${testName}: Успех - ${JSON.stringify(response)}`);
         } catch (error) {
             const result = handleError(error);
             setLastResult(`${testName}: ${result.message}`);
@@ -179,12 +179,14 @@ export const ErrorTestPage = () => {
                         appearance="primary"
                         onClick={async () => {
                             clearAllErrors();
+                            setLastResult("Тестируем: Success...");
                             try {
                                 const result = await errorTestApi.testSuccess();
                                 showToast("Успешный запрос!", "success");
                                 setLastResult(`Success: ${JSON.stringify(result.data)}`);
                             } catch (error) {
-                                handleError(error);
+                                const result = handleError(error);
+                                setLastResult(`Success Error: ${result.message}`);
                             }
                         }}
                     >

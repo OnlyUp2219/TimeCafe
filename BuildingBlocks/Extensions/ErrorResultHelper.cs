@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using BuildingBlocks.Common;
 
 namespace BuildingBlocks.Extensions;
 
@@ -16,12 +17,12 @@ public static class ErrorResultHelper
         return primaryErrorType switch
         {
             ErrorType.Validation => Results.BadRequest(new { type = "ValidationError", errors }),
-            ErrorType.NotFound => Results.NotFound(new { type = "NotFound", error = errors.First() }),
-            ErrorType.Unauthorized => Results.Unauthorized(),
-            ErrorType.Forbidden => Results.StatusCode(403),
+            ErrorType.NotFound => Results.NotFound(new { type = "NotFound", errors }),
+            ErrorType.Unauthorized => Results.Json(new { type = "Unauthorized", errors }, statusCode: 401),
+            ErrorType.Forbidden => Results.Json(new { type = "Forbidden", errors }, statusCode: 403),
             ErrorType.Conflict => Results.Conflict(new { type = "Conflict", errors }),
-            ErrorType.RateLimit => Results.StatusCode(429),
-            ErrorType.Critical => Results.StatusCode(500),
+            ErrorType.RateLimit => Results.Json(new { type = "RateLimit", errors }, statusCode: 429),
+            ErrorType.Critical => Results.Json(new { type = "Critical", errors }, statusCode: 500),
             ErrorType.BusinessLogic => Results.BadRequest(new { type = "BusinessLogic", errors }),
             _ => Results.BadRequest(new { type = "Error", errors })
         };
@@ -35,7 +36,6 @@ public static class ErrorResultHelper
     {
         if (errors.Count == 0) return ErrorType.Critical;
 
-        // Приоритет типов ошибок
         if (errors.Any(e => e.Type == ErrorType.Critical)) return ErrorType.Critical;
         if (errors.Any(e => e.Type == ErrorType.Unauthorized)) return ErrorType.Unauthorized;
         if (errors.Any(e => e.Type == ErrorType.Forbidden)) return ErrorType.Forbidden;
