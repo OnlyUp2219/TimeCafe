@@ -39,6 +39,7 @@ public class ExternalProviders : ICarterModule
 
             var user = await userManager.FindByEmailAsync(email);
 
+
             if (user == null)
             {
                 user = new IdentityUser
@@ -59,7 +60,8 @@ public class ExternalProviders : ICarterModule
             }
             else if (!user.EmailConfirmed)
             {
-                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+                user.EmailConfirmed = true;
+                await userManager.UpdateAsync(user);
             }
 
             var info = new UserLoginInfo("Google", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Google");
@@ -108,6 +110,7 @@ public class ExternalProviders : ICarterModule
 
             var user = await userManager.FindByEmailAsync(email);
 
+
             if (user == null)
             {
                 user = new IdentityUser
@@ -128,7 +131,8 @@ public class ExternalProviders : ICarterModule
             }
             else if (!user.EmailConfirmed)
             {
-                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+                user.EmailConfirmed = true;
+                await userManager.UpdateAsync(user);
             }
 
             var info = new UserLoginInfo("Microsoft", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Microsoft");
