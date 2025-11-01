@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-
 namespace Auth.TimeCafe.API.Controllers;
 
 [ApiController]

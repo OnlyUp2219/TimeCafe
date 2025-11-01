@@ -1,16 +1,9 @@
-using BuildingBlocks.Extensions;
 using Microsoft.AspNetCore.Http;
 
-namespace Auth.TimeCafe.Application.Extensions;
+namespace BuildingBlocks.Extensions;
 
-/// <summary>
-/// Extension методы для Result
-/// </summary>
 public static class ResultExtensions
 {
-    /// <summary>
-    /// Преобразует Result в соответствующий HTTP ответ
-    /// </summary>
     public static IResult ToHttpResult<T>(this Common.Result<T> result)
     {
         if (result.IsSuccess)

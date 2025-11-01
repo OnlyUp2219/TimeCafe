@@ -1,6 +1,3 @@
-using BuildingBlocks.Common;
-using BuildingBlocks.Extensions;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public class ErrorTestEndpoints : ICarterModule

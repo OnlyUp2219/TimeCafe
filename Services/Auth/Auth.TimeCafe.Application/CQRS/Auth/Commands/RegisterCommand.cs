@@ -1,9 +1,5 @@
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Identity;
-
 public record RegisterCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<Result<RegisterResponseDto>>;
 
 public record RegisterResponseDto(string Message, string? ConfirmLink = null);

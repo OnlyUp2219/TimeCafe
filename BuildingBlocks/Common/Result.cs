@@ -1,6 +1,4 @@
-using BuildingBlocks.Common;
-
-namespace Auth.TimeCafe.Application.Common;
+namespace BuildingBlocks.Common;
 
 public class Result<T>
 {

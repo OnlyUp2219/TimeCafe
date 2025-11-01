@@ -1,8 +1,3 @@
-using System.Security.Claims;
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
-using Auth.TimeCafe.Application.Extensions;
-using MediatR;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public class CreateRegistry : ICarterModule

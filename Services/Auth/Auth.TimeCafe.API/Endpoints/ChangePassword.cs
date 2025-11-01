@@ -1,7 +1,3 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public sealed class ChangePassword : ICarterModule

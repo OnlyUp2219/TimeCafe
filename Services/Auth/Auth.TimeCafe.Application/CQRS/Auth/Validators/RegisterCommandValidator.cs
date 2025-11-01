@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
-
 namespace Auth.TimeCafe.Application.CQRS.Auth.Validators;
 
 public class RegisterCommandValidator : AbstractValidator<RegisterCommand>

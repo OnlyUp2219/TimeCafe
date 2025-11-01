@@ -1,7 +1,3 @@
-using Auth.TimeCafe.API.Endpoints;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public class EmailConfirmation : ICarterModule

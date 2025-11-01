@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Application.Contracts;
-
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class AuthenticationExtensions
