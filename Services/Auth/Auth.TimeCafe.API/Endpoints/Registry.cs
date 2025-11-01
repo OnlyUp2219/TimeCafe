@@ -1,5 +1,3 @@
-using System.Security.Claims;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public class CreateRegistry : ICarterModule
@@ -7,60 +5,64 @@ public class CreateRegistry : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/registerWithUsername", async (
-            UserManager<IdentityUser> userManager,
-            IJwtService jwtService,
+            IMediator mediator,
             [FromBody] RegisterDto dto) =>
         {
-            var user = new IdentityUser
-            {
-                UserName = dto.Username,
-                Email = dto.Email
-            };
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
+            var result = await mediator.Send(command);
 
-            var result = await userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-                return Results.BadRequest(new { errors = result.Errors });
-
-            var tokens = await jwtService.GenerateTokens(user);
-
-            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
+            return result.ToHttpResult();
         })
             .WithTags("Authentication")
             .WithName("Register");
 
+        app.MapPost("/registerWithUsername-mock", async (
+            IMediator mediator,
+            [FromBody] RegisterDto dto) =>
+        {
+            var command = new RegisterCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
+            var result = await mediator.Send(command);
+
+            return result.ToHttpResult();
+        })
+            .WithTags("Authentication")
+            .WithName("RegisterMock")
+            .WithSummary("Mock: Возвращает ссылку подтверждения без отправки email");
+
         app.MapPost("/login-jwt", async (
-            UserManager<IdentityUser> userManager,
-            IJwtService jwtService,
+            IMediator mediator,
             HttpContext context,
             [FromBody] LoginDto dto) =>
         {
-            var user = await userManager.FindByEmailAsync(dto.Email);
-            if (user == null || !await userManager.CheckPasswordAsync(user, dto.Password))
-                return Results.BadRequest(new
-                { errors = new[] { new { code = "InvalidCredentials", description = "Неверный email или пароль" } } });
+            var command = new LoginCommand(dto.Email, dto.Password);
+            var result = await mediator.Send(command);
 
-            var tokens = await jwtService.GenerateTokens(user);
+            if (!result.IsSuccess)
+                return result.ToHttpResult();
 
 #if DEBUG
-            context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
+            context.Response.Cookies.Append("Access-Token", result.Data!.AccessToken);
 #endif
 
-
-            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
+            return Results.Ok(result.Data);
         })
             .WithTags("Authentication")
             .WithName("Login");
 
         app.MapPost("/refresh-token-jwt", async (
-            IJwtService jwtService,
+            IMediator mediator,
             HttpContext context,
             [FromBody] JwtRefreshRequest request) =>
         {
-            var tokens = await jwtService.RefreshTokens(request.RefreshToken);
-            if (tokens == null) return Results.Unauthorized();
-            context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
+            var command = new RefreshTokenCommand(request.RefreshToken);
+            var result = await mediator.Send(command);
 
-            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
+            if (!result.IsSuccess)
+                return result.ToHttpResult();
+
+            context.Response.Cookies.Append("Access-Token", result.Data!.AccessToken);
+
+            return Results.Ok(result.Data);
         })
             .WithTags("Authentication")
             .WithName("RefreshToken");
@@ -82,28 +84,14 @@ public class CreateRegistry : ICarterModule
 
         app.MapPost("/logout", async (
             [FromBody] LogoutRequest request,
-            ApplicationDbContext db,
-            UserManager<IdentityUser> userManager,
+            IMediator mediator,
             ClaimsPrincipal principal) =>
         {
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
-                return Results.BadRequest(new { errors = new { refreshToken = "Refresh token is required" } });
-
             var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var command = new LogoutCommand(request.RefreshToken, userId);
+            var result = await mediator.Send(command);
 
-            var entity = await db.RefreshTokens
-                .FirstOrDefaultAsync(t => t.Token == request.RefreshToken && !t.IsRevoked);
-
-            if (entity != null)
-            {
-                if (userId != null && entity.UserId != userId)
-                    return Results.Unauthorized();
-
-                entity.IsRevoked = true;
-                await db.SaveChangesAsync();
-            }
-
-            return Results.Ok(new { message = "Logged out", revoked = entity != null });
+            return result.ToHttpResult();
         })
             .RequireAuthorization()
             .WithTags("Authentication")

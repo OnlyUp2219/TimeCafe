@@ -17,9 +17,10 @@ import {
 import {DismissRegular} from "@fluentui/react-icons";
 import {SendPhoneConfirmation, VerifyPhoneConfirmation} from "../../api/auth";
 import type {PhoneCodeRequest} from "../../api/auth";
-import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
 import {validatePhoneNumber} from "../../utility/validate";
 import {RateLimiter} from "../../utility/rateLimitHelpers";
+import {useErrorHandler} from "../../hooks/useErrorHandler.ts";
+import {useProgressToast} from "../ToastProgress/ToastProgress.tsx";
 
 
 interface PhoneVerificationModalProps {
@@ -40,12 +41,17 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             currentPhoneNumber = "",
                                                                             onSuccess,
                                                                         }) => {
+    const {showToast} = useProgressToast();
+    const {fieldErrors, handleError, clearAllErrors} = useErrorHandler(showToast);
+
     const [step, setStep] = useState<Step>("input");
     const [phoneNumber, setPhoneNumber] = useState(currentPhoneNumber);
     const [verificationCode, setVerificationCode] = useState("");
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [validationError, setValidationError] = useState<string>("");
+    const [localErrors, setLocalErrors] = useState({
+        phoneNumber: "",
+        verificationCode: "",
+    });
     const [remainingAttempts, setRemainingAttempts] = useState<number | null>(null);
     const [attemptsExhausted, setAttemptsExhausted] = useState(false);
     const [requiresCaptcha, setRequiresCaptcha] = useState(false);
@@ -67,8 +73,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     const resetErrors = () => {
-        setError(null);
-        setValidationError("");
+        clearAllErrors();
+        setLocalErrors({
+            phoneNumber: "",
+            verificationCode: "",
+        });
     };
 
     const resetCaptcha = () => {
@@ -113,7 +122,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
         const validation = validatePhoneNumber(phoneNumber);
         if (validation) {
-            setValidationError(validation);
+            setLocalErrors(prev => ({...prev, phoneNumber: validation}));
             return;
         }
 
@@ -141,8 +150,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             setStep("verify");
             setCountdown(RATE_LIMIT_SECONDS);
             setCanResend(false);
-        } catch (err: unknown) {
-            setError(parseErrorMessage(err) || "Ошибка при отправке SMS. Попробуйте позже.");
+        } catch (error) {
+            handleError(error);
         } finally {
             setLoading(false);
         }
@@ -152,7 +161,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetErrors();
 
         if (requiresCaptcha && !captchaToken) {
-            setError("Пройдите проверку капчи");
+            setLocalErrors(prev => ({...prev, verificationCode: "Пройдите проверку капчи"}));
             return;
         }
 
@@ -173,18 +182,22 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             onSuccess(phoneNumber);
             onClose();
         } catch (err: unknown) {
-            const {
-                errorMessage,
-                remainingAttempts: attempts,
-                attemptsExhausted: exhausted,
-                requiresCaptcha: needsCaptcha
-            } = handleVerificationError(err);
+            const errorData = err as any;
 
-            setError(errorMessage);
-            setRemainingAttempts(attempts);
-            setAttemptsExhausted(exhausted);
+            if (errorData?.remainingAttempts !== undefined) {
+                setRemainingAttempts(errorData.remainingAttempts);
 
-            if (needsCaptcha) {
+                if (errorData.remainingAttempts === 0) {
+                    setAttemptsExhausted(true);
+                    setLocalErrors(prev => ({...prev, verificationCode: "Превышено количество попыток. Запросите новый код."}));
+                } else {
+                    handleError(err);
+                }
+            } else {
+                handleError(err);
+            }
+
+            if (errorData?.requiresCaptcha) {
                 setRequiresCaptcha(true);
                 resetCaptcha();
             } else {
@@ -213,6 +226,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         return mins > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${secs} сек`;
     };
 
+    const allErrors = {...localErrors, ...fieldErrors};
+
     return (
         <Dialog open={isOpen} onOpenChange={(_, data) => !data.open && onClose()}>
             <DialogSurface className="phone-verification-modal">
@@ -238,16 +253,14 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Field
                                     label="Номер телефона"
                                     required
-                                    validationMessage={validationError || error || undefined}
-                                    validationState={validationError || error ? "error" : "none"}
+                                    validationMessage={allErrors.phoneNumber || undefined}
+                                    validationState={allErrors.phoneNumber ? "error" : "none"}
                                 >
                                     <Input
                                         type="tel"
                                         value={phoneNumber}
                                         onChange={(e) => {
                                             setPhoneNumber(e.target.value);
-                                            setValidationError("");
-                                            setError(null);
                                         }}
                                         placeholder="+7 (999) 123-45-67"
                                         disabled={loading}
@@ -262,8 +275,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Field
                                     label="Код подтверждения"
                                     required
-                                    validationMessage={error}
-                                    validationState={error ? "error" : "none"}
+                                    validationMessage={allErrors.verificationCode}
+                                    validationState={allErrors.verificationCode ? "error" : "none"}
                                     hint={
                                         remainingAttempts !== null && remainingAttempts > 0
                                             ? `Введите 6-значный код из SMS (осталось попыток: ${remainingAttempts})`
@@ -276,7 +289,6 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                         onChange={(e) => {
                                             const val = e.target.value.replace(/\D/g, "").slice(0, 6);
                                             setVerificationCode(val);
-                                            setError(null);
                                         }}
                                         placeholder="000000"
                                         maxLength={6}
@@ -295,7 +307,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                             onExpired={() => setCaptchaToken(null)}
                                             onErrored={() => {
                                                 setCaptchaToken(null);
-                                                setError("Ошибка загрузки капчи. Попробуйте обновить страницу.");
+                                                showToast("Ошибка загрузки капчи. Попробуйте обновить страницу.", "error");
                                             }}
                                         />
                                     </div>

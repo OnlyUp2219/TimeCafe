@@ -1,5 +1,4 @@
-
-using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +21,11 @@ builder.Services.AddSmsServices();
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddUserProfileCqrs();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger param 

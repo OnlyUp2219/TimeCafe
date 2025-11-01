@@ -10,7 +10,6 @@ import {
     useId, ToastTrigger,
 } from "@fluentui/react-components";
 import * as React from "react";
-import "./ToastProgress.css"
 
 type ToastIntent = "success" | "error" | "warning" | "info";
 

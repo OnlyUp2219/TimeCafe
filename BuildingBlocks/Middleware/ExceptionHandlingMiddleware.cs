@@ -1,4 +1,3 @@
-
 namespace BuildingBlocks.Middleware;
 
 public class ExceptionHandlingMiddleware
@@ -22,6 +21,14 @@ public class ExceptionHandlingMiddleware
         {
             await HandleValidationExceptionAsync(context, ex);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            await HandleUnauthorizedExceptionAsync(context, ex);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            await HandleNotFoundExceptionAsync(context, ex);
+        }
         catch (Exception ex)
         {
             await HandleExceptionAsync(context, ex);
@@ -35,22 +42,65 @@ public class ExceptionHandlingMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
 
-        var errors = exception.Errors
-            .GroupBy(e => e.PropertyName)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(e => e.ErrorMessage).ToArray()
-            );
+        var errors = exception.Errors.Select(e => new ErrorDetail(
+            ErrorType.Validation,
+            $"Validation.{e.PropertyName}",
+            e.ErrorMessage,
+            e.PropertyName
+        )).ToList();
 
-        var problemDetails = new
+        var response = new
         {
-            type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            title = "One or more validation errors occurred.",
-            status = 400,
+            type = "ValidationError",
             errors
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
+    }
+
+    private async Task HandleUnauthorizedExceptionAsync(HttpContext context, UnauthorizedAccessException exception)
+    {
+        _logger.LogWarning("Unauthorized access: {Message}", exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+
+        var error = ErrorDetail.Unauthorized(exception.Message);
+
+        var response = new
+        {
+            type = "Unauthorized",
+            error
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
+    }
+
+    private async Task HandleNotFoundExceptionAsync(HttpContext context, KeyNotFoundException exception)
+    {
+        _logger.LogWarning("Resource not found: {Message}", exception.Message);
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+
+        var error = ErrorDetail.NotFound("Resource");
+
+        var response = new
+        {
+            type = "NotFound",
+            error
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
     }
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
@@ -60,14 +110,17 @@ public class ExceptionHandlingMiddleware
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        var problemDetails = new
+        var error = ErrorDetail.Critical("Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.");
+
+        var response = new
         {
-            type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            title = "An error occurred while processing your request.",
-            status = 500,
-            detail = exception.Message
+            type = "Critical",
+            error
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        }));
     }
 }

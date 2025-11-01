@@ -7,10 +7,10 @@ public static class IdentityExtensions
         services
         .AddIdentityCore<IdentityUser>(options =>
         {
-            options.SignIn.RequireConfirmedAccount = false;
+            options.SignIn.RequireConfirmedAccount = true;
             options.SignIn.RequireConfirmedPhoneNumber = false;
 
-            options.User.RequireUniqueEmail = false;
+            options.User.RequireUniqueEmail = true;
 
             options.Password.RequireDigit = true;
             options.Password.RequireLowercase = false;
@@ -27,7 +27,7 @@ public static class IdentityExtensions
 
         services.Configure<DataProtectionTokenProviderOptions>(options =>
         {
-            options.TokenLifespan = TimeSpan.FromMinutes(10);
+            options.TokenLifespan = TimeSpan.FromMinutes(60);
         });
 
         services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();

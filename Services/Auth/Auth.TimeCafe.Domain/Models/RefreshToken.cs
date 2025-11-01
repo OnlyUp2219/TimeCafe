@@ -1,5 +1,3 @@
-
-
 namespace Auth.TimeCafe.Domain.Models;
 
 public class RefreshToken

@@ -4,8 +4,8 @@ import {validateEmail} from "../../utility/validate.ts";
 import {forgotPassword} from "../../api/auth.ts";
 import {useEffect, useState} from "react";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {parseErrorMessage} from "../../utility/errors.ts";
 import {RateLimiter} from "../../utility/rateLimitHelpers.ts";
+import {useErrorHandler} from "../../hooks/useErrorHandler.ts";
 
 const emailRateLimiter = new RateLimiter("email_rate_limit");
 const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_EMAIL_RATE_LIMIT_SECONDS || "60");
@@ -13,9 +13,10 @@ const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_EMAIL_RATE_LIMIT_SECOND
 export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
+    const {fieldErrors, handleError, clearAllErrors} = useErrorHandler(showToast);
 
     const [email, setEmail] = useState("");
-    const [errors, setErrors] = useState({
+    const [localErrors, setLocalErrors] = useState({
         email: "",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,7 +55,7 @@ export const ResetPasswordEmail = () => {
     }, [email]);
     const validate = () => {
         const emailError = validateEmail(email);
-        setErrors({email: emailError});
+        setLocalErrors({email: emailError});
         return !emailError;
     };
 
@@ -72,6 +73,7 @@ export const ResetPasswordEmail = () => {
             return;
         }
 
+        clearAllErrors();
         setIsSubmitting(true);
         try {
             const res = await forgotPassword({email});
@@ -81,23 +83,14 @@ export const ResetPasswordEmail = () => {
 
             setIsSent(true);
             setLink(res.callbackUrl ?? null);
-        } catch (err: any) {
-            const newErrors = {email: ""};
-
-            if (Array.isArray(err)) {
-                err.forEach((e: { code: string; description: string }) => {
-                    const code = e.code.toLowerCase();
-                    if (code.includes("email")) newErrors.email += e.description + " ";
-                });
-            } else {
-                const message = parseErrorMessage(err);
-                showToast(message, "error");
-            }
-            setErrors(newErrors);
+        } catch (error) {
+            handleError(error);
         } finally {
             setIsSubmitting(false);
         }
     };
+
+    const allErrors = {...localErrors, ...fieldErrors};
 
     if (isSent) {
         return (
@@ -154,8 +147,8 @@ export const ResetPasswordEmail = () => {
 
                 <Field label="Почта"
                        required
-                       validationState={errors.email ? "error" : undefined}
-                       validationMessage={errors.email}
+                       validationState={allErrors.email ? "error" : undefined}
+                       validationMessage={allErrors.email}
                        hint={remainingTime > 0
                            ? `Повторная отправка через ${remainingTime} сек.`
                            : ""}

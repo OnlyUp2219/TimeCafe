@@ -1,4 +1,3 @@
-import "./Footer.css";
 import type {FC} from "react";
 
 export const Footer: FC = () => {
