@@ -62,7 +62,6 @@ export const SignPage = () => {
             const newErrors = {email: "", password: "", username: "", confirmPassword: ""};
 
             if (Array.isArray(err)) {
-                // err - массив IdentityError { Code, Description }
                 err.forEach((e: { code: string; description: string }) => {
                     const code = e.code.toLowerCase();
                     if (code.includes("email")) newErrors.email += e.description + " ";

@@ -10,6 +10,7 @@ global using Auth.TimeCafe.Domain.Services;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 
+global using Auth.TimeCafe.API.Middleware;
 global using BuildingBlocks.Middleware;
 global using Auth.TimeCafe.Infrastructure.Services.Phone;
 

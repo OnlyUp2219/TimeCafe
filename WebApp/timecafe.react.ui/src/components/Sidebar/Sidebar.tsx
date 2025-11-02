@@ -76,6 +76,7 @@ export const Sidebar: FC = () => {
         {id: "1", label: "Главная", path: "/home"},
         {id: "2", label: "Персональные данные", path: "/personal-data"},
         {id: "3", label: "Тестовая", path: "/home"},
+        {id: "4", label: "Лимит запросов", path: "/rate-limiter"},
     ];
 
 

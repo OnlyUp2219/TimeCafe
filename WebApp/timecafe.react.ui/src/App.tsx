@@ -14,6 +14,7 @@ const ResetPassword = lazy(() => import('./pages/resetPassword/ResetPassword').t
 const ResetPasswordEmail = lazy(() => import('./pages/resetPassword/ResetPasswordEmail').then(module => ({default: module.ResetPasswordEmail})));
 const PrivateRoute = lazy(() => import('./components/PrivateRoute/PrivateRoute').then(module => ({default: module.PrivateRoute})));
 const ExternalCallback = lazy(() => import('./pages/ExternalCallback').then(module => ({default: module.ExternalCallback})));
+const RateLimiter = lazy(() => import('./pages/RateLimitTestPage.tsx').then(module => ({default: module.RateLimitTestPage})));
 
 export default function App() {
     return (
@@ -42,6 +43,14 @@ export default function App() {
                             element={
                                 <PrivateRoute>
                                     <PersonalData/>
+                                </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path="rate-limiter"
+                            element={
+                                <PrivateRoute>
+                                    <RateLimiter/>
                                 </PrivateRoute>
                             }
                         />

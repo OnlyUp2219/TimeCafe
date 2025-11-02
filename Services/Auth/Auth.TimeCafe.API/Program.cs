@@ -1,6 +1,4 @@
 
-using Microsoft.Extensions.Logging;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext
@@ -28,6 +26,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Swagger param 
 builder.Services.AddSwaggerConfiguration(builder.Configuration);
 
+// Rate Limiter
+builder.Services.AddCustomRateLimiter(builder.Configuration);
+
 // CORS 
 var corsPolicyName = builder.Configuration.GetSection("CORS");
 builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
@@ -49,8 +50,6 @@ using (var scope = app.Services.CreateScope())
     await SeedData.SeedAdminAsync(scope.ServiceProvider);
 }
 
-
-// Swagger UI
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -64,15 +63,16 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName["PolicyName"] ?? "");
 
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseMiddleware<RateLimitCounterMiddleware>();
+app.UseRateLimiter();
 
 app.MapCarter();
 
-// Встроенные Identity API эндпоинты
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapIdentityApi<IdentityUser>();
 
-// Внешние логины
 app.MapControllers();
 
 await app.RunAsync();

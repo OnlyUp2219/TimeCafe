@@ -9,8 +9,9 @@ public static class CorsExtensions
             options.AddPolicy(corsPolicyName ?? "", p =>
                 p.AllowAnyHeader().
                 AllowAnyMethod().
-                AllowCredentials().
-                WithOrigins("http://127.0.0.1:9301",
+                AllowCredentials()
+                .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
+                .WithOrigins("http://127.0.0.1:9301",
                 "http://localhost:9301",
                 "http://127.0.0.1:4173",
                 "http://localhost:4173"));
