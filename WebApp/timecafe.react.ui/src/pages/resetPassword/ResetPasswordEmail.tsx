@@ -2,56 +2,30 @@ import {useNavigate} from "react-router-dom";
 import {Button, Card, Field, Input, Subtitle1, Text} from "@fluentui/react-components";
 import {validateEmail} from "../../utility/validate.ts";
 import {forgotPassword} from "../../api/auth.ts";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {parseErrorMessage} from "../../utility/errors.ts";
-import {RateLimiter} from "../../utility/rateLimitHelpers.ts";
-
-const emailRateLimiter = new RateLimiter("email_rate_limit");
-const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_EMAIL_RATE_LIMIT_SECONDS || "60");
+import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
 
 export const ResetPasswordEmail = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
 
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState("klimenkokov1@timecafesharp.ru");
     const [errors, setErrors] = useState({
         email: "",
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSent, setIsSent] = useState(false);
-    const [link, setLink] = useState<string | null>(null);
-    const [remainingTime, setRemainingTime] = useState(0);
     const useMockEmail = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
-    // Todo убрать после тестов
-    useEffect(() => {
-        setEmail("klimenkokov1@timecafesharp.ru");
-    }, []);
-
-    useEffect(() => {
-        if (email) {
-            const saved = emailRateLimiter.getSavedRateLimit();
-
-            if (saved.identifier === email) {
-                const remaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
-                setRemainingTime(remaining);
-
-                if (remaining > 0) {
-                    const interval = setInterval(() => {
-                        const newRemaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
-                        setRemainingTime(newRemaining);
-                        if (newRemaining === 0) {
-                            clearInterval(interval);
-                        }
-                    }, 1000);
-                    return () => clearInterval(interval);
-                }
-            } else {
-                setRemainingTime(0);
-            }
+    const {data, countdown, isBlocked, isLoading, sendRequest} = useRateLimitedRequest(
+        'forgot-password',
+        async () => {
+            const response = await forgotPassword({email});
+            return response;
         }
-    }, [email]);
+    );
+
     const validate = () => {
         const emailError = validateEmail(email);
         setErrors({email: emailError});
@@ -61,29 +35,21 @@ export const ResetPasswordEmail = () => {
     const handleSubmit = async () => {
         if (!validate()) return;
 
-        if (remainingTime > 0) {
-            setIsSent(true);
+        if (isBlocked) {
+            showToast(`Подождите ${countdown} сек. перед повторной отправкой`, "warning");
             return;
         }
 
-        if (!emailRateLimiter.canProceed(email, RATE_LIMIT_SECONDS)) {
-            const remaining = emailRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
-            showToast(`Подождите ${remaining} сек. перед повторной отправкой`, "warning");
-            return;
-        }
-
-        setIsSubmitting(true);
         try {
-            const res = await forgotPassword({email});
-
-            emailRateLimiter.saveRateLimit(email, Date.now());
-            setRemainingTime(RATE_LIMIT_SECONDS);
-
+            await sendRequest();
             setIsSent(true);
-            setLink(res.callbackUrl ?? null);
         } catch (err: any) {
-            const newErrors = {email: ""};
+            if (err.status === 429) {
+                showToast(err.message || `Подождите ${err.retryAfter || countdown} сек.`, "error");
+                return;
+            }
 
+            const newErrors = {email: ""};
             if (Array.isArray(err)) {
                 err.forEach((e: { code: string; description: string }) => {
                     const code = e.code.toLowerCase();
@@ -94,8 +60,6 @@ export const ResetPasswordEmail = () => {
                 showToast(message, "error");
             }
             setErrors(newErrors);
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -110,9 +74,9 @@ export const ResetPasswordEmail = () => {
                     Письмо для сброса пароля отправлено на <strong>{email}</strong>.
                 </Text>
 
-                {useMockEmail && link && (
+                {useMockEmail && data?.callbackUrl && (
                     <Text className="flex flex-wrap break-words">
-                        <a className="break-all hyphens-auto" href={link}>Ссылка</a> для сброса пароля (Mock режим).
+                        <a className="break-all hyphens-auto" href={data.callbackUrl}>Ссылка</a> для сброса пароля (Mock режим).
                     </Text>
                 )}
 
@@ -144,51 +108,48 @@ export const ResetPasswordEmail = () => {
         );
     }
 
+    return (
+        <Card className="auth_card">
+            {ToasterElement}
 
-    if (!isSent) {
-        return (
-            <Card className="auth_card">
-                {ToasterElement}
+            <Subtitle1 align={"center"}>Забыли пароль?</Subtitle1>
 
-                <Subtitle1 align={"center"}>Забыли пароль?</Subtitle1>
+            <Field label="Почта"
+                   required
+                   validationState={errors.email ? "error" : undefined}
+                   validationMessage={errors.email}
+                   hint={countdown > 0
+                       ? `Повторная отправка через ${countdown} сек.`
+                       : ""}
+            >
+                <Input
+                    value={email}
+                    placeholder="Введите почту"
+                    type="email"
+                    onChange={(_, data) => setEmail(data.value)}
+                    disabled={isBlocked}
+                />
+            </Field>
 
-                <Field label="Почта"
-                       required
-                       validationState={errors.email ? "error" : undefined}
-                       validationMessage={errors.email}
-                       hint={remainingTime > 0
-                           ? `Повторная отправка через ${remainingTime} сек.`
-                           : ""}
+            <div className="button-action">
+                <Button className="flex-[1] "
+                        appearance="secondary"
+                        onClick={() => navigate(-1)}
+                        type="button">Назад</Button>
+
+                <Button
+                    className="flex-[1.5]"
+                    appearance="primary"
+                    onClick={handleSubmit}
+                    disabled={isLoading || isBlocked}
+                    type="button"
                 >
-                    <Input
-                        value={email}
-                        placeholder="Введите почту"
-                        type="email"
-                        onChange={(_, data) => setEmail(data.value)}
-                        disabled={remainingTime > 0}
-                    />
-                </Field>
+                    {countdown > 0
+                        ? `К сообщению`
+                        : "Продолжить"}
+                </Button>
+            </div>
 
-                <div className="button-action">
-                    <Button className="flex-[1] "
-                            appearance="secondary"
-                            onClick={() => navigate(-1)}
-                            type="button">Назад</Button>
-
-                    <Button
-                        className="flex-[1.5]"
-                        appearance="primary"
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        type="button"
-                    >
-                        {remainingTime > 0
-                            ? `К сообщению`
-                            : "Продолжить"}
-                    </Button>
-                </div>
-
-            </Card>
-        )
-    }
-}
+        </Card>
+    );
+};

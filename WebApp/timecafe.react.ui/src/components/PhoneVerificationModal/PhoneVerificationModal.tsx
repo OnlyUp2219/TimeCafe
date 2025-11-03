@@ -19,7 +19,7 @@ import {SendPhoneConfirmation, VerifyPhoneConfirmation} from "../../api/auth";
 import type {PhoneCodeRequest} from "../../api/auth";
 import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
 import {validatePhoneNumber} from "../../utility/validate";
-import {RateLimiter} from "../../utility/rateLimitHelpers";
+import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
 
 
 interface PhoneVerificationModalProps {
@@ -30,9 +30,6 @@ interface PhoneVerificationModalProps {
 }
 
 type Step = "input" | "verify";
-
-const smsRateLimiter = new RateLimiter("sms_rate_limit");
-const RATE_LIMIT_SECONDS = parseInt(import.meta.env.VITE_SMS_RATE_LIMIT_SECONDS || "60");
 
 export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             isOpen,
@@ -50,13 +47,18 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [attemptsExhausted, setAttemptsExhausted] = useState(false);
     const [requiresCaptcha, setRequiresCaptcha] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-
-    const [countdown, setCountdown] = useState(0);
-    const [canResend, setCanResend] = useState(true);
     const [captchaKey, setCaptchaKey] = useState(0);
 
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
+
+    const {countdown, isBlocked, sendRequest} = useRateLimitedRequest(
+        'sms-verification',
+        async () => {
+            const response = await SendPhoneConfirmation({phoneNumber, code: ""});
+            return response;
+        }
+    );
 
     const resetVerificationState = () => {
         setRemainingAttempts(null);
@@ -80,34 +82,14 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     useEffect(() => {
-        if (countdown > 0) {
-            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-            return () => clearTimeout(timer);
-        } else if (countdown === 0 && !canResend) {
-            setCanResend(true);
-        }
-    }, [countdown, canResend]);
-
-    useEffect(() => {
         if (isOpen) {
             setPhoneNumber(currentPhoneNumber);
             resetVerificationState();
             resetErrors();
-
-            const remainingTime = smsRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
-            const saved = smsRateLimiter.getSavedRateLimit();
-
-            if (remainingTime > 0 && saved.identifier === currentPhoneNumber) {
-                setStep("verify");
-                setCountdown(remainingTime);
-                setCanResend(false);
-            } else {
-                setStep("input");
-                setCountdown(0);
-                setCanResend(true);
-            }
+            setStep("input");
         }
     }, [isOpen, currentPhoneNumber]);
+
     const handleSendCode = async () => {
         resetErrors();
 
@@ -117,31 +99,22 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             return;
         }
 
-        const remainingTime = smsRateLimiter.getRemainingTime(RATE_LIMIT_SECONDS);
-        const saved = smsRateLimiter.getSavedRateLimit();
-        if (remainingTime > 0 && saved.identifier === phoneNumber) {
-            setStep("verify");
-            setCountdown(remainingTime);
-            setCanResend(false);
+        if (isBlocked) {
             return;
         }
 
         setLoading(true);
 
         try {
-            const data: PhoneCodeRequest = {
-                phoneNumber,
-                code: "",
-            };
-            await SendPhoneConfirmation(data);
-
-            smsRateLimiter.saveRateLimit(phoneNumber, Date.now());
+            await sendRequest();
             resetVerificationState();
-
             setStep("verify");
-            setCountdown(RATE_LIMIT_SECONDS);
-            setCanResend(false);
         } catch (err: unknown) {
+            if (typeof err === 'object' && err !== null && 'status' in err && err.status === 429) {
+                const retryAfter = 'retryAfter' in err ? (err.retryAfter as number) : 60;
+                setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
+                return;
+            }
             setError(parseErrorMessage(err) || "Ошибка при отправке SMS. Попробуйте позже.");
         } finally {
             setLoading(false);
@@ -167,7 +140,6 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
             await VerifyPhoneConfirmation(data);
 
-            smsRateLimiter.clearRateLimit();
             resetVerificationState();
 
             onSuccess(phoneNumber);
@@ -308,7 +280,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
                     {step === "verify" && (
                         <DialogActions position="start">
-                            {!canResend ? (
+                            {isBlocked ? (
                                 <Caption1>
                                     Отправить повторно через {formatCountdown(countdown)}
                                 </Caption1>
@@ -332,7 +304,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Button
                                     appearance="primary"
                                     onClick={handleSendCode}
-                                    disabled={loading || !phoneNumber.trim() || countdown > 0}
+                                    disabled={loading || !phoneNumber.trim() || isBlocked}
                                 >
                                     {loading ? <Spinner
                                         size="tiny"/> : countdown > 0 ? `Получить код (${formatCountdown(countdown)})` : "Получить код"}
@@ -343,9 +315,9 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Button
                                     appearance="secondary"
                                     onClick={handleBack}
-                                    disabled={loading || (!canResend && !attemptsExhausted)}
+                                    disabled={loading || (isBlocked && !attemptsExhausted)}
                                 >
-                                    {!canResend && !attemptsExhausted ? `Изменить (${formatCountdown(countdown)})` : "Изменить номер"}
+                                    {isBlocked && !attemptsExhausted ? `Изменить (${formatCountdown(countdown)})` : "Изменить номер"}
                                 </Button>
                                 <Button
                                     appearance="primary"

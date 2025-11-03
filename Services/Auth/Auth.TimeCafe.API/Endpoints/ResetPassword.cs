@@ -20,6 +20,8 @@ public class ResetPassword : ICarterModule
 
             return Results.Ok(new { callbackUrl = result.CallbackUrl });
         })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPasswordMock")
         .WithSummary("Mock: Возвращает ссылку для теста без отправки email");
 
@@ -35,6 +37,8 @@ public class ResetPassword : ICarterModule
 
             return Results.Ok(new { message = result.Message });
         })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPassword")
         .WithSummary("Отправка ссылки для сброса пароля на email");
     }

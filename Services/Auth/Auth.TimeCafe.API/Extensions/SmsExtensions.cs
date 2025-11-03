@@ -6,7 +6,6 @@ public static class SmsExtensions
     {
         services.AddScoped<ITwilioSender, TwilioSender>();
 
-        services.AddSingleton<IRateLimiter, RateLimiter>();
         services.AddSingleton<ISmsVerificationAttemptTracker, SmsVerificationAttemptTracker>();
 
         services.AddHttpClient<ICaptchaValidator, GoogleRecaptchaValidator>();

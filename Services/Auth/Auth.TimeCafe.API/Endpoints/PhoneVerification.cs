@@ -10,7 +10,6 @@ public class PhoneVerification : ICarterModule
         group.MapPost("generateSMS-mock", async (
             UserManager<IdentityUser> userManager,
             ClaimsPrincipal user,
-            IRateLimiter rateLimiter,
             ISmsVerificationAttemptTracker attemptTracker,
             ILogger<PhoneVerification> logger,
             [FromBody] PhoneVerificationModel model
@@ -22,13 +21,6 @@ public class PhoneVerification : ICarterModule
             var u = await userManager.FindByIdAsync(userId);
             if (u == null) return Results.NotFound();
 
-            if (!rateLimiter.CanProceed($"sms_{userId}"))
-            {
-                var remainingSeconds = rateLimiter.GetRemainingSeconds($"sms_{userId}");
-                logger.LogWarning("Rate limit превышен для пользователя {UserId} при попытке отправки SMS (mock)", userId);
-                return Results.BadRequest($"Слишком частые запросы. Попробуйте через {remainingSeconds} секунд.");
-            }
-
             logger.LogInformation("[MOCK] Генерация кода подтверждения для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
 
             var token = await userManager.GenerateChangePhoneNumberTokenAsync(u, model.PhoneNumber);
@@ -36,10 +28,10 @@ public class PhoneVerification : ICarterModule
             logger.LogWarning("[MOCK] Код подтверждения для {PhoneNumber}: {Token}", model.PhoneNumber, token);
             attemptTracker.ResetAttempts(userId, model.PhoneNumber);
 
-            rateLimiter.RecordAction($"sms_{userId}");
-
             return Results.Ok(new { phoneNumber = model.PhoneNumber, message = "SMS отправлено (mock)", token });
-        });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow");
 
         group.MapPost("verifySMS-mock", async (
             UserManager<IdentityUser> userManager,
@@ -115,7 +107,6 @@ public class PhoneVerification : ICarterModule
             UserManager<IdentityUser> userManager,
             ClaimsPrincipal user,
             IConfiguration configuration,
-            IRateLimiter rateLimiter,
             ISmsVerificationAttemptTracker attemptTracker,
             ILogger<PhoneVerification> logger,
             [FromBody] PhoneVerificationModel model
@@ -127,13 +118,6 @@ public class PhoneVerification : ICarterModule
 
                 var u = await userManager.FindByIdAsync(userId);
                 if (u == null) return Results.NotFound();
-
-                if (!rateLimiter.CanProceed($"sms_{userId}"))
-                {
-                    var remainingSeconds = rateLimiter.GetRemainingSeconds($"sms_{userId}");
-                    logger.LogWarning("Rate limit превышен для пользователя {UserId} при попытке отправки SMS", userId);
-                    return Results.BadRequest($"Слишком частые запросы. Попробуйте через {remainingSeconds} секунд.");
-                }
 
                 logger.LogInformation("Генерация кода подтверждения для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
 
@@ -149,13 +133,14 @@ public class PhoneVerification : ICarterModule
                 if (result != null)
                 {
                     attemptTracker.ResetAttempts(userId, model.PhoneNumber);
-                    rateLimiter.RecordAction($"sms_{userId}");
                     return Results.Ok(new { phoneNumber = result.PhoneNumber, message = "SMS отправлено" });
                 }
 
                 logger.LogError("Ошибка при отправке SMS для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
                 return Results.BadRequest("Ошибка при отправке SMS");
-            });
+            })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow");
 
         group.MapPost("verifySMS", async (
             UserManager<IdentityUser> userManager,

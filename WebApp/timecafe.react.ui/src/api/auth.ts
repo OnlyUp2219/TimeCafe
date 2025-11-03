@@ -2,6 +2,7 @@ import axios from "axios";
 import {clearTokens, setAccessToken, setRefreshToken} from "../store/authSlice.ts";
 import type {AppDispatch} from "../store";
 import {store} from "../store";
+import {withRateLimit, type RateLimitedResponse} from "./rateLimitHelper.ts";
 
 export interface RegisterRequest {
     username: string;
@@ -108,30 +109,17 @@ export async function refreshToken(refreshToken: string, dispatch: AppDispatch):
     }
 }
 
-export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<{
+export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<RateLimitedResponse<{
     message?: string;
-    callbackUrl?: string
-}> {
+    callbackUrl?: string;
+}>> {
     const endpoint = USE_MOCK_EMAIL ? "/forgot-password-link-mock" : "/forgot-password-link";
-    console.log("Using endpoint:", endpoint);
-    console.log(data);
-    console.log(Date.now());
-    try {
-        const response = await axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}${endpoint}`, data, {
-            headers: {"Content-Type": "application/json"},
-        });
 
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            const res = error.response;
-            if (res?.data) {
-                throw res?.data;
-            }
-            throw new Error(`Ошибка отправки (${res?.status ?? "нет ответа"})`);
-        }
-        throw new Error("Неизвестная ошибка при попытке отправить сообщение на почту");
-    }
+    return withRateLimit(() => 
+        axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}${endpoint}`, data, {
+            headers: {"Content-Type": "application/json"},
+        })
+    );
 }
 
 export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
@@ -186,29 +174,19 @@ export async function logoutServer(refreshToken: string | null, dispatch: AppDis
     }
 }
 
-export async function SendPhoneConfirmation(data: PhoneCodeRequest): Promise<void> {
+export async function SendPhoneConfirmation(data: PhoneCodeRequest): Promise<RateLimitedResponse<void>> {
     const state = store.getState();
     const accessToken = state.auth?.accessToken;
     const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
 
-    try {
-        await axios.post(`${apiBase}${endpoint}`, data, {
+    return withRateLimit(() =>
+        axios.post<void>(`${apiBase}${endpoint}`, data, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
             }
         })
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            const res = error.response;
-            if (res?.data) {
-                throw res?.data;
-            }
-
-            throw new Error(`Ошибка отправки кода на телефон - (${res?.status ?? "нет ответа"})`);
-        }
-        throw new Error("Неизвестная ошибка при отправке смс");
-    }
+    );
 }
 
 export async function VerifyPhoneConfirmation(data: PhoneCodeRequest): Promise<VerifyPhoneResponse> {
