@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {withRateLimit, type RateLimitedResponse} from './rateLimitHelper.ts';
+import {withRateLimit, type RateLimitedResponse} from '../utility/rateLimitHelper.ts';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7057';
 const TEST_ENDPOINT_1 = `${API_BASE}/api/test-rate-limit`;

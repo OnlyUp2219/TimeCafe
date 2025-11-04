@@ -2,17 +2,15 @@ import {Button, Input, Link, Field, Divider, Subtitle1, Card} from '@fluentui/re
 import {useNavigate} from "react-router-dom";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
+import {EmailPendingCard} from '../components/EmailPendingCard/EmailPendingCard';
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../store";
+import {useDispatch} from "react-redux";
 import {useState} from "react";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
-    const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
-    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
 
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState("");
@@ -21,6 +19,7 @@ export const LoginPage = () => {
         password: "",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [emailPending, setEmailPending] = useState(false);
 
     const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
     const returnUrl = `${window.location.origin}/external-callback`;
@@ -46,33 +45,42 @@ export const LoginPage = () => {
 
         setIsSubmitting(true);
         try {
-            await loginUser({email, password}, dispatch);
+            const r = await loginUser({email, password}, dispatch);
+            if (r.emailNotConfirmed) {
+                setEmailPending(true);
+                return;
+            }
             navigate("/home");
         } catch (err: any) {
             const newErrors = {email: "", password: ""};
 
-            if (Array.isArray(err)) {
-                err.forEach((e: { code: string; description: string }) => {
+            if (Array.isArray(err.errors)) {
+                err.errors.forEach((e: { code: string; description: string }) => {
                     const code = e.code.toLowerCase();
                     if (code.includes("email")) newErrors.email += e.description + " ";
                     else if (code.includes("password")) newErrors.password += e.description + " ";
                     else newErrors.email += e.description + " ";
                 });
-            } else {
-                const message = err instanceof Error ? err.message : String(err);
+            }
+            if (err instanceof Error) {
+                const message = err.message;
                 showToast(message, "error", "Ошибка");
             }
             setErrors(newErrors);
         } finally {
             setIsSubmitting(false);
-            console.log("accessToken:", accessToken);
-            console.log("refreshToken:", refreshToken);
         }
 
     };
 
     const forgotPasswordSubmit = async () => {
         navigate("/resetPasswordEmail");
+    }
+
+    if (emailPending) {
+        return <EmailPendingCard onGoToLogin={() => {
+            setEmailPending(false);
+        }}/>;
     }
 
     return (

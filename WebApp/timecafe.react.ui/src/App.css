@@ -136,16 +136,27 @@
 
 
 .button-action {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    column-gap: 48px;
-    row-gap: 16px;
+    display: grid;
+    grid-template-columns: 1fr 0.4fr 1.1fr;
+    align-items: center;
+}
+
+.button-action > :first-child {
+    grid-column: 1;
+}
+
+.button-action > :last-child {
+    grid-column: 3;
 }
 
 @media (max-width: 480px) {
     .button-action {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        row-gap: 16px;
+        justify-items: stretch;
+    }
+
+    .button-action > * {
+        grid-column: 1 !important; /* обе кнопки в колонку */
     }
 }

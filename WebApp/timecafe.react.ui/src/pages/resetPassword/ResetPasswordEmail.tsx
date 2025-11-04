@@ -76,7 +76,8 @@ export const ResetPasswordEmail = () => {
 
                 {useMockEmail && data?.callbackUrl && (
                     <Text className="flex flex-wrap break-words">
-                        <a className="break-all hyphens-auto" href={data.callbackUrl}>Ссылка</a> для сброса пароля (Mock режим).
+                        <a className="break-all hyphens-auto" href={data.callbackUrl}>Ссылка</a> для сброса пароля (Mock
+                        режим).
                     </Text>
                 )}
 
@@ -142,8 +143,7 @@ export const ResetPasswordEmail = () => {
                     appearance="primary"
                     onClick={handleSubmit}
                     disabled={isLoading || isBlocked}
-                    type="button"
-                >
+                    type="button">
                     {countdown > 0
                         ? `К сообщению`
                         : "Продолжить"}
