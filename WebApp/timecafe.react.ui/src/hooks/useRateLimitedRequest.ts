@@ -12,7 +12,7 @@ export interface RateLimitedResult<T = any> {
     remaining: number;
     isBlocked: boolean;
     isLoading: boolean;
-    sendRequest: () => Promise<T | null>;
+    sendRequest: () => Promise<void>;
 }
 
 export function useRateLimitedRequest<T = any>(
@@ -48,28 +48,23 @@ export function useRateLimitedRequest<T = any>(
     }, [blockUntil]);
 
     const sendRequest = useCallback(async () => {
-        if (isLoading || blockUntil > Date.now()) return null;
+        if (isLoading || blockUntil > Date.now()) return;
 
         setIsLoading(true);
         try {
-            const {data, headers, status} = await fetcher();
+            const {data, headers} = await fetcher();
             setData(data);
 
             if (headers.remaining !== undefined) {
                 setRemaining(headers.remaining);
             }
 
-            if (status === 200 && headers.windowSeconds) {
-                const until = Date.now() + headers.windowSeconds * 1000;
-                setBlockUntil(until);
-                localStorage.setItem(STORAGE_KEY, until.toString());
-            } else if (status === 429 && headers.retryAfter) {
+            if (headers.retryAfter) {
                 const until = Date.now() + headers.retryAfter * 1000;
                 setBlockUntil(until);
+                setCountdown(headers.retryAfter);
                 localStorage.setItem(STORAGE_KEY, until.toString());
             }
-            
-            return data;
         } finally {
             setIsLoading(false);
         }

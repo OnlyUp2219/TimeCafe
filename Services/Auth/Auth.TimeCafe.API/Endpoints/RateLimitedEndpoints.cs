@@ -6,7 +6,6 @@ public class RateLimitedEndpoints : ICarterModule
     {
         app.MapGet("/api/test-rate-limit", (HttpContext context, RateLimitConfig cfg) =>
         {
-            context.Response.Headers["X-Rate-Limit-Window"] = cfg.MinIntervalSeconds.ToString();
 
             return Results.Ok(new
             {

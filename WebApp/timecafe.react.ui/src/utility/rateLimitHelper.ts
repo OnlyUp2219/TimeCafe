@@ -18,9 +18,9 @@ export async function withRateLimit<T>(
     try {
         const res = await request();
         const headers = res.headers || {};
-        
-        const windowSeconds = headers['x-rate-limit-window'] 
-            ? parseInt(headers['x-rate-limit-window'], 10) 
+        console.log('Response Headers:', headers);
+        const windowSeconds = headers['x-rate-limit-window']
+            ? parseInt(headers['x-rate-limit-window'], 10)
             : undefined;
         const remaining = headers['x-rate-limit-remaining']
             ? parseInt(headers['x-rate-limit-remaining'], 10)

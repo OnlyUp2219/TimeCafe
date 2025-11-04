@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Auth.TimeCafe.API.Middleware;
 
@@ -18,7 +17,10 @@ public class RateLimitCounterMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        if (endpoint == null)
+        
+        var hasRateLimiting = endpoint?.Metadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any() ?? false;
+        
+        if (!hasRateLimiting)
         {
             await _next(context);
             return;
@@ -27,6 +29,7 @@ public class RateLimitCounterMiddleware
         var key = GetRateLimitKey(context);
         var windowMinutes = _configuration.GetValue<int>("RateLimiter:EmailSms:WindowMinutes");
         var maxRequests = _configuration.GetValue<int>("RateLimiter:EmailSms:MaxRequests");
+        var minIntervalSeconds = _configuration.GetValue<int>("RateLimiter:EmailSms:MinIntervalSeconds");
         var windowSeconds = windowMinutes * 60;
 
         var countKey = $"{key}:count";
@@ -52,6 +55,18 @@ public class RateLimitCounterMiddleware
                 _cache.Set(countKey, count, windowStart.AddSeconds(windowSeconds));
                 var remaining = Math.Max(0, maxRequests - count);
                 context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
+                
+                
+                var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
+                context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
+            }
+            else
+            {
+                var remaining = Math.Max(0, maxRequests - count);
+                context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
+               
+                var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
+                context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
             }
             return Task.CompletedTask;
         });

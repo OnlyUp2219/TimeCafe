@@ -57,9 +57,7 @@ public static class RateLimiterExtensions
                     AutoReplenishment = true
                 });
             });
-
             
-
             options.RejectionStatusCode = 429;
             options.OnRejected = (context, cancellationToken) =>
             {
