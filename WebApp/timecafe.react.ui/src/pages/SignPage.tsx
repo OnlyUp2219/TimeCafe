@@ -36,17 +36,17 @@ export const SignPage = () => {
     const [mockLink, setMockLink] = useState<string | undefined>(undefined);
 
 
-    useEffect(() => {
-        setUsername(faker.internet.username());
-        setEmail(faker.internet.email());
-        const pwd =
-            faker.string.alpha({length: 1, casing: "upper"}) +
-            faker.string.alphanumeric({length: 4}) +
-            faker.string.numeric({length: 1});
-
-        setPassword(pwd);
-        setConfirmPassword(pwd);
-    }, []);
+    // useEffect(() => {
+    //     setUsername(faker.internet.username());
+    //     setEmail(faker.internet.email());
+    //     const pwd =
+    //         faker.string.alpha({length: 1, casing: "upper"}) +
+    //         faker.string.alphanumeric({length: 4}) +
+    //         faker.string.numeric({length: 1});
+    //
+    //     setPassword(pwd);
+    //     setConfirmPassword(pwd);
+    // }, []);
 
     const validate = () => {
         const usernameError = validateUsername(username);
@@ -132,7 +132,7 @@ export const SignPage = () => {
             </Field>
 
             <div className="button-action ">
-                <Button as='a' appearance="secondary" onClick={() => navigate("/login")}>Войти</Button>
+                <Button as='a' appearance="subtle" onClick={() => navigate("/login")}>Войти</Button>
                 <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting}>Зарегистрироваться</Button>
             </div>
         </Card>

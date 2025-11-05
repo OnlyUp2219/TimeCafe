@@ -117,9 +117,11 @@ export const LoginPage = () => {
                 <Link onClick={forgotPasswordSubmit}>Забыли пароль?</Link>
             </div>
 
-            <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Войти</Button>
 
-            <Link onClick={() => navigate("/sign")}>Зарегистрироваться</Link>
+            <div className="button-action">
+                <Button as="a" appearance="subtle" onClick={() => navigate("/sign")}>Зарегистрироваться</Button>
+                <Button appearance="primary" onClick={handleSubmit} disabled={isSubmitting} type="button">Войти</Button>
+            </div>
 
             <Divider appearance="brand" className="divider">или</Divider>
 

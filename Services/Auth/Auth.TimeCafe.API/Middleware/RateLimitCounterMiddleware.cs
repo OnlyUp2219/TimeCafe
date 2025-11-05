@@ -59,6 +59,8 @@ public class RateLimitCounterMiddleware
                 
                 var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
                 context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
+
+                context.Response.Headers.RetryAfter = windowInSeconds.ToString();
             }
             else
             {
@@ -67,6 +69,8 @@ public class RateLimitCounterMiddleware
                
                 var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
                 context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
+
+                context.Response.Headers.RetryAfter = windowInSeconds.ToString();
             }
             return Task.CompletedTask;
         });
