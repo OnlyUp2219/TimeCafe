@@ -37,6 +37,19 @@ public class ExternalProviders : ICarterModule
                 return Results.BadRequest("Email is null");
             }
 
+            var externalUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (externalUserId == null)
+            {
+                return Results.BadRequest("External user ID is null");
+            }
+
+            var existingUserWithLogin = await userManager.FindByLoginAsync("Google", externalUserId);
+
+            if (existingUserWithLogin != null)
+            {
+                var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            }
             var user = await userManager.FindByEmailAsync(email);
 
             if (user == null)
@@ -62,30 +75,16 @@ public class ExternalProviders : ICarterModule
                 return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
             }
 
-            var info = new UserLoginInfo("Google", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Google");
+            var info = new UserLoginInfo("Google", externalUserId, "Google");
+            var loginResult = await userManager.AddLoginAsync(user, info);
 
-            var existingUserWithLogin = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-            if (existingUserWithLogin != null)
+            if (!loginResult.Succeeded)
             {
-                if (existingUserWithLogin.Id != user.Id)
-                {
-                    return Results.BadRequest("This external login is already associated with another account.");
-                }
-            }
-            else
-            {
-                var loginResult = await userManager.AddLoginAsync(user, info);
-
-                if (!loginResult.Succeeded)
-                {
-                    return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
-                }
+                return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
             }
 
-            var tokens = await jwtService.GenerateTokens(user);
-
-            return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            var userTokens = await jwtService.GenerateTokens(user);
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
         })
             .WithTags("ExternalProviders");
         app.MapGet("/authenticate/login/microsoft/callback", async ([FromQuery] string returnUrl, HttpContext context, SignInManager<IdentityUser> signInManager, IJwtService jwtService, UserManager<IdentityUser> userManager) =>
@@ -106,6 +105,20 @@ public class ExternalProviders : ICarterModule
                 return Results.BadRequest("Email is null");
             }
 
+            var externalUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (externalUserId == null)
+            {
+                return Results.BadRequest("External user ID is null");
+            }
+
+            var existingUserWithLogin = await userManager.FindByLoginAsync("Microsoft", externalUserId);
+
+            if (existingUserWithLogin != null)
+            {
+                var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            }
+
             var user = await userManager.FindByEmailAsync(email);
 
             if (user == null)
@@ -130,31 +143,16 @@ public class ExternalProviders : ICarterModule
             {
                 return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
             }
+            var info = new UserLoginInfo("Microsoft", externalUserId, "Microsoft");
+            var loginResult = await userManager.AddLoginAsync(user, info);
 
-            var info = new UserLoginInfo("Microsoft", principal.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty, "Microsoft");
-
-            var existingUserWithLogin = await userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
-
-            if (existingUserWithLogin != null)
+            if (!loginResult.Succeeded)
             {
-                if (existingUserWithLogin.Id != user.Id)
-                {
-                    return Results.BadRequest("This external login is already associated with another account.");
-                }
-            }
-            else
-            {
-                var loginResult = await userManager.AddLoginAsync(user, info);
-
-                if (!loginResult.Succeeded)
-                {
-                    return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
-                }
+                return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
             }
 
-            var tokens = await jwtService.GenerateTokens(user);
-
-            return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            var userTokens = await jwtService.GenerateTokens(user);
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
         })
             .WithTags("ExternalProviders");
     }
