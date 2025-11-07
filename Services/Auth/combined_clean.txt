@@ -1,0 +1,3085 @@
+Модуль AdminController.cs
+namespace Auth.TimeCafe.API.Controllers;
+[ApiController]
+[Route("admin")]
+public class AdminController(AdminService adminService) : ControllerBase
+{
+    private readonly AdminService _adminService = adminService;
+    [HttpPost("create")]
+    public async Task<IActionResult> Create([FromBody] CreateAdminRequest request)
+    {
+        var (success, errors) = await _adminService.CreateAdminAsync(request.Email, request.Password);
+        if (!success)
+            return BadRequest(new { errors });
+        return Ok(new { message = "Admin created successfully." });
+    }
+}
+public record CreateAdminRequest(string Email, string Password);
+
+Модуль FunctionsController.cs
+using Microsoft.AspNetCore.Authorization;
+namespace Auth.TimeCafe.API.Controllers;
+[ApiController]
+[Route("[controller]")]
+public class FunctionsController : ControllerBase
+{
+    [HttpGet("public-function")]
+    [Authorize]
+    public IActionResult PublicFunction()
+    {
+        return Ok("Эта функция доступна всем авторизованным пользователям!");
+    }
+    [HttpGet("admin-function")]
+    [Authorize(Roles = "admin")]
+    public IActionResult AdminFunction()
+    {
+        return Ok("Эта функция доступна только администраторам!");
+    }
+}
+
+Модуль ChangePassword.cs
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+namespace Auth.TimeCafe.API.Endpoints;
+public sealed class ChangePassword : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/account")
+            .RequireAuthorization()
+            .WithTags("Authentication");
+        group.MapPost("/change-password", async (
+            ChangePasswordRequest body,
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal principal,
+            ApplicationDbContext db
+        ) =>
+        {
+            if (string.IsNullOrWhiteSpace(body.CurrentPassword) || string.IsNullOrWhiteSpace(body.NewPassword))
+                return Results.BadRequest(new { errors = new[] { new { code = "EmptyFields", description = "Требуется заполнить пароли" } } });
+            var user = await userManager.GetUserAsync(principal);
+            if (user == null)
+                return Results.Unauthorized();
+            var result = await userManager.ChangePasswordAsync(user, body.CurrentPassword, body.NewPassword);
+            if (!result.Succeeded)
+            {
+                var errs = result.Errors.Select(e => new { code = e.Code, description = e.Description }).ToArray();
+                return Results.BadRequest(new { errors = errs });
+            }
+            var userId = user.Id;
+            var tokens = await db.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
+            if (tokens.Count > 0)
+            {
+                foreach (var t in tokens)
+                    t.IsRevoked = true;
+                await db.SaveChangesAsync();
+            }
+            return Results.Ok(new { message = "Пароль изменён", refreshTokensRevoked = tokens.Count });
+        })
+        .WithName("ChangePassword")
+        .WithSummary("Смена пароля текущего пользователя");
+    }
+    public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+}
+
+Модуль EmailConfirmation.cs
+using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.API.Endpoints;
+public class EmailConfirmation : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/email").WithTags("EmailConfirmation");
+        group.MapPost("/confirm", async ([FromBody] ConfirmEmailRequest request, ISender sender) =>
+        {
+            var command = new ConfirmEmailCommand(request.UserId, request.Token);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = new { token = result.Error } });
+            return Results.Ok(new { message = result.Message });
+        })
+        .WithName("ConfirmEmail");
+        group.MapPost("/resend", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
+        {
+            var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = new { email = result.Error } });
+            return Results.Ok(new { message = result.Message });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("ResendConfirmation");
+        group.MapPost("/resend-mock", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
+        {
+            var command = new ResendConfirmationCommand(request.Email, SendEmail: false);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = new { email = result.Error } });
+            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("ResendConfirmationMock");
+    }
+}
+public record ConfirmEmailRequest(string UserId, string Token);
+public record ResendConfirmationRequest(string Email);
+
+Модуль ExternalProviders.cs
+namespace Auth.TimeCafe.API.Endpoints;
+public class ExternalProviders : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapGet("/authenticate/login/google", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
+        {
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            properties.Items.Add("prompt", "select_account");
+            return Results.Challenge(properties, ["Google"]);
+        })
+            .WithTags("ExternalProviders"); ;
+        app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
+        {
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            properties.Items.Add("prompt", "select_account");
+            return Results.Challenge(properties, ["Microsoft"]);
+        })
+            .WithTags("ExternalProviders");
+        app.MapGet("/authenticate/login/google/callback", async ([FromQuery] string returnUrl, HttpContext context, SignInManager<IdentityUser> signInManager, IJwtService jwtService, UserManager<IdentityUser> userManager) =>
+        {
+            var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded)
+            {
+                return Results.Unauthorized();
+            }
+            var principal = result.Principal;
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+            {
+                return Results.BadRequest("Email is null");
+            }
+            var externalUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (externalUserId == null)
+            {
+                return Results.BadRequest("External user ID is null");
+            }
+            var existingUserWithLogin = await userManager.FindByLoginAsync("Google", externalUserId);
+            if (existingUserWithLogin != null)
+            {
+                var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            }
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = new IdentityUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
+                var createResult = await userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
+                await userManager.AddToRoleAsync(user, "client");
+            }
+            else if (!user.EmailConfirmed)
+            {
+                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+            }
+            var info = new UserLoginInfo("Google", externalUserId, "Google");
+            var loginResult = await userManager.AddLoginAsync(user, info);
+            if (!loginResult.Succeeded)
+            {
+                return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
+            }
+            var userTokens = await jwtService.GenerateTokens(user);
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
+        })
+            .WithTags("ExternalProviders");
+        app.MapGet("/authenticate/login/microsoft/callback", async ([FromQuery] string returnUrl, HttpContext context, SignInManager<IdentityUser> signInManager, IJwtService jwtService, UserManager<IdentityUser> userManager) =>
+        {
+            var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (!result.Succeeded)
+            {
+                return Results.Unauthorized();
+            }
+            var principal = result.Principal;
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            if (email == null)
+            {
+                return Results.BadRequest("Email is null");
+            }
+            var externalUserId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (externalUserId == null)
+            {
+                return Results.BadRequest("External user ID is null");
+            }
+            var existingUserWithLogin = await userManager.FindByLoginAsync("Microsoft", externalUserId);
+            if (existingUserWithLogin != null)
+            {
+                var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+            }
+            var user = await userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                user = new IdentityUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
+                var createResult = await userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
+                await userManager.AddToRoleAsync(user, "client");
+            }
+            else if (!user.EmailConfirmed)
+            {
+                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+            }
+            var info = new UserLoginInfo("Microsoft", externalUserId, "Microsoft");
+            var loginResult = await userManager.AddLoginAsync(user, info);
+            if (!loginResult.Succeeded)
+            {
+                return Results.BadRequest(string.Join(", ", loginResult.Errors.Select(e => e.Description)));
+            }
+            var userTokens = await jwtService.GenerateTokens(user);
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
+        })
+            .WithTags("ExternalProviders");
+    }
+}
+
+Модуль PhoneVerification.cs
+namespace Auth.TimeCafe.API.Endpoints;
+public class PhoneVerification : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/twilio")
+            .WithTags("SMS");
+        group.MapPost("generateSMS-mock", async (
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user,
+            ISmsVerificationAttemptTracker attemptTracker,
+            ILogger<PhoneVerification> logger,
+            [FromBody] PhoneVerificationModel model
+            ) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Results.Unauthorized();
+            var u = await userManager.FindByIdAsync(userId);
+            if (u == null) return Results.NotFound();
+            logger.LogInformation("[MOCK] Генерация кода подтверждения для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
+            var token = await userManager.GenerateChangePhoneNumberTokenAsync(u, model.PhoneNumber);
+            logger.LogWarning("[MOCK] Код подтверждения для {PhoneNumber}: {Token}", model.PhoneNumber, token);
+            attemptTracker.ResetAttempts(userId, model.PhoneNumber);
+            return Results.Ok(new { phoneNumber = model.PhoneNumber, message = "SMS отправлено (mock)", token });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow");
+        group.MapPost("verifySMS-mock", async (
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user,
+            ISmsVerificationAttemptTracker attemptTracker,
+            ICaptchaValidator captchaValidator,
+            ILogger<PhoneVerification> logger,
+            [FromBody] PhoneVerificationModel model
+            ) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Results.Unauthorized();
+            var u = await userManager.FindByIdAsync(userId);
+            if (u == null) return Results.NotFound();
+            if (!attemptTracker.CanVerifyCode(userId, model.PhoneNumber))
+            {
+                logger.LogWarning("[MOCK] Превышено количество попыток проверки кода для пользователя {UserId}, телефон {PhoneNumber}", userId, model.PhoneNumber);
+                return Results.Json(
+                    new { message = "Превышено количество попыток. Запросите новый код.", remainingAttempts = 0 },
+                    statusCode: 429
+                );
+            }
+            var remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
+            if (remaining == 3)
+            {
+                if (string.IsNullOrEmpty(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+                if (!await captchaValidator.ValidateAsync(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+            }
+            logger.LogInformation("[MOCK] Попытка подтверждения номера {PhoneNumber} для пользователя {UserId}", model.PhoneNumber, userId);
+            var result = await userManager.ChangePhoneNumberAsync(u, model.PhoneNumber, model.Code);
+            if (result.Succeeded)
+            {
+                attemptTracker.ResetAttempts(userId, model.PhoneNumber);
+                logger.LogInformation("[MOCK] Номер телефона {PhoneNumber} успешно подтвержден для пользователя {UserId}", model.PhoneNumber, userId);
+                return Results.Ok(new { message = "Номер телефона успешно подтвержден (mock)", phoneNumber = model.PhoneNumber });
+            }
+            attemptTracker.RecordFailedAttempt(userId, model.PhoneNumber);
+            remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
+            logger.LogWarning("[MOCK] Неудачная попытка подтверждения номера {PhoneNumber} для пользователя {UserId}. Осталось попыток: {Remaining}",
+                model.PhoneNumber, userId, remaining);
+            return Results.Json(
+                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
+                statusCode: 400
+            );
+        });
+        group.MapPost("generateSMS", async (
+            IMediator mediator,
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user,
+            IConfiguration configuration,
+            ISmsVerificationAttemptTracker attemptTracker,
+            ILogger<PhoneVerification> logger,
+            [FromBody] PhoneVerificationModel model
+            )
+         =>
+            {
+                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userId == null) return Results.Unauthorized();
+                var u = await userManager.FindByIdAsync(userId);
+                if (u == null) return Results.NotFound();
+                logger.LogInformation("Генерация кода подтверждения для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
+                var token = await userManager.GenerateChangePhoneNumberTokenAsync(u, model.PhoneNumber);
+                string accountSid = configuration["Twilio:AccountSid"] ?? "";
+                string authToken = configuration["Twilio:AuthToken"] ?? "";
+                string twilioPhoneNumber = configuration["Twilio:TwilioPhoneNumber"] ?? "";
+                var query = new SendSmsCommand(accountSid, authToken, twilioPhoneNumber, model.PhoneNumber, token);
+                var result = await mediator.Send(query);
+                if (result != null)
+                {
+                    attemptTracker.ResetAttempts(userId, model.PhoneNumber);
+                    return Results.Ok(new { phoneNumber = result.PhoneNumber, message = "SMS отправлено" });
+                }
+                logger.LogError("Ошибка при отправке SMS для номера {PhoneNumber}, пользователь {UserId}", model.PhoneNumber, userId);
+                return Results.BadRequest("Ошибка при отправке SMS");
+            })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow");
+        group.MapPost("verifySMS", async (
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user,
+            ISmsVerificationAttemptTracker attemptTracker,
+            ICaptchaValidator captchaValidator,
+            ILogger<PhoneVerification> logger,
+            [FromBody] PhoneVerificationModel model
+            ) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Results.Unauthorized();
+            var u = await userManager.FindByIdAsync(userId);
+            if (u == null) return Results.NotFound();
+            if (!attemptTracker.CanVerifyCode(userId, model.PhoneNumber))
+            {
+                logger.LogWarning("Превышено количество попыток проверки кода для пользователя {UserId}, телефон {PhoneNumber}", userId, model.PhoneNumber);
+                return Results.Json(
+                    new { message = "Превышено количество попыток. Запросите новый код.", remainingAttempts = 0 },
+                    statusCode: 429
+                );
+            }
+            var remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
+            if (remaining == 3)
+            {
+                if (string.IsNullOrEmpty(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+                if (!await captchaValidator.ValidateAsync(model.CaptchaToken))
+                {
+                    return Results.Json(
+                        new { message = "Пройдите проверку капчи", requiresCaptcha = true, remainingAttempts = remaining },
+                        statusCode: 400
+                    );
+                }
+            }
+            logger.LogInformation("Попытка подтверждения номера {PhoneNumber} для пользователя {UserId}", model.PhoneNumber, userId);
+            var result = await userManager.ChangePhoneNumberAsync(u, model.PhoneNumber, model.Code);
+            if (result.Succeeded)
+            {
+                attemptTracker.ResetAttempts(userId, model.PhoneNumber);
+                logger.LogInformation("Номер телефона {PhoneNumber} успешно подтвержден для пользователя {UserId}", model.PhoneNumber, userId);
+                return Results.Ok(new { message = "Номер телефона успешно подтвержден", phoneNumber = model.PhoneNumber });
+            }
+            attemptTracker.RecordFailedAttempt(userId, model.PhoneNumber);
+            remaining = attemptTracker.GetRemainingAttempts(userId, model.PhoneNumber);
+            return Results.Json(
+                new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
+                statusCode: 400
+            );
+        });
+    }
+}
+
+Модуль RateLimitedEndpoints.cs
+namespace Auth.TimeCafe.API.Endpoints;
+public class RateLimitedEndpoints : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapGet("/api/test-rate-limit", (HttpContext context, RateLimitConfig cfg) =>
+        {
+            return Results.Ok(new
+            {
+                success = true,
+                time = DateTime.UtcNow
+            });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithTags("RateLimit")
+        .WithName("TestRateLimit");
+        app.MapGet("/api/test-rate-limit2", (HttpContext context, RateLimitConfig cfg) =>
+        {
+            context.Response.Headers["X-Rate-Limit-Window"] = cfg.MinIntervalSeconds.ToString();
+            return Results.Ok(new
+            {
+                success = true,
+                time = DateTime.UtcNow
+            });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithTags("RateLimit")
+        .WithName("TestRateLimit2");
+    }
+}
+
+Модуль Registry.cs
+using System.Security.Claims;
+using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.API.Endpoints;
+public class CreateRegistry : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        app.MapPost("/registerWithUsername", async (
+            ISender sender,
+            [FromBody] RegisterDto dto) =>
+        {
+            var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = result.Errors });
+            return Results.Ok(new { message = result.Message });
+        })
+            .WithTags("Authentication")
+            .WithName("Register");
+        app.MapPost("/registerWithUsername-mock", async (
+            ISender sender,
+            [FromBody] RegisterDto dto) =>
+        {
+            var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = result.Errors });
+            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+        })
+            .WithTags("Authentication")
+            .WithName("RegisterMock")
+            .RequireRateLimiting("OneRequestPerInterval")
+            .RequireRateLimiting("MaxRequestPerWindow");
+        app.MapPost("/login-jwt", async (
+            UserManager<IdentityUser> userManager,
+            IJwtService jwtService,
+            HttpContext context,
+            [FromBody] LoginDto dto) =>
+        {
+            var user = await userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !await userManager.CheckPasswordAsync(user, dto.Password))
+                return Results.BadRequest(new { errors = new[] { new { code = "InvalidCredentials", description = "Неверный email или пароль" } } });
+            if (!user.EmailConfirmed)
+                return Results.Ok(new { emailConfirmed = false });
+            var tokens = await jwtService.GenerateTokens(user);
+#if DEBUG
+            context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
+#endif
+            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
+        })
+            .WithTags("Authentication")
+            .WithName("Login");
+        app.MapPost("/refresh-token-jwt", async (
+            IJwtService jwtService,
+            HttpContext context,
+            [FromBody] JwtRefreshRequest request) =>
+        {
+            var tokens = await jwtService.RefreshTokens(request.RefreshToken);
+            if (tokens == null) return Results.Unauthorized();
+            context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
+            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
+        })
+            .WithTags("Authentication")
+            .WithName("RefreshToken");
+        app.MapGet("/protected-test",
+        async (
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Results.Unauthorized();
+            var u = await userManager.FindByIdAsync(userId);
+            return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
+        })
+            .RequireAuthorization()
+            .WithTags("Authentication")
+            .WithName("Test401");
+        app.MapPost("/logout", async (
+            [FromBody] LogoutRequest request,
+            ApplicationDbContext db,
+            UserManager<IdentityUser> userManager,
+            ClaimsPrincipal principal) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return Results.BadRequest(new { errors = new { refreshToken = "Refresh token is required" } });
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var entity = await db.RefreshTokens
+                .FirstOrDefaultAsync(t => t.Token == request.RefreshToken && !t.IsRevoked);
+            if (entity != null)
+            {
+                if (userId != null && entity.UserId != userId)
+                    return Results.Unauthorized();
+                entity.IsRevoked = true;
+                await db.SaveChangesAsync();
+            }
+            return Results.Ok(new { message = "Logged out", revoked = entity != null });
+        })
+            .RequireAuthorization()
+            .WithTags("Authentication")
+            .WithName("Logout");
+    }
+}
+public record class LogoutRequest(string RefreshToken);
+public record JwtRefreshRequest(string RefreshToken);
+
+Модуль ResetPassword.cs
+using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.API.Endpoints;
+public class ResetPassword : ICarterModule
+{
+    public void AddRoutes(IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("").WithTags("ResetPassword");
+        group.MapPost("/forgot-password-link-mock", async (
+            [FromBody] ResetPasswordEmailRequest request,
+            ISender sender) =>
+        {
+            var command = new ForgotPasswordCommand(request.Email, SendEmail: false);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = new { email = result.Error } });
+            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("ForgotPasswordMock")
+        .WithSummary("Mock: Возвращает ссылку для теста без отправки email");
+        group.MapPost("/forgot-password-link", async (
+            [FromBody] ResetPasswordEmailRequest request,
+            ISender sender) =>
+        {
+            var command = new ForgotPasswordCommand(request.Email, SendEmail: true);
+            var result = await sender.Send(command);
+            if (!result.Success)
+                return Results.BadRequest(new { errors = new { email = result.Error } });
+            return Results.Ok(new { message = result.Message });
+        })
+        .RequireRateLimiting("OneRequestPerInterval")
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("ForgotPassword")
+        .WithSummary("Отправка ссылки для сброса пароля на email");
+    }
+}
+public record class ResetPasswordEmailRequest(string Email);
+
+Модуль AuthenticationExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class AuthenticationExtensions
+{
+    public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<IUserRoleService, UserRoleService>();
+        services.AddScoped<IJwtService, JwtService>();
+        var jwtSection = configuration.GetSection("Jwt");
+        var issuer = jwtSection["Issuer"];
+        var audience = jwtSection["Audience"];
+        var signingKey = jwtSection["SigningKey"] ??
+            throw new InvalidOperationException("Jwt:SigningKey missing");
+        var keyBytes = Encoding.UTF8.GetBytes(signingKey);
+        var authBuilder = services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = true;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = issuer,
+                    ValidAudience = audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
+#if (DEBUG)
+                {
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            context.Token = context.Request.Cookies["Access-Token"];
+                            return Task.CompletedTask;
+                        }
+                    };
+                }
+#endif
+            })
+            .AddCookie(IdentityConstants.ExternalScheme);
+        // External providers are optional: register only if ClientId is provided (prevents test host aborts)
+        var google = configuration.GetSection("Authentication:Google");
+        if (!string.IsNullOrWhiteSpace(google["ClientId"]))
+        {
+            authBuilder.AddGoogle(op =>
+            {
+                op.ClientId = google["ClientId"]!;
+                op.ClientSecret = google["ClientSecret"] ?? string.Empty;
+                op.CallbackPath = "/signin-google";
+                op.Events.OnRemoteFailure = context =>
+                {
+                    var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
+                    returnUrl = string.IsNullOrEmpty(returnUrl) ? "http://127.0.0.1:9301/external-callback" : returnUrl;
+                    context.Response.Redirect($"{returnUrl}?error=access_denied");
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            });
+        }
+        var ms = configuration.GetSection("Authentication:Microsoft");
+        if (!string.IsNullOrWhiteSpace(ms["ClientId"]))
+        {
+            authBuilder.AddMicrosoftAccount(op =>
+            {
+                op.ClientId = ms["ClientId"]!;
+                op.ClientSecret = ms["ClientSecret"] ?? string.Empty;
+                op.CallbackPath = "/signin-microsoft";
+                op.Events.OnRemoteFailure = context =>
+                {
+                    var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
+                    returnUrl = string.IsNullOrEmpty(returnUrl) ? "http://127.0.0.1:9301/external-callback" : returnUrl;
+                    context.Response.Redirect($"{returnUrl}?error=access_denied");
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            });
+        }
+        return services;
+    }
+}
+
+Модуль CorsExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class CorsExtensions
+{
+    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, string? corsPolicyName)
+    {
+        services.AddCors(options =>
+        {
+            options.AddPolicy(corsPolicyName ?? "", p =>
+                p.AllowAnyHeader().
+                AllowAnyMethod().
+                AllowCredentials()
+                .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
+                .WithOrigins("http://127.0.0.1:9301",
+                "http://localhost:9301",
+                "http://127.0.0.1:4173",
+                "http://localhost:4173"));
+        });
+        return services;
+    }
+}
+
+Модуль DatabaseExtension.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class DatabaseExtension
+{
+    public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseNpgsql(connectionString));
+        return services;
+    }
+}
+
+Модуль EmailExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class EmailExtensions
+{
+    public static IServiceCollection AddEmailSender(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<PostmarkOptions>(configuration.GetSection("Postmark"));
+        services.AddSingleton<IEmailSender<IdentityUser>, PostmarkEmailSender>();
+        services.AddHttpClient();
+        return services;
+    }
+}
+
+Модуль IdentityExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class IdentityExtensions
+{
+    public static IServiceCollection AddIdentityConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+        .AddIdentityCore<IdentityUser>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = true;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
+            options.User.RequireUniqueEmail = true;
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 6;
+            options.Password.RequiredUniqueChars = 0;
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddSignInManager()
+        .AddDefaultTokenProviders()
+        .AddErrorDescriber<RussianIdentityErrorDescriber>();
+        services.Configure<DataProtectionTokenProviderOptions>(options =>
+        {
+            options.TokenLifespan = TimeSpan.FromMinutes(10);
+        });
+        services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();
+        return services;
+    }
+}
+
+Модуль MassTransitExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class MassTransitExtensions
+{
+    public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddMassTransit(x =>
+        {
+            x.UsingRabbitMq((context, cfg) =>
+            {
+                cfg.Host("rabbitmq://localhost");
+                cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
+            });
+        });
+        return services;
+    }
+}
+
+Модуль RateLimiterExtensions.cs
+using Microsoft.Extensions.Caching.Memory;
+using System.Threading.RateLimiting;
+namespace Auth.TimeCafe.API.Extensions;
+public static class RateLimiterExtensions
+{
+    private static string GetRateLimitKey(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint()?.DisplayName;
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var userId = context.User.Identity.Name ?? "unknown";
+            return $"{userId}:{endpoint}";
+        }
+        else
+        {
+            var ip = context.Connection.RemoteIpAddress?.ToString() ?? "anon";
+            return $"{ip}:{endpoint}";
+        }
+    }
+    public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services, IConfiguration configuration)
+    {
+        var minIntervalSeconds = configuration.GetValue<int>("RateLimiter:EmailSms:MinIntervalSeconds");
+        var windowMinutes = configuration.GetValue<int>("RateLimiter:EmailSms:WindowMinutes");
+        var maxRequests = configuration.GetValue<int>("RateLimiter:EmailSms:MaxRequests");
+        var windowSeconds = windowMinutes * 60;
+        services.AddSingleton(new RateLimitConfig { MinIntervalSeconds = minIntervalSeconds });
+        services.AddRateLimiter(options =>
+        {
+            options.AddPolicy("OneRequestPerInterval", context =>
+            {
+                var key = GetRateLimitKey(context);
+                return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 1,
+                    Window = TimeSpan.FromSeconds(minIntervalSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                });
+            });
+            options.AddPolicy("MaxRequestPerWindow", context =>
+            {
+                var key = GetRateLimitKey(context);
+                return RateLimitPartition.GetFixedWindowLimiter(key, _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = maxRequests,
+                    Window = TimeSpan.FromSeconds(windowSeconds),
+                    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                    QueueLimit = 0,
+                    AutoReplenishment = true
+                });
+            });
+            options.RejectionStatusCode = 429;
+            options.OnRejected = (context, cancellationToken) =>
+            {
+                if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+                {
+                    context.HttpContext.Response.Headers["Retry-After"] = ((int)retryAfter.TotalSeconds).ToString();
+                }
+                return ValueTask.CompletedTask;
+            };
+        });
+        return services;
+    }
+}
+public class RateLimitConfig
+{
+    public int MinIntervalSeconds { get; set; }
+}
+
+Модуль SmsExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class SmsExtensions
+{
+    public static IServiceCollection AddSmsServices(this IServiceCollection services)
+    {
+        services.AddScoped<ITwilioSender, TwilioSender>();
+        services.AddSingleton<ISmsVerificationAttemptTracker, SmsVerificationAttemptTracker>();
+        services.AddHttpClient<ICaptchaValidator, GoogleRecaptchaValidator>();
+        services.AddMemoryCache();
+        return services;
+    }
+}
+
+Модуль SwaggerExtensions.cs
+namespace Auth.TimeCafe.API.Extensions;
+public static class SwaggerExtensions
+{
+    public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new() { Title = "TimeCafe Auth API", Version = "v1" });
+            c.EnableAnnotations();
+            c.ExampleFilters();
+        });
+        services.AddSwaggerExamples();
+        services.AddSwaggerExamplesFromAssemblyOf<RegisterDtoExample>();
+        return services;
+    }
+}
+
+Модуль GlobalUsings.cs
+global using Auth.TimeCafe.API.Extensions;
+global using Auth.TimeCafe.API.Middleware;
+global using Auth.TimeCafe.API.Services;
+global using Auth.TimeCafe.Application;
+global using Auth.TimeCafe.Application.CQRS.Sender.Commands;
+global using Auth.TimeCafe.Application.DTO;
+global using Auth.TimeCafe.Domain.Contracts;
+global using Auth.TimeCafe.Domain.Events;
+global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Domain.Services;
+global using Auth.TimeCafe.Infrastructure.Data;
+global using Auth.TimeCafe.Infrastructure.Services;
+global using Auth.TimeCafe.Infrastructure.Services.Email;
+global using Auth.TimeCafe.Infrastructure.Services.Phone;
+global using BuildingBlocks.Middleware;
+global using Carter;
+global using MassTransit;
+global using MediatR;
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Authentication.JwtBearer;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.Extensions.Caching.Memory;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.IdentityModel.Tokens;
+global using Swashbuckle.AspNetCore.Filters;
+global using System.Security.Claims;
+global using System.Text;
+
+Модуль RateLimitCounterMiddleware.cs
+namespace Auth.TimeCafe.API.Middleware;
+public class RateLimitCounterMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly IMemoryCache _cache;
+    private readonly IConfiguration _configuration;
+    public RateLimitCounterMiddleware(RequestDelegate next, IMemoryCache cache, IConfiguration configuration)
+    {
+        _next = next;
+        _cache = cache;
+        _configuration = configuration;
+    }
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint();
+        var hasRateLimiting = endpoint?.Metadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any() ?? false;
+        if (!hasRateLimiting)
+        {
+            await _next(context);
+            return;
+        }
+        var key = GetRateLimitKey(context);
+        var windowMinutes = _configuration.GetValue<int>("RateLimiter:EmailSms:WindowMinutes");
+        var maxRequests = _configuration.GetValue<int>("RateLimiter:EmailSms:MaxRequests");
+        var minIntervalSeconds = _configuration.GetValue<int>("RateLimiter:EmailSms:MinIntervalSeconds");
+        var windowSeconds = windowMinutes * 60;
+        var countKey = $"{key}:count";
+        var windowKey = $"{key}:window_start";
+        if (!_cache.TryGetValue(windowKey, out DateTimeOffset windowStart))
+        {
+            windowStart = DateTimeOffset.UtcNow;
+            _cache.Set(windowKey, windowStart, TimeSpan.FromSeconds(windowSeconds));
+        }
+        var count = _cache.GetOrCreate(countKey, entry =>
+        {
+            entry.AbsoluteExpiration = windowStart.AddSeconds(windowSeconds);
+            return 0;
+        });
+        context.Response.OnStarting(() =>
+        {
+            if (context.Response.StatusCode != 429)
+            {
+                count++;
+                _cache.Set(countKey, count, windowStart.AddSeconds(windowSeconds));
+                var remaining = Math.Max(0, maxRequests - count);
+                context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
+                var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
+                context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
+                context.Response.Headers.RetryAfter = windowInSeconds.ToString();
+            }
+            else
+            {
+                var remaining = Math.Max(0, maxRequests - count);
+                context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
+                var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
+                context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
+                context.Response.Headers.RetryAfter = windowInSeconds.ToString();
+            }
+            return Task.CompletedTask;
+        });
+        await _next(context);
+    }
+    private static string GetRateLimitKey(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint()?.DisplayName;
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var userId = context.User.Identity.Name ?? "unknown";
+            return $"{userId}:{endpoint}";
+        }
+        else
+        {
+            var ip = context.Connection.RemoteIpAddress?.ToString() ?? "anon";
+            return $"{ip}:{endpoint}";
+        }
+    }
+}
+
+Модуль Program.cs
+var builder = WebApplication.CreateBuilder(args);
+// DbContext
+builder.Services.AddDatabase(builder.Configuration);
+// Identity
+builder.Services.AddIdentityConfiguration(builder.Configuration);
+// Authentication: JWT + external providers
+builder.Services.AddAuthenticationConfiguration(builder.Configuration);
+builder.Services.AddAuthorization();
+// Email sender
+builder.Services.AddEmailSender(builder.Configuration);
+// SMS services (Twilio + Rate Limiting)
+builder.Services.AddSmsServices();
+// CQRS (MediatR + Pipeline Behaviors)
+builder.Services.AddUserProfileCqrs();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+// Swagger param
+builder.Services.AddSwaggerConfiguration(builder.Configuration);
+// Rate Limiter
+builder.Services.AddCustomRateLimiter(builder.Configuration);
+// CORS
+var corsPolicyName = builder.Configuration.GetSection("CORS");
+builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
+// Carter
+builder.Services.AddCarter();
+// MassTransit (отключён для разработки без RabbitMQ)
+// builder.Services.AddRabbitMqMessaging(builder.Configuration);
+var app = builder.Build();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+using (var scope = app.Services.CreateScope())
+{
+    var roleService = scope.ServiceProvider.GetRequiredService<IUserRoleService>();
+    await roleService.EnsureRolesCreatedAsync();
+    await SeedData.SeedAdminAsync(scope.ServiceProvider);
+}
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe Auth API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+app.UseHttpsRedirection();
+app.UseCors(corsPolicyName["PolicyName"] ?? "");
+app.UseMiddleware<RateLimitCounterMiddleware>();
+app.UseRateLimiter();
+app.MapCarter();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapIdentityApi<IdentityUser>();
+app.MapControllers();
+await app.RunAsync();
+public partial class Program { }
+
+Модуль AdminService.cs
+namespace Auth.TimeCafe.API.Services;
+public class AdminService(UserManager<IdentityUser> userManager, IUserRoleService roleService)
+{
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IUserRoleService _roleService = roleService;
+    public async Task<(bool Success, IEnumerable<IdentityError> Errors)> CreateAdminAsync(string email, string password)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        if (user == null)
+        {
+            user = new IdentityUser
+            {
+                UserName = email,
+                Email = email,
+                EmailConfirmed = true
+            };
+            var result = await _userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+                return (false, result.Errors);
+        }
+        await _roleService.AssignRoleAsync(user, UserRoleService.AdminRole);
+        return (true, Array.Empty<IdentityError>());
+    }
+}
+
+Модуль UserRoleService.cs
+namespace Auth.TimeCafe.API.Services;
+public class UserRoleService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager) : IUserRoleService
+{
+    private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    public static readonly string AdminRole = "admin";
+    public static readonly string ClientRole = "client";
+    public async Task EnsureRolesCreatedAsync()
+    {
+        foreach (var roleName in new[] { AdminRole, ClientRole })
+        {
+            if (!await _roleManager.RoleExistsAsync(roleName))
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+    public async Task AssignRoleAsync(IdentityUser user, string role)
+    {
+        if (!await _userManager.IsInRoleAsync(user, role))
+            await _userManager.AddToRoleAsync(user, role);
+    }
+    public async Task<bool> IsUserInRoleAsync(IdentityUser user, string role)
+        => await _userManager.IsInRoleAsync(user, role);
+    public async Task<IList<string>> GetUserRolesAsync(IdentityUser user)
+        => await _userManager.GetRolesAsync(user);
+}
+
+Модуль ConfirmEmailCommand.cs
+namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+public record ConfirmEmailCommand(string UserId, string Token) : IRequest<ConfirmEmailResult>;
+public record ConfirmEmailResult(bool Success, string? Message = null, string? Error = null);
+public class ConfirmEmailCommandHandler(
+    UserManager<IdentityUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
+{
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+            return new ConfirmEmailResult(false, Error: "Пользователь не найден");
+        if (user.EmailConfirmed)
+            return new ConfirmEmailResult(true, Message: "Email уже подтвержден");
+        string decodedToken;
+        try
+        {
+            decodedToken = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+        }
+        catch
+        {
+            return new ConfirmEmailResult(false, Error: "Неверный токен");
+        }
+        var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+        if (!result.Succeeded)
+        {
+            return new ConfirmEmailResult(false, Error: "Неверный или истекший токен");
+        }
+        return new ConfirmEmailResult(true, Message: "Email подтвержден");
+    }
+}
+
+Модуль ForgotPasswordCommand.cs
+namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+public record ForgotPasswordCommand(string Email, bool SendEmail = true) : IRequest<ForgotPasswordResult>;
+public record ForgotPasswordResult(bool Success, string? CallbackUrl = null, string? Message = null, string? Error = null);
+public class ForgotPasswordCommandHandler(
+    UserManager<IdentityUser> userManager,
+    IEmailSender<IdentityUser> emailSender,
+    IOptions<PostmarkOptions> postmarkOptions,
+    ILogger<ForgotPasswordCommandHandler> logger) : IRequestHandler<ForgotPasswordCommand, ForgotPasswordResult>
+{
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
+    public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email))
+            return new ForgotPasswordResult(false, Error: "Email is required");
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return new ForgotPasswordResult(true, Message: "Если пользователь существует, письмо отправлено");
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
+        {
+            _logger.LogError("FrontendBaseUrl не настроен в конфигурации Postmark");
+            return new ForgotPasswordResult(false, Error: "FrontendBaseUrl is not configured");
+        }
+        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
+        if (request.SendEmail)
+        {
+            try
+            {
+                await _emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
+                return new ForgotPasswordResult(true, Message: "Ссылка для сброса пароля отправлена");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
+                return new ForgotPasswordResult(false, Error: "Ошибка при отправке письма");
+            }
+        }
+        return new ForgotPasswordResult(true, CallbackUrl: callbackUrl);
+    }
+}
+
+Модуль RegisterUserCommand.cs
+namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+public record RegisterUserCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<RegisterUserResult>;
+public record RegisterUserResult(bool Success, string? CallbackUrl = null, string? Message = null, IEnumerable<object>? Errors = null);
+public class RegisterUserCommandHandler(
+    UserManager<IdentityUser> userManager,
+    IEmailSender<IdentityUser> emailSender,
+    IOptions<PostmarkOptions> postmarkOptions) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+{
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    {
+        var user = new IdentityUser { UserName = request.Username, Email = request.Email, EmailConfirmed = false };
+        var createResult = await _userManager.CreateAsync(user, request.Password);
+        if (!createResult.Succeeded)
+        {
+            return new RegisterUserResult(false, Errors: createResult.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList());
+        }
+        if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
+            return new RegisterUserResult(false, Errors: new[] { new { code = "Configuration", description = "FrontendBaseUrl is not configured" } });
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        if (request.SendEmail)
+        {
+            try
+            {
+                await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
+                return new RegisterUserResult(true, Message: "Письмо отправлено");
+            }
+            catch (Exception)
+            {
+                return new RegisterUserResult(false, Errors: new[] { new { code = "EmailSendFailed", description = "Ошибка при отправке письма" } });
+            }
+        }
+        return new RegisterUserResult(true, CallbackUrl: callbackUrl);
+    }
+}
+
+Модуль ResendConfirmationCommand.cs
+namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+public record ResendConfirmationCommand(string Email, bool SendEmail = true) : IRequest<ResendConfirmationResult>;
+public record ResendConfirmationResult(bool Success, string? CallbackUrl = null, string? Message = null, string? Error = null);
+public class ResendConfirmationCommandHandler(
+    UserManager<IdentityUser> userManager,
+    IEmailSender<IdentityUser> emailSender,
+    IOptions<PostmarkOptions> postmarkOptions) : IRequestHandler<ResendConfirmationCommand, ResendConfirmationResult>
+{
+    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    public async Task<ResendConfirmationResult> Handle(ResendConfirmationCommand request, CancellationToken cancellationToken)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            return new ResendConfirmationResult(false, Error: "Email не найден");
+        if (user.EmailConfirmed)
+            return new ResendConfirmationResult(false, Error: "Email уже подтвержден");
+        if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
+            return new ResendConfirmationResult(false, Error: "FrontendBaseUrl не настроен");
+        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        if (request.SendEmail)
+        {
+            try
+            {
+                await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
+                return new ResendConfirmationResult(true, Message: "Письмо отправлено");
+            }
+            catch (Exception)
+            {
+                return new ResendConfirmationResult(false, Error: "Ошибка при отправке письма");
+            }
+        }
+        return new ResendConfirmationResult(true, CallbackUrl: callbackUrl);
+    }
+}
+
+Модуль SendSmsCommand.cs
+namespace Auth.TimeCafe.Application.CQRS.Sender.Commands;
+public record class SendSmsCommand(string AccountSid, string AuthToken, string TwilioPhoneNumber, string PhoneNumber, string Token) : IRequest<PhoneVerificationModel?>;
+public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCommandHendler> logger) : IRequestHandler<SendSmsCommand, PhoneVerificationModel?>
+{
+    private readonly ITwilioSender _twilioSender = twilioSender;
+    private readonly ILogger<SendSmsCommandHendler> _logger = logger;
+    public async Task<PhoneVerificationModel?> Handle(SendSmsCommand request, CancellationToken cancellationToken)
+    {
+        var result = await _twilioSender.SendAsync(
+            request.AccountSid,
+            request.AuthToken,
+            request.TwilioPhoneNumber,
+            request.PhoneNumber,
+            request.Token);
+        if (result == null)
+        {
+            _logger.LogWarning("Не удалось отправить SMS на номер {PhoneNumber}", request.PhoneNumber);
+        }
+        return result;
+    }
+}
+
+Модуль CqrsDependencyInjection.cs
+namespace Auth.TimeCafe.Application;
+public static class CqrsDependencyInjection
+{
+    public static IServiceCollection AddUserProfileCqrs(this IServiceCollection services)
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        services.AddMediatR(assembly);
+        services.AddValidatorsFromAssembly(assembly);
+        // Pipeline behaviors (порядок регистрации имеет значение: Validation -> Logging -> Performance -> ErrorHandling)
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ErrorHandlingBehavior<,>));
+        return services;
+    }
+}
+
+Модуль LoginDto.cs
+namespace Auth.TimeCafe.Application.DTO;
+public record LoginDto(string Email, string Password);
+public class LoginDtoExample : IExamplesProvider<LoginDto>
+{
+    public LoginDto GetExamples() =>
+        new("user@example.com", "123456");
+}
+
+Модуль RegisterDto.cs
+namespace Auth.TimeCafe.Application.DTO;
+public record RegisterDto(string Username, string Email, string Password);
+public class RegisterDtoExample : IExamplesProvider<RegisterDto>
+{
+    public RegisterDto GetExamples() =>
+        new("test_user", "user@example.com", "qwert1");
+}
+
+Модуль TokensDto.cs
+namespace Auth.TimeCafe.Application.DTO;
+public record class TokensDto(string AccessToken, string RefreshToken);
+
+Модуль UserDto.cs
+namespace Auth.TimeCafe.Application.DTO;
+public record UserDto(
+    string FirstName,
+    string LastName,
+    string? MiddleName,
+    string Email,
+    bool EmailConfirmed,
+    int? GenderId,
+    DateTime? BirthDate,
+    string? PhoneNumber,
+    bool? PhoneNumberConfirmed,
+    byte[]? Photo,
+    string? AccessCardNumber
+    );
+public class UserDtoExamples : IExamplesProvider<UserDto>
+{
+    public UserDto GetExamples() =>
+    new(
+        "Daniil",
+        "Klimenkov",
+        "Andreevich",
+        "user@example.com",
+        false,
+        1,
+        DateTime.Now,
+        "+375 29 7143237",
+        false,
+        null,
+        null
+    );
+}
+
+Модуль GlobalUsings.cs
+global using Auth.TimeCafe.Domain.Contracts;
+global using Auth.TimeCafe.Domain.Models;
+global using BuildingBlocks.Behaviors;
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.WebUtilities;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using Swashbuckle.AspNetCore.Filters;
+global using System.Reflection;
+global using System.Text;
+
+Модуль ICaptchaValidator.cs
+namespace Auth.TimeCafe.Domain.Contracts;
+public interface ICaptchaValidator
+{
+    Task<bool> ValidateAsync(string? token);
+}
+
+Модуль ISmsVerificationAttemptTracker.cs
+namespace Auth.TimeCafe.Domain.Contracts;
+public interface ISmsVerificationAttemptTracker
+{
+    bool CanVerifyCode(string userId, string phoneNumber);
+    void RecordFailedAttempt(string userId, string phoneNumber);
+    int GetRemainingAttempts(string userId, string phoneNumber);
+    void ResetAttempts(string userId, string phoneNumber);
+}
+
+Модуль ITwilioSender.cs
+using Auth.TimeCafe.Domain.Models;
+using System.Threading.Tasks;
+namespace Auth.TimeCafe.Domain.Contracts;
+public interface ITwilioSender
+{
+    Task<PhoneVerificationModel?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token);
+}
+
+Модуль IUserRoleService.cs
+namespace Auth.TimeCafe.Domain.Services;
+public interface IUserRoleService
+{
+    Task EnsureRolesCreatedAsync();
+    Task AssignRoleAsync(IdentityUser user, string role);
+    Task<bool> IsUserInRoleAsync(IdentityUser user, string role);
+    Task<IList<string>> GetUserRolesAsync(IdentityUser user);
+}
+
+Модуль UserRegisteredEvent.cs
+namespace Auth.TimeCafe.Domain.Events;
+public record UserRegisteredEvent(string UserId, string Email);
+
+Модуль GlobalUsings.cs
+global using Microsoft.AspNetCore.Identity;
+
+Модуль PhoneVerificationModel.cs
+using System.ComponentModel.DataAnnotations;
+namespace Auth.TimeCafe.Domain.Models;
+public class PhoneVerificationModel
+{
+    [Required(ErrorMessage = "Введите номер телефона")]
+    [Phone(ErrorMessage = "Некорректный номер")]
+    public string PhoneNumber { get; set; } = string.Empty;
+    [Required(ErrorMessage = "Введите код")]
+    public string Code { get; set; } = string.Empty;
+    public string? CaptchaToken { get; set; }
+}
+
+Модуль PostmarkOptions.cs
+namespace Auth.TimeCafe.Domain.Models;
+public sealed class PostmarkOptions
+{
+    public string? ServerToken { get; set; }
+    public string? FromEmail { get; set; }
+    public string? MessageStream { get; set; }
+    public string? FrontendBaseUrl { get; set; }
+}
+
+Модуль RefreshToken.cs
+namespace Auth.TimeCafe.Domain.Models;
+public class RefreshToken
+{
+    public int Id { get; set; }
+    public string Token { get; set; } = null!;
+    public string UserId { get; set; } = null!;
+    public IdentityUser User { get; set; } = null!;
+    public DateTime Expires { get; set; }
+    public bool IsRevoked { get; set; }
+    public DateTime Created { get; set; }
+}
+
+Модуль TwilioSettings.cs
+namespace Auth.TimeCafe.Domain.Models
+{
+    public class TwilioSettings
+    {
+        public string? AccountSid { get; set; }
+        public string? AuthToken { get; set; }
+        public string? VerificationServiceSid { get; set; }
+    }
+}
+
+Модуль ApplicationDbContext.cs
+namespace Auth.TimeCafe.Infrastructure.Data
+{
+    public class ApplicationDbContext : IdentityDbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
+    }
+}
+
+Модуль SeedData.cs
+namespace Auth.TimeCafe.Infrastructure.Data;
+public static class SeedData
+{
+    public static async Task SeedAdminAsync(IServiceProvider serviceProvider)
+    {
+        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        var admin = configuration.GetSection("Seed:Admin");
+        var adminEmail = admin["Email"] ?? "";
+        var adminPassword = admin["Password"] ?? "";
+        var adminRole = admin["Role"] ?? "";
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException("Seed:Admin credentials missing in configuration.");
+        if (!await roleManager.RoleExistsAsync(adminRole))
+            await roleManager.CreateAsync(new IdentityRole(adminRole));
+        var user = await userManager.FindByEmailAsync(adminEmail);
+        if (user == null)
+        {
+            user = new IdentityUser
+            {
+                UserName = adminEmail,
+                Email = adminEmail,
+                EmailConfirmed = true
+            };
+            var result = await userManager.CreateAsync(user, adminPassword);
+            if (result.Succeeded)
+                await userManager.AddToRoleAsync(user, adminRole);
+        }
+    }
+}
+
+Модуль GlobalUsings.cs
+global using Auth.TimeCafe.Domain.Contracts;
+global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Domain.Services;
+global using Auth.TimeCafe.Infrastructure.Data;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Infrastructure;
+global using Microsoft.Extensions.Caching.Memory;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Options;
+global using Microsoft.IdentityModel.Tokens;
+global using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+global using System;
+global using System.IdentityModel.Tokens.Jwt;
+global using System.Net.Http.Headers;
+global using System.Security.Claims;
+global using System.Security.Cryptography;
+global using System.Text;
+global using System.Text.Json;
+
+Модуль 20251012160111_Initial.cs
+using Microsoft.EntityFrameworkCore.Migrations;
+#nullable disable
+namespace Auth.TimeCafe.Infrastructure.Migrations
+{
+    /// <inheritdoc />
+    public partial class Initial : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "AspNetRoles",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoles", x => x.Id);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetUsers",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetUserClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserClaims_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetUserLogins",
+                columns: table => new
+                {
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    ProviderKey = table.Column<string>(type: "text", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    UserId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserLogins", x => new { x.LoginProvider, x.ProviderKey });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserLogins_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetUserRoles",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    RoleId = table.Column<string>(type: "text", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserRoles", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserRoles_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable(
+                name: "AspNetUserTokens",
+                columns: table => new
+                {
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    LoginProvider = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Value = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
+                    table.ForeignKey(
+                        name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    Expires = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "boolean", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetRoleClaims_RoleId",
+                table: "AspNetRoleClaims",
+                column: "RoleId");
+            migrationBuilder.CreateIndex(
+                name: "RoleNameIndex",
+                table: "AspNetRoles",
+                column: "NormalizedName",
+                unique: true);
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserClaims_UserId",
+                table: "AspNetUserClaims",
+                column: "UserId");
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserLogins_UserId",
+                table: "AspNetUserLogins",
+                column: "UserId");
+            migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserRoles_RoleId",
+                table: "AspNetUserRoles",
+                column: "RoleId");
+            migrationBuilder.CreateIndex(
+                name: "EmailIndex",
+                table: "AspNetUsers",
+                column: "NormalizedEmail");
+            migrationBuilder.CreateIndex(
+                name: "UserNameIndex",
+                table: "AspNetUsers",
+                column: "NormalizedUserName",
+                unique: true);
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+        }
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+        }
+    }
+}
+
+Модуль 20251012160111_Initial.Designer.cs
+// <auto-generated />
+using System;
+using Auth.TimeCafe.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+#nullable disable
+namespace Auth.TimeCafe.Infrastructure.Migrations
+{
+    [DbContext(typeof(ApplicationDbContext))]
+    [Migration("20251012160111_Initial")]
+    partial class Initial
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            modelBuilder.Entity("Auth.TimeCafe.Core.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId");
+                    b.ToTable("RefreshTokens");
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.HasKey("Id");
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("RoleId");
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.HasKey("Id");
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId");
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("LoginProvider", "ProviderKey");
+                    b.HasIndex("UserId");
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+                    b.HasKey("UserId", "RoleId");
+                    b.HasIndex("RoleId");
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+                    b.HasKey("UserId", "LoginProvider", "Name");
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+            modelBuilder.Entity("Auth.TimeCafe.Core.Models.RefreshToken", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                    b.Navigation("User");
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+
+Модуль ApplicationDbContextModelSnapshot.cs
+// <auto-generated />
+#nullable disable
+namespace Auth.TimeCafe.Infrastructure.Migrations
+{
+    [DbContext(typeof(ApplicationDbContext))]
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            modelBuilder.Entity("Auth.TimeCafe.Core.Models.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("boolean");
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId");
+                    b.ToTable("RefreshTokens");
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.HasKey("Id");
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("RoleId");
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("text");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+                    b.HasKey("Id");
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("Id");
+                    b.HasIndex("UserId");
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+                    b.HasKey("LoginProvider", "ProviderKey");
+                    b.HasIndex("UserId");
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("text");
+                    b.HasKey("UserId", "RoleId");
+                    b.HasIndex("RoleId");
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+                    b.HasKey("UserId", "LoginProvider", "Name");
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+            modelBuilder.Entity("Auth.TimeCafe.Core.Models.RefreshToken", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                    b.Navigation("User");
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+
+Модуль CustomPasswordValidator.cs
+namespace Auth.TimeCafe.Infrastructure.Services;
+public class CustomPasswordValidator : IPasswordValidator<IdentityUser>
+{
+    public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, string? password)
+    {
+        if (!password.Any(ch => char.IsLower(ch) || (ch >= 'а' && ch <= 'я')))
+        {
+            return Task.FromResult(IdentityResult.Failed(new IdentityError()
+            {
+                Code = "PasswordRequiresLower",
+                Description = "Пароль должен содержать хотя бы одну строчную букву ('a'-'z', 'а'-'я')."
+            }));
+        }
+        return Task.FromResult(IdentityResult.Success);
+    }
+}
+
+Модуль EmailTemplates.cs
+namespace Auth.TimeCafe.Infrastructure.Services.Email;
+public static class EmailTemplates
+{
+    private const string CoffeeColor = "#99634d";
+    private const string LightCoffee = "#b8886f";
+    private const string DarkCoffee = "#7a4f3d";
+    private const string BackgroundColor = "#f5f5f5";
+    private const string CardBackground = "#ffffff";
+    private const string TextColor = "#323130";
+    private const string SecondaryTextColor = "#605e5c";
+    private static string GetBaseTemplate(string title, string content)
+    {
+        return $@"
+<!DOCTYPE html>
+<html lang=""ru"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>{title}</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        body {{
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+            background-color: {BackgroundColor};
+            padding: 20px;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: {CardBackground};
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }}
+        .header {{
+            background: linear-gradient(135deg, {CoffeeColor} 0%, {DarkCoffee} 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }}
+        .header-icon {{
+            width: 64px;
+            height: 64px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 32px;
+        }}
+        .header-title {{
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0;
+        }}
+        .content {{
+            padding: 40px 30px;
+        }}
+        .content-text {{
+            color: {TextColor};
+            font-size: 16px;
+            margin-bottom: 24px;
+        }}
+        .button {{
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, {CoffeeColor} 0%, {LightCoffee} 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 4px rgba(153, 99, 77, 0.3);
+        }}
+        .button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(153, 99, 77, 0.4);
+        }}
+        .code-box {{
+            background-color: {BackgroundColor};
+            border-left: 4px solid {CoffeeColor};
+            padding: 20px;
+            border-radius: 6px;
+            margin: 24px 0;
+        }}
+        .code {{
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: {CoffeeColor};
+            letter-spacing: 4px;
+            text-align: center;
+            display: block;
+        }}
+        .footer {{
+            background-color: {BackgroundColor};
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #edebe9;
+        }}
+        .footer-text {{
+            color: {SecondaryTextColor};
+            font-size: 14px;
+            margin-bottom: 8px;
+        }}
+        .divider {{
+            height: 1px;
+            background-color: #edebe9;
+            margin: 24px 0;
+        }}
+        .info-box {{
+            background-color: #fef8f5;
+            border: 1px solid #f0d9cc;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 24px;
+        }}
+        .info-text {{
+            color: {SecondaryTextColor};
+            font-size: 14px;
+        }}
+        @media only screen and (max-width: 600px) {{
+            .container {{
+                margin: 0;
+                border-radius: 0;
+            }}
+            .header {{
+                padding: 30px 20px;
+            }}
+            .content {{
+                padding: 30px 20px;
+            }}
+            .footer {{
+                padding: 20px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        {content}
+    </div>
+</body>
+</html>";
+    }
+    public static string GetConfirmationEmailTemplate(string confirmationLink)
+    {
+        var content = $@"
+        <div class=""header"">
+            <div class=""header-icon"">☕</div>
+            <h1 class=""header-title"">TimeCafe</h1>
+        </div>
+        <div class=""content"">
+            <p class=""content-text"">Здравствуйте!</p>
+            <p class=""content-text"">
+                Спасибо за регистрацию в <strong>TimeCafe</strong>!
+                Для завершения процесса регистрации, пожалуйста, подтвердите ваш email адрес.
+            </p>
+            <div style=""text-align: center; margin: 32px 0;"">
+                <a href=""{confirmationLink}"" class=""button"">
+                    ✓ Подтвердить Email
+                </a>
+            </div>
+            <div class=""divider""></div>
+            <p class=""content-text"" style=""font-size: 14px;"">
+                Если кнопка не работает, скопируйте и вставьте эту ссылку в ваш браузер:
+            </p>
+            <p style=""color: {CoffeeColor}; font-size: 13px; word-break: break-all; margin-top: 8px;"">
+                {confirmationLink}
+            </p>
+            <div class=""info-box"">
+                <p class=""info-text"">
+                    <strong>Важно:</strong> Если вы не регистрировались в TimeCafe, просто проигнорируйте это письмо.
+                </p>
+            </div>
+        </div>
+        <div class=""footer"">
+            <p class=""footer-text"">С уважением, команда TimeCafe</p>
+            <p class=""footer-text"">© 2025 TimeCafe. Все права защищены.</p>
+        </div>";
+        return GetBaseTemplate("Подтверждение Email", content);
+    }
+    public static string GetPasswordResetLinkTemplate(string resetLink)
+    {
+        var content = $@"
+        <div class=""header"">
+            <div class=""header-icon"">🔐</div>
+            <h1 class=""header-title"">Сброс пароля</h1>
+        </div>
+        <div class=""content"">
+            <p class=""content-text"">Здравствуйте!</p>
+            <p class=""content-text"">
+                Мы получили запрос на сброс пароля для вашей учетной записи <strong>TimeCafe</strong>.
+            </p>
+            <p class=""content-text"">
+                Нажмите на кнопку ниже, чтобы создать новый пароль:
+            </p>
+            <div style=""text-align: center; margin: 32px 0;"">
+                <a href=""{resetLink}"" class=""button"">
+                    🔑 Сбросить пароль
+                </a>
+            </div>
+            <div class=""divider""></div>
+            <p class=""content-text"" style=""font-size: 14px;"">
+                Если кнопка не работает, скопируйте и вставьте эту ссылку в ваш браузер:
+            </p>
+            <p style=""color: {CoffeeColor}; font-size: 13px; word-break: break-all; margin-top: 8px;"">
+                {resetLink}
+            </p>
+            <div class=""info-box"">
+                <p class=""info-text"">
+                    <strong>Внимание:</strong> Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+                    Ваш пароль останется без изменений.
+                </p>
+            </div>
+            <div class=""info-box"" style=""margin-top: 16px;"">
+                <p class=""info-text"">
+                    Эта ссылка действительна в течение ограниченного времени.
+                </p>
+            </div>
+        </div>
+        <div class=""footer"">
+            <p class=""footer-text"">С уважением, команда TimeCafe</p>
+            <p class=""footer-text"">© 2025 TimeCafe. Все права защищены.</p>
+        </div>";
+        return GetBaseTemplate("Сброс пароля", content);
+    }
+    public static string GetPasswordResetCodeTemplate(string resetCode)
+    {
+        var content = $@"
+        <div class=""header"">
+            <div class=""header-icon"">🔐</div>
+            <h1 class=""header-title"">Код сброса пароля</h1>
+        </div>
+        <div class=""content"">
+            <p class=""content-text"">Здравствуйте!</p>
+            <p class=""content-text"">
+                Мы получили запрос на сброс пароля для вашей учетной записи <strong>TimeCafe</strong>.
+            </p>
+            <p class=""content-text"">
+                Используйте этот код для сброса пароля:
+            </p>
+            <div class=""code-box"">
+                <span class=""code"">{resetCode}</span>
+            </div>
+            <p class=""content-text"" style=""text-align: center; font-size: 14px; color: {SecondaryTextColor};"">
+                Введите этот код в форме сброса пароля
+            </p>
+            <div class=""divider""></div>
+            <div class=""info-box"">
+                <p class=""info-text"">
+                    <strong>Внимание:</strong> Если вы не запрашивали сброс пароля, проигнорируйте это письмо.
+                    Ваш пароль останется без изменений.
+                </p>
+            </div>
+            <div class=""info-box"" style=""margin-top: 16px;"">
+                <p class=""info-text"">
+                    <strong>Важно:</strong> Этот код действителен в течение ограниченного времени.
+                    Никому не сообщайте этот код.
+                </p>
+            </div>
+        </div>
+        <div class=""footer"">
+            <p class=""footer-text"">С уважением, команда TimeCafe</p>
+            <p class=""footer-text"">© 2025 TimeCafe. Все права защищены.</p>
+        </div>";
+        return GetBaseTemplate("Код сброса пароля", content);
+    }
+}
+
+Модуль NullEmailSender.cs
+namespace Auth.TimeCafe.Infrastructure.Services.Email;
+public class NullEmailSender : IEmailSender<IdentityUser>
+{
+    public Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink) =>
+        Task.CompletedTask;
+    public Task SendPasswordResetLinkAsync(IdentityUser user, string email, string resetLink) =>
+        Task.CompletedTask;
+    public Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode) =>
+        Task.CompletedTask;
+}
+
+Модуль PostmarkEmailSender.cs
+namespace Auth.TimeCafe.Infrastructure.Services.Email;
+public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<IdentityUser>
+{
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly PostmarkOptions _options = options.Value;
+    public async Task SendEmailAsync(string email, string subject, string htmlMessage)
+    {
+        if (string.IsNullOrWhiteSpace(_options.ServerToken))
+        {
+            throw new InvalidOperationException("Postmark ServerToken is not configured.");
+        }
+        if (string.IsNullOrWhiteSpace(_options.FromEmail))
+        {
+            throw new InvalidOperationException("Postmark FromEmail is not configured.");
+        }
+        var client = _httpClientFactory.CreateClient();
+        client.BaseAddress = new Uri("https://api.postmarkapp.com/");
+        client.DefaultRequestHeaders.Accept.Clear();
+        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        client.DefaultRequestHeaders.Add("X-Postmark-Server-Token", _options.ServerToken);
+        var payload = new Dictionary<string, object>
+        {
+            ["From"] = _options.FromEmail,
+            ["To"] = email,
+            ["Subject"] = subject,
+            ["HtmlBody"] = htmlMessage
+        };
+        if (!string.IsNullOrWhiteSpace(_options.MessageStream))
+        {
+            payload["MessageStream"] = _options.MessageStream!;
+        }
+        var textBody = StripHtml(htmlMessage);
+        if (!string.IsNullOrWhiteSpace(textBody))
+        {
+            payload["TextBody"] = textBody;
+        }
+        var json = JsonSerializer.Serialize(payload);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var response = await client.PostAsync("email", content);
+        response.EnsureSuccessStatusCode();
+    }
+    public async Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink)
+    {
+        var subject = "Подтвердите ваш email";
+        var htmlMessage = EmailTemplates.GetConfirmationEmailTemplate(confirmationLink);
+        await SendEmailAsync(email, subject, htmlMessage);
+    }
+    public async Task SendPasswordResetLinkAsync(IdentityUser user, string email, string resetLink)
+    {
+        if (string.IsNullOrWhiteSpace(_options.FrontendBaseUrl))
+            throw new InvalidOperationException("Postmark FrontendBaseUrl is not configured.");
+        var subject = "Сброс пароля";
+        var htmlMessage = EmailTemplates.GetPasswordResetLinkTemplate(resetLink);
+        await SendEmailAsync(email, subject, htmlMessage);
+    }
+    public async Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode)
+    {
+        var subject = "Код для сброса пароля";
+        var htmlMessage = EmailTemplates.GetPasswordResetCodeTemplate(resetCode);
+        await SendEmailAsync(email, subject, htmlMessage);
+    }
+    private static string StripHtml(string html)
+    {
+        var array = new char[html.Length];
+        var arrayIndex = 0;
+        var inside = false;
+        foreach (var @let in html)
+        {
+            if (@let == '<')
+            {
+                inside = true;
+                continue;
+            }
+            if (@let == '>')
+            {
+                inside = false;
+                continue;
+            }
+            if (!inside)
+            {
+                array[arrayIndex] = @let;
+                arrayIndex++;
+            }
+        }
+        return new string(array, 0, arrayIndex).Trim();
+    }
+}
+
+Модуль GoogleRecaptchaValidator.cs
+using System.Text.Json;
+using Auth.TimeCafe.Domain.Contracts;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+namespace Auth.TimeCafe.Infrastructure.Services;
+public class GoogleRecaptchaValidator : ICaptchaValidator
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _secretKey;
+    private readonly ILogger<GoogleRecaptchaValidator> _logger;
+    public GoogleRecaptchaValidator(
+        HttpClient httpClient,
+        IConfiguration configuration,
+        ILogger<GoogleRecaptchaValidator> logger)
+    {
+        _httpClient = httpClient;
+        _secretKey = configuration["GoogleRecaptcha:SecretKey"]
+            ?? throw new InvalidOperationException("GoogleRecaptcha:SecretKey не настроен в конфигурации");
+        _logger = logger;
+    }
+    public async Task<bool> ValidateAsync(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            _logger.LogWarning("Попытка валидации пустого токена reCAPTCHA");
+            return false;
+        }
+        try
+        {
+            var response = await _httpClient.PostAsync(
+                "https://www.google.com/recaptcha/api/siteverify",
+                new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["secret"] = _secretKey,
+                    ["response"] = token
+                })
+            );
+            if (!response.IsSuccessStatusCode)
+            {
+                _logger.LogError("Google reCAPTCHA API вернул статус {StatusCode}", response.StatusCode);
+                return false;
+            }
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonResponse, options);
+            if (result?.Success == true)
+            {
+                _logger.LogInformation("reCAPTCHA успешно пройдена");
+                return true;
+            }
+            _logger.LogWarning("reCAPTCHA не пройдена. Ошибки: {Errors}",
+                string.Join(", ", result?.ErrorCodes ?? Array.Empty<string>()));
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Ошибка при валидации reCAPTCHA");
+            return false;
+        }
+    }
+    private class RecaptchaResponse
+    {
+        public bool Success { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("error-codes")]
+        public string[]? ErrorCodes { get; set; }
+    }
+}
+
+Модуль JwtService.cs
+namespace Auth.TimeCafe.Infrastructure.Services;
+public record AuthResponse(string AccessToken, string RefreshToken, string Role, int ExpiresIn);
+public interface IJwtService
+{
+    Task<AuthResponse> GenerateTokens(IdentityUser user);
+    ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
+    Task<AuthResponse?> RefreshTokens(string refreshToken);
+}
+public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
+{
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ApplicationDbContext _context = context;
+    private readonly IUserRoleService _userRoleService = userRoleService;
+    public async Task<AuthResponse> GenerateTokens(IdentityUser user)
+    {
+        var jwtSection = _configuration.GetSection("Jwt");
+        var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
+        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
+        var roles = await _userRoleService.GetUserRolesAsync(user);
+        var userRole = roles.FirstOrDefault() ?? "client";
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(ClaimTypes.Role, userRole)
+        };
+        var token = new JwtSecurityToken(
+            issuer: jwtSection["Issuer"],
+            audience: jwtSection["Audience"],
+            claims: claims,
+            expires: expires,
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
+        );
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var tokenEntity = new RefreshToken
+        {
+            Token = refreshToken,
+            UserId = user.Id,
+            Expires = DateTime.UtcNow.AddDays(30), // RefreshTokenExpirationDays
+            Created = DateTime.UtcNow
+        };
+        _context.RefreshTokens.Add(tokenEntity);
+        await _context.SaveChangesAsync();
+        return new AuthResponse(
+            AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
+            RefreshToken: refreshToken,
+            Role: userRole,
+            ExpiresIn: (int)(expires - DateTime.UtcNow).TotalSeconds
+        );
+    }
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
+    {
+        var jwtSection = _configuration.GetSection("Jwt");
+        var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = true,
+            ValidateIssuer = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSection["Issuer"],
+            ValidAudience = jwtSection["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = false
+        };
+        var handler = new JwtSecurityTokenHandler();
+        var principal = handler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+        if (securityToken is not JwtSecurityToken jwt ||
+            !jwt.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            throw new SecurityTokenException("Invalid token");
+        return principal;
+    }
+    public async Task<AuthResponse?> RefreshTokens(string refreshToken)
+    {
+        var tokenEntity = await _context.RefreshTokens
+            .Include(t => t.User)
+            .FirstOrDefaultAsync(t => t.Token == refreshToken && !t.IsRevoked);
+        if (tokenEntity == null || tokenEntity.Expires < DateTime.UtcNow)
+            return null;
+        tokenEntity.IsRevoked = true;
+        var newTokens = await GenerateTokens(tokenEntity.User);
+        await _context.SaveChangesAsync();
+        return newTokens;
+    }
+}
+
+Модуль SmsVerificationAttemptTracker.cs
+using Auth.TimeCafe.Domain.Contracts;
+using Microsoft.Extensions.Caching.Memory;
+namespace Auth.TimeCafe.Infrastructure.Services.Phone;
+public class SmsVerificationAttemptTracker(IMemoryCache cache) : ISmsVerificationAttemptTracker
+{
+    private readonly IMemoryCache _cache = cache;
+    private const int MaxAttempts = 5;
+    private const int AttemptWindowMinutes = 10;
+    public bool CanVerifyCode(string userId, string phoneNumber)
+    {
+        var attempts = GetCurrentAttempts(userId, phoneNumber);
+        return attempts < MaxAttempts;
+    }
+    public void RecordFailedAttempt(string userId, string phoneNumber)
+    {
+        var key = GetCacheKey(userId, phoneNumber);
+        var attempts = GetCurrentAttempts(userId, phoneNumber);
+        _cache.Set(key, attempts + 1, TimeSpan.FromMinutes(AttemptWindowMinutes));
+    }
+    public int GetRemainingAttempts(string userId, string phoneNumber)
+    {
+        var attempts = GetCurrentAttempts(userId, phoneNumber);
+        return Math.Max(0, MaxAttempts - attempts);
+    }
+    public void ResetAttempts(string userId, string phoneNumber)
+    {
+        var key = GetCacheKey(userId, phoneNumber);
+        _cache.Remove(key);
+    }
+    private int GetCurrentAttempts(string userId, string phoneNumber)
+    {
+        var key = GetCacheKey(userId, phoneNumber);
+        return _cache.TryGetValue(key, out int attempts) ? attempts : 0;
+    }
+    private static string GetCacheKey(string userId, string phoneNumber)
+        => $"sms_verify_attempts:{userId}:{phoneNumber}";
+}
+
+Модуль TwillioSender.cs
+using Auth.TimeCafe.Domain.Contracts;
+using Microsoft.Extensions.Logging;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+namespace Auth.TimeCafe.Infrastructure.Services.Phone;
+public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
+{
+    private readonly ILogger<TwilioSender> _logger = logger;
+    public async Task<PhoneVerificationModel?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token)
+    {
+        try
+        {
+            TwilioClient.Init(accountSid, authToken);
+            var message = await MessageResource.CreateAsync(
+                body: $"Ваш код подтверждения: {token}",
+                from: new Twilio.Types.PhoneNumber(twilioPhoneNumber),
+                to: new Twilio.Types.PhoneNumber(phoneNumber)
+            );
+            if (message.ErrorCode == null)
+            {
+                return new PhoneVerificationModel
+                {
+                    PhoneNumber = phoneNumber,
+                    Code = string.Empty
+                };
+            }
+            _logger.LogError("Twilio ошибка при отправке SMS на {PhoneNumber}: ErrorCode={ErrorCode}, ErrorMessage={ErrorMessage}",
+                phoneNumber, message.ErrorCode, message.ErrorMessage);
+            return null;
+        }
+        catch (Twilio.Exceptions.ApiException ex)
+        {
+            _logger.LogError(ex, "Twilio API ошибка при отправке SMS на {PhoneNumber}: {Message}", phoneNumber, ex.Message);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Неожиданная ошибка при отправке SMS на {PhoneNumber}", phoneNumber);
+            return null;
+        }
+    }
+}
+
+Модуль RussianIdentityErrorDescriber.cs
+namespace Auth.TimeCafe.Infrastructure.Services;
+public class RussianIdentityErrorDescriber : IdentityErrorDescriber
+{
+    public override IdentityError DuplicateUserName(string userName)
+        => new()
+        {
+            Code = nameof(DuplicateUserName),
+            Description = $"Имя пользователя '{userName}' уже используется."
+        };
+    public override IdentityError DuplicateEmail(string email)
+        => new()
+        {
+            Code = nameof(DuplicateEmail),
+            Description = $"Email '{email}' уже используется."
+        };
+    public override IdentityError PasswordRequiresLower()
+          => new IdentityError
+          {
+              Code = nameof(PasswordRequiresLower),
+              Description = "Пароль должен содержать хотя бы одну строчную букву ('a'-'z', 'а'-'я')."
+          };
+    public override IdentityError PasswordRequiresUpper()
+        => new IdentityError
+        {
+            Code = nameof(PasswordRequiresUpper),
+            Description = "Пароль должен содержать хотя бы одну заглавную букву."
+        };
+    public override IdentityError PasswordRequiresDigit()
+        => new IdentityError
+        {
+            Code = nameof(PasswordRequiresDigit),
+            Description = "Пароль должен содержать хотя бы одну цифру."
+        };
+    public override IdentityError PasswordTooShort(int length)
+        => new IdentityError
+        {
+            Code = nameof(PasswordTooShort),
+            Description = $"Пароль должен содержать не менее {length} символов."
+        };
+}
+
+Модуль AuthApiFactory.cs
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Auth.TimeCafe.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
+namespace Auth.TimeCafe.Tests;
+public class AuthApiFactory : WebApplicationFactory<Program>
+{
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        // Set dedicated environment to allow conditional logic in Program if needed
+        builder.UseEnvironment("Testing");
+        // Override configuration to strip Kestrel certificate (avoids abort when file is missing)
+        builder.ConfigureAppConfiguration((ctx, cfg) =>
+        {
+            var overrides = new Dictionary<string, string?>
+            {
+                ["Kestrel:Endpoints:Https:Certificate:Path"] = string.Empty,
+                ["Kestrel:Endpoints:Https:Certificate:Password"] = string.Empty
+            };
+            cfg.AddInMemoryCollection(overrides);
+        });
+        builder.ConfigureServices(services =>
+        {
+            // Remove Npgsql registration
+            var toRemove = services.Where(d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>) || d.ServiceType == typeof(ApplicationDbContext)).ToList();
+            foreach (var d in toRemove)
+            {
+                services.Remove(d);
+            }
+            // Add InMemory DB
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("AuthTests");
+            });
+            // NOTE: Skip external providers & heavy services by faking their configuration if needed (handled via conditional checks in auth extension)
+        });
+    }
+}
+
+Модуль AuthEndpointsTests.cs
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Identity;
+using Xunit;
+namespace Auth.TimeCafe.Tests;
+public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
+{
+    private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+    public AuthEndpointsTests(AuthApiFactory factory)
+    {
+        _client = factory.CreateClient();
+    }
+    record RegisterDto(string Username, string Email, string Password, string ConfirmPassword);
+    record LoginDto(string Email, string Password);
+    record TokensDto(string AccessToken, string RefreshToken);
+    record RefreshRequest(string RefreshToken);
+    record LogoutRequest(string RefreshToken);
+    private async Task<TokensDto> RegisterAsync(string username, string email, string password)
+    {
+        var resp = await _client.PostAsJsonAsync("/registerWithUsername", new RegisterDto(username, email, password, password));
+        resp.EnsureSuccessStatusCode();
+        var json = await resp.Content.ReadAsStringAsync();
+        return JsonSerializer.Deserialize<TokensDto>(json, _jsonOptions)!;
+    }
+    [Fact]
+    public async Task Register_ReturnsTokens()
+    {
+        var tokens = await RegisterAsync("user1", "user1@example.com", "P@ssw0rd!");
+        Assert.False(string.IsNullOrWhiteSpace(tokens.AccessToken));
+        Assert.False(string.IsNullOrWhiteSpace(tokens.RefreshToken));
+    }
+    [Fact]
+    public async Task Register_Duplicate_ReturnsBadRequest()
+    {
+        await RegisterAsync("user2", "user2@example.com", "P@ssw0rd!");
+        var resp = await _client.PostAsJsonAsync("/registerWithUsername", new RegisterDto("user2", "user2@example.com", "P@ssw0rd!", "P@ssw0rd!"));
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+    [Fact]
+    public async Task Login_Success_ReturnsTokens()
+    {
+        await RegisterAsync("user3", "user3@example.com", "P@ssw0rd!");
+        var resp = await _client.PostAsJsonAsync("/login-jwt", new LoginDto("user3@example.com", "P@ssw0rd!"));
+        resp.EnsureSuccessStatusCode();
+        var tokens = JsonSerializer.Deserialize<TokensDto>(await resp.Content.ReadAsStringAsync(), _jsonOptions)!;
+        Assert.NotNull(tokens);
+    }
+    [Fact]
+    public async Task Login_InvalidCredentials_ReturnsBadRequest()
+    {
+        var resp = await _client.PostAsJsonAsync("/login-jwt", new LoginDto("noexist@example.com", "badpass"));
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+    [Fact]
+    public async Task Protected_Unauthorized_WithoutToken()
+    {
+        var resp = await _client.GetAsync("/protected-test");
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+    [Fact]
+    public async Task Protected_Authorized_WithBearer()
+    {
+        var tokens = await RegisterAsync("user4", "user4@example.com", "P@ssw0rd!");
+        var req = new HttpRequestMessage(HttpMethod.Get, "/protected-test");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+        var resp = await _client.SendAsync(req);
+        Assert.Equal(System.Net.HttpStatusCode.OK, resp.StatusCode);
+    }
+    [Fact]
+    public async Task Refresh_ValidToken_ReturnsNewTokens()
+    {
+        var tokens = await RegisterAsync("user5", "user5@example.com", "P@ssw0rd!");
+        var resp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
+        resp.EnsureSuccessStatusCode();
+        var newTokens = JsonSerializer.Deserialize<TokensDto>(await resp.Content.ReadAsStringAsync(), _jsonOptions)!;
+        Assert.NotEqual(tokens.AccessToken, newTokens.AccessToken);
+    }
+    [Fact]
+    public async Task Refresh_InvalidToken_ReturnsUnauthorized()
+    {
+        var resp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest("invalid"));
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+    [Fact]
+    public async Task Logout_RevokesRefreshToken()
+    {
+        var tokens = await RegisterAsync("user6", "user6@example.com", "P@ssw0rd!");
+        var logoutResp = await _client.PostAsJsonAsync("/logout", new LogoutRequest(tokens.RefreshToken));
+        logoutResp.EnsureSuccessStatusCode();
+        // Try refresh after logout
+        var refreshResp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, refreshResp.StatusCode);
+    }
+}

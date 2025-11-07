@@ -14,7 +14,7 @@ public static class AuthenticationExtensions
             throw new InvalidOperationException("Jwt:SigningKey missing");
         var keyBytes = Encoding.UTF8.GetBytes(signingKey);
 
-        services
+        var authBuilder = services
             .AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,12 +50,16 @@ public static class AuthenticationExtensions
 #endif
 
             })
-            .AddCookie(IdentityConstants.ExternalScheme)
-            .AddGoogle(op =>
+            .AddCookie(IdentityConstants.ExternalScheme);
+
+        // External providers are optional: register only if ClientId is provided (prevents test host aborts)
+        var google = configuration.GetSection("Authentication:Google");
+        if (!string.IsNullOrWhiteSpace(google["ClientId"]))
+        {
+            authBuilder.AddGoogle(op =>
             {
-                var google = configuration.GetSection("Authentication:Google");
-                op.ClientId = google["ClientId"] ?? "";
-                op.ClientSecret = google["ClientSecret"] ?? "";
+                op.ClientId = google["ClientId"]!;
+                op.ClientSecret = google["ClientSecret"] ?? string.Empty;
                 op.CallbackPath = "/signin-google";
                 op.Events.OnRemoteFailure = context =>
                 {
@@ -65,12 +69,16 @@ public static class AuthenticationExtensions
                     context.HandleResponse();
                     return Task.CompletedTask;
                 };
-            })
-            .AddMicrosoftAccount(op =>
+            });
+        }
+
+        var ms = configuration.GetSection("Authentication:Microsoft");
+        if (!string.IsNullOrWhiteSpace(ms["ClientId"]))
+        {
+            authBuilder.AddMicrosoftAccount(op =>
             {
-                var ms = configuration.GetSection("Authentication:Microsoft");
-                op.ClientId = ms["ClientId"] ?? "";
-                op.ClientSecret = ms["ClientSecret"] ?? "";
+                op.ClientId = ms["ClientId"]!;
+                op.ClientSecret = ms["ClientSecret"] ?? string.Empty;
                 op.CallbackPath = "/signin-microsoft";
                 op.Events.OnRemoteFailure = context =>
                 {
@@ -81,6 +89,7 @@ public static class AuthenticationExtensions
                     return Task.CompletedTask;
                 };
             });
+        }
 
         return services;
     }
