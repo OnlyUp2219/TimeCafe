@@ -20,4 +20,8 @@
 	  <ProjectReference Include="..\Auth.TimeCafe.Infrastructure\Auth.TimeCafe.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="CQRS\Common\" />
+	</ItemGroup>
+
 </Project>

@@ -22,7 +22,7 @@ public class RegisterUserCommandHandler(
             return new RegisterUserResult(false, Errors: createResult.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList());
         }
         if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
-            return new RegisterUserResult(false, Errors: new[] { new { code = "Configuration", description = "FrontendBaseUrl is not configured" } });
+            return new RegisterUserResult(false, Errors: [new { code = "Configuration", description = "FrontendBaseUrl is not configured" }]);
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
@@ -35,7 +35,7 @@ public class RegisterUserCommandHandler(
             }
             catch (Exception)
             {
-                return new RegisterUserResult(false, Errors: new[] { new { code = "EmailSendFailed", description = "Ошибка при отправке письма" } });
+                return new RegisterUserResult(false, Errors: [new { code = "EmailSendFailed", description = "Ошибка при отправке письма" }]);
             }
         }
         return new RegisterUserResult(true, CallbackUrl: callbackUrl);

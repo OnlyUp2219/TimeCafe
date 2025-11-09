@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 public record ResendConfirmationCommand(string Email, bool SendEmail = true) : IRequest<ResendConfirmationResult>;
 

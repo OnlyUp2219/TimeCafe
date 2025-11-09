@@ -10,7 +10,7 @@ public interface IJwtService
     Task<AuthResponse> GenerateTokens(IdentityUser user);
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
     Task<AuthResponse?> RefreshTokens(string refreshToken);
-    Task<int> RevokeUserTokensAsync(string userId);
+    Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default);
 }
 
 public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
@@ -107,14 +107,14 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         return newTokens;
     }
 
-    public async Task<int> RevokeUserTokensAsync(string userId)
+    public async Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var tokens = await context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
+        var tokens = await context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync(cancellationToken);
         if (tokens.Count > 0)
         {
             foreach (var t in tokens)
                 t.IsRevoked = true;
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
         }
         return tokens.Count;
     }

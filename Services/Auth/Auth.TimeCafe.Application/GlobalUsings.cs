@@ -1,5 +1,4 @@
 global using Auth.TimeCafe.Domain.Contracts;
-global using Auth.TimeCafe.Domain.Enum;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Infrastructure.Services;
 

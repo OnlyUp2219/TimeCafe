@@ -1,6 +1,9 @@
-namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+using BuildingBlocks.Enum;
+using BuildingBlocks.Extensions;
 
-public record ChangePasswordResult(bool Success, string? Message = null, List<string>? Errors = null, ETypeError? TypeError = null, int? RefreshTokensRevoked = null);
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+
+public record ChangePasswordResult(bool Success, string? Message = null, List<string>? Errors = null, ETypeError? TypeError = null, int? RefreshTokensRevoked = null) : ICqrsResult;
 
 public record ChangePasswordCommand(string UserId, string CurrentPassword, string NewPassword) : IRequest<ChangePasswordResult>;
 
@@ -26,7 +29,7 @@ public class ChangePasswordCommandHandler(UserManager<IdentityUser> userManager,
 
         }
 
-        var refreshTokensRevoked = await _jwt.RevokeUserTokensAsync(user.Id);
+        var refreshTokensRevoked = await _jwt.RevokeUserTokensAsync(user.Id, cancellationToken);
 
         return new ChangePasswordResult( true ,Message: "Пароль изменён", RefreshTokensRevoked: refreshTokensRevoked);
     }

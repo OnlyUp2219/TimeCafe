@@ -1,6 +1,4 @@
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
-
-namespace Auth.TimeCafe.API.Endpoints;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
 public class ResetPassword : ICarterModule
 {

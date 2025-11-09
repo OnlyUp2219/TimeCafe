@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Domain.Enum;
+namespace BuildingBlocks.Enum;
 
 public enum ETypeError
 {

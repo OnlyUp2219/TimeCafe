@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
 public class PhoneVerification : ICarterModule
 {
@@ -31,7 +31,8 @@ public class PhoneVerification : ICarterModule
             return Results.Ok(new { phoneNumber = model.PhoneNumber, message = "SMS отправлено (mock)", token });
         })
         .RequireRateLimiting("OneRequestPerInterval")
-        .RequireRateLimiting("MaxRequestPerWindow");
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("GenerateSmsMock");
 
         group.MapPost("verifySMS-mock", async (
             UserManager<IdentityUser> userManager,
@@ -99,7 +100,9 @@ public class PhoneVerification : ICarterModule
                 new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
                 statusCode: 400
             );
-        });
+        })
+        .WithName("VerifySmsMock");
+
 
 
         group.MapPost("generateSMS", async (
@@ -140,7 +143,9 @@ public class PhoneVerification : ICarterModule
                 return Results.BadRequest("Ошибка при отправке SMS");
             })
         .RequireRateLimiting("OneRequestPerInterval")
-        .RequireRateLimiting("MaxRequestPerWindow");
+        .RequireRateLimiting("MaxRequestPerWindow")
+        .WithName("GenerateSms");
+
 
         group.MapPost("verifySMS", async (
             UserManager<IdentityUser> userManager,
@@ -205,7 +210,9 @@ public class PhoneVerification : ICarterModule
                 new { message = "Неверный код подтверждения или истек срок действия", remainingAttempts = remaining, requiresCaptcha = remaining == 3 },
                 statusCode: 400
             );
-        });
+        })
+        .WithName("VerifySms");
+
     }
 }
 

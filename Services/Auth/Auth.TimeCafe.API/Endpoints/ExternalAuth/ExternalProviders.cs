@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints;
+namespace Auth.TimeCafe.API.Endpoints.ExternalAuth;
 
 public class ExternalProviders : ICarterModule
 {
