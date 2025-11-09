@@ -7,10 +7,14 @@ namespace BuildingBlocks.Extensions
             if (result.Success) return onSuccess(result);
 
 
-            var errs = result.Errors?.Select(e => new
+            var errs = result.Errors?.Select(e =>
             {
-                code = e.Split(":", StringSplitOptions.RemoveEmptyEntries)[0],
-                description = e.Split(":", StringSplitOptions.RemoveEmptyEntries)[1]
+                var parts = e.Split(":", 2, StringSplitOptions.RemoveEmptyEntries);
+                return new
+                {
+                    code = parts.Length > 0 ? parts[0] : e,
+                    description = parts.Length > 1 ? parts[1] : e
+                };
             }).ToArray();
 
             return result.TypeError switch

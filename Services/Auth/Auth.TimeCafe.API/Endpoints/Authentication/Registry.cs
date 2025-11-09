@@ -60,7 +60,6 @@ public class CreateRegistry : ICarterModule
 
             return Results.Ok(new { message = "Logged out", revoked = entity != null });
         })
-            .RequireAuthorization()
             .WithTags("Authentication")
             .WithName("Logout");
 

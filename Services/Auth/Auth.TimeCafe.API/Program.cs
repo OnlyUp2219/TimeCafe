@@ -66,10 +66,10 @@ app.UseCors(corsPolicyName["PolicyName"] ?? "");
 app.UseMiddleware<RateLimitCounterMiddleware>();
 app.UseRateLimiter();
 
-app.MapCarter();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapCarter();
 
 app.MapIdentityApi<IdentityUser>();
 

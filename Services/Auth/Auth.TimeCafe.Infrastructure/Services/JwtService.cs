@@ -32,6 +32,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Role, userRole)
         };
 
