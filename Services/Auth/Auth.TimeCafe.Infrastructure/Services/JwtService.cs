@@ -10,6 +10,7 @@ public interface IJwtService
     Task<AuthResponse> GenerateTokens(IdentityUser user);
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
     Task<AuthResponse?> RefreshTokens(string refreshToken);
+    Task<int> RevokeUserTokensAsync(string userId);
 }
 
 public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
@@ -47,7 +48,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         {
             Token = refreshToken,
             UserId = user.Id,
-            Expires = DateTime.UtcNow.AddDays(30), // RefreshTokenExpirationDays
+            Expires = DateTime.UtcNow.AddDays(30), 
             Created = DateTime.UtcNow
         };
 
@@ -104,6 +105,18 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         await _context.SaveChangesAsync();
 
         return newTokens;
+    }
+
+    public async Task<int> RevokeUserTokensAsync(string userId)
+    {
+        var tokens = await context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
+        if (tokens.Count > 0)
+        {
+            foreach (var t in tokens)
+                t.IsRevoked = true;
+            await context.SaveChangesAsync();
+        }
+        return tokens.Count;
     }
 
 }

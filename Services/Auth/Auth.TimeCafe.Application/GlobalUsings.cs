@@ -1,5 +1,7 @@
 global using Auth.TimeCafe.Domain.Contracts;
+global using Auth.TimeCafe.Domain.Enum;
 global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Infrastructure.Services;
 
 global using BuildingBlocks.Behaviors;
 
@@ -16,4 +18,5 @@ global using Microsoft.Extensions.Options;
 global using Swashbuckle.AspNetCore.Filters;
 
 global using System.Reflection;
+global using System.Security.Claims;
 global using System.Text;

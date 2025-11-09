@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
-
 namespace Auth.TimeCafe.API.Endpoints;
 
 public class EmailConfirmation : ICarterModule

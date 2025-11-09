@@ -1,6 +1,4 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Auth.TimeCafe.Domain.Enum;
 
 namespace Auth.TimeCafe.API.Endpoints;
 
@@ -13,36 +11,39 @@ public sealed class ChangePassword : ICarterModule
             .WithTags("Authentication");
 
         group.MapPost("/change-password", async (
-            ChangePasswordRequest body,
+            ChangePasswordRequest request,
             UserManager<IdentityUser> userManager,
             ClaimsPrincipal principal,
             ApplicationDbContext db
+            , ISender sender
         ) =>
         {
-            if (string.IsNullOrWhiteSpace(body.CurrentPassword) || string.IsNullOrWhiteSpace(body.NewPassword))
-                return Results.BadRequest(new { errors = new[] { new { code = "EmptyFields", description = "Требуется заполнить пароли" } } });
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Results.BadRequest(new { errors = new[] { new { code = "UserNotFound", description = "Пользователь не найден" } } } );
 
-            var user = await userManager.GetUserAsync(principal);
-            if (user == null)
-                return Results.Unauthorized();
+            var command = new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword);
 
-            var result = await userManager.ChangePasswordAsync(user, body.CurrentPassword, body.NewPassword);
-            if (!result.Succeeded)
+            var result = await sender.Send(command);
+
+            if (!result.Success)
             {
-                var errs = result.Errors.Select(e => new { code = e.Code, description = e.Description }).ToArray();
-                return Results.BadRequest(new { errors = errs });
+                var errs = result.Errors?.Select(e => new {
+                    code = e.Split(":", StringSplitOptions.RemoveEmptyEntries)[0],
+                    description = e.Split(":", StringSplitOptions.RemoveEmptyEntries)[1]
+                }).ToArray();
+
+
+                return result.TypeError switch
+                {
+                    ETypeError.Unauthorized => Results.Unauthorized(),
+                    ETypeError.IdentityError => Results.BadRequest(new { errors = errs }),
+                    ETypeError.BadRequest => Results.BadRequest(new { errors = result.Errors }),
+                    _ => Results.BadRequest(new { message = result.Message })
+                };
             }
 
-            var userId = user.Id;
-            var tokens = await db.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync();
-            if (tokens.Count > 0)
-            {
-                foreach (var t in tokens)
-                    t.IsRevoked = true;
-                await db.SaveChangesAsync();
-            }
-
-            return Results.Ok(new { message = "Пароль изменён", refreshTokensRevoked = tokens.Count });
+            return Results.Ok(new { message = "Пароль изменён", refreshTokensRevoked = result.RefreshTokensRevoked });
         })
         .WithName("ChangePassword")
         .WithSummary("Смена пароля текущего пользователя");

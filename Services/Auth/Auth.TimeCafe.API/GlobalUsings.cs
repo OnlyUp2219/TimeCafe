@@ -2,6 +2,7 @@ global using Auth.TimeCafe.API.Extensions;
 global using Auth.TimeCafe.API.Middleware;
 global using Auth.TimeCafe.API.Services;
 global using Auth.TimeCafe.Application;
+global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Application.CQRS.Sender.Commands;
 global using Auth.TimeCafe.Application.DTO;
 global using Auth.TimeCafe.Domain.Contracts;
