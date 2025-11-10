@@ -19,7 +19,14 @@ public class ExternalProviders : ICarterModule
         })
             .WithTags("ExternalProviders");
 
-        app.MapGet("/authenticate/login/google/callback", async ([FromQuery] string returnUrl, HttpContext context, SignInManager<IdentityUser> signInManager, IJwtService jwtService, UserManager<IdentityUser> userManager) =>
+        app.MapGet("/authenticate/login/google/callback", async (
+            [FromQuery] string returnUrl,
+            HttpContext context,
+            SignInManager<IdentityUser> signInManager,
+            IJwtService jwtService,
+            UserManager<IdentityUser> userManager,
+            ApplicationDbContext db,
+            ILogger<ExternalProviders> logger) =>
         {
             var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
@@ -48,7 +55,7 @@ public class ExternalProviders : ICarterModule
             if (existingUserWithLogin != null)
             {
                 var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
-                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}&emailConfirmed=true");
             }
             var user = await userManager.FindByEmailAsync(email);
 
@@ -72,7 +79,31 @@ public class ExternalProviders : ICarterModule
             }
             else if (!user.EmailConfirmed)
             {
-                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+                user.EmailConfirmed = true;
+                bool removedPassword = false;
+                if (await userManager.HasPasswordAsync(user))
+                {
+                    var removeResult = await userManager.RemovePasswordAsync(user);
+                    removedPassword = removeResult.Succeeded;
+                    if (!removeResult.Succeeded)
+                    {
+                        logger.LogWarning("Не удалось удалить локальный пароль для пользователя {Email}: {Errors}", email, string.Join("; ", removeResult.Errors.Select(e => e.Description)));
+                    }
+                }
+                var updateResult = await userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    logger.LogWarning("Не удалось обновить пользователя {Email} после подтверждения email: {Errors}", email, string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+                }
+
+                var tokensToRevoke = db.RefreshTokens.Where(t => t.UserId == user.Id && !t.IsRevoked).ToList();
+                if (tokensToRevoke.Count > 0)
+                {
+                    foreach (var t in tokensToRevoke) t.IsRevoked = true;
+                    await db.SaveChangesAsync();
+                    logger.LogInformation("Revoked {Count} refresh tokens for externally confirmed user {Email}", tokensToRevoke.Count, email);
+                }
+                logger.LogInformation("External email confirmation завершена для {Email}. Пароль удалён: {Removed}", email, removedPassword);
             }
 
             var info = new UserLoginInfo("Google", externalUserId, "Google");
@@ -84,10 +115,18 @@ public class ExternalProviders : ICarterModule
             }
 
             var userTokens = await jwtService.GenerateTokens(user);
-            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
+            var hasPassword = await userManager.HasPasswordAsync(user) ? "true" : "false";
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}&emailConfirmed=true&hasPassword={hasPassword}");
         })
             .WithTags("ExternalProviders");
-        app.MapGet("/authenticate/login/microsoft/callback", async ([FromQuery] string returnUrl, HttpContext context, SignInManager<IdentityUser> signInManager, IJwtService jwtService, UserManager<IdentityUser> userManager) =>
+        app.MapGet("/authenticate/login/microsoft/callback", async (
+            [FromQuery] string returnUrl,
+            HttpContext context,
+            SignInManager<IdentityUser> signInManager,
+            IJwtService jwtService,
+            UserManager<IdentityUser> userManager,
+            ApplicationDbContext db,
+            ILogger<ExternalProviders> logger) =>
         {
             var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
@@ -116,7 +155,7 @@ public class ExternalProviders : ICarterModule
             if (existingUserWithLogin != null)
             {
                 var tokens = await jwtService.GenerateTokens(existingUserWithLogin);
-                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}");
+                return Results.Redirect($"{returnUrl}#access_token={tokens.AccessToken}&refresh_token={tokens.RefreshToken}&emailConfirmed=true");
             }
 
             var user = await userManager.FindByEmailAsync(email);
@@ -141,7 +180,30 @@ public class ExternalProviders : ICarterModule
             }
             else if (!user.EmailConfirmed)
             {
-                return Results.BadRequest("Email is not confirmed. Please confirm your email before linking external login.");
+                user.EmailConfirmed = true;
+                bool removedPassword = false;
+                if (await userManager.HasPasswordAsync(user))
+                {
+                    var removeResult = await userManager.RemovePasswordAsync(user);
+                    removedPassword = removeResult.Succeeded;
+                    if (!removeResult.Succeeded)
+                    {
+                        logger.LogWarning("Не удалось удалить локальный пароль для пользователя {Email}: {Errors}", email, string.Join("; ", removeResult.Errors.Select(e => e.Description)));
+                    }
+                }
+                var updateResult = await userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    logger.LogWarning("Не удалось обновить пользователя {Email} после подтверждения email: {Errors}", email, string.Join("; ", updateResult.Errors.Select(e => e.Description)));
+                }
+                var tokensToRevoke = db.RefreshTokens.Where(t => t.UserId == user.Id && !t.IsRevoked).ToList();
+                if (tokensToRevoke.Count > 0)
+                {
+                    foreach (var t in tokensToRevoke) t.IsRevoked = true;
+                    await db.SaveChangesAsync();
+                    logger.LogInformation("Revoked {Count} refresh tokens for externally confirmed user {Email}", tokensToRevoke.Count, email);
+                }
+                logger.LogInformation("External email confirmation завершена для {Email}. Пароль удалён: {Removed}", email, removedPassword);
             }
             var info = new UserLoginInfo("Microsoft", externalUserId, "Microsoft");
             var loginResult = await userManager.AddLoginAsync(user, info);
@@ -152,7 +214,8 @@ public class ExternalProviders : ICarterModule
             }
 
             var userTokens = await jwtService.GenerateTokens(user);
-            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}");
+            var hasPassword = await userManager.HasPasswordAsync(user) ? "true" : "false";
+            return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}&emailConfirmed=true&hasPassword={hasPassword}");
         })
             .WithTags("ExternalProviders");
     }
