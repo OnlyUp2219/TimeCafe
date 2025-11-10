@@ -4,37 +4,6 @@ public class CreateRegistry : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-
-
-        app.MapPost("/refresh-token-jwt", async (
-            IJwtService jwtService,
-            HttpContext context,
-            [FromBody] JwtRefreshRequest request) =>
-        {
-            var tokens = await jwtService.RefreshTokens(request.RefreshToken);
-            if (tokens == null) return Results.Unauthorized();
-            context.Response.Cookies.Append("Access-Token", tokens.AccessToken);
-
-            return Results.Ok(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
-        })
-            .WithTags("Authentication")
-            .WithName("RefreshToken");
-
-        app.MapGet("/protected-test",
-        async (
-            UserManager<IdentityUser> userManager,
-            ClaimsPrincipal user) =>
-        {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
-            var u = await userManager.FindByIdAsync(userId);
-            return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
-        })
-            .RequireAuthorization()
-            .WithTags("Authentication")
-            .WithName("Test401");
-
-
         app.MapPost("/logout", async (
             [FromBody] LogoutRequest request,
             ApplicationDbContext db,
@@ -67,4 +36,4 @@ public class CreateRegistry : ICarterModule
 }
 
 public record class LogoutRequest(string RefreshToken);
-public record JwtRefreshRequest(string RefreshToken);
+

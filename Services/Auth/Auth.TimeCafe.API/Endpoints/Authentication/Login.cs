@@ -18,9 +18,12 @@ public class Login : ICarterModule
             {
                 var luResult = (LoginUserResult)r;
 #if DEBUG
-                context.Response.Cookies.Append("Access-Token", luResult.TokensDto.AccessToken);
+                context.Response.Cookies.Append("Access-Token", luResult.TokensDto?.AccessToken ?? "");
 #endif
-                return Results.Ok(new TokensDto(luResult.TokensDto.AccessToken, luResult.TokensDto.RefreshToken));
+                if (!luResult.EmailConfirmed ?? false)
+                    return Results.Ok(new { emailConfirmed = false });
+                else
+                    return Results.Ok(new TokensDto(luResult.TokensDto?.AccessToken ?? "", luResult.TokensDto?.RefreshToken ?? ""));
             });
 
 
