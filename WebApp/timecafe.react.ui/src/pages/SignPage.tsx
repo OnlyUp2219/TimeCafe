@@ -114,21 +114,22 @@ export const SignPage = () => {
             <Field label="Имя пользователя" required validationState={errors.username ? "error" : undefined}
                    validationMessage={errors.username}>
                 <Input value={username} onChange={(_, d) => setUsername(d.value)}
-                       placeholder="Введите имя пользователя"/>
+                       placeholder="Введите имя пользователя" autoComplete="new-username"/>
             </Field>
             <Field label="Почта" required validationState={errors.email ? "error" : undefined}
                    validationMessage={errors.email}>
-                <Input value={email} onChange={(_, d) => setEmail(d.value)} placeholder="Введите почту"/>
+                <Input autoComplete="new-email" value={email} onChange={(_, d) => setEmail(d.value)}
+                       placeholder="Введите почту"/>
             </Field>
             <Field label="Пароль" required validationState={errors.password ? "error" : undefined}
                    validationMessage={errors.password}>
                 <Input type="password" value={password} onChange={(_, d) => setPassword(d.value)}
-                       placeholder="Введите пароль"/>
+                       placeholder="Введите пароль" autoComplete="new-password"/>
             </Field>
             <Field label="Повторить пароль" required validationState={errors.confirmPassword ? "error" : undefined}
                    validationMessage={errors.confirmPassword}>
                 <Input type="password" value={confirmPassword} onChange={(_, d) => setConfirmPassword(d.value)}
-                       placeholder="Повторите пароль"/>
+                       placeholder="Повторите пароль" autoComplete="new-password"/>
             </Field>
 
             <div className="button-action ">
