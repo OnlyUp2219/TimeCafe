@@ -12,14 +12,23 @@ export const parseErrorMessage = (err: unknown): string => {
         return msg.includes("[object Object]") ? "Неизвестная ошибка" : msg;
     }
 
+
     if (typeof err === "object") {
         console.log("Обработка ошибки типа: Object");
         const errObj = err as Record<string, any>;
-        
+
+        if (errObj.errors && typeof errObj.errors === "object" && !Array.isArray(errObj.errors)) {
+            const title = errObj.errors.code;
+            const message = errObj.errors.description;
+            if (title && message && typeof message === "string") {
+                return errObj.errors;
+            }
+        }
+
         if (errObj.message && typeof errObj.message === "string") {
             return errObj.message;
         }
-        
+
         if (errObj.errors && typeof errObj.errors === "object") {
             const errors = Object.values(errObj.errors)
                 .flatMap(v => Array.isArray(v) ? v : [v])
@@ -27,13 +36,13 @@ export const parseErrorMessage = (err: unknown): string => {
                 .join(", ");
             if (errors) return errors;
         }
-        
+
         const msg = Object.values(errObj)
             .flatMap(v => Array.isArray(v) ? v : [v])
             .map(v => (v as any)?.message ?? String(v))
             .filter(v => v && v !== "[object Object]")
             .join(" ");
-        
+
         return msg || "Неизвестная ошибка";
     }
 

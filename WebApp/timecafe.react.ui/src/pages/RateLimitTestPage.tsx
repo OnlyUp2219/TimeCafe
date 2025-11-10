@@ -2,17 +2,21 @@ import React from 'react';
 import {Button, Input, Field, Subtitle1, Card} from '@fluentui/react-components';
 import {useRateLimitedRequest} from '../hooks/useRateLimitedRequest.ts';
 import {fetchRateLimited, fetchRateLimited2} from '../api/rateLimitApi.ts';
+import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 
 export const RateLimitTestPage: React.FC = () => {
+    const {showToast, ToasterElement} = useProgressToast();
+
     const endpoint1 = useRateLimitedRequest('test-endpoint-1', fetchRateLimited);
     const endpoint2 = useRateLimitedRequest('test-endpoint-2', fetchRateLimited2);
 
     return (
-        <div style={{maxWidth: 900, margin: '0 auto'}}>
+        <div>
+            {ToasterElement}
             <Subtitle1 align="center" style={{marginBottom: 24}}>RateLimit тест</Subtitle1>
 
-            <div style={{display: 'flex', gap: 24}}>
-                <Card style={{flex: 1, padding: 16}}>
+            <div className="flex flex-wrap gap-[24px] ">
+                <Card className="w-full min-w-0 flex-1 basis-[288px] p-3">
                     <Subtitle1>Endpoint 1</Subtitle1>
 
                     <Field label="Результат">
@@ -29,15 +33,20 @@ export const RateLimitTestPage: React.FC = () => {
 
                     <Button
                         appearance="primary"
-                        onClick={endpoint1.sendRequest}
+                        onClick={async () => {
+                            try {
+                                await endpoint1.sendRequest();
+                            } catch (err) {
+                                showToast(err instanceof Error ? err.message : String(err), "error", "Ошибка");
+                            }
+                        }}
                         disabled={endpoint1.isLoading || endpoint1.isBlocked}
-                        style={{marginTop: 16, width: '100%'}}
                     >
                         {endpoint1.isLoading ? 'Загрузка...' : endpoint1.isBlocked ? `Подождите ${endpoint1.countdown} сек` : 'Отправить'}
                     </Button>
                 </Card>
 
-                <Card style={{flex: 1, padding: 16}}>
+                <Card className="w-full min-w-0 flex-1 basis-[288px] p-3">
                     <Subtitle1>Endpoint 2</Subtitle1>
 
                     <Field label="Результат">
@@ -54,9 +63,14 @@ export const RateLimitTestPage: React.FC = () => {
 
                     <Button
                         appearance="primary"
-                        onClick={endpoint2.sendRequest}
+                        onClick={async () => {
+                            try {
+                                await endpoint2.sendRequest();
+                            } catch (err) {
+                                showToast(err instanceof Error ? err.message : String(err), "error", "Ошибка");
+                            }
+                        }}
                         disabled={endpoint2.isLoading || endpoint2.isBlocked}
-                        style={{marginTop: 16, width: '100%'}}
                     >
                         {endpoint2.isLoading ? 'Загрузка...' : endpoint2.isBlocked ? `Подождите ${endpoint2.countdown} сек` : 'Отправить'}
                     </Button>

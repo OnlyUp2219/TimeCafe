@@ -21,7 +21,7 @@ namespace BuildingBlocks.Extensions
             {
                 ETypeError.Unauthorized => Results.Unauthorized(),
                 ETypeError.IdentityError => Results.BadRequest(new { errors = errs }),
-                ETypeError.BadRequest => Results.BadRequest(new { errors = result.Errors }),
+                ETypeError.BadRequest => Results.BadRequest(new { errors = new { code = result.Errors?.FirstOrDefault(), description = result.Message } }),
                 _ => Results.BadRequest(new { message = result.Message })
             };
         }
