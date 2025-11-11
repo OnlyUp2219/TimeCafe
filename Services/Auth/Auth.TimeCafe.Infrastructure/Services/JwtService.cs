@@ -11,6 +11,7 @@ public interface IJwtService
     ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
     Task<AuthResponse?> RefreshTokens(string refreshToken);
     Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default);
+    Task<bool> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
 }
 
 public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
@@ -110,14 +111,24 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
     public async Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var tokens = await context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync(cancellationToken);
+        var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync(cancellationToken);
         if (tokens.Count > 0)
         {
             foreach (var t in tokens)
                 t.IsRevoked = true;
-            await context.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
         }
         return tokens.Count;
+    }
+
+    public async Task<bool> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        var tokenEntity = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken, cancellationToken);
+        if (tokenEntity == null || tokenEntity.IsRevoked)
+            return false;
+        tokenEntity.IsRevoked = true;
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
 }

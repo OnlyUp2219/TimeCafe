@@ -1,5 +1,3 @@
-using BuildingBlocks.Extensions;
-
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
