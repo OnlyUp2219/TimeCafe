@@ -1,6 +1,6 @@
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
-
-namespace Auth.TimeCafe.API.Endpoints;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+public record ConfirmEmailRequest(string UserId, string Token);
+public record ResendConfirmationRequest(string Email);
 
 public class EmailConfirmation : ICarterModule
 {
@@ -16,7 +16,8 @@ public class EmailConfirmation : ICarterModule
                 return Results.BadRequest(new { errors = new { token = result.Error } });
             return Results.Ok(new { message = result.Message });
         })
-        .WithName("ConfirmEmail");
+        .WithName("ConfirmEmail")
+        .WithDescription("Подтверждение почты");
 
         group.MapPost("/resend", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
         {
@@ -28,7 +29,9 @@ public class EmailConfirmation : ICarterModule
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
-        .WithName("ResendConfirmation");
+        .WithName("ResendConfirmation")
+        .WithDescription("Повторная отправка почты");
+
 
         group.MapPost("/resend-mock", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
         {
@@ -40,9 +43,9 @@ public class EmailConfirmation : ICarterModule
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
-        .WithName("ResendConfirmationMock");
+        .WithName("ResendConfirmationMock")
+        .WithDescription("Повторная отправка почты, mock");
     }
 }
 
-public record ConfirmEmailRequest(string UserId, string Token);
-public record ResendConfirmationRequest(string Email);
+

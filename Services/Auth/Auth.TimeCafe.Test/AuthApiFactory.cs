@@ -13,6 +13,8 @@ namespace Auth.TimeCafe.Test;
 
 public class AuthApiFactory : WebApplicationFactory<Program>
 {
+    private readonly string _dbName = $"AuthTestsDb_{Guid.NewGuid()}";
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -23,7 +25,11 @@ public class AuthApiFactory : WebApplicationFactory<Program>
             {
                 ["Kestrel:Endpoints:Https:Certificate:Path"] = string.Empty,
                 ["Kestrel:Endpoints:Https:Certificate:Password"] = string.Empty,
-                ["ConnectionStrings:DefaultConnection"] = string.Empty 
+                ["ConnectionStrings:DefaultConnection"] = string.Empty,
+                // Устанавливаем тестовые значения для Seed, чтобы не падало с исключением
+                ["Seed:Admin:Email"] = "test@admin.com",
+                ["Seed:Admin:Password"] = "TestP@ssw0rd!",
+                ["Seed:Admin:Role"] = "admin"
             };
             cfg.AddInMemoryCollection(overrides);
         });
@@ -38,8 +44,9 @@ public class AuthApiFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextOptionsDescriptor);
             }
 
+            // Используем единую InMemory базу для всей фабрики
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase("AuthTestsDb"));
+                options.UseInMemoryDatabase(_dbName));
         });
     }
 }

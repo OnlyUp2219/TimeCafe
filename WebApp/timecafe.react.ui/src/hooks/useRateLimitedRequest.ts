@@ -12,7 +12,7 @@ export interface RateLimitedResult<T = any> {
     remaining: number;
     isBlocked: boolean;
     isLoading: boolean;
-    sendRequest: () => Promise<void>;
+    sendRequest: () => Promise<T | null>;
 }
 
 export function useRateLimitedRequest<T = any>(
@@ -47,8 +47,8 @@ export function useRateLimitedRequest<T = any>(
         return () => clearInterval(interval);
     }, [blockUntil]);
 
-    const sendRequest = useCallback(async () => {
-        if (isLoading || blockUntil > Date.now()) return;
+    const sendRequest = useCallback(async (): Promise<T | null> => {
+        if (isLoading || blockUntil > Date.now()) return null;
 
         setIsLoading(true);
         try {
@@ -65,17 +65,19 @@ export function useRateLimitedRequest<T = any>(
                 setCountdown(headers.retryAfter);
                 localStorage.setItem(STORAGE_KEY, until.toString());
             }
+            
+            return data;
         } finally {
             setIsLoading(false);
         }
-    }, [isLoading, blockUntil, fetcher]);
+    }, [isLoading, blockUntil, fetcher, STORAGE_KEY]);
 
     useEffect(() => {
         if (blockUntil && Date.now() > blockUntil) {
             localStorage.removeItem(STORAGE_KEY);
             setBlockUntil(0);
         }
-    }, [blockUntil]);
+    }, [blockUntil, STORAGE_KEY]);
 
     return {
         data,

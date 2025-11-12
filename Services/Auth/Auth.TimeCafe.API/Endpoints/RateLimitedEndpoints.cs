@@ -32,5 +32,22 @@ public class RateLimitedEndpoints : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithTags("RateLimit")
         .WithName("TestRateLimit2");
+
+
+        app.MapGet("/protected-test",
+        async (
+        UserManager<IdentityUser> userManager,
+        ClaimsPrincipal user) =>
+        {
+            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null) return Results.Unauthorized();
+            var u = await userManager.FindByIdAsync(userId);
+            return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
+        })
+        .RequireAuthorization()
+        .WithTags("Authentication")
+        .WithName("Test401");
     }
+
+
 }

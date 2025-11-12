@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 public record ResendConfirmationCommand(string Email, bool SendEmail = true) : IRequest<ResendConfirmationResult>;
 
@@ -25,18 +25,13 @@ public class ResendConfirmationCommandHandler(
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+        
         if (request.SendEmail)
         {
-            try
-            {
-                await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
-                return new ResendConfirmationResult(true, Message: "Письмо отправлено");
-            }
-            catch (Exception)
-            {
-                return new ResendConfirmationResult(false, Error: "Ошибка при отправке письма");
-            }
+            await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
+            return new ResendConfirmationResult(true, Message: "Письмо отправлено");
         }
+        
         return new ResendConfirmationResult(true, CallbackUrl: callbackUrl);
     }
 }

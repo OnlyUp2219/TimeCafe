@@ -52,7 +52,6 @@ public static class AuthenticationExtensions
             })
             .AddCookie(IdentityConstants.ExternalScheme);
 
-        // External providers are optional: register only if ClientId is provided (prevents test host aborts)
         var google = configuration.GetSection("Authentication:Google");
         if (!string.IsNullOrWhiteSpace(google["ClientId"]))
         {

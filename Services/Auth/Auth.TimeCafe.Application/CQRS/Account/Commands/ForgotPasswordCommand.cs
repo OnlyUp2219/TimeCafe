@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 public record ForgotPasswordCommand(string Email, bool SendEmail = true) : IRequest<ForgotPasswordResult>;
 
