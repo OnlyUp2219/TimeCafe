@@ -1,7 +1,10 @@
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Infrastructure.Services;
 
 global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Enum;
+global using BuildingBlocks.Extensions;
 
 global using FluentValidation;
 

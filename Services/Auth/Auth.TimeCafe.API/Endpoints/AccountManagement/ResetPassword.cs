@@ -1,7 +1,6 @@
-using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-namespace Auth.TimeCafe.API.Endpoints;
-
+public record class ResetPasswordEmailRequest(string Email);
 public class ResetPassword : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -43,4 +42,3 @@ public class ResetPassword : ICarterModule
         .WithSummary("Отправка ссылки для сброса пароля на email");
     }
 }
-public record class ResetPasswordEmailRequest(string Email);

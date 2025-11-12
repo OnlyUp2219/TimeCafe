@@ -28,7 +28,7 @@ export const PersonalData: FC = () => {
         emailConfirmed: false,
         genderId: 1,
         birthDate: new Date(),
-        phoneNumber: "+7 (999) 123-45-67",
+        phoneNumber: "+375 29 7143237",
         phoneNumberConfirmed: true,
         photo: "https://via.placeholder.com/200",
         accessCardNumber: "123456789",

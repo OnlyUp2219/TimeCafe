@@ -33,7 +33,6 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
 
     private async Task<TokensDto> RegisterAsync(string username, string email, string password)
     {
-        // Direct user creation via DI to avoid rate limiting & email flow
         using var scope = _factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
@@ -52,8 +51,6 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
             existing.EmailConfirmed = true;
             await userManager.UpdateAsync(existing);
         }
-
-        // Login via public endpoint to get tokens (ensures auth pipeline exercised)
         var loginResp = await _client.PostAsJsonAsync("/login-jwt", new LoginDto(email, password));
         loginResp.EnsureSuccessStatusCode();
         var json = await loginResp.Content.ReadAsStringAsync();
@@ -119,7 +116,7 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
         var newTokens = JsonSerializer.Deserialize<TokensDto>(await resp.Content.ReadAsStringAsync(), _jsonOptions)!;
         Assert.False(string.IsNullOrWhiteSpace(newTokens.AccessToken));
         Assert.False(string.IsNullOrWhiteSpace(newTokens.RefreshToken));
-        // Refresh token should rotate
+
         Assert.NotEqual(tokens.RefreshToken, newTokens.RefreshToken);
     }
 
@@ -140,5 +137,111 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
         var refreshResp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, refreshResp.StatusCode);
     }
+
+    [Fact]
+    public async Task Logout_WithoutAuthorization_StillWorks()
+    {
+        var tokens = await RegisterAsync("user_logout_auth", "user_logout_auth@example.com", "P@ssw0rd!");
+
+        var resp = await _client.PostAsJsonAsync("/logout", new LogoutRequest(tokens.RefreshToken));
+        resp.EnsureSuccessStatusCode();
+        
+        var content = await resp.Content.ReadAsStringAsync();
+        Assert.Contains("\"revoked\":true", content);
+    }
+
+    [Fact]
+    public async Task Logout_EmptyRefreshToken_ReturnsBadRequest()
+    {
+        var tokens = await RegisterAsync("user_logout_empty", "user_logout_empty@example.com", "P@ssw0rd!");
+
+        var req = new HttpRequestMessage(HttpMethod.Post, "/logout")
+        {
+            Content = JsonContent.Create(new LogoutRequest(""))
+        };
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        var resp = await _client.SendAsync(req);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task Logout_NonExistentToken_ReturnsOkButNotRevoked()
+    {
+        var tokens = await RegisterAsync("user_logout_fake", "user_logout_fake@example.com", "P@ssw0rd!");
+
+        var req = new HttpRequestMessage(HttpMethod.Post, "/logout")
+        {
+            Content = JsonContent.Create(new LogoutRequest("fake-token"))
+        };
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        var resp = await _client.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+
+        var json = await resp.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<LogoutResponse>(json, _jsonOptions);
+        Assert.NotNull(result);
+        Assert.False(result.Revoked);
+    }
+
+    [Fact]
+    public async Task RefreshToken_RotatesToken()
+    {
+        var tokens = await RegisterAsync("user_refresh_rotate", "user_refresh_rotate@example.com", "P@ssw0rd!");
+
+        var resp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
+        resp.EnsureSuccessStatusCode();
+
+        var newTokens = JsonSerializer.Deserialize<TokensDto>(await resp.Content.ReadAsStringAsync(), _jsonOptions)!;
+        Assert.NotEqual(tokens.RefreshToken, newTokens.RefreshToken);
+        Assert.NotEqual(tokens.AccessToken, newTokens.AccessToken);
+    }
+
+    [Fact]
+    public async Task RefreshToken_OldTokenBecomesInvalid()
+    {
+        var tokens = await RegisterAsync("user_refresh_old", "user_refresh_old@example.com", "P@ssw0rd!");
+
+        var refreshResp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
+        refreshResp.EnsureSuccessStatusCode();
+
+        var oldRefreshResp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(tokens.RefreshToken));
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, oldRefreshResp.StatusCode);
+    }
+
+    [Fact]
+    public async Task RefreshToken_EmptyToken_ReturnsUnauthorized()
+    {
+        var resp = await _client.PostAsJsonAsync("/refresh-token-jwt", new RefreshRequest(""));
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProtectedTest_WithValidToken_ReturnsUserInfo()
+    {
+        var tokens = await RegisterAsync("user_protected", "user_protected@example.com", "P@ssw0rd!");
+
+        var req = new HttpRequestMessage(HttpMethod.Get, "/protected-test");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
+
+        var resp = await _client.SendAsync(req);
+        resp.EnsureSuccessStatusCode();
+
+        var content = await resp.Content.ReadAsStringAsync();
+        Assert.Contains("user_protected@example.com", content);
+    }
+
+    [Fact]
+    public async Task ProtectedTest_WithExpiredToken_ReturnsUnauthorized()
+    {
+        var req = new HttpRequestMessage(HttpMethod.Get, "/protected-test");
+        req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "expired.token.here");
+
+        var resp = await _client.SendAsync(req);
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    record LogoutResponse(string Message, bool Revoked);
 }
 
