@@ -1,9 +1,34 @@
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record class RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResult>;
-public record class RefreshTokenResult(bool Success, string? Message = null, List<string>? Errors = null, ETypeError? TypeError = null, string? AccessToken = null, string? RefreshToken = null) : ICqrsResult;
 
-public class RefreshTokenCommandhandler(IJwtService jwtService) : IRequestHandler<RefreshTokenCommand, RefreshTokenResult>
+public record class RefreshTokenResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    string? AccessToken = null,
+    string? RefreshToken = null) : ICqrsResultV2
+{
+    public static RefreshTokenResult TokenInvalid() =>
+        new(false, Code: "Unauthorized", Message: "Токен истек или невалиден", StatusCode: 401);
+
+    public static RefreshTokenResult TokenOk(string accessToken, string refreshToken) =>
+        new(true, Message: "Токен обновлён",
+            AccessToken: accessToken, RefreshToken: refreshToken);
+}
+
+public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
+{
+    public RefreshTokenCommandValidator()
+    {
+        RuleFor(x => x.RefreshToken)
+            .NotEmpty().WithMessage("RefreshToken обязателен");
+    }
+}
+
+public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandler<RefreshTokenCommand, RefreshTokenResult>
 {
     private readonly IJwtService _jwtService = jwtService;
 
@@ -11,16 +36,9 @@ public class RefreshTokenCommandhandler(IJwtService jwtService) : IRequestHandle
     {
         var tokens = await _jwtService.RefreshTokens(request.RefreshToken);
         if (tokens == null)
-            return new RefreshTokenResult(
-                false,
-                Message: "Токен истек или невалиден",
-                TypeError: ETypeError.Unauthorized);
+            return RefreshTokenResult.TokenInvalid();
 
 
-        return new RefreshTokenResult(
-            true,
-            Message: "Токен обновлён",
-            AccessToken: tokens.AccessToken,
-            RefreshToken: tokens.RefreshToken);
+        return RefreshTokenResult.TokenOk(tokens.AccessToken, tokens.RefreshToken);
     }
 }

@@ -1,5 +1,3 @@
-using BuildingBlocks.Extensions;
-
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
 public record JwtRefreshRequest(string RefreshToken);
@@ -16,16 +14,11 @@ public class RefreshToken : ICarterModule
             var command = new RefreshTokenCommand(request.RefreshToken);
             var result = await sender.Send(command);
 
-            return result.ToHttpResult(onSuccess: r =>
-            {
-                var rtResult = (RefreshTokenResult)r;
-                context.Response.Cookies.Append("Access-Token", rtResult.AccessToken!);
 
-                return Results.Ok(new
-                {
-                    accessToken = rtResult.AccessToken,
-                    refreshToken = rtResult.RefreshToken
-                });
+            return result.ToHttpResultV2(r =>
+            {
+                context.Response.Cookies.Append("Access-Token", r.AccessToken!);
+                return Results.Ok(new { accessToken = r.AccessToken, refreshToken = r.RefreshToken });
             });
         })
         .WithTags("Authentication")
