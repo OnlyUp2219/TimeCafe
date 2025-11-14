@@ -10,9 +10,11 @@ public class Registration : ICarterModule
         {
             var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
             var result = await sender.Send(command);
-            if (!result.Success)
-                return Results.BadRequest(new { errors = result.Errors });
-            return Results.Ok(new { message = result.Message });
+            
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { message = result.Message });
+            });
         })
             .WithTags("Authentication")
             .WithName("Register")
@@ -24,9 +26,11 @@ public class Registration : ICarterModule
         {
             var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
             var result = await sender.Send(command);
-            if (!result.Success)
-                return Results.BadRequest(new { errors = result.Errors });
-            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { message = result.Message, callbackUrl = result.CallbackUrl });
+            });
         })
             .WithTags("Authentication")
             .WithName("RegisterMock")
