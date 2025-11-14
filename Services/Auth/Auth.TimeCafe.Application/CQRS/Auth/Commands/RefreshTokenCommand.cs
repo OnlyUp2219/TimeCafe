@@ -1,3 +1,5 @@
+using Auth.TimeCafe.Application.CQRS.Account.Commands;
+
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record class RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResult>;
@@ -11,8 +13,8 @@ public record class RefreshTokenResult(
     string? AccessToken = null,
     string? RefreshToken = null) : ICqrsResultV2
 {
-    public static RefreshTokenResult TokenInvalid() =>
-        new(false, Code: "Unauthorized", Message: "Токен истек или невалиден", StatusCode: 401);
+    public static RefreshTokenResult InvalidToken() =>
+        new(false, Code: "InvalidToken", Message: "Токен недействителен или уже использован", StatusCode: 400);
 
     public static RefreshTokenResult TokenOk(string accessToken, string refreshToken) =>
         new(true, Message: "Токен обновлён",
@@ -27,7 +29,7 @@ public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandle
     {
         var tokens = await _jwtService.RefreshTokens(request.RefreshToken);
         if (tokens == null)
-            return RefreshTokenResult.TokenInvalid();
+            return RefreshTokenResult.InvalidToken();
 
 
         return RefreshTokenResult.TokenOk(tokens.AccessToken, tokens.RefreshToken);
