@@ -1,3 +1,4 @@
+global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Infrastructure.Services;

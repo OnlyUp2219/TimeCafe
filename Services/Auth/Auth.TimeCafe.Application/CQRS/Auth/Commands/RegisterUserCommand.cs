@@ -10,12 +10,26 @@ public record RegisterUserResult(
     List<ErrorItem>? Errors = null,
     string? CallbackUrl = null) : ICqrsResultV2
 {
-    public static RegisterUserResult Error(List<ErrorItem>? errorItems) => 
+    public static RegisterUserResult Error(List<ErrorItem>? errorItems) =>
         new(false, Code: "RegistrationError", Message: "Ошибка при регистрации", StatusCode: 400,
             Errors: errorItems);
-    public static RegisterUserResult SuccessResult(string callbackUrl) => 
+    public static RegisterUserResult SuccessResult(string callbackUrl) =>
         new(true, Message: "Пользователь создан и письмо отправлено", CallbackUrl: callbackUrl);
+}
 
+public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
+{
+    public RegisterUserCommandValidator()
+    {
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("Логин обязателен");
+
+        RuleFor(x => x.Email)
+            .EmailAddress().NotEmpty().WithMessage("Email обязателен");
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Пароль обязателен");
+    }
 }
 
 public class RegisterUserCommandHandler(
@@ -29,16 +43,18 @@ public class RegisterUserCommandHandler(
 
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var user = new IdentityUser { 
-            UserName = request.Username, 
-            Email = request.Email, 
-            EmailConfirmed = false };
+        var user = new IdentityUser
+        {
+            UserName = request.Username,
+            Email = request.Email,
+            EmailConfirmed = false
+        };
 
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
-            List<ErrorItem> errorsList = [.. createResult.Errors.Select(e => new ErrorItem( e.Code, e.Description))];
-            return RegisterUserResult.Error(errorsList);
+            List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
+            return RegisterUserResult.Error(errs);
         }
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
