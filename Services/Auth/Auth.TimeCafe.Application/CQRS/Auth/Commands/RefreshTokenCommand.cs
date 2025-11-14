@@ -19,15 +19,6 @@ public record class RefreshTokenResult(
             AccessToken: accessToken, RefreshToken: refreshToken);
 }
 
-public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
-{
-    public RefreshTokenCommandValidator()
-    {
-        RuleFor(x => x.RefreshToken)
-            .NotEmpty().WithMessage("RefreshToken обязателен");
-    }
-}
-
 public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandler<RefreshTokenCommand, RefreshTokenResult>
 {
     private readonly IJwtService _jwtService = jwtService;
