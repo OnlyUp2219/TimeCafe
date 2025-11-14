@@ -1,6 +1,5 @@
 using Auth.TimeCafe.Application.DTO;
 
-
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record LoginUserCommand(string Email, string Password) : IRequest<LoginUserResult>;

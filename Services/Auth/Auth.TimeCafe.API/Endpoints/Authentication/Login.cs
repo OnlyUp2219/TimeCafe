@@ -1,5 +1,3 @@
-using BuildingBlocks.Extensions;
-
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
 public class Login : ICarterModule
