@@ -13,10 +13,9 @@ public class Logout : ICarterModule
             var command = new LogoutCommand(request.RefreshToken);
             var result = await sender.Send(command);
 
-            return result.ToHttpResult(
+            return result.ToHttpResultV2(
                 onSuccess: r => {
-                    var lResult = (LogoutResult)r;
-                    return Results.Ok(new { message = lResult.Message, revoked = lResult.Revoked });
+                    return Results.Ok(new { message = r.Message, revoked = r.Revoked });
                 });
         })
             .WithTags("Authentication")
