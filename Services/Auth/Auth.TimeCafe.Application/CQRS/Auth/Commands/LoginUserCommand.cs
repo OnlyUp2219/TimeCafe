@@ -1,13 +1,43 @@
-
 using Auth.TimeCafe.Application.DTO;
 
-using BuildingBlocks.Enum;
-using BuildingBlocks.Extensions;
 
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record LoginUserCommand(string Email, string Password) : IRequest<LoginUserResult>;
-public record LoginUserResult(bool Success, string? Message = null, List<string>? Errors = null, ETypeError? TypeError = null, bool? EmailConfirmed = null, TokensDto? TokensDto = null) : ICqrsResult;
+public record LoginUserResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    bool EmailConfirmed = false,
+    TokensDto? TokensDto = null) : ICqrsResultV2
+{
+    public static LoginUserResult InvalidCredentials() =>
+        new(false, Code: "InvalidCredentials", Message: "Неверный email или пароль", StatusCode: 400);
+
+    public static LoginUserResult EmailNotConfirmed() =>
+       new(Success: true,
+           EmailConfirmed: false);
+
+    public static LoginUserResult LoginSuccess(TokensDto tokensDto) =>
+        new(true, Message: "Успешный вход",
+            TokensDto: tokensDto, EmailConfirmed: true);
+}
+
+public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
+{
+    public LoginUserCommandValidator()
+    {
+        RuleFor(x => x.Email)
+            .EmailAddress().NotEmpty().WithMessage("Email обязателен");
+
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Пароль обязателен");
+    }
+}
+
 
 public class LoginUserCommandHandler(UserManager<IdentityUser> userManager, IJwtService jwtService) : IRequestHandler<LoginUserCommand, LoginUserResult>
 {
@@ -18,24 +48,13 @@ public class LoginUserCommandHandler(UserManager<IdentityUser> userManager, IJwt
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
-            return new LoginUserResult(
-                Success: false, 
-                Message: "Неверный email или пароль", 
-                Errors: ["InvalidCredentials"], 
-                TypeError: ETypeError.BadRequest);
+            return LoginUserResult.InvalidCredentials();
 
         if (!user.EmailConfirmed)
-            return new LoginUserResult(
-                Success: true, 
-                EmailConfirmed: false);
+            return LoginUserResult.EmailNotConfirmed();
 
         var tokens = await _jwtService.GenerateTokens(user);
-       
-        return new LoginUserResult(
-            Success: true,
-            Message: "Успешный вход",
-            TokensDto: new TokensDto(tokens.AccessToken, tokens.RefreshToken),
-            EmailConfirmed: true
-        );
+
+        return LoginUserResult.LoginSuccess(new TokensDto(tokens.AccessToken, tokens.RefreshToken));
     }
 }

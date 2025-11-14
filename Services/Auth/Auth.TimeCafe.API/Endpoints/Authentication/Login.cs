@@ -14,16 +14,17 @@ public class Login : ICarterModule
             var command = new LoginUserCommand(dto.Email, dto.Password);
             var result = await sender.Send(command);
 
-            return result.ToHttpResult(onSuccess: r =>
+            return result.ToHttpResultV2(onSuccess: r =>
             {
-                var luResult = (LoginUserResult)r;
-#if DEBUG
-                context.Response.Cookies.Append("Access-Token", luResult.TokensDto?.AccessToken ?? "");
-#endif
-                if (!luResult.EmailConfirmed ?? false)
-                    return Results.Ok(new { emailConfirmed = false });
+                if (!r.EmailConfirmed)
+                    return Results.Ok(new { emailConfirmed = r.EmailConfirmed });
                 else
-                    return Results.Ok(new TokensDto(luResult.TokensDto?.AccessToken ?? "", luResult.TokensDto?.RefreshToken ?? ""));
+                {
+                    context.Response.Cookies.Append("Access-Token", r.TokensDto!.AccessToken);
+                    return Results.Ok( new { accessToken = r.TokensDto!.AccessToken, refreshToken = r.TokensDto!.RefreshToken, emailConfirmed = r.EmailConfirmed });
+
+                }
+
             });
 
 
