@@ -9,4 +9,4 @@ public interface ICqrsResultV2
     List<ErrorItem>? Errors { get; }
 }
 
-public record ErrorItem(string Code, string Message);
+public record ErrorItem(string Code, string Description);

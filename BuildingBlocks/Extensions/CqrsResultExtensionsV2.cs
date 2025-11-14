@@ -13,7 +13,7 @@ public static class CqrsResultExtensionsV2
             code = result.Code ?? "Error",
             message = result.Message ?? "Произошла ошибка при обработке запроса",
             statusCode = status,
-            errors = result.Errors?.Select(e => new { code = e.Code, message = e.Message })
+            errors = result.Errors?.Select(e => new { code = e.Code, message = e.Description })
         };
         return Results.Json(payload, statusCode: status);
     }
