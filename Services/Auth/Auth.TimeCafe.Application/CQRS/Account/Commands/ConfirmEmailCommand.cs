@@ -2,7 +2,37 @@ namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 public record ConfirmEmailCommand(string UserId, string Token) : IRequest<ConfirmEmailResult>;
 
-public record ConfirmEmailResult(bool Success, string? Message = null, string? Error = null);
+public record ConfirmEmailResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null) : ICqrsResultV2
+{
+    public static ConfirmEmailResult UserNoFound() =>
+        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
+
+    public static ConfirmEmailResult EmailAlreadyConfirmed() =>
+        new(true, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
+
+    public static ConfirmEmailResult InvalidTokenFormat() =>
+        new(false, Code: "InvalidToken", Message: "Неверный формат токена", StatusCode: 400);
+
+    public static ConfirmEmailResult InvalidToken() =>
+        new(false, Code: "InvalidToken", Message: "Токен недействителен или уже использован", StatusCode: 400);
+
+    public static ConfirmEmailResult ConfirmEmailSuccess() =>
+       new(true, Message: "Email подтвержден");
+}
+
+public class ConfirmEmailCommandValidator : AbstractValidator<ConfirmEmailCommand>
+{
+    public ConfirmEmailCommandValidator()
+    {
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Пользователь не найден");
+    }
+}
 
 public class ConfirmEmailCommandHandler(
     UserManager<IdentityUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
@@ -13,9 +43,10 @@ public class ConfirmEmailCommandHandler(
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
-            return new ConfirmEmailResult(false, Error: "Пользователь не найден");
+            return ConfirmEmailResult.UserNoFound();
         if (user.EmailConfirmed)
-            return new ConfirmEmailResult(true, Message: "Email уже подтвержден");
+            return ConfirmEmailResult.EmailAlreadyConfirmed();
+
         string decodedToken;
         try
         {
@@ -23,13 +54,13 @@ public class ConfirmEmailCommandHandler(
         }
         catch
         {
-            return new ConfirmEmailResult(false, Error: "Неверный токен");
+            return ConfirmEmailResult.InvalidTokenFormat();
         }
         var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
         if (!result.Succeeded)
         {
-            return new ConfirmEmailResult(false, Error: "Неверный или истекший токен");
+            return ConfirmEmailResult.InvalidToken();
         }
-        return new ConfirmEmailResult(true, Message: "Email подтвержден");
+        return ConfirmEmailResult.ConfirmEmailSuccess();
     }
 }
