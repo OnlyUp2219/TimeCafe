@@ -25,7 +25,8 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .NotEmpty().WithMessage("Логин обязателен");
 
         RuleFor(x => x.Email)
-            .EmailAddress().NotEmpty().WithMessage("Email обязателен");
+            .NotEmpty().WithMessage("Email обязателен")
+            .EmailAddress().WithMessage("Некорректный формат email");
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Пароль обязателен");
