@@ -14,10 +14,10 @@ public class ResetPassword : ICarterModule
             var command = new ForgotPasswordCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
 
-            if (!result.Success)
-                return Results.BadRequest(new { errors = new { email = result.Error } });
-
-            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { callbackUrl = r.CallbackUrl });
+            });
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
@@ -31,10 +31,10 @@ public class ResetPassword : ICarterModule
             var command = new ForgotPasswordCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
 
-            if (!result.Success)
-                return Results.BadRequest(new { errors = new { email = result.Error } });
-
-            return Results.Ok(new { message = result.Message });
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { message = r.Message });
+            });
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
