@@ -1,4 +1,5 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+
 public record ResendConfirmationRequest(string Email);
 
 public class EmailResend : ICarterModule
@@ -11,9 +12,11 @@ public class EmailResend : ICarterModule
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
-            if (!result.Success)
-                return Results.BadRequest(new { errors = new { email = result.Error } });
-            return Results.Ok(new { message = result.Message });
+
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { message = r.Message });
+            });
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
@@ -25,9 +28,11 @@ public class EmailResend : ICarterModule
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
-            if (!result.Success)
-                return Results.BadRequest(new { errors = new { email = result.Error } });
-            return Results.Ok(new { callbackUrl = result.CallbackUrl });
+
+            return result.ToHttpResultV2(onSuccess: r =>
+            {
+                return Results.Ok(new { callbackUrl = result.CallbackUrl });
+            });
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
