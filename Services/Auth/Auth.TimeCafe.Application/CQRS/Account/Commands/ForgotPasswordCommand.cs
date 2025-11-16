@@ -19,9 +19,6 @@ public record ForgotPasswordResult(
     public static ForgotPasswordResult EmailSendFailed() =>
         new(false, Code: "EmailSendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
 
-    public static ForgotPasswordResult ConfigError(string field) =>
-        new(false, Code: "ConfigError", Message: $"{field} is not configured", StatusCode: 500);
-
     public static ForgotPasswordResult MockCallback(string callbackUrl) =>
         new(true, Message: "CallbackUrl сгенерирован", CallbackUrl: callbackUrl);
 }

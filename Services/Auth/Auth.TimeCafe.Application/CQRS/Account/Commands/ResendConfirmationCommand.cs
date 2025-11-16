@@ -15,14 +15,14 @@ public record ResendConfirmationResult(bool Success,
     public static ResendConfirmationResult EmailAlreadyConfirmed() =>
         new(true, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
 
-    public static ResendConfirmationResult EmailSent() =>
+    public static ResendConfirmationResult Sent() =>
     new(true, Message: "Ссылка для сброса пароля отправлена");
 
     public static ResendConfirmationResult MockCallback(string callbackUrl) =>
     new(true, Message: "CallbackUrl сгенерирован", CallbackUrl: callbackUrl);
 
-    public static ResendConfirmationResult EmailSendFailed() =>
-        new(false, Code: "EmailSendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
+    public static ResendConfirmationResult SendFailed() =>
+        new(false, Code: "SendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
 }
 
 public class ResendConfirmationCommandValidator : AbstractValidator<ResendConfirmationCommand>
@@ -65,12 +65,12 @@ public class ResendConfirmationCommandHandler(
             try
             {
                 await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
-                return ResendConfirmationResult.EmailSent();
+                return ResendConfirmationResult.Sent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
-                return ResendConfirmationResult.EmailSendFailed();
+                return ResendConfirmationResult.SendFailed();
             }
         }
         

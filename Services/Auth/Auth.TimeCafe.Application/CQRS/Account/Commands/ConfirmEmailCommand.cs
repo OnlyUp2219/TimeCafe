@@ -9,7 +9,7 @@ public record ConfirmEmailResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
-    public static ConfirmEmailResult UserNoFound() =>
+    public static ConfirmEmailResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
 
     public static ConfirmEmailResult EmailAlreadyConfirmed() =>
@@ -43,7 +43,7 @@ public class ConfirmEmailCommandHandler(
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
-            return ConfirmEmailResult.UserNoFound();
+            return ConfirmEmailResult.UserNotFound();
         if (user.EmailConfirmed)
             return ConfirmEmailResult.EmailAlreadyConfirmed();
 
