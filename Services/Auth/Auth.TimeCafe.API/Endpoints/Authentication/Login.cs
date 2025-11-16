@@ -20,7 +20,6 @@ public class Login : ICarterModule
                 {
                     context.Response.Cookies.Append("Access-Token", r.TokensDto!.AccessToken);
                     return Results.Ok( new { accessToken = r.TokensDto!.AccessToken, refreshToken = r.TokensDto!.RefreshToken, emailConfirmed = r.EmailConfirmed });
-
                 }
 
             });
