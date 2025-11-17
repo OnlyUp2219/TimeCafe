@@ -1,16 +1,9 @@
-
 namespace BuildingBlocks.Middleware;
 
-public class ExceptionHandlingMiddleware
+public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
 
     public async Task InvokeAsync(HttpContext context)
     {
@@ -32,42 +25,40 @@ public class ExceptionHandlingMiddleware
     {
         _logger.LogWarning("Validation error: {Errors}", string.Join(", ", exception.Errors.Select(e => e.ErrorMessage)));
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-
+        const string code = "ValidationError";
+        var status = (int)HttpStatusCode.UnprocessableEntity;
         var errors = exception.Errors
-            .GroupBy(e => e.PropertyName)
-            .ToDictionary(
-                g => g.Key,
-                g => g.Select(e => e.ErrorMessage).ToArray()
-            );
+            .Select(e => new { code = "Validation", message = e.ErrorMessage })
+            .ToArray();
 
-        var problemDetails = new
+        var payload = new
         {
-            type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
-            title = "One or more validation errors occurred.",
-            status = 400,
+            code,
+            message = "Один или несколько ошибок валидации.",
+            status,
             errors
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = status;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
     }
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         _logger.LogError(exception, "Unhandled exception occurred");
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-        var problemDetails = new
+        const string code = "InternalServerError";
+        var status = (int)HttpStatusCode.InternalServerError;
+        var payload = new
         {
-            type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-            title = "An error occurred while processing your request.",
-            status = 500,
-            detail = exception.Message
+            code,
+            message = "Внутренняя ошибка сервера.",
+            status
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(problemDetails));
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = status;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
     }
 }

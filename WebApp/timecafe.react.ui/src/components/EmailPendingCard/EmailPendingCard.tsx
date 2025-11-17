@@ -1,5 +1,6 @@
 import {Card, Subtitle1, Field, Input, Button, MessageBar} from '@fluentui/react-components';
 import {useState} from 'react';
+import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
 import {useSelector} from 'react-redux';
 import type {RootState} from '../../store';
 import {resendConfirmation} from '../../api/auth';
@@ -16,9 +17,13 @@ interface EmailPendingCardProps {
 export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps) {
     const {showToast, ToasterElement} = useProgressToast();
     const email = useSelector((s: RootState) => s.auth.email);
-    const [errors, setErrors] = useState<{ password?: string; resend?: string }>({});
     const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === 'true';
     const [internalMockLink, setInternalMockLink] = useState<string | undefined>(mockLink);
+
+
+    const [successSent, setSuccessSent] = useState(false);
+
+    const [errors, setErrors] = useState<{ resend?: string; general?: string }>({});
 
     const resend = useRateLimitedRequest(`email_resend_${email}`, async () => {
         const r = await resendConfirmation(email);
@@ -27,35 +32,75 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
 
     const handleResend = async () => {
         setErrors({});
+        setSuccessSent(false);
         try {
             const d = await resend.sendRequest();
             if (d?.callbackUrl && USE_MOCK_EMAIL) setInternalMockLink(d.callbackUrl);
-            else showToast(d?.message || 'Письмо отправлено', 'success', 'OK');
+            showToast(d?.message || 'Письмо отправлено', 'success', 'OK');
+            setSuccessSent(true);
         } catch (e: any) {
-            if (e?.errors?.email) setErrors({resend: e.errors.email});
-            else showToast('Ошибка повторной отправки', 'error', 'Ошибка');
+            if (e?.errors?.email) {
+                setErrors({resend: e.errors.email});
+            } else {
+                setErrors({general: 'Ошибка повторной отправки'});
+            }
         }
     };
 
+    const buttonLabel = resend.isBlocked
+        ? `Подождите ${resend.countdown} сек`
+        : resend.isLoading
+            ? 'Отправка...'
+            : 'Отправить';
+
+    const showAttemptsHint = resend.remaining > 0 && !resend.isBlocked;
+
     return (
-        <Card className="auth_card">
+        <Card className="auth_card email-pending_card">
             {ToasterElement}
-            <MockCallbackLink url={internalMockLink}/>
-            <Subtitle1 align="center">Подтвердите email</Subtitle1>
-            <Field label="Почта"
-                   hint={resend.remaining > 0 && !resend.isBlocked ? `Осталось попыток: ${resend.remaining}` : undefined}>
+            <div className="email-pending_card__header" aria-live="polite">
+                <div className="email-pending_card__icon">
+                    {successSent ? <MailCheckmark24Regular/> : <Mail24Regular/>}
+                </div>
+                <Subtitle1 align="center" className="font-semibold">Подтвердите email</Subtitle1>
+                <p className="email-pending_card__text">
+                    Мы отправили письмо на <span className="font-medium">{email}</span>.<br/>
+                    Откройте его и перейдите по ссылке для завершения регистрации.
+                    <br/>Если письмо долго не приходит — проверьте Спам или нажмите повторно.
+                </p>
+            </div>
+
+            <Field label="Почта" hint={showAttemptsHint ? `Осталось попыток: ${resend.remaining}` : undefined}
+                   validationState={errors.resend ? 'error' : undefined}
+                   validationMessage={errors.resend}
+            >
                 <Input value={email} readOnly/>
             </Field>
 
-            {errors.resend && <MessageBar intent="error">{errors.resend}</MessageBar>}
+            {internalMockLink && USE_MOCK_EMAIL && (
+                <div className="email-pending_card__mocklink">
+                    <MockCallbackLink url={internalMockLink}/>
+                </div>
+            )}
+
+            {errors.general && (
+                <MessageBar intent="error">
+                    {errors.general}
+                </MessageBar>
+            )}
 
             <div className="button-action">
-                {onGoToLogin && <Button as="a" appearance="outline" onClick={onGoToLogin}>Перейти к входу</Button>}
-                <Button appearance="primary" disabled={resend.isLoading || resend.isBlocked}
-                        onClick={handleResend}>
-                    {resend.isBlocked ? `Подождите ${resend.countdown} сек` : resend.isLoading ? 'Отправка...' : 'Отправить'}
+                {onGoToLogin && (
+                    <Button as="a" appearance="outline" onClick={onGoToLogin} icon={<Person24Regular/>}>
+                        Перейти к входу
+                    </Button>
+                )}
+                <Button appearance="primary"
+                        disabled={resend.isLoading || resend.isBlocked}
+                        onClick={handleResend}
+                >
+                    {buttonLabel}
                 </Button>
-
             </div>
         </Card>
     );

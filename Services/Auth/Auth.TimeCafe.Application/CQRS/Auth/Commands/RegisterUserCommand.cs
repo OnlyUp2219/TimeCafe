@@ -2,7 +2,36 @@ namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record RegisterUserCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<RegisterUserResult>;
 
-public record RegisterUserResult(bool Success, string? CallbackUrl = null, string? Message = null, IEnumerable<object>? Errors = null);
+public record RegisterUserResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    string? CallbackUrl = null) : ICqrsResultV2
+{
+    public static RegisterUserResult Error(List<ErrorItem>? errorItems) =>
+        new(false, Code: "RegistrationError", Message: "Ошибка при регистрации", StatusCode: 400,
+            Errors: errorItems);
+    public static RegisterUserResult SuccessResult(string callbackUrl) =>
+        new(true, Message: "Пользователь создан и письмо отправлено", CallbackUrl: callbackUrl);
+}
+
+public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
+{
+    public RegisterUserCommandValidator()
+    {
+        RuleFor(x => x.Username)
+            .NotEmpty().WithMessage("Логин обязателен");
+
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email обязателен")
+            .EmailAddress().WithMessage("Некорректный формат email");
+
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Пароль обязателен");
+    }
+}
 
 public class RegisterUserCommandHandler(
     UserManager<IdentityUser> userManager,
@@ -15,29 +44,29 @@ public class RegisterUserCommandHandler(
 
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var user = new IdentityUser { UserName = request.Username, Email = request.Email, EmailConfirmed = false };
+        var user = new IdentityUser
+        {
+            UserName = request.Username,
+            Email = request.Email,
+            EmailConfirmed = false
+        };
+
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
-            return new RegisterUserResult(false, Errors: createResult.Errors.Select(e => new { code = e.Code, description = e.Description }).ToList());
+            List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
+            return RegisterUserResult.Error(errs);
         }
-        if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
-            return new RegisterUserResult(false, Errors: new[] { new { code = "Configuration", description = "FrontendBaseUrl is not configured" } });
+
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+
         if (request.SendEmail)
         {
-            try
-            {
-                await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
-                return new RegisterUserResult(true, Message: "Письмо отправлено");
-            }
-            catch (Exception)
-            {
-                return new RegisterUserResult(false, Errors: new[] { new { code = "EmailSendFailed", description = "Ошибка при отправке письма" } });
-            }
+            await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
         }
-        return new RegisterUserResult(true, CallbackUrl: callbackUrl);
+
+        return RegisterUserResult.SuccessResult(callbackUrl);
     }
 }

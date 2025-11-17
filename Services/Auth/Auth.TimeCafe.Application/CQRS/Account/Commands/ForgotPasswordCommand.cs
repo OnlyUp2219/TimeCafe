@@ -1,8 +1,37 @@
-namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 public record ForgotPasswordCommand(string Email, bool SendEmail = true) : IRequest<ForgotPasswordResult>;
 
-public record ForgotPasswordResult(bool Success, string? CallbackUrl = null, string? Message = null, string? Error = null);
+public record ForgotPasswordResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    string? CallbackUrl = null) : ICqrsResultV2
+{
+    public static ForgotPasswordResult SuccessSilent() =>
+       new(true, Message: "Если пользователь существует, письмо отправлено");
+
+    public static ForgotPasswordResult Sent() =>
+        new(true, Message: "Ссылка для сброса пароля отправлена");
+
+    public static ForgotPasswordResult SendFailed() =>
+        new(false, Code: "EmailSendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
+
+    public static ForgotPasswordResult MockCallback(string callbackUrl) =>
+        new(true, Message: "CallbackUrl сгенерирован", CallbackUrl: callbackUrl);
+}
+
+public class ForgotPasswordCommandValidator : AbstractValidator<ForgotPasswordCommand>
+{
+    public ForgotPasswordCommandValidator()
+    {
+        RuleFor(x => x.Email)
+            .NotEmpty().WithMessage("Email обязателен")
+            .EmailAddress().WithMessage("Некорректный формат email");
+    }
+}
 
 public class ForgotPasswordCommandHandler(
     UserManager<IdentityUser> userManager,
@@ -17,22 +46,12 @@ public class ForgotPasswordCommandHandler(
 
     public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(request.Email))
-            return new ForgotPasswordResult(false, Error: "Email is required");
-
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return new ForgotPasswordResult(true, Message: "Если пользователь существует, письмо отправлено");
+            return ForgotPasswordResult.SuccessSilent();
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-
-        if (string.IsNullOrWhiteSpace(_postmarkOptions.FrontendBaseUrl))
-        {
-            _logger.LogError("FrontendBaseUrl не настроен в конфигурации Postmark");
-            return new ForgotPasswordResult(false, Error: "FrontendBaseUrl is not configured");
-        }
-
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
 
         if (request.SendEmail)
@@ -40,15 +59,15 @@ public class ForgotPasswordCommandHandler(
             try
             {
                 await _emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
-                return new ForgotPasswordResult(true, Message: "Ссылка для сброса пароля отправлена");
+                return ForgotPasswordResult.Sent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
-                return new ForgotPasswordResult(false, Error: "Ошибка при отправке письма");
+                return ForgotPasswordResult.SendFailed();
             }
         }
 
-        return new ForgotPasswordResult(true, CallbackUrl: callbackUrl);
+        return ForgotPasswordResult.MockCallback(callbackUrl);
     }
 }

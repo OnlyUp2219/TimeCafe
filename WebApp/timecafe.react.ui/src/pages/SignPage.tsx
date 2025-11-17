@@ -6,8 +6,10 @@ import {
     Card,
     MessageBar,
     MessageBarBody,
-    MessageBarTitle
+    MessageBarTitle,
+    InfoLabel
 } from '@fluentui/react-components';
+import type {LabelProps} from '@fluentui/react-components';
 import {useNavigate} from "react-router-dom";
 import {faker} from '@faker-js/faker';
 import {validateConfirmPassword, validateEmail, validatePassword, validateUsername} from "../utility/validate.ts";
@@ -36,17 +38,20 @@ export const SignPage = () => {
     const [mockLink, setMockLink] = useState<string | undefined>(undefined);
 
 
-    // useEffect(() => {
-    //     setUsername(faker.internet.username());
-    //     setEmail(faker.internet.email());
-    //     const pwd =
-    //         faker.string.alpha({length: 1, casing: "upper"}) +
-    //         faker.string.alphanumeric({length: 4}) +
-    //         faker.string.numeric({length: 1});
-    //
-    //     setPassword(pwd);
-    //     setConfirmPassword(pwd);
-    // }, []);
+    useEffect(() => {
+        const USE_FAKE_FILL = import.meta.env.VITE_FAKE_SIGN_AUTO_FILL === 'true';
+        if (!USE_FAKE_FILL) return;
+        const uname = faker.internet.username();
+        const mail = faker.internet.email();
+        const pwd =
+            faker.string.alpha({length: 1, casing: "upper"}) +
+            faker.string.alphanumeric({length: 4}) +
+            faker.string.numeric({length: 1});
+        setUsername(uname);
+        setEmail(mail);
+        setPassword(pwd);
+        setConfirmPassword(pwd);
+    }, []);
 
     const validate = () => {
         const usernameError = validateUsername(username);
@@ -114,21 +119,37 @@ export const SignPage = () => {
             <Field label="Имя пользователя" required validationState={errors.username ? "error" : undefined}
                    validationMessage={errors.username}>
                 <Input value={username} onChange={(_, d) => setUsername(d.value)}
-                       placeholder="Введите имя пользователя"/>
+                       placeholder="Введите имя пользователя" autoComplete="new-username"/>
             </Field>
             <Field label="Почта" required validationState={errors.email ? "error" : undefined}
                    validationMessage={errors.email}>
-                <Input value={email} onChange={(_, d) => setEmail(d.value)} placeholder="Введите почту"/>
+                <Input autoComplete="new-email" value={email} onChange={(_, d) => setEmail(d.value)}
+                       placeholder="Введите почту"/>
             </Field>
-            <Field label="Пароль" required validationState={errors.password ? "error" : undefined}
-                   validationMessage={errors.password}>
-                <Input type="password" value={password} onChange={(_, d) => setPassword(d.value)}
-                       placeholder="Введите пароль"/>
+            <Field
+                required
+                validationState={errors.password ? "error" : undefined}
+                validationMessage={errors.password}
+                label={{
+                    children: (_: unknown, slotProps: LabelProps) => (
+                        <InfoLabel {...slotProps} info="Минимум 6 символов. Должна быть 1 заглавная буква и хотя бы 1 цифра.">
+                            Пароль
+                        </InfoLabel>
+                    )
+                }}
+            >
+                <Input
+                    type="password"
+                    value={password}
+                    onChange={(_, d) => setPassword(d.value)}
+                    placeholder="Введите пароль"
+                    autoComplete="new-password"
+                />
             </Field>
             <Field label="Повторить пароль" required validationState={errors.confirmPassword ? "error" : undefined}
                    validationMessage={errors.confirmPassword}>
                 <Input type="password" value={confirmPassword} onChange={(_, d) => setConfirmPassword(d.value)}
-                       placeholder="Повторите пароль"/>
+                       placeholder="Повторите пароль" autoComplete="new-password"/>
             </Field>
 
             <div className="button-action ">

@@ -6,6 +6,8 @@ import {EmailPendingCard} from '../components/EmailPendingCard/EmailPendingCard'
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch} from "react-redux";
 import {useState} from "react";
+import {setEmail as setReduxEmail} from "../store/authSlice.ts";
+
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -62,11 +64,15 @@ export const LoginPage = () => {
                     else newErrors.email += e.description + " ";
                 });
             }
+            if (err.errors && typeof err.errors === "object" && !Array.isArray(err.errors)) {
+                const title = err.errors.code;
+                const message = err.errors.description;
+                showToast(message, "error", title);
+            }
             if (err instanceof Error) {
                 const message = err.message;
                 showToast(message, "error", "Ошибка");
             }
-            setErrors(newErrors);
         } finally {
             setIsSubmitting(false);
         }
@@ -78,6 +84,7 @@ export const LoginPage = () => {
     }
 
     if (emailPending) {
+        dispatch(setReduxEmail(email));
         return <EmailPendingCard onGoToLogin={() => {
             setEmailPending(false);
         }}/>;

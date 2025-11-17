@@ -1,26 +1,14 @@
-using System.Text.Json;
-using Auth.TimeCafe.Domain.Contracts;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-public class GoogleRecaptchaValidator : ICaptchaValidator
+public class GoogleRecaptchaValidator(
+    HttpClient httpClient,
+    IConfiguration configuration,
+    ILogger<GoogleRecaptchaValidator> logger) : ICaptchaValidator
 {
-    private readonly HttpClient _httpClient;
-    private readonly string _secretKey;
-    private readonly ILogger<GoogleRecaptchaValidator> _logger;
-
-    public GoogleRecaptchaValidator(
-        HttpClient httpClient,
-        IConfiguration configuration,
-        ILogger<GoogleRecaptchaValidator> logger)
-    {
-        _httpClient = httpClient;
-        _secretKey = configuration["GoogleRecaptcha:SecretKey"]
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly string _secretKey = configuration["GoogleRecaptcha:SecretKey"]
             ?? throw new InvalidOperationException("GoogleRecaptcha:SecretKey не настроен в конфигурации");
-        _logger = logger;
-    }
+    private readonly ILogger<GoogleRecaptchaValidator> _logger = logger;
 
     public async Task<bool> ValidateAsync(string? token)
     {

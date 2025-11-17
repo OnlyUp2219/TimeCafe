@@ -15,7 +15,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddEmailSender(builder.Configuration);
 
 // SMS services (Twilio + Rate Limiting)
-builder.Services.AddSmsServices();
+builder.Services.AddSmsServices(builder.Configuration);
 
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddUserProfileCqrs();
@@ -66,10 +66,10 @@ app.UseCors(corsPolicyName["PolicyName"] ?? "");
 app.UseMiddleware<RateLimitCounterMiddleware>();
 app.UseRateLimiter();
 
-app.MapCarter();
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapCarter();
 
 app.MapIdentityApi<IdentityUser>();
 
