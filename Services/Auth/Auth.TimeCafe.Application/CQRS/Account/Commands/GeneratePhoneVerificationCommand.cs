@@ -25,7 +25,7 @@ public record GeneratePhoneVerificationResult(
     public static GeneratePhoneVerificationResult MockCallback(string phoneNumber, string token) =>
         new(true, Message: "Mock SMS сгенерировано", PhoneNumber: phoneNumber, Token: token);
 
-    public static GeneratePhoneVerificationResult EmailSent(string PhoneNumber) =>
+    public static GeneratePhoneVerificationResult Sent(string PhoneNumber) =>
     new(true, Message: "SMS отправлено",
         PhoneNumber: PhoneNumber);
 
@@ -82,7 +82,7 @@ ISmsVerificationAttemptTracker attemptTracker
         if (sendResult != null)
         {
             _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
-            return GeneratePhoneVerificationResult.EmailSent(request.PhoneNumber);
+            return GeneratePhoneVerificationResult.Sent(request.PhoneNumber);
         }
 
         return GeneratePhoneVerificationResult.SendFailed(request.PhoneNumber);

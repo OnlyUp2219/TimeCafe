@@ -13,10 +13,10 @@ public record ForgotPasswordResult(
     public static ForgotPasswordResult SuccessSilent() =>
        new(true, Message: "Если пользователь существует, письмо отправлено");
 
-    public static ForgotPasswordResult EmailSent() =>
+    public static ForgotPasswordResult Sent() =>
         new(true, Message: "Ссылка для сброса пароля отправлена");
 
-    public static ForgotPasswordResult EmailSendFailed() =>
+    public static ForgotPasswordResult SendFailed() =>
         new(false, Code: "EmailSendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
 
     public static ForgotPasswordResult MockCallback(string callbackUrl) =>
@@ -59,12 +59,12 @@ public class ForgotPasswordCommandHandler(
             try
             {
                 await _emailSender.SendPasswordResetLinkAsync(user, request.Email, callbackUrl);
-                return ForgotPasswordResult.EmailSent();
+                return ForgotPasswordResult.Sent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
-                return ForgotPasswordResult.EmailSendFailed();
+                return ForgotPasswordResult.SendFailed();
             }
         }
 

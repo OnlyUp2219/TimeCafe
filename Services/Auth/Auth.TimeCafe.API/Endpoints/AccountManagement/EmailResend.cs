@@ -21,7 +21,8 @@ public class EmailResend : ICarterModule
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ResendConfirmation")
-        .WithDescription("Повторная отправка почты");
+        .WithSummary("Повторная отправка письма для подтверждения email")
+        .WithDescription("Отправляет повторно письмо для подтверждения email пользователя. Используется, если первое письмо не дошло или истёк срок действия ссылки.");
 
 
         group.MapPost("/resend-mock", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
@@ -37,7 +38,8 @@ public class EmailResend : ICarterModule
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ResendConfirmationMock")
-        .WithDescription("Повторная отправка почты, mock");
+        .WithSummary("Mock: повторная отправка письма для подтверждения email")
+        .WithDescription("Тестовый endpoint: возвращает callbackUrl для подтверждения email без реальной отправки письма.");
     }
 }
 

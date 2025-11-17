@@ -14,12 +14,15 @@ public class Logout : ICarterModule
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(
-                onSuccess: r => {
+                onSuccess: r =>
+                {
                     return Results.Ok(new { message = r.Message, revoked = r.Revoked });
                 });
         })
             .WithTags("Authentication")
-            .WithName("Logout");
+            .WithName("Logout")
+            .WithSummary("Выход пользователя и отзыв refresh-токена")
+            .WithDescription("Выход пользователя из системы. Отзывает переданный refresh-токен, удаляет связанные сессии. Возвращает сообщение и статус отзыва.");
     }
 }
 

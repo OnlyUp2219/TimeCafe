@@ -25,7 +25,9 @@ public class PhoneVerify : ICarterModule
                 return Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha });
             }, extra);
         })
-        .WithName("VerifySmsMock");
+        .WithName("VerifySmsMock")
+        .WithSummary("Mock: проверка SMS-кода для подтверждения телефона")
+        .WithDescription("Тестовый endpoint: проверяет SMS-код для подтверждения телефона без реального взаимодействия с сервисом. Возвращает результат проверки, количество оставшихся попыток и необходимость капчи.");
 
         group.MapPost("verifySMS", async (
             ISender sender,
@@ -45,7 +47,9 @@ public class PhoneVerify : ICarterModule
                 return Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha });
             }, extra);
         })
-        .WithName("VerifySms");
+        .WithName("VerifySms")
+        .WithSummary("Проверка SMS-кода для подтверждения телефона")
+        .WithDescription("Проверяет введённый пользователем SMS-код для подтверждения номера телефона. Возвращает результат, количество оставшихся попыток и необходимость капчи.");
     }
 }
 

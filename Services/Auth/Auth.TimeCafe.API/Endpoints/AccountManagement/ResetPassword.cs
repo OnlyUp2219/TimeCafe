@@ -22,7 +22,8 @@ public class ResetPassword : ICarterModule
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPasswordMock")
-        .WithSummary("Mock: Возвращает ссылку для теста без отправки email");
+        .WithSummary("Mock: получение ссылки для сброса пароля без отправки email")
+        .WithDescription("Тестовый endpoint: возвращает ссылку для сброса пароля, не отправляя email. Используется для тестирования фронта и интеграций.");
 
         group.MapPost("/forgot-password-link", async (
             [FromBody] ResetPasswordEmailRequest request,
@@ -39,6 +40,7 @@ public class ResetPassword : ICarterModule
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPassword")
-        .WithSummary("Отправка ссылки для сброса пароля на email");
+        .WithSummary("Отправка ссылки для сброса пароля на email")
+        .WithDescription("Отправляет письмо со ссылкой для сброса пароля на указанный email. Используется при восстановлении доступа.");
     }
 }

@@ -10,7 +10,7 @@ public class Registration : ICarterModule
         {
             var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
             var result = await sender.Send(command);
-            
+
             return result.ToHttpResultV2(onSuccess: r =>
             {
                 return Results.Ok(new { message = result.Message });
@@ -18,7 +18,8 @@ public class Registration : ICarterModule
         })
             .WithTags("Authentication")
             .WithName("Register")
-            .WithDescription("Регистрация с логином");
+            .WithSummary("Регистрация пользователя с логином и email")
+            .WithDescription("Регистрирует нового пользователя по логину, email и паролю. Отправляет письмо для подтверждения email.");
 
         app.MapPost("/registerWithUsername-mock", async (
             ISender sender,
@@ -36,6 +37,7 @@ public class Registration : ICarterModule
             .WithName("RegisterMock")
             .RequireRateLimiting("OneRequestPerInterval")
             .RequireRateLimiting("MaxRequestPerWindow")
-            .WithDescription("Регистрация с логином");
+            .WithSummary("Mock: регистрация пользователя с логином и email")
+            .WithDescription("Тестовый endpoint: регистрирует пользователя, но не отправляет письмо. Возвращает callbackUrl для подтверждения email.");
     }
 }

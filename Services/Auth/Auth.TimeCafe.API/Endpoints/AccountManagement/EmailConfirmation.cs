@@ -1,4 +1,5 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+
 public record ConfirmEmailRequest(string UserId, string Token);
 
 public class EmailConfirmation : ICarterModule
@@ -18,7 +19,8 @@ public class EmailConfirmation : ICarterModule
             });
         })
         .WithName("ConfirmEmail")
-        .WithDescription("Подтверждение почты");
+        .WithSummary("Подтверждение email пользователя")
+        .WithDescription("Позволяет подтвердить email пользователя по токену. Используется после регистрации или смены email. Возвращает сообщение об успехе или ошибке.");
     }
 }
 

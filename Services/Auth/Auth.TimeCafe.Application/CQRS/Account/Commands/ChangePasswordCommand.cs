@@ -30,7 +30,6 @@ public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCo
         RuleFor(x => x.CurrentPassword)
             .NotEmpty().WithMessage("Текущий пароль обязателен")
             .NotEqual(x => x.NewPassword).WithMessage("Новый пароль не должен совпадать со старым");
-
     }
 }
 

@@ -26,13 +26,15 @@ public sealed class ChangePassword : ICarterModule
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(
-                onSuccess: r => {
+                onSuccess: r =>
+                {
                     return Results.Ok(new { message = r.Message, refreshTokensRevoked = r.RefreshTokensRevoked });
                 }
             );
 
         })
         .WithName("ChangePassword")
-        .WithSummary("Смена пароля текущего пользователя");
+        .WithSummary("Смена пароля текущего пользователя")
+        .WithDescription("Позволяет авторизованному пользователю сменить свой пароль. Требует текущий и новый пароль. Возвращает сообщение об успехе и количество отозванных refresh-токенов.");
     }
 }

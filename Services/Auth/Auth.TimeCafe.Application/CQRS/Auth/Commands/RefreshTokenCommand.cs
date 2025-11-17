@@ -14,7 +14,7 @@ public record class RefreshTokenResult(
     public static RefreshTokenResult InvalidToken() =>
         new(false, Code: "InvalidToken", Message: "Токен недействителен или уже использован", StatusCode: 401);
 
-    public static RefreshTokenResult TokenOk(string accessToken, string refreshToken) =>
+    public static RefreshTokenResult TokenSuccess(string accessToken, string refreshToken) =>
         new(true, Message: "Токен обновлён",
             AccessToken: accessToken, RefreshToken: refreshToken);
 }
@@ -30,6 +30,6 @@ public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandle
             return RefreshTokenResult.InvalidToken();
 
 
-        return RefreshTokenResult.TokenOk(tokens.AccessToken, tokens.RefreshToken);
+        return RefreshTokenResult.TokenSuccess(tokens.AccessToken, tokens.RefreshToken);
     }
 }

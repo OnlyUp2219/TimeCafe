@@ -19,7 +19,7 @@ public class Login : ICarterModule
                 else
                 {
                     context.Response.Cookies.Append("Access-Token", r.TokensDto!.AccessToken);
-                    return Results.Ok( new { accessToken = r.TokensDto!.AccessToken, refreshToken = r.TokensDto!.RefreshToken, emailConfirmed = r.EmailConfirmed });
+                    return Results.Ok(new { accessToken = r.TokensDto!.AccessToken, refreshToken = r.TokensDto!.RefreshToken, emailConfirmed = r.EmailConfirmed });
                 }
 
             });
@@ -28,6 +28,7 @@ public class Login : ICarterModule
         })
         .WithTags("Authentication")
         .WithName("Login")
-        .WithDescription("Вход с jwt-токеном");
+        .WithSummary("Аутентификация пользователя через JWT")
+        .WithDescription("Вход пользователя по email и паролю. Возвращает access и refresh токены, а также статус подтверждения email. Access-токен сохраняется в cookie.");
     }
 }

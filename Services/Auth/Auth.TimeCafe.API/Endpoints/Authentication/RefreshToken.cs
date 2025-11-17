@@ -23,6 +23,7 @@ public class RefreshToken : ICarterModule
         })
         .WithTags("Authentication")
         .WithName("RefreshToken")
-        .WithDescription("Обновляет JWT‑токены. Новый access‑токен сохраняется в куке «Access‑Token», оба токена возвращаются в JSON.");
+        .WithSummary("Обновление JWT-токенов пользователя")
+        .WithDescription("Обновляет access и refresh JWT-токены пользователя по переданному refresh-токену. Новый access-токен сохраняется в cookie, оба токена возвращаются в JSON.");
     }
 }
