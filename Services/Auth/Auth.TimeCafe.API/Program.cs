@@ -1,4 +1,3 @@
-
 var builder = WebApplication.CreateBuilder(args);
 
 // DbContext
@@ -10,6 +9,8 @@ builder.Services.AddIdentityConfiguration(builder.Configuration);
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
 builder.Services.AddAuthorization();
+// Permission system registration
+builder.Services.AddPermissionAuthorization();
 
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);

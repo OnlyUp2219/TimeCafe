@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
-
 namespace Auth.TimeCafe.API.Controllers;
 
 [ApiController]
@@ -18,5 +16,12 @@ public class FunctionsController : ControllerBase
     public IActionResult AdminFunction()
     {
         return Ok("Эта функция доступна только администраторам!");
+    }
+
+    [HttpGet("client-edit-function")]
+    [HasPermission(Permission.ClientEdit)]
+    public IActionResult ClientEditFunction()
+    {
+        return Ok("Эта функция доступна только с разрешением ClientEdit!");
     }
 }

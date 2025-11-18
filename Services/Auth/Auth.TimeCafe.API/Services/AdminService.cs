@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.API.Services;
+namespace Auth.TimeCafe.API.Services;
 
 public class AdminService(UserManager<IdentityUser> userManager, IUserRoleService roleService)
 {
