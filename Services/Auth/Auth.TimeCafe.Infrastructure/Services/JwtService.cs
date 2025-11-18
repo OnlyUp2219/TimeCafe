@@ -1,18 +1,4 @@
-
-
 namespace Auth.TimeCafe.Infrastructure.Services;
-
-
-public record AuthResponse(string AccessToken, string RefreshToken, string Role, int ExpiresIn);
-
-public interface IJwtService
-{
-    Task<AuthResponse> GenerateTokens(IdentityUser user);
-    ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
-    Task<AuthResponse?> RefreshTokens(string refreshToken);
-    Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default);
-    Task<bool> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default);
-}
 
 public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
 {
