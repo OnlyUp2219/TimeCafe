@@ -23,8 +23,6 @@ public class Login : ICarterModule
                 }
 
             });
-
-
         })
         .WithTags("Authentication")
         .WithName("Login")
