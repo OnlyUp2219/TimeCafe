@@ -1,8 +1,11 @@
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 using Xunit;
 
 namespace Auth.TimeCafe.Test;
@@ -162,7 +165,7 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
         req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 
         var resp = await _client.SendAsync(req);
-        Assert.Equal(System.Net.HttpStatusCode.BadRequest, resp.StatusCode);
+        Assert.Equal(System.Net.HttpStatusCode.UnprocessableEntity, resp.StatusCode);
     }
 
     [Fact]
@@ -170,9 +173,13 @@ public class AuthEndpointsTests : IClassFixture<AuthApiFactory>
     {
         var tokens = await RegisterAsync("user_logout_fake", "user_logout_fake@example.com", "P@ssw0rd!");
 
+        var raw = "nonexistent-token-456";
+        var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));
+        var logoutDto = new { RefreshToken = base64 };
+
         var req = new HttpRequestMessage(HttpMethod.Post, "/logout")
         {
-            Content = JsonContent.Create(new LogoutRequest("fake-token"))
+            Content = JsonContent.Create(new LogoutRequest(logoutDto.RefreshToken))
         };
         req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", tokens.AccessToken);
 

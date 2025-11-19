@@ -1,8 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using Auth.TimeCafe.Infrastructure.Data;
 using Auth.TimeCafe.Domain.Contracts;
-
 
 namespace Auth.TimeCafe.Test.Integration;
 
