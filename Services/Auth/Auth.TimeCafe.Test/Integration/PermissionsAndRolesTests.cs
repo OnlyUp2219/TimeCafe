@@ -1,5 +1,4 @@
 using Auth.TimeCafe.Domain.Contracts;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Auth.TimeCafe.Test.Integration;
 
