@@ -15,8 +15,17 @@ public record class LogoutResult(
             Revoked: false);
 
     public static LogoutResult LoggedOut(bool revoked) =>
-        new(true, Code: revoked ? "Выход осуществлен" : "Токен не найден", 
+        new(true, Code: revoked ? "Выход осуществлен" : "Токен не найден",
             Revoked: revoked);
+}
+
+public class LogoutCommandValidator : AbstractValidator<LogoutCommand>
+{
+    public LogoutCommandValidator()
+    {
+        RuleFor(x => x.RefreshToken)
+            .BeValidBase64();
+    }
 }
 
 public class LogoutCommandHandler(IJwtService jwtService) : IRequestHandler<LogoutCommand, LogoutResult>
@@ -30,6 +39,9 @@ public class LogoutCommandHandler(IJwtService jwtService) : IRequestHandler<Logo
 
         var revoked = await _jwtService.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
 
-        return LogoutResult.LoggedOut(revoked);
+        if (!revoked)
+            return LogoutResult.LoggedOut(false);
+
+        return LogoutResult.LoggedOut(true);
     }
 }

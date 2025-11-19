@@ -13,11 +13,12 @@ public class Logout : ICarterModule
             var command = new LogoutCommand(request.RefreshToken);
             var result = await sender.Send(command);
 
+            object extra = new { revoked = result.Revoked };
             return result.ToHttpResultV2(
                 onSuccess: r =>
                 {
                     return Results.Ok(new { message = r.Message, revoked = r.Revoked });
-                });
+                }, extra);
         })
             .WithTags("Authentication")
             .WithName("Logout")
