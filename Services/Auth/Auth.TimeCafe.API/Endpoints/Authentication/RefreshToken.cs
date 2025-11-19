@@ -14,7 +14,6 @@ public class RefreshToken : ICarterModule
             var command = new RefreshTokenCommand(request.RefreshToken);
             var result = await sender.Send(command);
 
-
             return result.ToHttpResultV2(r =>
             {
                 context.Response.Cookies.Append("Access-Token", r.AccessToken!);
