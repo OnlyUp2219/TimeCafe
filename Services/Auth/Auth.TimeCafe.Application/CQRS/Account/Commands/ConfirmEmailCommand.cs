@@ -13,7 +13,7 @@ public record ConfirmEmailResult(
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
 
     public static ConfirmEmailResult EmailAlreadyConfirmed() =>
-        new(true, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
+        new(false, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
 
     public static ConfirmEmailResult InvalidTokenFormat() =>
         new(false, Code: "InvalidToken", Message: "Неверный формат токена", StatusCode: 400);
