@@ -1,8 +1,5 @@
 using Auth.TimeCafe.Application.CQRS.Sender.Commands;
-
 using Microsoft.Extensions.Configuration;
-
-using System.IO.Pipelines;
 
 
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
