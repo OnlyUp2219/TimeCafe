@@ -16,7 +16,7 @@ public record ConfirmEmailResult(
         new(false, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
 
     public static ConfirmEmailResult InvalidTokenFormat() =>
-        new(false, Code: "InvalidToken", Message: "Неверный формат токена", StatusCode: 400);
+        new(false, Code: "InvalidTokenFormat", Message: "Неверный формат токена", StatusCode: 400);
 
     public static ConfirmEmailResult InvalidToken() =>
         new(false, Code: "InvalidToken", Message: "Токен недействителен или уже использован", StatusCode: 400);
