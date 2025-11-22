@@ -59,7 +59,7 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_ChangePassword_Should_ReturnChangePasswordFailed_WhenInvalidPasswords(string current, string newPass, string expectedErrorCode, string? expectedDescriptionPart)
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (_, oldPassword, accessToken, _) = await CreateUserAndLoginAsync();
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         var dto = new { CurrentPassword = current == "OldP@ssw0rd!" ? oldPassword : current, NewPassword = newPass };
 
@@ -124,7 +124,7 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_ChangePassword_Should_ReturnValidationError_WhenSamePassword(string current, string newPass, string expectedMessagePart)
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (_, _, accessToken, _) = await CreateUserAndLoginAsync();
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         var dto = new { CurrentPassword = current, NewPassword = newPass };
 
@@ -241,7 +241,7 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_ChangePassword_Should_FailConcurrent_WhenOldPasswordUsedAgain()
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (_, oldPassword, accessToken, _) = await CreateUserAndLoginAsync();
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         var dto = new { CurrentPassword = oldPassword, NewPassword = "NewP@ssw0rd!" };
 

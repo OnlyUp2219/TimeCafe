@@ -161,8 +161,8 @@ public class LoginTests : BaseEndpointTest
             json.TryGetProperty("emailConfirmed", out var emailConfirmed).Should().BeTrue();
             emailConfirmed.GetBoolean().Should().BeFalse();
 
-            json.TryGetProperty("accessToken", out var accessToken).Should().BeFalse();
-            json.TryGetProperty("refreshToken", out var refreshToken).Should().BeFalse();
+            json.TryGetProperty("accessToken", out var _).Should().BeFalse();
+            json.TryGetProperty("refreshToken", out var _).Should().BeFalse();
         }
         catch (Exception)
         {
