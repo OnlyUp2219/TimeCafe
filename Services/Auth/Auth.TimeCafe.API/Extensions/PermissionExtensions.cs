@@ -5,7 +5,7 @@ public static class PermissionExtensions
     public static IServiceCollection AddPermissionAuthorization(this IServiceCollection services)
     {
         services.AddScoped<IPermissionService, PermissionService>();
-        services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+        services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
         services.AddAuthorization(options =>
         {
