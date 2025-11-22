@@ -16,7 +16,9 @@ public class ResetPassword : ICarterModule
 
             return result.ToHttpResultV2(onSuccess: r =>
             {
-                return Results.Ok(new { callbackUrl = r.CallbackUrl });
+                if (r.CallbackUrl != null)
+                    return Results.Ok(new { callbackUrl = r.CallbackUrl });
+                return Results.Ok(new { message = r.Message });
             });
         })
         .RequireRateLimiting("OneRequestPerInterval")
