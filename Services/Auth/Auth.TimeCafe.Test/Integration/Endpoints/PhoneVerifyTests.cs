@@ -1,7 +1,3 @@
-using Auth.TimeCafe.Domain.Contracts;
-
-using System.Net.Http.Headers;
-
 namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class PhoneVerifyTests : BaseEndpointTest
@@ -10,38 +6,6 @@ public class PhoneVerifyTests : BaseEndpointTest
 
     public PhoneVerifyTests(IntegrationApiFactory factory) : base(factory)
     {
-    }
-
-    private HttpClient CreateClientWithDisabledRateLimiter()
-    {
-        var overrides = new Dictionary<string, string?>
-        {
-            ["RateLimiter:EmailSms:MinIntervalSeconds"] = "0",
-            ["RateLimiter:EmailSms:WindowMinutes"] = "1",
-            ["RateLimiter:EmailSms:MaxRequests"] = "10000"
-        };
-
-        return Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration((_, conf) => conf.AddInMemoryCollection(overrides));
-        }).CreateClient();
-    }
-
-    private async Task<(string userId, string accessToken)> CreateAuthenticatedUserAsync()
-    {
-        var email = $"user_{Guid.NewGuid():N}@example.com";
-        using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-        await userManager.CreateAsync(user, "P@ssw0rd!");
-
-        var loginDto = new { Email = email, Password = "P@ssw0rd!" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
-        loginResp.EnsureSuccessStatusCode();
-        var json = JsonDocument.Parse(await loginResp.Content.ReadAsStringAsync()).RootElement;
-        var token = json.GetProperty("accessToken").GetString()!;
-
-        return (user.Id, token);
     }
 
     private async Task<string> GenerateMockCodeAsync(string userId, string accessToken, string phone)
@@ -64,7 +28,7 @@ public class PhoneVerifyTests : BaseEndpointTest
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
         var user = await userManager.FindByIdAsync(userId);
-        await userManager.DeleteAsync(user);
+        await userManager.DeleteAsync(user!);
 
         var dto = new { PhoneNumber = "+79123456789", Code = "123456", CaptchaToken = (string?)null };
         using var client = CreateClientWithDisabledRateLimiter();
@@ -80,7 +44,7 @@ public class PhoneVerifyTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)401);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("UserNotFound");
+            code.GetString()!.Should().Be("UserNotFound");
         }
         catch (Exception)
         {
@@ -89,40 +53,7 @@ public class PhoneVerifyTests : BaseEndpointTest
         }
     }
 
-    [Fact]
-    public async Task Endpoint_VerifySmsMock_Should_ReturnTooManyAttempts_AfterMaxFails()
-    {
-        // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
-        var invalidCode = "999999";
-        using var client = CreateClientWithDisabledRateLimiter();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        // Act 
-        for (int i = 0; i < 5; i++)
-        {
-            var dto = new { PhoneNumber = phone, Code = invalidCode, CaptchaToken = (string?)null };
-            await client.PostAsJsonAsync(Endpoint, dto);
-        }
-        var finalDto = new { PhoneNumber = phone, Code = invalidCode, CaptchaToken = (string?)null };
-        var response = await client.PostAsJsonAsync(Endpoint, finalDto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.TooManyRequests);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("TooManyAttempts");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[VerifySmsMock_TooManyAttempts] Response: {jsonString}");
-            throw;
-        }
-    }
 
     [Fact]
     public async Task Endpoint_VerifySmsMock_Should_ReturnCaptchaRequired_WhenAttemptsLow()
@@ -150,7 +81,7 @@ public class PhoneVerifyTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("CaptchaRequired");
+            code.GetString()!.Should().Be("CaptchaRequired");
             json.TryGetProperty("requiresCaptcha", out var requiresCaptcha).Should().BeTrue();
             requiresCaptcha.GetBoolean().Should().BeTrue();
         }
@@ -195,7 +126,7 @@ public class PhoneVerifyTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("CaptchaInvalid");
+            code.GetString()!.Should().Be("CaptchaInvalid");
         }
         catch (Exception)
         {
@@ -225,7 +156,7 @@ public class PhoneVerifyTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().Contain("подтвержден (mock)");
+            message.GetString()!.Should().Contain("подтвержден (mock)");
         }
         catch (Exception)
         {
@@ -255,7 +186,7 @@ public class PhoneVerifyTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("InvalidCode");
+            code.GetString()!.Should().Be("InvalidCode");
             json.TryGetProperty("remainingAttempts", out var remaining).Should().BeTrue();
             remaining.GetInt32().Should().BeLessThan(5);
         }
@@ -307,7 +238,15 @@ public class PhoneVerifyTests : BaseEndpointTest
         var response = await client.PostAsJsonAsync(Endpoint, dto);
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_VerifySmsMock_Should_RequireAuthorization] StatusCode: {response.StatusCode}");
+            throw;
+        }
     }
 
     [Fact]

@@ -8,7 +8,7 @@ public class RefreshTokenTests : BaseEndpointTest
     }
 
     [Fact]
-    public async Task RefreshToken_InvalidToken_Should_ReturnUnauthorized()
+    public async Task Endpoint_RefreshToken_Should_ReturnUnauthorized_WhenTokenInvalid()
     {
         // Arrange
         var dto = new { RefreshToken = "invalid-token-value" };
@@ -24,13 +24,13 @@ public class RefreshTokenTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RefreshToken_InvalidToken_Should_ReturnUnauthorized] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_RefreshToken_Should_ReturnUnauthorized_WhenTokenInvalid] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task RefreshToken_ValidToken_Should_ReturnNewTokens()
+    public async Task Endpoint_RefreshToken_Should_ReturnNewTokens_WhenTokenValid()
     {
         // Arrange: login to obtain tokens
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
@@ -55,19 +55,19 @@ public class RefreshTokenTests : BaseEndpointTest
             newTokens.TryGetProperty("accessToken", out var access).Should().BeTrue();
             newTokens.TryGetProperty("refreshToken", out var newRefresh).Should().BeTrue();
 
-            access.GetString().Should().NotBeNullOrWhiteSpace();
-            newRefresh.GetString().Should().NotBeNullOrWhiteSpace();
-            newRefresh.GetString().Should().NotBe(refresh);
+            access.GetString()!.Should().NotBeNullOrWhiteSpace();
+            newRefresh.GetString()!.Should().NotBeNullOrWhiteSpace();
+            newRefresh.GetString()!.Should().NotBe(refresh);
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RefreshToken_ValidToken_Should_ReturnNewTokens] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_RefreshToken_Should_ReturnNewTokens_WhenTokenValid] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task RefreshToken_ConcurrentUse_OldTokenBecomesInvalid()
+    public async Task Endpoint_RefreshToken_Should_InvalidateOldToken_WhenRefreshUsed()
     {
         // Arrange
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
@@ -87,5 +87,18 @@ public class RefreshTokenTests : BaseEndpointTest
 
         // Assert
         second.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Endpoint_RefreshToken_Should_ReturnUnauthorized_WhenTokenEmpty()
+    {
+        // Arrange
+        var dto = new { RefreshToken = "" };
+
+        // Act
+        var response = await Client.PostAsJsonAsync("/refresh-token-jwt", dto);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

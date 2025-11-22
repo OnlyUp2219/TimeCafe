@@ -6,23 +6,8 @@ public class RegistrationTests : BaseEndpointTest
     {
     }
 
-    private HttpClient CreateClientWithDisabledRateLimiter()
-    {
-        var overrides = new Dictionary<string, string>
-        {
-            ["RateLimiter:EmailSms:MinIntervalSeconds"] = "0",
-            ["RateLimiter:EmailSms:WindowMinutes"] = "1",
-            ["RateLimiter:EmailSms:MaxRequests"] = "10000"
-        };
-
-        return Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration((context, conf) => conf.AddInMemoryCollection(overrides));
-        }).CreateClient();
-    }
-
     [Fact]
-    public async Task RegisterMock_Should_ReturnCallbackUrl()
+    public async Task Endpoint_Register_Should_ReturnCallbackUrl_WhenValidRequest()
     {
         // Arrange
         var unique = Guid.NewGuid().ToString()[..8];
@@ -39,11 +24,11 @@ public class RegistrationTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("callbackUrl", out var callback).Should().BeTrue();
-            callback.GetString().Should().NotBeNullOrWhiteSpace();
+            callback.GetString()!.Should().NotBeNullOrWhiteSpace();
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RegisterMock_Should_ReturnCallbackUrl] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Register_Should_ReturnCallbackUrl_WhenValidRequest] Response: {jsonString}");
             throw;
         }
     }
@@ -52,7 +37,7 @@ public class RegistrationTests : BaseEndpointTest
     [InlineData("shortpwd", "Пароль должен содержать хотя бы одну цифру")]
     [InlineData("abcdef", "Пароль должен содержать хотя бы одну цифру")]
     [InlineData("ABC123", "Пароль должен содержать хотя бы одну строчную букву")]
-    public async Task RegisterMock_PasswordPolicy_Violations_ReturnIdentityErrors(string password, string expectedMessagePart)
+    public async Task Endpoint_Register_Should_ReturnBadRequest_WhenPasswordPolicyViolated(string password, string expectedMessagePart)
     {
         // Arrange
         var unique = Guid.NewGuid().ToString()[..8];
@@ -74,13 +59,13 @@ public class RegistrationTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RegisterMock_PasswordPolicy_Violations_ReturnIdentityErrors] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Register_Should_ReturnBadRequest_WhenPasswordPolicyViolated] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task RegisterMock_DuplicateUsernameOrEmail_ReturnsBadRequestWithDuplicateMessage()
+    public async Task Endpoint_Register_Should_ReturnBadRequest_WhenUsernameOrEmailDuplicate()
     {
         // Arrange
         var unique = Guid.NewGuid().ToString()[..8];
@@ -109,7 +94,7 @@ public class RegistrationTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RegisterMock_DuplicateUsernameOrEmail_ReturnsBadRequestWithDuplicateMessage] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Register_Should_ReturnBadRequest_WhenUsernameOrEmailDuplicate] Response: {jsonString}");
             throw;
         }
     }
@@ -119,7 +104,7 @@ public class RegistrationTests : BaseEndpointTest
     [InlineData("user", "", "P@ssw0rd!", "Email")]
     [InlineData("user", "invalid-email", "P@ssw0rd!", "Email")]
     [InlineData("user", "user@example.com", "", "Password")]
-    public async Task RegisterMock_InvalidModel_ReturnsValidationError(string username, string email, string password, string expectedField)
+    public async Task Endpoint_Register_Should_ReturnValidationError_WhenModelInvalid(string username, string email, string password, string expectedField)
     {
         // Arrange
         var dto = new { Username = username, Email = email, Password = password };
@@ -135,7 +120,7 @@ public class RegistrationTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
 
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.ValueKind.Should().Be(JsonValueKind.Array);
@@ -159,7 +144,7 @@ public class RegistrationTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[RegisterMock_InvalidModel_ReturnsValidationError] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Register_Should_ReturnValidationError_WhenModelInvalid] Response: {jsonString}");
             throw;
         }
     }
