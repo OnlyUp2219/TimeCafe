@@ -32,6 +32,12 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextOptionsDescriptor);
             }
 
+            var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
+            if (dbContextDescriptor != null)
+            {
+                services.Remove(dbContextDescriptor);
+            }
+
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
         });

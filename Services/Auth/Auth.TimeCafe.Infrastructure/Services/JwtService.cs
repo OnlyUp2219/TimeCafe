@@ -27,7 +27,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
             issuer: jwtSection["Issuer"],
             audience: jwtSection["Audience"],
             claims: claims,
-            expires: expires.DateTime,
+            expires: expires.UtcDateTime,
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
         );
 
