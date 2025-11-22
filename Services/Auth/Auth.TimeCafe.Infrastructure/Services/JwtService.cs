@@ -10,7 +10,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
     {
         var jwtSection = _configuration.GetSection("Jwt");
         var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
-        var expires = DateTime.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
+        var expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
 
         var roles = await _userRoleService.GetUserRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? "client";
@@ -27,7 +27,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
             issuer: jwtSection["Issuer"],
             audience: jwtSection["Audience"],
             claims: claims,
-            expires: expires,
+            expires: expires.DateTime,
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
         );
 
@@ -36,8 +36,8 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         {
             Token = refreshToken,
             UserId = user.Id,
-            Expires = DateTime.UtcNow.AddDays(30), 
-            Created = DateTime.UtcNow
+            Expires = DateTimeOffset.UtcNow.AddDays(30),
+            Created = DateTimeOffset.UtcNow
         };
 
         _context.RefreshTokens.Add(tokenEntity);
@@ -48,7 +48,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
             AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
             RefreshToken: refreshToken,
             Role: userRole,
-            ExpiresIn: (int)(expires - DateTime.UtcNow).TotalSeconds
+            ExpiresIn: (int)(expires - DateTimeOffset.UtcNow).TotalSeconds
         );
     }
 
@@ -82,14 +82,32 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
     {
         var tokenEntity = await _context.RefreshTokens
             .Include(t => t.User)
-            .FirstOrDefaultAsync(t => t.Token == refreshToken && !t.IsRevoked);
+            .FirstOrDefaultAsync(t => t.Token == refreshToken);
 
-        if (tokenEntity == null || tokenEntity.Expires < DateTime.UtcNow)
+        // Token not found or expired
+        if (tokenEntity == null || tokenEntity.Expires < DateTimeOffset.UtcNow)
             return null;
 
-        tokenEntity.IsRevoked = true;
+        // Suspicious activity: trying to reuse a revoked token (token theft detected)
+        if (tokenEntity.IsRevoked)
+        {
+            // Revoke entire token family to protect user
+            await RevokeFamilyTokensAsync(refreshToken);
+            return null;
+        }
 
+        // Token rotation: generate new tokens first
         var newTokens = await GenerateTokens(tokenEntity.User);
+
+        // Get the newly created token from database to link them
+        var newTokenEntity = await _context.RefreshTokens
+            .OrderByDescending(t => t.Created)
+            .FirstAsync(t => t.UserId == tokenEntity.UserId && !t.IsRevoked);
+
+        // Mark old token as revoked and link to new token
+        tokenEntity.IsRevoked = true;
+        tokenEntity.ReplacedByToken = newTokenEntity.Token;
+
         await _context.SaveChangesAsync();
 
         return newTokens;
@@ -115,6 +133,49 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         tokenEntity.IsRevoked = true;
         await _context.SaveChangesAsync(cancellationToken);
         return true;
+    }
+
+    public async Task RevokeFamilyTokensAsync(string refreshToken, CancellationToken cancellationToken = default)
+    {
+        var tokenEntity = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken, cancellationToken);
+        if (tokenEntity == null)
+            return;
+
+        var rootToken = tokenEntity;
+        while (rootToken != null)
+        {
+            var parentToken = await _context.RefreshTokens
+                .FirstOrDefaultAsync(t => t.ReplacedByToken == rootToken.Token, cancellationToken);
+            if (parentToken == null)
+                break;
+            rootToken = parentToken;
+        }
+
+        var tokensToRevoke = new List<RefreshToken>();
+        var currentToken = rootToken;
+
+        while (currentToken != null)
+        {
+            if (!tokensToRevoke.Any(t => t.Id == currentToken.Id))
+                tokensToRevoke.Add(currentToken);
+
+            if (currentToken.ReplacedByToken != null)
+            {
+                currentToken = await _context.RefreshTokens
+                    .FirstOrDefaultAsync(t => t.Token == currentToken.ReplacedByToken, cancellationToken);
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        foreach (var token in tokensToRevoke)
+        {
+            token.IsRevoked = true;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
 }
