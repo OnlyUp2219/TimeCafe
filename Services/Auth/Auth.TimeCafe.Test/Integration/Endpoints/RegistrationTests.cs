@@ -1,11 +1,7 @@
 namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
-public class RegistrationTests : BaseEndpointTest
+public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public RegistrationTests(IntegrationApiFactory factory) : base(factory)
-    {
-    }
-
     [Fact]
     public async Task Endpoint_Register_Should_ReturnCallbackUrl_WhenValidRequest()
     {
@@ -124,12 +120,13 @@ public class RegistrationTests : BaseEndpointTest
 
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.ValueKind.Should().Be(JsonValueKind.Array);
+            string[] value = ["Email", "email", "Некорректный формат email", "Email обязателен"];
             var keywords = expectedField switch
             {
-                "Username" => new[] { "Логин", "username", "Username" },
-                "Email" => new[] { "Email", "email", "Некорректный формат email", "Email обязателен" },
-                "Password" => new[] { "Пароль", "password", "Password" },
-                _ => new[] { expectedField }
+                "Username" => ["Логин", "username", "Username"],
+                "Email" => value,
+                "Password" => ["Пароль", "password", "Password"],
+                _ => [expectedField]
             };
 
             var found = errors.EnumerateArray().Any(e =>
@@ -137,7 +134,7 @@ public class RegistrationTests : BaseEndpointTest
                 if (!e.TryGetProperty("message", out var msg)) return false;
                 var m = msg.GetString();
                 if (string.IsNullOrEmpty(m)) return false;
-                return keywords.Any(k => m.IndexOf(k, StringComparison.OrdinalIgnoreCase) >= 0);
+                return keywords.Any(k => m.Contains(k, StringComparison.OrdinalIgnoreCase));
             });
 
             found.Should().BeTrue();

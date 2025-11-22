@@ -1,14 +1,10 @@
 namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
-public class PhoneVerifyTests : BaseEndpointTest
+public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     private const string Endpoint = "/twilio/verifySMS-mock";
 
-    public PhoneVerifyTests(IntegrationApiFactory factory) : base(factory)
-    {
-    }
-
-    private async Task<string> GenerateMockCodeAsync(string userId, string accessToken, string phone)
+    private async Task<string> GenerateMockCodeAsync(string accessToken, string phone)
     {
         var dto = new { PhoneNumber = phone };
         using var client = CreateClientWithDisabledRateLimiter();
@@ -59,7 +55,7 @@ public class PhoneVerifyTests : BaseEndpointTest
     public async Task Endpoint_VerifySmsMock_Should_ReturnCaptchaRequired_WhenAttemptsLow()
     {
         // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
         var invalidCode = "999999";
         using var client = CreateClientWithDisabledRateLimiter();
@@ -105,7 +101,7 @@ public class PhoneVerifyTests : BaseEndpointTest
         });
         var client = factoryWithMockCaptcha.CreateClient();
 
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
         var invalidCode = "999999";
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -139,9 +135,9 @@ public class PhoneVerifyTests : BaseEndpointTest
     public async Task Endpoint_VerifySmsMock_Should_ReturnSuccess_WhenValidCode()
     {
         // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
-        var code = await GenerateMockCodeAsync(userId, accessToken, phone);
+        var code = await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -169,9 +165,9 @@ public class PhoneVerifyTests : BaseEndpointTest
     public async Task Endpoint_VerifySmsMock_Should_ReturnInvalidCode_WhenWrongCode()
     {
         // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
-        await GenerateMockCodeAsync(userId, accessToken, phone);
+        await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -201,9 +197,9 @@ public class PhoneVerifyTests : BaseEndpointTest
     public async Task Endpoint_VerifySmsMock_Should_ResetAttempts_OnSuccess()
     {
         // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
-        var code = await GenerateMockCodeAsync(userId, accessToken, phone);
+        var code = await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -253,9 +249,9 @@ public class PhoneVerifyTests : BaseEndpointTest
     public async Task Endpoint_VerifySmsMock_Should_DecreaseAttempts_OnFail()
     {
         // Arrange
-        var (userId, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
         var phone = "+79123456789";
-        await GenerateMockCodeAsync(userId, accessToken, phone);
+        await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -286,7 +282,7 @@ internal class FakeCaptchaValidator : ICaptchaValidator
 {
     public bool IsValid { get; set; } = true;
 
-    public Task<bool> ValidateAsync(string? captchaToken)
+    public Task<bool> ValidateAsync(string? token)
     {
         return Task.FromResult(IsValid);
     }
