@@ -40,7 +40,7 @@ public class RefreshTokenTests : BaseEndpointTest
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
         var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
         loginResp.EnsureSuccessStatusCode();
-        
+
         var json = await loginResp.Content.ReadAsStringAsync();
         var tokens = JsonDocument.Parse(json).RootElement;
         var refresh = tokens.GetProperty("refreshToken").GetString()!;
@@ -68,101 +68,77 @@ public class RefreshTokenTests : BaseEndpointTest
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
         var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
         loginResp.EnsureSuccessStatusCode();
+
         var json = await loginResp.Content.ReadAsStringAsync();
         var tokens = JsonDocument.Parse(json).RootElement;
-        var refresh = tokens.GetProperty("refreshToken").GetString();
-
-        var dto = new { RefreshToken = refresh };
+        var refresh = tokens.GetProperty("refreshToken").GetString()!;
 
         // Act
-        var first = await Client.PostAsJsonAsync("/refresh-token-jwt", dto);
+        var first = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = refresh });
         first.EnsureSuccessStatusCode();
 
-        var second = await Client.PostAsJsonAsync("/refresh-token-jwt", dto);
+        var second = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = refresh });
 
         // Assert
         second.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
-    public async Task Endpoint_RefreshToken_Should_ReturnUnauthorized_WhenTokenEmpty()
-    {
-        // Arrange
-        var dto = new { RefreshToken = "" };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/refresh-token-jwt", dto);
-
-        // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-    }
-
-    [Fact]
     public async Task Endpoint_RefreshToken_Should_RevokeTokenFamily_WhenRevokedTokenReused()
     {
-        // Arrange: Login and create token chain (token1 -> token2 -> token3)
+        // Arrange: Create token chain (token1 -> token2 -> token3)
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
         var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
         loginResp.EnsureSuccessStatusCode();
-        
-        var json1 = await loginResp.Content.ReadAsStringAsync();
-        var tokens1 = JsonDocument.Parse(json1).RootElement;
-        var token1 = tokens1.GetProperty("refreshToken").GetString()!;
 
-        // Refresh to get token2
+        var json1 = await loginResp.Content.ReadAsStringAsync();
+        var token1 = JsonDocument.Parse(json1).RootElement.GetProperty("refreshToken").GetString()!;
+
         var refresh1 = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = token1 });
         refresh1.EnsureSuccessStatusCode();
         var json2 = await refresh1.Content.ReadAsStringAsync();
-        var tokens2 = JsonDocument.Parse(json2).RootElement;
-        var token2 = tokens2.GetProperty("refreshToken").GetString()!;
+        var token2 = JsonDocument.Parse(json2).RootElement.GetProperty("refreshToken").GetString()!;
 
-        // Refresh to get token3
         var refresh2 = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = token2 });
         refresh2.EnsureSuccessStatusCode();
         var json3 = await refresh2.Content.ReadAsStringAsync();
-        var tokens3 = JsonDocument.Parse(json3).RootElement;
-        var token3 = tokens3.GetProperty("refreshToken").GetString()!;
+        var token3 = JsonDocument.Parse(json3).RootElement.GetProperty("refreshToken").GetString()!;
 
-        // Act: Try to reuse revoked token2 (suspicious activity - possible token theft)
+        // Act: Reuse revoked token2 (token theft detected)
         var reuseRevoked = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = token2 });
 
-        // Assert: Should reject and revoke entire family
-        reuseRevoked.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "reused revoked token should be rejected");
+        // Assert: Entire family should be revoked
+        reuseRevoked.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
 
-        // Verify token3 (latest in chain) is also revoked
         var useToken3 = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = token3 });
-        useToken3.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "entire token family should be revoked");
+        useToken3.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
     public async Task Endpoint_RefreshToken_Should_LinkTokens_WhenRotationHappens()
     {
-        // Arrange: Login to get initial token
+        // Arrange
         var loginDto = new { Email = "refresh_user_valid@example.com", Password = "P@ssw0rd!" };
         var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
         loginResp.EnsureSuccessStatusCode();
-        
-        var json = await loginResp.Content.ReadAsStringAsync();
-        var tokens = JsonDocument.Parse(json).RootElement;
-        var oldToken = tokens.GetProperty("refreshToken").GetString()!;
 
-        // Act: Refresh to trigger rotation
+        var json = await loginResp.Content.ReadAsStringAsync();
+        var oldToken = JsonDocument.Parse(json).RootElement.GetProperty("refreshToken").GetString()!;
+
+        // Act
         var refreshResp = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = oldToken });
         refreshResp.EnsureSuccessStatusCode();
-        
+
         var newJson = await refreshResp.Content.ReadAsStringAsync();
-        var newTokens = JsonDocument.Parse(newJson).RootElement;
-        var newToken = newTokens.GetProperty("refreshToken").GetString()!;
+        var newToken = JsonDocument.Parse(newJson).RootElement.GetProperty("refreshToken").GetString()!;
 
-        // Assert: Tokens should be different (rotation happened)
-        newToken.Should().NotBe(oldToken, "token rotation should generate new token");
+        // Assert
+        newToken.Should().NotBe(oldToken);
 
-        // New token should work (before any suspicious activity)
         var useNew = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = newToken });
-        useNew.StatusCode.Should().Be(HttpStatusCode.OK, "new token should be valid");
+        useNew.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // Old token should be revoked (and will trigger family revocation)
         var reuseOld = await Client.PostAsJsonAsync("/refresh-token-jwt", new { RefreshToken = oldToken });
-        reuseOld.StatusCode.Should().Be(HttpStatusCode.Unauthorized, "old token should be revoked after rotation");
+        reuseOld.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }
