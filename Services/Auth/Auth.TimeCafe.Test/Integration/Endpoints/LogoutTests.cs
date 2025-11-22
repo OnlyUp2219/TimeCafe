@@ -52,7 +52,7 @@ public class LogoutTests : BaseEndpointTest
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var loginJson = JsonDocument.Parse(loginJsonString).RootElement;
             loginJson.TryGetProperty("refreshToken", out var refreshToken).Should().BeTrue();
-            var logoutDto = new { RefreshToken = refreshToken.GetString() };
+            var logoutDto = new { RefreshToken = refreshToken.GetString()! };
             var response = await Client.PostAsJsonAsync("/logout", logoutDto);
             var jsonString = await response.Content.ReadAsStringAsync();
 
@@ -84,10 +84,9 @@ public class LogoutTests : BaseEndpointTest
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
             var loginJson = JsonDocument.Parse(loginJsonString).RootElement;
             loginJson.TryGetProperty("refreshToken", out var refreshToken).Should().BeTrue();
-            var token = refreshToken.GetString();
+            var token = refreshToken.GetString()!;
             var logoutDto = new { RefreshToken = token };
             var firstLogout = await Client.PostAsJsonAsync("/logout", logoutDto);
-            var firstLogoutString = await firstLogout.Content.ReadAsStringAsync();
             firstLogout.StatusCode.Should().Be(HttpStatusCode.OK);
             var secondLogout = await Client.PostAsJsonAsync("/logout", logoutDto);
             var secondLogoutString = await secondLogout.Content.ReadAsStringAsync();
