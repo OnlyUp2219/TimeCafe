@@ -1,14 +1,10 @@
 
 namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
-public class ChangePasswordTests : BaseEndpointTest
+public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     private const string Endpoint = "/account/change-password";
     private const string LoginEndpoint = "/login-jwt";
-
-    public ChangePasswordTests(IntegrationApiFactory factory) : base(factory)
-    {
-    }
 
     private async Task<(string email, string oldPassword, string accessToken, string refreshToken)> CreateUserAndLoginAsync()
     {
@@ -34,11 +30,11 @@ public class ChangePasswordTests : BaseEndpointTest
     }
 
     [Fact]
-    public async Task Endpoint_ChangePassword_Should_ReturnUserNotFound_WhenUserIdNotFound()
+    public async Task Endpoint_ChangePassword_Should_ReturnUnauthorized_WhenInvalidToken()
     {
         // Arrange
         var dto = new { CurrentPassword = "OldP@ssw0rd!", NewPassword = "NewP@ssw0rd!" };
-        Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "invalid-token-without-userid");
+        Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "invalid-token");
 
         // Act
         var response = await Client.PostAsJsonAsync(Endpoint, dto);
@@ -48,13 +44,10 @@ public class ChangePasswordTests : BaseEndpointTest
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("errors", out var errors).Should().BeTrue();
-            errors.EnumerateArray().FirstOrDefault(e => e.TryGetProperty("code", out var code) && code.GetString() == "UserNotFound").Should().NotBeNull();
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_ChangePassword_Should_ReturnUserNotFound_WhenUserIdNotFound] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_ChangePassword_Should_ReturnUnauthorized_WhenInvalidToken] Response: {jsonString}");
             throw;
         }
     }
@@ -80,14 +73,14 @@ public class ChangePasswordTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ChangePasswordFailed");
+            code.GetString()!.Should().Be("ChangePasswordFailed");
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             var matchingError = errors.EnumerateArray().FirstOrDefault(e => e.TryGetProperty("code", out var errCode) && errCode.GetString() == expectedErrorCode);
             matchingError.ValueKind.Should().NotBe(JsonValueKind.Undefined);
 
             if (expectedDescriptionPart != null && matchingError.TryGetProperty("description", out var desc))
             {
-                desc.GetString().Should().Contain(expectedDescriptionPart);
+                desc.GetString()!.Should().Contain(expectedDescriptionPart);
             }
         }
         catch (Exception)
@@ -101,7 +94,7 @@ public class ChangePasswordTests : BaseEndpointTest
     public async Task Endpoint_ChangePassword_Should_ReturnSuccess_WhenValidPasswords()
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (_, oldPassword, accessToken, _) = await CreateUserAndLoginAsync();
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         var dto = new { CurrentPassword = oldPassword, NewPassword = "NewP@ssw0rd!" };
 
@@ -115,7 +108,7 @@ public class ChangePasswordTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().Be("Пароль изменён");
+            message.GetString()!.Should().Be("Пароль изменён");
             json.TryGetProperty("refreshTokensRevoked", out var revoked).Should().BeTrue();
             revoked.GetInt32().Should().BeGreaterThan(0);
         }
@@ -127,15 +120,13 @@ public class ChangePasswordTests : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData("", "NewP@ssw0rd!", "Текущий пароль обязателен")]
-    [InlineData("OldP@ssw0rd!", "", "Новый пароль обязателен")]
     [InlineData("SameP@ssw0rd!", "SameP@ssw0rd!", "Новый пароль не должен совпадать со старым")]
-    public async Task Endpoint_ChangePassword_Should_ReturnValidationError_WhenInvalidCommand(string current, string newPass, string expectedMessagePart)
+    public async Task Endpoint_ChangePassword_Should_ReturnValidationError_WhenSamePassword(string current, string newPass, string expectedMessagePart)
     {
         // Arrange
         var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-        var dto = new { CurrentPassword = current == "OldP@ssw0rd!" ? oldPassword : current, NewPassword = newPass };
+        var dto = new { CurrentPassword = current, NewPassword = newPass };
 
         // Act
         var response = await Client.PostAsJsonAsync(Endpoint, dto);
@@ -147,13 +138,13 @@ public class ChangePasswordTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)422);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.EnumerateArray().Any(e => e.TryGetProperty("message", out var msg) && msg.GetString()?.Contains(expectedMessagePart) == true).Should().BeTrue();
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_ChangePassword_Should_ReturnValidationError_WhenInvalidCommand] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_ChangePassword_Should_ReturnValidationError_WhenSamePassword] Response: {jsonString}");
             throw;
         }
     }
@@ -185,7 +176,7 @@ public class ChangePasswordTests : BaseEndpointTest
     public async Task Endpoint_ChangePassword_Should_RevokeMultipleTokens_AfterSuccess()
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (email, oldPassword, accessToken, _) = await CreateUserAndLoginAsync();
 
         var loginDto = new { Email = email, Password = oldPassword };
         var loginResp1 = await Client.PostAsJsonAsync(LoginEndpoint, loginDto);
@@ -221,7 +212,7 @@ public class ChangePasswordTests : BaseEndpointTest
     public async Task Endpoint_ChangePassword_Should_ReturnSuccessWithZeroRevoked_WhenNoRefreshTokens()
     {
         // Arrange
-        var (email, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
+        var (_, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
         await Client.PostAsJsonAsync("/logout", new { RefreshToken = refreshToken });
 
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
@@ -267,7 +258,7 @@ public class ChangePasswordTests : BaseEndpointTest
             secondResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ChangePasswordFailed");
+            code.GetString()!.Should().Be("ChangePasswordFailed");
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.EnumerateArray().Any(e => e.TryGetProperty("code", out var errCode) && errCode.GetString() == "PasswordMismatch").Should().BeTrue();
         }

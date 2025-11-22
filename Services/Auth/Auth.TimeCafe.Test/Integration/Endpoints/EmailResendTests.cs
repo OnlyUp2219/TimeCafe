@@ -10,21 +10,6 @@ public class EmailResendTests : BaseEndpointTest
         SeedUser("confirmed@example.com", "P@ssw0rd!", true);
     }
 
-    private HttpClient CreateClientWithDisabledRateLimiter()
-    {
-        var overrides = new Dictionary<string, string?>
-        {
-            ["RateLimiter:EmailSms:MinIntervalSeconds"] = "0",
-            ["RateLimiter:EmailSms:WindowMinutes"] = "1",
-            ["RateLimiter:EmailSms:MaxRequests"] = "10000"
-        };
-
-        return Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration((_, conf) => conf.AddInMemoryCollection(overrides));
-        }).CreateClient();
-    }
-
     [Fact]
     public async Task Endpoint_Resend_Should_ReturnUserNotFound_WhenUserDoesNotExist()
     {
@@ -42,7 +27,7 @@ public class EmailResendTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)401);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("UserNotFound");
+            code.GetString()!.Should().Be("UserNotFound");
         }
         catch (Exception)
         {
@@ -68,7 +53,7 @@ public class EmailResendTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("EmailAlreadyConfirmed");
+            code.GetString()!.Should().Be("EmailAlreadyConfirmed");
         }
         catch (Exception)
         {
@@ -94,8 +79,8 @@ public class EmailResendTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("callbackUrl", out var url).Should().BeTrue();
-            url.GetString().Should().Contain("confirm-email?userId=");
-            url.GetString().Should().Contain("&token=");
+            url.GetString()!.Should().Contain("confirm-email?userId=");
+            url.GetString()!.Should().Contain("&token=");
         }
         catch (Exception)
         {
@@ -123,7 +108,7 @@ public class EmailResendTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
 
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.EnumerateArray()

@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class LogoutTests : BaseEndpointTest
@@ -9,7 +7,7 @@ public class LogoutTests : BaseEndpointTest
         SeedUser("confirmed@example.com", "password123", true);
     }
     [Fact]
-    public async Task Logout_Should_ReturnTokenNotFound_WhenTokenIsEmpty()
+    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenEmpty()
     {
         // Arrange
         var dto = new { RefreshToken = "" };
@@ -24,22 +22,22 @@ public class LogoutTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)422);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("status", out var status).Should().BeTrue();
             status.GetInt32().Should().Be(422);
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString().Should().Contain("Base64");
+            errMsg.GetString()!.Should().Contain("Base64");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnTokenNotFound_WhenTokenIsEmpty] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenEmpty] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Logout_Should_ReturnLoggedOut_WhenTokenIsValid()
+    public async Task Endpoint_Logout_Should_ReturnSuccess_WhenTokenValid()
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
@@ -65,13 +63,13 @@ public class LogoutTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnLoggedOut_WhenTokenIsValid] Login Response: {loginJsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnSuccess_WhenTokenValid] Login Response: {loginJsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Logout_Should_ReturnTokenNotFound_WhenTokenIsAlreadyRevoked()
+    public async Task Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenAlreadyRevoked()
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
@@ -101,13 +99,13 @@ public class LogoutTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnTokenNotFound_WhenTokenIsAlreadyRevoked] Login Response: {loginJsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenAlreadyRevoked] Login Response: {loginJsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Logout_Should_ReturnTokenNotFound_WhenTokenIsNonexistent()
+    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenNonexistent()
     {
         // Arrange
         var logoutDto = new { RefreshToken = "nonexistent-token-123" };
@@ -122,22 +120,22 @@ public class LogoutTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)422);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("status", out var status).Should().BeTrue();
             status.GetInt32().Should().Be(422);
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString().Should().Contain("Base64");
+            errMsg.GetString()!.Should().Contain("Base64");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnTokenNotFound_WhenTokenIsNonexistent] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenNonexistent] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Logout_Should_ReturnTokenNotFound_WhenTokenIsMalformed()
+    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenMalformed()
     {
         // Arrange
         var logoutDto = new { RefreshToken = "!!!@@@###" };
@@ -152,22 +150,22 @@ public class LogoutTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)422);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("status", out var status).Should().BeTrue();
             status.GetInt32().Should().Be(422);
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString().Should().Contain("Base64");
+            errMsg.GetString()!.Should().Contain("Base64");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnTokenNotFound_WhenTokenIsMalformed] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenMalformed] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Logout_Should_ReturnTokenNotFound_WhenTokenIsNullOrMissing()
+    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenNullOrMissing()
     {
         // Arrange
         var logoutDto = new { };
@@ -182,23 +180,23 @@ public class LogoutTests : BaseEndpointTest
             response.StatusCode.Should().Be((HttpStatusCode)422);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("status", out var status).Should().BeTrue();
             status.GetInt32().Should().Be(422);
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString().Should().Contain("Base64");
+            errMsg.GetString()!.Should().Contain("Base64");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnTokenNotFound_WhenTokenIsNullOrMissing] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenNullOrMissing] Response: {jsonString}");
             throw;
         }
     }
 
 
     [Fact]
-    public async Task Logout_Should_ReturnOk_WhenTokenIsBase64ButNonexistent()
+    public async Task Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenBase64ButNonexistent()
     {
         // Arrange
         var raw = "nonexistent-token-456";
@@ -219,7 +217,7 @@ public class LogoutTests : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Logout_Should_ReturnOk_WhenTokenIsBase64ButNonexistent] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenBase64ButNonexistent] Response: {jsonString}");
             throw;
         }
     }
