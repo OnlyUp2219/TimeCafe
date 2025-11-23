@@ -213,7 +213,10 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         // Arrange
         var (_, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
-        await Client.PostAsJsonAsync("/logout", new { RefreshToken = refreshToken });
+
+        var logoutMsg = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        logoutMsg.Headers.Add("Cookie", $"refresh_token={refreshToken}");
+        await Client.SendAsync(logoutMsg);
 
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         var dto = new { CurrentPassword = oldPassword, NewPassword = "NewP@ssw0rd!" };

@@ -8,10 +8,14 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
+        var jsonOptions = new System.Text.Json.JsonSerializerOptions
+        {
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
         string payload = string.Empty;
         try
         {
-            payload = JsonSerializer.Serialize(request);
+            payload = JsonSerializer.Serialize(request, jsonOptions);
         }
         catch { }
 
@@ -20,7 +24,7 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
         string responseJson = string.Empty;
         try
         {
-            responseJson = JsonSerializer.Serialize(response);
+            responseJson = JsonSerializer.Serialize(response, jsonOptions);
         }
         catch { }
         _logger.LogInformation("Handled {RequestName} Response={Response}", requestName, responseJson);
