@@ -6,218 +6,127 @@ public class LogoutTests : BaseEndpointTest
     {
         SeedUser("confirmed@example.com", "password123", true);
     }
-    [Fact]
-    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenEmpty()
-    {
-        // Arrange
-        var dto = new { RefreshToken = "" };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/logout", dto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ValidationError");
-            json.TryGetProperty("status", out var status).Should().BeTrue();
-            status.GetInt32().Should().Be(422);
-            json.TryGetProperty("errors", out var errors).Should().BeTrue();
-            errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString()!.Should().Contain("Base64");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenEmpty] Response: {jsonString}");
-            throw;
-        }
-    }
 
     [Fact]
-    public async Task Endpoint_Logout_Should_ReturnSuccess_WhenTokenValid()
+    public async Task Endpoint_Logout_Should_ReturnOkAndRevoke_WhenCookieValid()
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
+        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginBody = await loginResp.Content.ReadAsStringAsync();
 
         // Act
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
-        var loginJsonString = await loginResp.Content.ReadAsStringAsync();
+        var refreshToken = ExtractCookieValue(loginResp, "refresh_token");
+        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        logoutRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
+        var response = await Client.SendAsync(logoutRequest);
+        var body = await response.Content.ReadAsStringAsync();
 
         // Assert
         try
         {
             loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
-            var loginJson = JsonDocument.Parse(loginJsonString).RootElement;
-            loginJson.TryGetProperty("refreshToken", out var refreshToken).Should().BeTrue();
-            var logoutDto = new { RefreshToken = refreshToken.GetString()! };
-            var response = await Client.PostAsJsonAsync("/logout", logoutDto);
-            var jsonString = await response.Content.ReadAsStringAsync();
-
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
+            var json = JsonDocument.Parse(body).RootElement;
             json.TryGetProperty("revoked", out var revoked).Should().BeTrue();
             revoked.GetBoolean().Should().BeTrue();
+            response.Headers.TryGetValues("Set-Cookie", out var setCookies).Should().BeTrue();
+            setCookies!.Any(c => c.StartsWith("refresh_token=", StringComparison.OrdinalIgnoreCase)).Should().BeTrue();
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnSuccess_WhenTokenValid] Login Response: {loginJsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnOkAndRevoke_WhenCookieValid] login: {loginBody} response: {body}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenAlreadyRevoked()
+    public async Task Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMissing()
     {
         // Arrange
-        var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
-
-        // Act
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt", loginDto);
-        var loginJsonString = await loginResp.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
-            var loginJson = JsonDocument.Parse(loginJsonString).RootElement;
-            loginJson.TryGetProperty("refreshToken", out var refreshToken).Should().BeTrue();
-            var token = refreshToken.GetString()!;
-            var logoutDto = new { RefreshToken = token };
-            var firstLogout = await Client.PostAsJsonAsync("/logout", logoutDto);
-            firstLogout.StatusCode.Should().Be(HttpStatusCode.OK);
-            var secondLogout = await Client.PostAsJsonAsync("/logout", logoutDto);
-            var secondLogoutString = await secondLogout.Content.ReadAsStringAsync();
-
-            secondLogout.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(secondLogoutString).RootElement;
-            json.TryGetProperty("revoked", out var revoked).Should().BeTrue();
-            revoked.GetBoolean().Should().BeFalse();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenAlreadyRevoked] Login Response: {loginJsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
-    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenNonexistent()
-    {
-        // Arrange
-        var logoutDto = new { RefreshToken = "nonexistent-token-123" };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/logout", logoutDto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ValidationError");
-            json.TryGetProperty("status", out var status).Should().BeTrue();
-            status.GetInt32().Should().Be(422);
-            json.TryGetProperty("errors", out var errors).Should().BeTrue();
-            errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString()!.Should().Contain("Base64");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenNonexistent] Response: {jsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
-    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenMalformed()
-    {
-        // Arrange
-        var logoutDto = new { RefreshToken = "!!!@@@###" };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/logout", logoutDto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ValidationError");
-            json.TryGetProperty("status", out var status).Should().BeTrue();
-            status.GetInt32().Should().Be(422);
-            json.TryGetProperty("errors", out var errors).Should().BeTrue();
-            errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString()!.Should().Contain("Base64");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenMalformed] Response: {jsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
-    public async Task Endpoint_Logout_Should_ReturnValidationError_WhenTokenNullOrMissing()
-    {
-        // Arrange
-        var logoutDto = new { };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/logout", logoutDto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ValidationError");
-            json.TryGetProperty("status", out var status).Should().BeTrue();
-            status.GetInt32().Should().Be(422);
-            json.TryGetProperty("errors", out var errors).Should().BeTrue();
-            errors[0].TryGetProperty("message", out var errMsg).Should().BeTrue();
-            errMsg.GetString()!.Should().Contain("Base64");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnValidationError_WhenTokenNullOrMissing] Response: {jsonString}");
-            throw;
-        }
-    }
-
-
-    [Fact]
-    public async Task Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenBase64ButNonexistent()
-    {
-        // Arrange
-        var raw = "nonexistent-token-456";
-        var base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));
-        var logoutDto = new { RefreshToken = base64 };
-
-        // Act
-        var response = await Client.PostAsJsonAsync("/logout", logoutDto);
-        var jsonString = await response.Content.ReadAsStringAsync();
+        var response = await Client.PostAsync("/logout", new StringContent(string.Empty));
+        var body = await response.Content.ReadAsStringAsync();
 
         // Assert
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
+            var json = JsonDocument.Parse(body).RootElement;
+            json.TryGetProperty("revoked", out var revoked).Should().BeTrue();
+            revoked.GetBoolean().Should().BeFalse();
+            json.TryGetProperty("message", out var message).Should().BeTrue();
+            message.GetString()!.Should().Contain("отсутствует");
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMissing] response: {body}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieAlreadyRevoked()
+    {
+        // Arrange
+        var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
+        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var refreshToken = ExtractCookieValue(loginResp, "refresh_token");
+        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        logoutRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
+        (await Client.SendAsync(logoutRequest)).StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Act
+        var secondRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        secondRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
+        var secondResponse = await Client.SendAsync(secondRequest);
+        var body = await secondResponse.Content.ReadAsStringAsync();
+
+        // Assert
+        try
+        {
+            secondResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(body).RootElement;
             json.TryGetProperty("revoked", out var revoked).Should().BeTrue();
             revoked.GetBoolean().Should().BeFalse();
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_Logout_Should_ReturnNotRevoked_WhenTokenBase64ButNonexistent] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieAlreadyRevoked] response: {body}");
             throw;
         }
+    }
+
+    [Fact]
+    public async Task Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMalformed()
+    {
+        // Arrange
+        var request = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        request.Headers.Add("Cookie", "refresh_token=!!!@@@###");
+
+        // Act
+        var response = await Client.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(body).RootElement;
+            json.TryGetProperty("revoked", out var revoked).Should().BeTrue();
+            revoked.GetBoolean().Should().BeFalse();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMalformed] response: {body}");
+            throw;
+        }
+    }
+
+    private static string ExtractCookieValue(HttpResponseMessage response, string cookieName)
+    {
+        response.Headers.TryGetValues("Set-Cookie", out var cookies).Should().BeTrue();
+        var raw = cookies!.First(c => c.StartsWith(cookieName + "=", StringComparison.OrdinalIgnoreCase));
+        return raw.Split(';', 2)[0].Substring(cookieName.Length + 1);
     }
 }
