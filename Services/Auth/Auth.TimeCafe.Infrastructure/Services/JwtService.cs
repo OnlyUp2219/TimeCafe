@@ -11,6 +11,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         var jwtSection = _configuration.GetSection("Jwt");
         var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
         var expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
+        var refreshDays = int.Parse(jwtSection["RefreshTokenExpirationDays"]!);
 
         var roles = await _userRoleService.GetUserRolesAsync(user);
         var userRole = roles.FirstOrDefault() ?? "client";
@@ -36,7 +37,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         {
             Token = refreshToken,
             UserId = user.Id,
-            Expires = DateTimeOffset.UtcNow.AddDays(30),
+            Expires = DateTimeOffset.UtcNow.AddDays(refreshDays),
             Created = DateTimeOffset.UtcNow
         };
 
