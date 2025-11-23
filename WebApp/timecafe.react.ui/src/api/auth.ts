@@ -1,5 +1,5 @@
 import axios from "axios";
-import {clearTokens, setAccessToken, setRefreshToken, setEmail, setEmailConfirmed} from "../store/authSlice.ts";
+import {clearTokens, setAccessToken, setEmail, setEmailConfirmed} from "../store/authSlice.ts";
 import type {AppDispatch} from "../store";
 import {store} from "../store";
 import {withRateLimit, type RateLimitedResponse} from "../utility/rateLimitHelper.ts";
@@ -68,8 +68,9 @@ export async function registerUser(data: RegisterRequest, dispatch: AppDispatch)
 
 export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Promise<{ emailNotConfirmed?: boolean }> {
     try {
-        const res = await axios.post(`${apiBase}/login-jwt`, data, {
+        const res = await axios.post(`${apiBase}/login-jwt-v2`, data, {
             headers: {"Content-Type": "application/json"},
+            withCredentials: true
         });
 
         if (res.data.emailConfirmed === false) {
@@ -79,9 +80,8 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
         dispatch(setEmail(data.email));
 
 
-        const tokens = res.data as { accessToken: string; refreshToken: string };
+        const tokens = res.data as { accessToken: string };
         dispatch(setAccessToken(tokens.accessToken));
-        dispatch(setRefreshToken(tokens.refreshToken));
         dispatch(setEmail(data.email));
         dispatch(setEmailConfirmed(true));
         return {};
@@ -97,20 +97,27 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
     }
 }
 
-export async function refreshToken(refreshToken: string, dispatch: AppDispatch): Promise<void> {
-    if (!refreshToken) throw new Error("Нет refresh токена");
-
+export async function refreshAccessToken(dispatch: AppDispatch): Promise<void> {
     try {
-        const res = await axios.post(`${apiBase}/refresh-token-jwt`, {refreshToken}, {
+        // Диагностика наличия cookie до запроса
+        console.log("[refreshAccessToken] document.cookie перед запросом:", document.cookie);
+        const res = await axios.post(`${apiBase}/refresh-jwt-v2`, {}, {
             headers: {"Content-Type": "application/json"},
+            withCredentials: true
         });
-
-        const tokens = res.data as { accessToken: string; refreshToken: string };
+        console.log("[refreshAccessToken] status:", res.status);
+        const tokens = res.data as { accessToken: string };
         dispatch(setAccessToken(tokens.accessToken));
-        dispatch(setRefreshToken(tokens.refreshToken));
-    } catch {
-        dispatch(clearTokens());
-        throw new Error("Не удалось обновить токен");
+        console.log("[refreshAccessToken] новый accessToken получен (длина)", tokens.accessToken.length);
+    } catch (e) {
+        if (axios.isAxiosError(e)) {
+            const r = e.response;
+            console.warn("[refreshAccessToken] ошибка axios", r?.status, r?.data, "cookie сейчас:", document.cookie);
+        } else {
+            console.warn("[refreshAccessToken] неизвестная ошибка", e, "cookie сейчас:", document.cookie);
+        }
+        // Не чистим accessToken сразу, чтобы не вызывать мгновенный редирект
+        throw new Error("Не удалось обновить токен (см. консоль браузера)");
     }
 }
 
@@ -166,14 +173,10 @@ export async function changePassword(data: ChangePasswordRequest): Promise<void>
     }
 }
 
-export async function logoutServer(refreshToken: string | null, dispatch: AppDispatch): Promise<void> {
+export async function logoutServer(dispatch: AppDispatch): Promise<void> {
     try {
-        if (refreshToken) {
-            await axios.post(`${apiBase}/logout`, {refreshToken}, {
-                headers: {"Content-Type": "application/json"}
-            });
-        }
-    } catch (e) {
+        await axios.post(`${apiBase}/logout`, null, { withCredentials: true });
+    } catch {
     } finally {
         dispatch(clearTokens());
     }
