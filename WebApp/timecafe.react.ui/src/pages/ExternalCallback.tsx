@@ -1,6 +1,6 @@
 import {useDispatch} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {setAccessToken, setRefreshToken, setEmailConfirmed} from "../store/authSlice.ts";
+import {setAccessToken, setEmailConfirmed} from "../store/authSlice.ts";
 import {Spinner} from "@fluentui/react-components";
 import React, {useEffect} from "react";
 
@@ -16,12 +16,10 @@ export const ExternalCallback = () => {
         if (hash) {
             const params = new URLSearchParams(hash.substring(1));
             const access_token = params.get("access_token");
-            const refresh_token = params.get("refresh_token");
             const email_confirmed = params.get("emailConfirmed");
 
-            if (access_token && refresh_token) {
+            if (access_token) {
                 dispatch(setAccessToken(access_token));
-                dispatch(setRefreshToken(refresh_token));
                 dispatch(setEmailConfirmed(email_confirmed));
                 window.history.replaceState(null, "", window.location.pathname + window.location.search);
                 redirectedRef.current = true;

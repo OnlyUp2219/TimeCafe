@@ -1,44 +1,48 @@
 import axios from "axios";
-import {refreshToken as refreshTokenApi} from "./auth.ts";
+import {refreshAccessToken} from "./auth.ts";
 import {store} from "../store";
 import type {AppDispatch} from "../store";
 
 let isRefreshing = false;
+axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
-    response => response,
+    r => r,
     async error => {
         const originalRequest = error.config;
+        if (!originalRequest) return Promise.reject(error);
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (originalRequest.url?.includes("/refresh-jwt-v2") || (originalRequest as any)._manualRefresh) {
+            return Promise.reject(error);
+        }
+
+        if (error.response?.status === 401) {
+            if (originalRequest._retry) {
+                return Promise.reject(error);
+            }
             if (isRefreshing) {
                 return Promise.reject(error);
             }
-
             originalRequest._retry = true;
-
             try {
                 isRefreshing = true;
-                const state = store.getState();
-                const refreshToken = state.auth.refreshToken;
                 const dispatch: AppDispatch = store.dispatch;
-
-                await refreshTokenApi(refreshToken, dispatch);
-
-                const updatedState = store.getState();
-                const newAccessToken = updatedState.auth.accessToken;
-
-                originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-
+                await refreshAccessToken(dispatch);
+                const newAccessToken = store.getState().auth.accessToken;
+                if (newAccessToken) {
+                    originalRequest.headers = {
+                        ...(originalRequest.headers || {}),
+                        Authorization: `Bearer ${newAccessToken}`
+                    };
+                }
                 isRefreshing = false;
                 return axios(originalRequest);
-            } catch {
+            } catch (e) {
                 isRefreshing = false;
                 window.location.href = "/login";
                 return Promise.reject(error);
             }
         }
-
         return Promise.reject(error);
     }
 );

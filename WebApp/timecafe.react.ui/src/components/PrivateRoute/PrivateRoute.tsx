@@ -1,5 +1,5 @@
 import {Navigate} from "react-router-dom";
-import {refreshToken as refreshTokenApi} from "../../api/auth.ts";
+import {refreshAccessToken} from "../../api/auth.ts";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
@@ -15,7 +15,6 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
     const [allowed, setAllowed] = useState(false);
     const dispatch = useDispatch();
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-    const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
 
     useEffect(() => {
@@ -23,22 +22,20 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
             // await new Promise(resolve => setTimeout(resolve, 1000));
             if (accessToken && emailConfirmed) {
                 setAllowed(true);
-            } else if (refreshToken) {
+            } else {
                 try {
-                    await refreshTokenApi(refreshToken, dispatch);
+                    await refreshAccessToken(dispatch);
                     const st = store.getState();
                     if (st.auth.accessToken && st.auth.emailConfirmed) setAllowed(true); else setAllowed(false);
                 } catch {
                     setAllowed(false);
                 }
-            } else {
-                setAllowed(false);
             }
             setLoading(false);
         };
 
         checkAuth();
-    }, [dispatch, /*accessToken, refreshToken*/]);
+    }, [dispatch /* accessToken */]);
 
     if (loading) return <Spinner size={"huge"}/>;
 

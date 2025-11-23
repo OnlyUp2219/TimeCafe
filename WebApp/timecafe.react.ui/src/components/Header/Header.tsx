@@ -1,9 +1,8 @@
 import {Hamburger, Button, Avatar} from "@fluentui/react-components";
 import "./Header.css";
 import {logoutServer} from "../../api/auth.ts";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch} from "react-redux";
 import type {FC} from "react";
-import type {RootState} from "../../store";
 import {useNavigate} from "react-router-dom";
 
 interface HeaderProps {
@@ -15,10 +14,9 @@ interface HeaderProps {
 export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen}) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const refreshToken = useSelector((s: RootState) => s.auth.refreshToken);
 
     const handleServerLogout = async () => {
-        await logoutServer(refreshToken, dispatch);
+        await logoutServer(dispatch);
         navigate("/login", { replace: true });
     };
     return (
