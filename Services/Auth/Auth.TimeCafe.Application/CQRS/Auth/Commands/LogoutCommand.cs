@@ -4,28 +4,19 @@ public record class LogoutCommand(string RefreshToken) : IRequest<LogoutResult>;
 
 public record class LogoutResult(
     bool Success,
+    bool Revoked,
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    bool? Revoked = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
-    public static LogoutResult TokenNotFound() =>
-        new(false, Code: "TokenNotFound", Message: "Токен не найден", StatusCode: 400,
-            Revoked: false);
+    public static LogoutResult NoToken() =>
+        new(true, false, Message: "Refresh token отсутствует");
 
-    public static LogoutResult LoggedOut(bool revoked) =>
-        new(true, Code: revoked ? "Выход осуществлен" : "Токен не найден",
-            Revoked: revoked);
-}
-
-public class LogoutCommandValidator : AbstractValidator<LogoutCommand>
-{
-    public LogoutCommandValidator()
-    {
-        RuleFor(x => x.RefreshToken)
-            .BeValidBase64();
-    }
+    public static LogoutResult Completed(bool revoked) =>
+        new(true, revoked,
+            Code: revoked ? "LogoutCompleted" : "LogoutSkipped",
+            Message: revoked ? "Refresh token отозван" : "Refresh token не найден");
 }
 
 public class LogoutCommandHandler(IJwtService jwtService) : IRequestHandler<LogoutCommand, LogoutResult>
@@ -35,13 +26,9 @@ public class LogoutCommandHandler(IJwtService jwtService) : IRequestHandler<Logo
     public async Task<LogoutResult> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
-            return LogoutResult.TokenNotFound();
+            return LogoutResult.NoToken();
 
         var revoked = await _jwtService.RevokeRefreshTokenAsync(request.RefreshToken, cancellationToken);
-
-        if (!revoked)
-            return LogoutResult.LoggedOut(false);
-
-        return LogoutResult.LoggedOut(true);
+        return LogoutResult.Completed(revoked);
     }
 }
