@@ -1,20 +1,44 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record class GetTotalPageQuery() : IRequest<int>;
+public record GetTotalPagesQuery() : IRequest<GetTotalPagesResult>;
 
-public class GetTotalPageQueryValidator : AbstractValidator<GetTotalPageQuery>
+public record GetTotalPagesResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    int? TotalCount = null) : ICqrsResultV2
 {
-    public GetTotalPageQueryValidator()
-    {
+    public static GetTotalPagesResult GetFailed() =>
+        new(false, Code: "GetTotalPagesFailed", Message: "Не удалось получить общее количество", StatusCode: 500);
 
+    public static GetTotalPagesResult GetSuccess(int totalCount) =>
+        new(true, Message: $"Всего профилей: {totalCount}", TotalCount: totalCount);
+}
+
+public class GetTotalPagesQueryValidator : AbstractValidator<GetTotalPagesQuery>
+{
+    public GetTotalPagesQueryValidator()
+    {
+        // Нет параметров для валидации
     }
 }
 
-public class GetTotalPageQueryHandler(IUserRepositories repositories) : IRequestHandler<GetTotalPageQuery, int>
+public class GetTotalPagesQueryHandler(IUserRepositories repositories) : IRequestHandler<GetTotalPagesQuery, GetTotalPagesResult>
 {
-    private readonly IUserRepositories _repositories = repositories;    
-    public async Task<int> Handle(GetTotalPageQuery request, CancellationToken cancellationToken)
+    private readonly IUserRepositories _repositories = repositories;
+
+    public async Task<GetTotalPagesResult> Handle(GetTotalPagesQuery request, CancellationToken cancellationToken)
     {
-       return await _repositories.GetTotalPageAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var totalCount = await _repositories.GetTotalPageAsync(cancellationToken);
+            return GetTotalPagesResult.GetSuccess(totalCount);
+        }
+        catch (Exception)
+        {
+            return GetTotalPagesResult.GetFailed();
+        }
     }
 }
