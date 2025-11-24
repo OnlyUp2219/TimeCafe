@@ -1,4 +1,4 @@
-﻿using UserProfile.TimeCafe.Domain.Models;
+using UserProfile.TimeCafe.Domain.Models;
 
 namespace UserProfile.TimeCafe.Domain.Contracts;
 
