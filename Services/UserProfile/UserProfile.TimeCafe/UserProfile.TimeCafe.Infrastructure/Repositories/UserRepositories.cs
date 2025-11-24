@@ -111,8 +111,13 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
     public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
         _logger.LogInformation("Обновление профиля для UserId {UserId}", profile.UserId);
-        var existingClient = await _context.Profiles.FindAsync(profile.UserId) ??
-            throw new KeyNotFoundException($"Клиент с ID {profile.UserId} не найден");
+        var existingClient = await _context.Profiles.FindAsync(profile.UserId);
+
+        if (existingClient is null)
+        {
+            _logger.LogWarning("Профиль с UserId {UserId} не найден", profile.UserId);
+            return null;
+        }
 
         _context.Entry(existingClient).CurrentValues.SetValues(profile);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
@@ -134,8 +139,13 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
     public async Task DeleteProfileAsync(string userId, CancellationToken? cancellationToken)
     {
         _logger.LogInformation("Удаление профиля для UserId {UserId}", userId);
-        var client = await _context.Profiles.FindAsync(userId).ConfigureAwait(false) ??
-            throw new KeyNotFoundException($"Клиент с ID {userId} не найден");
+        var client = await _context.Profiles.FindAsync(userId).ConfigureAwait(false);
+
+        if (client is null)
+        {
+            _logger.LogWarning("Профиль с UserId {UserId} не найден", userId);
+            return;
+        }
 
         _context.Profiles.Remove(client);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
