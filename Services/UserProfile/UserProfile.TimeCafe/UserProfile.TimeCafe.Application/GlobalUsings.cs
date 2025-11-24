@@ -1,4 +1,5 @@
 global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Extensions;
 
 global using FluentValidation;
 
