@@ -1,16 +1,19 @@
-using Microsoft.Extensions.Logging;
-
-using UserProfile.TimeCafe.Domain.Contracts;
-using UserProfile.TimeCafe.Domain.Models;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands
 {
     public record CreateProfileCommand(string UserId, string FirstName, string LastName, Gender Gender) : IRequest<Profile?>;
 
-    public class CreateProfileCommandHandler(IUserRepositories repository, ILogger<CreateProfileCommandHandler> logger) : IRequestHandler<CreateProfileCommand, Profile?>
+    public class CreateProfileCommandValidator : AbstractValidator<CreateProfileCommand>
+    {
+        public CreateProfileCommandValidator()
+        {
+            RuleFor(x => x.UserId).NotEmpty().MaximumLength(64);
+            RuleFor(x => x.FirstName).NotEmpty().MaximumLength(128);
+            RuleFor(x => x.LastName).NotEmpty().MaximumLength(128);
+        }
+    }
+    public class CreateProfileCommandHandler(IUserRepositories repository) : IRequestHandler<CreateProfileCommand, Profile?>
     {
         private readonly IUserRepositories _repository = repository;
-        private readonly ILogger<CreateProfileCommandHandler> _logger = logger;
 
         public async Task<Profile?> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
         {
@@ -24,7 +27,6 @@ namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands
                 CreatedAt = DateTime.UtcNow
             };
 
-            _logger.LogInformation("Создание профиля через CQRS для UserId {UserId}", request.UserId);
             return await _repository.CreateProfileAsync(profile, cancellationToken);
         }
     }
