@@ -1,22 +1,68 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record class UpdateProfileCommand(Profile User) : IRequest<Profile?>;
+public record UpdateProfileCommand(Profile User) : IRequest<UpdateProfileResult>;
+
+public record UpdateProfileResult(
+    bool Success,
+    string? Code = null,
+    string? Message = null,
+    int? StatusCode = null,
+    List<ErrorItem>? Errors = null,
+    Profile? Profile = null) : ICqrsResultV2
+{
+    public static UpdateProfileResult ProfileNotFound() =>
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
+
+    public static UpdateProfileResult UpdateFailed() =>
+        new(false, Code: "UpdateProfileFailed", Message: "Не удалось обновить профиль", StatusCode: 500);
+
+    public static UpdateProfileResult UpdateSuccess(Profile profile) =>
+        new(true, Message: "Профиль успешно обновлён", Profile: profile);
+}
 
 public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileCommand>
 {
     public UpdateProfileCommandValidator()
     {
         RuleFor(x => x.User)
-            .NotNull().WithMessage("Пользователь не найден");
+            .NotNull().WithMessage("Профиль обязателен");
+
+        RuleFor(x => x.User.UserId)
+            .NotEmpty().WithMessage("UserId обязателен")
+            .MaximumLength(64).WithMessage("UserId не может превышать 64 символа");
+
+        RuleFor(x => x.User.FirstName)
+            .NotEmpty().WithMessage("Имя обязательно")
+            .MaximumLength(128).WithMessage("Имя не может превышать 128 символов");
+
+        RuleFor(x => x.User.LastName)
+            .NotEmpty().WithMessage("Фамилия обязательна")
+            .MaximumLength(128).WithMessage("Фамилия не может превышать 128 символов");
     }
 }
 
-public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequestHandler<UpdateProfileCommand, Profile?>
+public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequestHandler<UpdateProfileCommand, UpdateProfileResult>
 {
     private readonly IUserRepositories _repositories = repositories;
 
-    public async Task<Profile?> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
+    public async Task<UpdateProfileResult> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
-        return await _repositories.UpdateProfileAsync(request.User,cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var existing = await _repositories.GetProfileByIdAsync(request.User.UserId, cancellationToken);
+            if (existing == null)
+                return UpdateProfileResult.ProfileNotFound();
+
+            var updated = await _repositories.UpdateProfileAsync(request.User, cancellationToken);
+
+            if (updated == null)
+                return UpdateProfileResult.UpdateFailed();
+
+            return UpdateProfileResult.UpdateSuccess(updated);
+        }
+        catch (Exception)
+        {
+            return UpdateProfileResult.UpdateFailed();
+        }
     }
 }
