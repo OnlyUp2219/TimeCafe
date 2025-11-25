@@ -29,15 +29,15 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 
         RuleFor(x => x.User.UserId)
             .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(64).WithMessage("UserId не может превышать 64 символа");
+            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
 
         RuleFor(x => x.User.FirstName)
             .NotEmpty().WithMessage("Имя обязательно")
-            .MaximumLength(128).WithMessage("Имя не может превышать 128 символов");
+            .MaximumLength(100).WithMessage("Имя не может превышать 100 символов");
 
         RuleFor(x => x.User.LastName)
             .NotEmpty().WithMessage("Фамилия обязательна")
-            .MaximumLength(128).WithMessage("Фамилия не может превышать 128 символов");
+            .MaximumLength(100).WithMessage("Фамилия не может превышать 100 символов");
     }
 }
 
