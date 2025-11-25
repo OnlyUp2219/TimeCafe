@@ -81,9 +81,9 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         var command = new CreateProfileCommand(
-            new string('a', 65),
-            new string('b', 129),
-            new string('c', 129),
+            new string('a', 451),
+            new string('b', 101),
+            new string('c', 101),
             Gender.Male);
         var validator = new CreateProfileCommandValidator();
 

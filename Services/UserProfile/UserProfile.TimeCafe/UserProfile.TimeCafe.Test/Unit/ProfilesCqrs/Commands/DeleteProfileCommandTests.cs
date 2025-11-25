@@ -79,7 +79,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
     {
         // Arrange
-        var command = new DeleteProfileCommand(new string('a', 65));
+        var command = new DeleteProfileCommand(new string('a', 451));
         var validator = new DeleteProfileCommandValidator();
 
         // Act
