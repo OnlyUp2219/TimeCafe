@@ -79,7 +79,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(new string('a', 65));
+        var query = new GetProfileByIdQuery(new string('a', 451));
         var validator = new GetProfileByIdQueryValidator();
 
         // Act

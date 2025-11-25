@@ -108,9 +108,9 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         // Arrange
         var profile = new Profile
         {
-            UserId = new string('a', 65),
-            FirstName = new string('b', 129),
-            LastName = new string('c', 129)
+            UserId = new string('a', 451),
+            FirstName = new string('b', 101),
+            LastName = new string('c', 101)
         };
         var command = new UpdateProfileCommand(profile);
         var validator = new UpdateProfileCommandValidator();
