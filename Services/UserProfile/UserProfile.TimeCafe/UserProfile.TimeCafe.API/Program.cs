@@ -5,6 +5,7 @@ builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddDbContext<ApplicationDbContext>(op => op.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IUserRepositories, UserRepositories>();
+builder.Services.AddScoped<IAdditionalInfoRepository, AdditionalInfoRepository>();
 
 
 var app = builder.Build();
