@@ -378,3 +378,10 @@ secrets.local.*
 
 # Optional: uncomment if you ever generate JSON dumps of secrets
 # secrets.export.json
+
+# --- Documentation (added) ---
+# Ignore all markdown files except README.md
+*.md
+!README.md
+# Allow markdown in specific documentation folders if needed
+# !docs/**/*.md
