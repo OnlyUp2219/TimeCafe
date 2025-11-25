@@ -1,17 +1,17 @@
 namespace UserProfile.TimeCafe.Infrastructure.Repositories;
 
-public class UserRepositories(ApplicationDbContext context, IDistributedCache cache, ILogger<UserRepositories> logger) : IUserRepositories
+public class UserRepositories(ApplicationDbContext context, IDistributedCache cache, ILogger<UserRepositories> cacheLogger) : IUserRepositories
 {
 
     private readonly ApplicationDbContext _context = context;
     private readonly IDistributedCache _cache = cache;
-    private readonly ILogger<UserRepositories> _logger = logger;
+    private readonly ILogger _cacheLogger = cacheLogger; // используется только в CacheHelper
 
     public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken? cancellationToken)
     {
         var cached = await CacheHelper.GetAsync<IEnumerable<Profile>>(
             _cache,
-            _logger,
+            _cacheLogger,
             CacheKeys.Profile_All).ConfigureAwait(false);
         if (cached != null)
             return cached;
@@ -24,7 +24,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
         await CacheHelper.SetAsync<IEnumerable<Profile>>(
             _cache,
-            _logger,
+            _cacheLogger,
             CacheKeys.Profile_All,
             entity).ConfigureAwait(false);
 
@@ -40,7 +40,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
         var cached = await CacheHelper.GetAsync<IEnumerable<Profile>>(
             _cache,
-            _logger,
+            _cacheLogger,
             cacheKey).ConfigureAwait(false);
         if (cached != null) return cached;
 
@@ -54,7 +54,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
         await CacheHelper.SetAsync(
             _cache,
-            _logger,
+            _cacheLogger,
             cacheKey,
             items,
             new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) }).ConfigureAwait(false);
@@ -71,7 +71,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
     {
         var cached = await CacheHelper.GetAsync<Profile>(
             _cache,
-            _logger,
+            _cacheLogger,
             CacheKeys.Profile_ById(userId)).ConfigureAwait(false);
         if (cached != null)
             return cached;
@@ -82,7 +82,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
         await CacheHelper.SetAsync(
             _cache,
-            _logger,
+            _cacheLogger,
             CacheKeys.Profile_ById(userId),
             entity).ConfigureAwait(false);
 
@@ -91,17 +91,15 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
-        _logger.LogInformation("Создание профиля для UserId {UserId}", profile.UserId);
         profile.CreatedAt = DateTime.UtcNow;
         _context.Profiles.Add(profile);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 
         var removeAll = CacheHelper.RemoveKeysAsync(
             _cache,
-            _logger,
+            _cacheLogger,
             CacheKeys.Profile_All);
         var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
-        _logger.LogInformation("Профиль для UserId {UserId} успешно создан", profile.UserId);
 
         await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
 
@@ -110,25 +108,22 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
-        _logger.LogInformation("Обновление профиля для UserId {UserId}", profile.UserId);
         var existingClient = await _context.Profiles.FindAsync(profile.UserId);
 
         if (existingClient is null)
         {
-            _logger.LogWarning("Профиль с UserId {UserId} не найден", profile.UserId);
             return null;
         }
 
         _context.Entry(existingClient).CurrentValues.SetValues(profile);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
-        _logger.LogInformation("Профиль для UserId {UserId} успешно обновлен", profile.UserId);
 
 
         var removeAll = CacheHelper.RemoveKeysAsync(
-                   _cache,
-                   _logger,
-                   CacheKeys.Profile_All,
-                   CacheKeys.Profile_ById(profile.UserId));
+               _cache,
+               _cacheLogger,
+               CacheKeys.Profile_All,
+               CacheKeys.Profile_ById(profile.UserId));
         var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
 
         await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
@@ -138,24 +133,21 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     public async Task DeleteProfileAsync(string userId, CancellationToken? cancellationToken)
     {
-        _logger.LogInformation("Удаление профиля для UserId {UserId}", userId);
         var client = await _context.Profiles.FindAsync(userId).ConfigureAwait(false);
 
         if (client is null)
         {
-            _logger.LogWarning("Профиль с UserId {UserId} не найден", userId);
             return;
         }
 
         _context.Profiles.Remove(client);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
-        _logger.LogInformation("Профиль для UserId {UserId} успешно удален", userId);
 
         var removeAll = CacheHelper.RemoveKeysAsync(
-                   _cache,
-                   _logger,
-                   CacheKeys.Profile_All,
-                   CacheKeys.Profile_ById(client.UserId));
+               _cache,
+               _cacheLogger,
+               CacheKeys.Profile_All,
+               CacheKeys.Profile_ById(client.UserId));
         var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
 
         await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
@@ -163,7 +155,6 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     public async Task CreateEmptyAsync(string userId, CancellationToken? cancellationToken)
     {
-        _logger.LogInformation("Создание пустого профиля для UserId {UserId}", userId);
         var exist = await _context.Profiles
             .AnyAsync(u => u.UserId == userId, cancellationToken ?? CancellationToken.None)
             .ConfigureAwait(false);
@@ -181,11 +172,10 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
         });
 
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
-        _logger.LogInformation("Пустой профиль для UserId {UserId} успешно создан", userId);
 
         var removeAll = CacheHelper.RemoveKeysAsync(
         _cache,
-        _logger,
+        _cacheLogger,
         CacheKeys.Profile_All);
         var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
         await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
