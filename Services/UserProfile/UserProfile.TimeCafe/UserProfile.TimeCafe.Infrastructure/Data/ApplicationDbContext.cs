@@ -12,4 +12,5 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Profile> Profiles { get; set; }
+    public DbSet<AdditionalInfo> AdditionalInfos { get; set; }
 }

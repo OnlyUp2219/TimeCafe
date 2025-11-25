@@ -10,4 +10,8 @@ public static class CacheKeys
     public static string Profile_Page(int page, int version) => $"{ProfilePagesPrefix}:v{version}:p{page}";
     public static string ProfilePagesVersion() => ProfilePagesVersionKey;
 
+    public const string AdditionalInfo_All = "user-profile:additionalinfo:all";
+    public static string AdditionalInfo_ById(int id) => $"user-profile:additionalinfo:id:{id}";
+    public static string AdditionalInfo_ByUserId(string userId) => $"user-profile:additionalinfo:user:{userId}";
+
 }
