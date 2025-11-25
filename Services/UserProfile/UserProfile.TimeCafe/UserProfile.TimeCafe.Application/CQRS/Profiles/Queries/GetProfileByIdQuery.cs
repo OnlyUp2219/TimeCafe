@@ -26,7 +26,7 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(64).WithMessage("UserId не может превышать 64 символа");
+            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
     }
 }
 
