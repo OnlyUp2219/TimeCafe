@@ -5,20 +5,42 @@ namespace UserProfile.TimeCafe.Domain.Models;
 public class Profile
 {
     [Key]
+    [Required]
+    [MaxLength(450)]
     public string UserId { get; set; } = null!;
 
+    [Required]
+    [MaxLength(100)]
     public string FirstName { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
     public string LastName { get; set; } = string.Empty;
+
+    [MaxLength(100)]
     public string? MiddleName { get; set; }
 
-
+    [MaxLength(50)]
     public string? AccessCardNumber { get; set; }
+
+    [MaxLength(500)]
     public string? PhotoUrl { get; set; }
+
     public DateOnly? BirthDate { get; set; }
 
+    [Required]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    [Required]
     public Gender Gender { get; set; } = Gender.NotSpecified;
+
+    [Required]
     public ProfileStatus ProfileStatus { get; set; }
+
+    [MaxLength(500)]
+    public string? BanReason { get; set; }
+
+    public virtual ICollection<AdditionalInfo> AdditionalInfos { get; set; } = new List<AdditionalInfo>();
 }
 
 public enum Gender : byte
