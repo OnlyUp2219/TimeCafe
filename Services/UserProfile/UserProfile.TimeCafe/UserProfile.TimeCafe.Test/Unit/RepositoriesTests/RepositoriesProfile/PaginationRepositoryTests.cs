@@ -1,4 +1,4 @@
-namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests;
+namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public class PaginationRepositoryTests : BaseRepositoryTest
 {
