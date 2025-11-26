@@ -1,5 +1,5 @@
 global using Auth.TimeCafe.Application.Contracts;
-global using Auth.TimeCafe.Application.DTO;
+global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Application.Permissions;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
