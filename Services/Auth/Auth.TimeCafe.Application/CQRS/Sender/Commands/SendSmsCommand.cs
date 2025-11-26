@@ -1,13 +1,13 @@
 namespace Auth.TimeCafe.Application.CQRS.Sender.Commands;
 
-public record class SendSmsCommand(string AccountSid, string AuthToken, string TwilioPhoneNumber, string PhoneNumber, string Token) : IRequest<PhoneVerificationModel?>;
+public record class SendSmsCommand(string AccountSid, string AuthToken, string TwilioPhoneNumber, string PhoneNumber, string Token) : IRequest<PhoneVerificationResult?>;
 
-public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCommandHendler> logger) : IRequestHandler<SendSmsCommand, PhoneVerificationModel?>
+public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCommandHendler> logger) : IRequestHandler<SendSmsCommand, PhoneVerificationResult?>
 {
     private readonly ITwilioSender _twilioSender = twilioSender;
     private readonly ILogger<SendSmsCommandHendler> _logger = logger;
 
-    public async Task<PhoneVerificationModel?> Handle(SendSmsCommand request, CancellationToken cancellationToken)
+    public async Task<PhoneVerificationResult?> Handle(SendSmsCommand request, CancellationToken cancellationToken)
     {
         var result = await _twilioSender.SendAsync(
             request.AccountSid,

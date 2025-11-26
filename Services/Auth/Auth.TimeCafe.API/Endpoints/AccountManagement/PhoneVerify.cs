@@ -10,7 +10,7 @@ public class PhoneVerify : ICarterModule
         group.MapPost("verifySMS-mock", async (
             ISender sender,
             ClaimsPrincipal user,
-            [FromBody] PhoneVerificationModel model
+            [FromBody] PhoneVerificationRequest model
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -32,7 +32,7 @@ public class PhoneVerify : ICarterModule
         group.MapPost("verifySMS", async (
             ISender sender,
             ClaimsPrincipal user,
-            [FromBody] PhoneVerificationModel model
+            [FromBody] PhoneVerificationRequest model
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

@@ -11,7 +11,7 @@ namespace Auth.TimeCafe.Infrastructure.Services.Phone;
 public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
 {
     private readonly ILogger<TwilioSender> _logger = logger;
-    public async Task<PhoneVerificationModel?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token)
+    public async Task<PhoneVerificationResult?> SendAsync(string accountSid, string authToken, string twilioPhoneNumber, string phoneNumber, string token)
     {
         try
         {
@@ -25,10 +25,10 @@ public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
 
             if (message.ErrorCode == null)
             {
-                return new PhoneVerificationModel
+                return new PhoneVerificationResult
                 {
                     PhoneNumber = phoneNumber,
-                    Code = string.Empty
+                    Success = true
                 };
             }
 
