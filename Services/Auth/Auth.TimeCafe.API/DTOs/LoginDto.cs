@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.DTO;
+namespace Auth.TimeCafe.API.DTOs;
 
 public record LoginDto(string Email, string Password);
 

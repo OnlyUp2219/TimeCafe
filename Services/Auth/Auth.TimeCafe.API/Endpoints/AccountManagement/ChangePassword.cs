@@ -1,7 +1,5 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
-
 public sealed class ChangePassword : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
