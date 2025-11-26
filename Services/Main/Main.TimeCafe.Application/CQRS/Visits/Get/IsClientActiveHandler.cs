@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Visits.Get;
 
 public record IsClientActiveQuery(int ClientId) : IRequest<bool>;
 
-public class IsClientActiveHandler : IRequestHandler<IsClientActiveQuery, bool>
+public class IsClientActiveHandler(IVisitRepository repository) : IRequestHandler<IsClientActiveQuery, bool>
 {
-    private readonly IVisitRepository _repository;
-
-    public IsClientActiveHandler(IVisitRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IVisitRepository _repository = repository;
 
     public async Task<bool> Handle(IsClientActiveQuery request, CancellationToken cancellationToken)
     {

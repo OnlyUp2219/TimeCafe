@@ -1,18 +1,9 @@
-using UserProfile.TimeCafe.Domain.Models;
-using UserProfile.TimeCafe.Infrastructure.Data;
-
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 
-public abstract class BaseEndpointTest : IClassFixture<IntegrationApiFactory>
+public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
 {
-    protected readonly HttpClient Client;
-    protected readonly IntegrationApiFactory Factory;
-
-    public BaseEndpointTest(IntegrationApiFactory factory)
-    {
-        Factory = factory;
-        Client = factory.CreateClient();
-    }
+    protected readonly HttpClient Client = factory.CreateClient();
+    protected readonly IntegrationApiFactory Factory = factory;
 
     protected async Task SeedProfileAsync(string userId, string firstName, string lastName, Gender gender = Gender.NotSpecified)
     {

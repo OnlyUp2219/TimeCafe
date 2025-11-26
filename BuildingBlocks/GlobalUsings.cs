@@ -1,3 +1,4 @@
+global using BuildingBlocks.Enum;
 global using BuildingBlocks.Utilities;
 
 global using FluentValidation;
@@ -12,5 +13,3 @@ global using System.Diagnostics;
 global using System.Net;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
-
-global using BuildingBlocks.Enum;

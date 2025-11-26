@@ -1,17 +1,10 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class ClientAdditionalInfoRepository : IClientAdditionalInfoRepository
+public class ClientAdditionalInfoRepository(TimeCafeContext context, IDistributedCache cache, ILogger<ClientAdditionalInfoRepository> logger) : IClientAdditionalInfoRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<ClientAdditionalInfoRepository> _logger;
-
-    public ClientAdditionalInfoRepository(TimeCafeContext context, IDistributedCache cache, ILogger<ClientAdditionalInfoRepository> logger)
-    {
-        _context = context;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<ClientAdditionalInfoRepository> _logger = logger;
 
     public async Task<IEnumerable<ClientAdditionalInfo>> GetClientAdditionalInfosAsync(int clientId)
     {

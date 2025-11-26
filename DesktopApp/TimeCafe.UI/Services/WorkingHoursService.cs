@@ -1,17 +1,12 @@
 namespace TimeCafe.UI.Services;
 
-public class WorkingHoursService : IWorkingHoursService
+public class WorkingHoursService(ILocalSettingsService localSettingsService) : IWorkingHoursService
 {
-    private readonly ILocalSettingsService _localSettingsService;
+    private readonly ILocalSettingsService _localSettingsService = localSettingsService;
     private const string OpenTimeKey = "WorkingHours_OpenTime";
     private const string CloseTimeKey = "WorkingHours_CloseTime";
     private static readonly TimeSpan DefaultOpenTime = new(12, 0, 0); // 12:00
     private static readonly TimeSpan DefaultCloseTime = new(2, 0, 0);  // 02:00
-
-    public WorkingHoursService(ILocalSettingsService localSettingsService)
-    {
-        _localSettingsService = localSettingsService;
-    }
 
     public async Task<TimeSpan> GetOpenTimeAsync()
     {

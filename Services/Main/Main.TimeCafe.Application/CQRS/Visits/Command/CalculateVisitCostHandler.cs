@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Visits.Command;
 
 public record CalculateVisitCostCommand(Visit Visit) : IRequest<decimal>;
 
-public class CalculateVisitCostHandler : IRequestHandler<CalculateVisitCostCommand, decimal>
+public class CalculateVisitCostHandler(IVisitRepository repository) : IRequestHandler<CalculateVisitCostCommand, decimal>
 {
-    private readonly IVisitRepository _repository;
-
-    public CalculateVisitCostHandler(IVisitRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IVisitRepository _repository = repository;
 
     public async Task<decimal> Handle(CalculateVisitCostCommand request, CancellationToken cancellationToken)
     {

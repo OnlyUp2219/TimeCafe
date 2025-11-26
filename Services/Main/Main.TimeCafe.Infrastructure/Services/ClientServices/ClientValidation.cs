@@ -1,13 +1,8 @@
 namespace Main.TimeCafe.Infrastructure.Services.ClientServices;
 
-public class ClientValidation : IClientValidation
+public class ClientValidation(TimeCafeContext context) : IClientValidation
 {
-    private readonly TimeCafeContext _context;
-
-    public ClientValidation(TimeCafeContext context)
-    {
-        _context = context;
-    }
+    private readonly TimeCafeContext _context = context;
 
     public async Task<bool> ValidatePhoneNumberAsync(string phoneNumber)
     {

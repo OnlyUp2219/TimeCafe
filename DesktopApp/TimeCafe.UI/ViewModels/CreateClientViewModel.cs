@@ -4,7 +4,10 @@ using CommunityToolkit.WinUI.UI.Controls;
 
 namespace TimeCafe.UI.ViewModels;
 
-public partial class CreateClientViewModel : ObservableRecipient, INavigationAware
+public partial class CreateClientViewModel(IMediator mediator,
+    IClientValidation clientValidation,
+    INavigationService navigationService,
+    BogusDataGeneratorServices fakeDataGenerator) : ObservableRecipient, INavigationAware
 {
     private bool _isGridViewSelected = true;
     private static int _currentPage = 1;
@@ -67,21 +70,10 @@ public partial class CreateClientViewModel : ObservableRecipient, INavigationAwa
     [ObservableProperty] private ObservableCollection<Gender> genders = new();
     [ObservableProperty] private ObservableCollection<ClientStatus> clientStatuses = new();
 
-    private readonly IMediator _mediator;
-    private readonly IClientValidation _clientValidation;
-    private readonly INavigationService _navigationService;
-    private readonly BogusDataGeneratorServices _fakeDataGenerator;
-
-    public CreateClientViewModel(IMediator mediator,
-        IClientValidation clientValidation,
-        INavigationService navigationService,
-        BogusDataGeneratorServices fakeDataGenerator)
-    {
-        _mediator = mediator;
-        _clientValidation = clientValidation;
-        _navigationService = navigationService;
-        _fakeDataGenerator = fakeDataGenerator;
-    }
+    private readonly IMediator _mediator = mediator;
+    private readonly IClientValidation _clientValidation = clientValidation;
+    private readonly INavigationService _navigationService = navigationService;
+    private readonly BogusDataGeneratorServices _fakeDataGenerator = fakeDataGenerator;
 
     public async void OnNavigatedTo(object parameter)
     {

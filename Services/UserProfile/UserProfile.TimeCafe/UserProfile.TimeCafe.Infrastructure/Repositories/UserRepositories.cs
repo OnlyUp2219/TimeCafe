@@ -5,7 +5,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     private readonly ApplicationDbContext _context = context;
     private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger; // используется только в CacheHelper
+    private readonly ILogger _cacheLogger = cacheLogger;
 
     public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken? cancellationToken)
     {

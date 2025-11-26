@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using UserProfile.TimeCafe.Infrastructure.Data;
 
 namespace UserProfile.TimeCafe.Test.Integration;
 

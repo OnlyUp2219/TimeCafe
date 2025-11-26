@@ -1,28 +1,19 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class VisitRepository : IVisitRepository
+public class VisitRepository(
+    TimeCafeContext context,
+    IBillingTypeRepository billingTypeRepository,
+    IFinancialRepository financialRepository,
+    IVisitRepository visitRepository,
+    IDistributedCache cache,
+    ILogger<VisitRepository> logger) : IVisitRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IBillingTypeRepository _billingTypeRepository;
-    private readonly IFinancialRepository _financialRepository;
-    private readonly IVisitRepository _visitRepository;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<VisitRepository> _logger;
-    public VisitRepository(
-        TimeCafeContext context,
-        IBillingTypeRepository billingTypeRepository,
-        IFinancialRepository financialRepository,
-        IVisitRepository visitRepository,
-        IDistributedCache cache,
-        ILogger<VisitRepository> logger)
-    {
-        _context = context;
-        _billingTypeRepository = billingTypeRepository;
-        _financialRepository = financialRepository;
-        _visitRepository = visitRepository;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IBillingTypeRepository _billingTypeRepository = billingTypeRepository;
+    private readonly IFinancialRepository _financialRepository = financialRepository;
+    private readonly IVisitRepository _visitRepository = visitRepository;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<VisitRepository> _logger = logger;
 
     public async Task<IEnumerable<Visit>> GetActiveVisitsAsync()
     {

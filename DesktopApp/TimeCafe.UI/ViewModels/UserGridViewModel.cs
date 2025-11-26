@@ -1,9 +1,9 @@
-﻿namespace TimeCafe.UI.ViewModels;
+namespace TimeCafe.UI.ViewModels;
 
-public partial class UserGridViewModel : ObservableRecipient, INavigationAware
+public partial class UserGridViewModel(INavigationService navigationService, IMediator mediator) : ObservableRecipient, INavigationAware
 {
-    private readonly INavigationService _navigationService;
-    private readonly IMediator _mediator;
+    private readonly INavigationService _navigationService = navigationService;
+    private readonly IMediator _mediator = mediator;
     private static int _currentPage = 1;
     private const int PageSize = 16;
 
@@ -27,12 +27,6 @@ public partial class UserGridViewModel : ObservableRecipient, INavigationAware
                 OnPropertyChanged();
             }
         }
-    }
-
-    public UserGridViewModel(INavigationService navigationService, IMediator mediator)
-    {
-        _navigationService = navigationService;
-        _mediator = mediator;
     }
 
     [RelayCommand]

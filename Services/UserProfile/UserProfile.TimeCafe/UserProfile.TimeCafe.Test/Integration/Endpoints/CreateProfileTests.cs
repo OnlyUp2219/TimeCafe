@@ -1,12 +1,9 @@
-using UserProfile.TimeCafe.Domain.Models;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
 
-public class CreateProfileTests : BaseEndpointTest
+public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public CreateProfileTests(IntegrationApiFactory factory) : base(factory) { }
-
     [Fact]
     public async Task Endpoint_CreateProfile_Should_Return201_WhenValid()
     {

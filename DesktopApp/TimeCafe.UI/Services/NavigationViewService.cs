@@ -1,26 +1,20 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 
 using TimeCafe.UI.Utilities.Helpers;
 
 namespace TimeCafe.UI.Services;
 
-public class NavigationViewService : INavigationViewService
+public class NavigationViewService(INavigationService navigationService, IPageService pageService) : INavigationViewService
 {
-    private readonly INavigationService _navigationService;
+    private readonly INavigationService _navigationService = navigationService;
 
-    private readonly IPageService _pageService;
+    private readonly IPageService _pageService = pageService;
 
     private NavigationView? _navigationView;
 
     public IList<object>? MenuItems => _navigationView?.MenuItems;
 
     public object? SettingsItem => _navigationView?.SettingsItem;
-
-    public NavigationViewService(INavigationService navigationService, IPageService pageService)
-    {
-        _navigationService = navigationService;
-        _pageService = pageService;
-    }
 
     [MemberNotNull(nameof(_navigationView))]
     public void Initialize(NavigationView navigationView)

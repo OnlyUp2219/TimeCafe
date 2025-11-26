@@ -1,5 +1,3 @@
-using Swashbuckle.AspNetCore.Filters;
-
 namespace UserProfile.TimeCafe.API.DTOs;
 
 public record CreateAdditionalInfoDto(

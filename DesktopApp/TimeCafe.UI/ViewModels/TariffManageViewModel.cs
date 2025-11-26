@@ -1,12 +1,12 @@
-﻿using CommunityToolkit.WinUI.UI.Controls;
+using CommunityToolkit.WinUI.UI.Controls;
 
 using System.Diagnostics;
 
 namespace TimeCafe.UI.ViewModels;
 
-public partial class TariffManageViewModel : ObservableRecipient, INavigationAware
+public partial class TariffManageViewModel(IMediator mediator) : ObservableRecipient, INavigationAware
 {
-    private readonly IMediator _mediator;
+    private readonly IMediator _mediator = mediator;
     private static int _currentPage = 1;
     private const int PageSize = 16;
 
@@ -19,11 +19,6 @@ public partial class TariffManageViewModel : ObservableRecipient, INavigationAwa
     public AdaptiveGridView AdaptiveGrid { get; set; }
 
     public ListViewBase ActiveView => AdaptiveGrid;
-
-    public TariffManageViewModel(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
 
     public async void OnNavigatedTo(object parameter)
     {

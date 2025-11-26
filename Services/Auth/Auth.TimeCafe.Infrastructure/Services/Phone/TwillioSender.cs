@@ -1,7 +1,3 @@
-using Auth.TimeCafe.Domain.Contracts;
-
-using Microsoft.Extensions.Logging;
-
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 

@@ -2,10 +2,8 @@ using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
 
-public class GetAdditionalInfoByIdTests : BaseEndpointTest
+public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : base(factory) { }
-
     [Fact]
     public async Task Endpoint_GetAdditionalInfoById_Should_Return200_WhenExists()
     {

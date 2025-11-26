@@ -18,8 +18,6 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 
-global using Swashbuckle.AspNetCore.Filters;
-
 global using System.Reflection;
 global using System.Security.Claims;
 global using System.Text;

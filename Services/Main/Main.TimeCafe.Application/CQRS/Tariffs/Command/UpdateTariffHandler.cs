@@ -1,13 +1,10 @@
-﻿namespace Main.TimeCafe.Application.CQRS.Tariffs.Command;
+namespace Main.TimeCafe.Application.CQRS.Tariffs.Command;
 
 public record class UpdateTariffCommand(Tariff tariff) : IRequest<Tariff>;
-public class UpdateTariffHandler : IRequestHandler<UpdateTariffCommand, Tariff>
+public class UpdateTariffHandler(ITariffRepository repository) : IRequestHandler<UpdateTariffCommand, Tariff>
 {
-    private readonly ITariffRepository _repository;
-    public UpdateTariffHandler(ITariffRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly ITariffRepository _repository = repository;
+
     public async Task<Tariff> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
     {
         return await _repository.UpdateTariffAsync(request.tariff);

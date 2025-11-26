@@ -1,25 +1,18 @@
 
 namespace Auth.TimeCafe.API.Middleware;
 
-public class RateLimitCounterMiddleware
+public class RateLimitCounterMiddleware(RequestDelegate next, IMemoryCache cache, IConfiguration configuration)
 {
-    private readonly RequestDelegate _next;
-    private readonly IMemoryCache _cache;
-    private readonly IConfiguration _configuration;
-
-    public RateLimitCounterMiddleware(RequestDelegate next, IMemoryCache cache, IConfiguration configuration)
-    {
-        _next = next;
-        _cache = cache;
-        _configuration = configuration;
-    }
+    private readonly RequestDelegate _next = next;
+    private readonly IMemoryCache _cache = cache;
+    private readonly IConfiguration _configuration = configuration;
 
     public async Task InvokeAsync(HttpContext context)
     {
         var endpoint = context.GetEndpoint();
-        
+
         var hasRateLimiting = endpoint?.Metadata.OfType<Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute>().Any() ?? false;
-        
+
         if (!hasRateLimiting)
         {
             await _next(context);
@@ -55,8 +48,8 @@ public class RateLimitCounterMiddleware
                 _cache.Set(countKey, count, windowStart.AddSeconds(windowSeconds));
                 var remaining = Math.Max(0, maxRequests - count);
                 context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
-                
-                
+
+
                 var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
                 context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
 
@@ -66,7 +59,7 @@ public class RateLimitCounterMiddleware
             {
                 var remaining = Math.Max(0, maxRequests - count);
                 context.Response.Headers["X-Rate-Limit-Remaining"] = remaining.ToString();
-               
+
                 var windowInSeconds = count >= maxRequests ? windowSeconds : minIntervalSeconds;
                 context.Response.Headers["X-Rate-Limit-Window"] = windowInSeconds.ToString();
 

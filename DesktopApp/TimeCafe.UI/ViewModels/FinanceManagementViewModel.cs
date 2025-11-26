@@ -2,10 +2,12 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace TimeCafe.UI.ViewModels;
 
-public partial class FinanceManagementViewModel : ObservableRecipient, INavigationAware
+public partial class FinanceManagementViewModel(
+    IMediator mediator,
+    INavigationService navigationService) : ObservableRecipient, INavigationAware
 {
-    private readonly IMediator _mediator;
-    private readonly INavigationService _navigationService;
+    private readonly IMediator _mediator = mediator;
+    private readonly INavigationService _navigationService = navigationService;
 
     [ObservableProperty] private ObservableCollection<ClientBalanceInfo> allClients = new();
     [ObservableProperty] private ObservableCollection<ClientBalanceInfo> filteredClients = new();
@@ -15,14 +17,6 @@ public partial class FinanceManagementViewModel : ObservableRecipient, INavigati
     [ObservableProperty] private string errorMessage;
     [ObservableProperty] private decimal totalDebt;
     [ObservableProperty] private int debtorsCount;
-
-    public FinanceManagementViewModel(
-        IMediator mediator,
-        INavigationService navigationService)
-    {
-        _mediator = mediator;
-        _navigationService = navigationService;
-    }
 
     public async void OnNavigatedTo(object parameter)
     {

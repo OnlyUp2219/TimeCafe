@@ -1,12 +1,9 @@
-using UserProfile.TimeCafe.Domain.Models;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
 
-public class UpdateProfileTests : BaseEndpointTest
+public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public UpdateProfileTests(IntegrationApiFactory factory) : base(factory) { }
-
     [Fact]
     public async Task Endpoint_UpdateProfile_Should_Return200_WhenProfileExists()
     {

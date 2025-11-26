@@ -2,18 +2,11 @@
 
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class BillingTypeRepository : IBillingTypeRepository
+public class BillingTypeRepository(TimeCafeContext context, IDistributedCache cache, ILogger<BillingTypeRepository> logger) : IBillingTypeRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<BillingTypeRepository> _logger;
-
-    public BillingTypeRepository(TimeCafeContext context, IDistributedCache cache, ILogger<BillingTypeRepository> logger)
-    {
-        _context = context;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<BillingTypeRepository> _logger = logger;
 
     public async Task<IEnumerable<BillingType>> GetBillingTypesAsync()
     {

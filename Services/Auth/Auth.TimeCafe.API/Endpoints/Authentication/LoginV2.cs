@@ -23,7 +23,7 @@ public class LoginV2 : ICarterModule
                 {
                     HttpOnly = true,
                     Secure = true,
-                    SameSite = SameSiteMode.None, 
+                    SameSite = SameSiteMode.None,
                     Path = "/",
                     Expires = DateTimeOffset.UtcNow.AddDays(refreshDays)
                 });

@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Get;
 
 public record IsPhoneConfirmedQuery(int ClientId) : IRequest<bool>;
 
-public class IsPhoneConfirmedHandler : IRequestHandler<IsPhoneConfirmedQuery, bool>
+public class IsPhoneConfirmedHandler(IClientRepository repository) : IRequestHandler<IsPhoneConfirmedQuery, bool>
 {
-    private readonly IClientRepository _repository;
-
-    public IsPhoneConfirmedHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<bool> Handle(IsPhoneConfirmedQuery request, CancellationToken cancellationToken)
     {

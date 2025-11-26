@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Get;
 
 public record GetClientByIdQuery(int ClientId) : IRequest<Client?>;
 
-public class GetClientByIdHandler : IRequestHandler<GetClientByIdQuery, Client?>
+public class GetClientByIdHandler(IClientRepository repository) : IRequestHandler<GetClientByIdQuery, Client?>
 {
-    private readonly IClientRepository _repository;
-
-    public GetClientByIdHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<Client?> Handle(GetClientByIdQuery request, CancellationToken cancellationToken)
     {

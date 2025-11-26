@@ -2,10 +2,8 @@ using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
 
-public class DeleteProfileTests : BaseEndpointTest
+public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public DeleteProfileTests(IntegrationApiFactory factory) : base(factory) { }
-
     [Fact]
     public async Task Endpoint_DeleteProfile_Should_Return200_WhenProfileExists()
     {

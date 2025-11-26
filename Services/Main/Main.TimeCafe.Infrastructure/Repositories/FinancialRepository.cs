@@ -1,17 +1,10 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class FinancialRepository : IFinancialRepository
+public class FinancialRepository(TimeCafeContext context, IDistributedCache cache, ILogger<FinancialRepository> logger) : IFinancialRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<FinancialRepository> _logger;
-
-    public FinancialRepository(TimeCafeContext context, IDistributedCache cache, ILogger<FinancialRepository> logger)
-    {
-        _context = context;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<FinancialRepository> _logger = logger;
 
     public async Task<decimal> GetClientBalanceAsync(int clientId)
     {
