@@ -146,8 +146,20 @@ public class CleanArchitectureTests
             .Select(a => a.Name)
             .ToList();
 
+        // Разрешённые AspNetCore зависимости для Auth сервиса
+        var allowedAspNetCoreDependencies = new[]
+        {
+            "Microsoft.AspNetCore.Identity",           // Identity framework (не web-зависимость)
+            "Microsoft.AspNetCore.Authorization",      // Атрибуты авторизации (Permissions)
+            "Microsoft.AspNetCore.WebUtilities"        // WebEncoders для токенов
+        };
+
+        var forbiddenDependencies = referencedAssemblies
+            .Where(name => name!.Contains("AspNetCore") && !allowedAspNetCoreDependencies.Contains(name))
+            .ToList();
+
         // Assert
-        referencedAssemblies.Should().NotContain(name => name!.Contains("AspNetCore"),
-            "Application layer не должен иметь зависимость от ASP.NET Core (кроме Identity.Abstractions если нужно)");
+        forbiddenDependencies.Should().BeEmpty(
+            "Application layer не должен иметь зависимость от ASP.NET Core Web-компонентов (Mvc, Http, Routing и т.д.)");
     }
 }
