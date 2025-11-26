@@ -12,6 +12,11 @@ public static class SwaggerExtensions
         });
         services.AddSwaggerExamples();
         services.AddSwaggerExamplesFromAssemblyOf<RegisterDtoExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<LoginDtoExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ChangePasswordRequestExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ConfirmEmailRequestExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ResendConfirmationRequestExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ResetPasswordEmailRequestExample>();
 
 
 

@@ -1,7 +1,5 @@
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
-public record JwtRefreshRequest(string RefreshToken);
-
 public class RefreshToken : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
