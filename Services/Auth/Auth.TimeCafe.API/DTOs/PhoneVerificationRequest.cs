@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Auth.TimeCafe.Domain.Models;
+namespace Auth.TimeCafe.API.DTOs;
 
-public class PhoneVerificationModel
+public class PhoneVerificationRequest
 {
     [Required(ErrorMessage = "Введите номер телефона")]
     [Phone(ErrorMessage = "Некорректный номер")]
@@ -10,7 +10,6 @@ public class PhoneVerificationModel
 
     [Required(ErrorMessage = "Введите код")]
     public string Code { get; set; } = string.Empty;
-    
+
     public string? CaptchaToken { get; set; }
 }
-

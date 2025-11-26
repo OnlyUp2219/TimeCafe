@@ -11,7 +11,7 @@ public class PhoneGenerate : ICarterModule
         group.MapPost("generateSMS-mock", async (
             ISender sender,
             ClaimsPrincipal user,
-            [FromBody] PhoneVerificationModel model
+            [FromBody] PhoneVerificationRequest model
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -34,7 +34,7 @@ public class PhoneGenerate : ICarterModule
         group.MapPost("generateSMS", async (
             ISender sender,
             ClaimsPrincipal user,
-            [FromBody] PhoneVerificationModel model
+            [FromBody] PhoneVerificationRequest model
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
