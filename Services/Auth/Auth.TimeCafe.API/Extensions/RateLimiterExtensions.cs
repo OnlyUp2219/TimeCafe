@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Caching.Memory;
-
 using System.Threading.RateLimiting;
 
 namespace Auth.TimeCafe.API.Extensions;
@@ -57,7 +55,7 @@ public static class RateLimiterExtensions
                     AutoReplenishment = true
                 });
             });
-            
+
             options.RejectionStatusCode = 429;
             options.OnRejected = (context, cancellationToken) =>
             {
@@ -66,7 +64,7 @@ public static class RateLimiterExtensions
                     context.HttpContext.Response.Headers["Retry-After"] = ((int)retryAfter.TotalSeconds).ToString();
                 }
                 return ValueTask.CompletedTask;
-                
+
             };
         });
 

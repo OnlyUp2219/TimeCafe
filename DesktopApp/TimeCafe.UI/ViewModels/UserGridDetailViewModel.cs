@@ -1,23 +1,17 @@
-﻿using TimeCafe.UI.Views.UserGridContentDialogs;
+using TimeCafe.UI.Views.UserGridContentDialogs;
 
 namespace TimeCafe.UI.ViewModels;
 
-public partial class UserGridDetailViewModel : ObservableRecipient, INavigationAware
+public partial class UserGridDetailViewModel(IMediator mediator, INavigationService navigationService) : ObservableRecipient, INavigationAware
 {
-    private readonly IMediator _mediator;
-    private readonly INavigationService _navigationService;
+    private readonly IMediator _mediator = mediator;
+    private readonly INavigationService _navigationService = navigationService;
 
     [ObservableProperty]
     private Client? _item;
 
 
     public bool HasAdditionalInfo => Item?.ClientAdditionalInfos?.Any() ?? false;
-
-    public UserGridDetailViewModel(IMediator mediator, INavigationService navigationService)
-    {
-        _mediator = mediator;
-        _navigationService = navigationService;
-    }
 
     public async void OnNavigatedTo(object parameter)
     {

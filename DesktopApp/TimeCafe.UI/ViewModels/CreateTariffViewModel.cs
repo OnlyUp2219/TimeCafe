@@ -4,11 +4,13 @@ using System.Diagnostics;
 namespace TimeCafe.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public partial class CreateTariffViewModel : ObservableRecipient, INavigationAware
+public partial class CreateTariffViewModel(IMediator mediator,
+                             IThemeColorService themeColorService,
+                             BogusDataGeneratorServices fakeDataGenerator) : ObservableRecipient, INavigationAware
 {
-    private readonly IMediator _mediator;
-    private readonly IThemeColorService _themeColorService;
-    private readonly BogusDataGeneratorServices _fakeDataGenerator;
+    private readonly IMediator _mediator = mediator;
+    private readonly IThemeColorService _themeColorService = themeColorService;
+    private readonly BogusDataGeneratorServices _fakeDataGenerator = fakeDataGenerator;
 
     [ObservableProperty] private string tariffName;
     [ObservableProperty] private byte[] icon;
@@ -24,15 +26,6 @@ public partial class CreateTariffViewModel : ObservableRecipient, INavigationAwa
 
     [ObservableProperty] private ObservableCollection<Theme> themes = new();
     [ObservableProperty] private ObservableCollection<BillingType> billingTypes = new();
-
-    public CreateTariffViewModel(IMediator mediator,
-                                 IThemeColorService themeColorService,
-                                 BogusDataGeneratorServices fakeDataGenerator)
-    {
-        _mediator = mediator;
-        _themeColorService = themeColorService;
-        _fakeDataGenerator = fakeDataGenerator;
-    }
 
     public async void OnNavigatedTo(object parameter)
     {

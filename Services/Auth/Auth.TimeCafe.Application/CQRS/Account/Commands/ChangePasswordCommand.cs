@@ -1,4 +1,5 @@
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+
 public record ChangePasswordCommand(string UserId, string CurrentPassword, string NewPassword) : IRequest<ChangePasswordResult>;
 
 public record ChangePasswordResult(
@@ -13,7 +14,7 @@ public record ChangePasswordResult(
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
 
     public static ChangePasswordResult ChangePasswordFailed(List<ErrorItem>? errorItems) =>
-        new(false, Code: "ChangePasswordFailed", Message: "Не удалось сменить пароль", StatusCode: 400, 
+        new(false, Code: "ChangePasswordFailed", Message: "Не удалось сменить пароль", StatusCode: 400,
             Errors: errorItems);
 
     public static ChangePasswordResult ChangePasswordSuccess(int refreshTokensRevoked) =>

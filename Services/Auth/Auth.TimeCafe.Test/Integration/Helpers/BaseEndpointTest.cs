@@ -1,18 +1,9 @@
-using Microsoft.AspNetCore.WebUtilities;
-using System.Text;
-
 namespace Auth.TimeCafe.Test.Integration.Helpers;
 
-public abstract class BaseEndpointTest : IClassFixture<IntegrationApiFactory>
+public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
 {
-    protected readonly HttpClient Client;
-    protected readonly IntegrationApiFactory Factory;
-
-    public BaseEndpointTest(IntegrationApiFactory factory)
-    {
-        Factory = factory;
-        Client = factory.CreateClient();
-    }
+    protected readonly HttpClient Client = factory.CreateClient();
+    protected readonly IntegrationApiFactory Factory = factory;
 
     protected void SeedUser(string email, string password, bool emailConfirmed)
     {

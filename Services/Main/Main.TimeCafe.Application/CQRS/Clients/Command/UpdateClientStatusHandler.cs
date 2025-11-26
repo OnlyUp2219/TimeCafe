@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record UpdateClientStatusCommand(int ClientId, int StatusId) : IRequest<bool>;
 
-public class UpdateClientStatusHandler : IRequestHandler<UpdateClientStatusCommand, bool>
+public class UpdateClientStatusHandler(IClientRepository repository) : IRequestHandler<UpdateClientStatusCommand, bool>
 {
-    private readonly IClientRepository _repository;
-
-    public UpdateClientStatusHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<bool> Handle(UpdateClientStatusCommand request, CancellationToken cancellationToken)
     {

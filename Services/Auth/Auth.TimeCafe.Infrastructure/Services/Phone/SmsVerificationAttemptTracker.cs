@@ -1,7 +1,3 @@
-using Auth.TimeCafe.Domain.Contracts;
-
-using Microsoft.Extensions.Caching.Memory;
-
 namespace Auth.TimeCafe.Infrastructure.Services.Phone;
 
 public class SmsVerificationAttemptTracker(IMemoryCache cache) : ISmsVerificationAttemptTracker

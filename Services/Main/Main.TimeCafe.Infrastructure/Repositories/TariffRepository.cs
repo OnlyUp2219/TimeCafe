@@ -1,17 +1,11 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class TariffRepository : ITariffRepository
+public class TariffRepository(TimeCafeContext context, IDistributedCache cache, ILogger<TariffRepository> logger) : ITariffRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<TariffRepository> _logger;
+    private readonly TimeCafeContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<TariffRepository> _logger = logger;
 
-    public TariffRepository(TimeCafeContext context, IDistributedCache cache, ILogger<TariffRepository> logger)
-    {
-        _context = context;
-        _cache = cache;
-        _logger = logger;
-    }
     public async Task<IEnumerable<Tariff>> GetAllTariffsAsync()
     {
         var cached = await CacheHelper.GetAsync<IEnumerable<Tariff>>(

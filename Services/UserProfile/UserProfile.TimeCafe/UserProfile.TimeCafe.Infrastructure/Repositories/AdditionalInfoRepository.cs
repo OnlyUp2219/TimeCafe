@@ -1,20 +1,13 @@
 namespace UserProfile.TimeCafe.Infrastructure.Repositories;
 
-public class AdditionalInfoRepository : IAdditionalInfoRepository
+public class AdditionalInfoRepository(
+    ApplicationDbContext context,
+    IDistributedCache cache,
+    ILogger<AdditionalInfoRepository> cacheLogger) : IAdditionalInfoRepository
 {
-    private readonly ApplicationDbContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger _cacheLogger;
-
-    public AdditionalInfoRepository(
-        ApplicationDbContext context,
-        IDistributedCache cache,
-        ILogger<AdditionalInfoRepository> cacheLogger)
-    {
-        _context = context;
-        _cache = cache;
-        _cacheLogger = cacheLogger;
-    }
+    private readonly ApplicationDbContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger _cacheLogger = cacheLogger;
 
     public async Task<IEnumerable<AdditionalInfo>> GetAdditionalInfosByUserIdAsync(
         string userId,

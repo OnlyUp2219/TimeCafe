@@ -7,7 +7,7 @@ public record ResendConfirmationResult(bool Success,
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    string? CallbackUrl = null ): ICqrsResultV2
+    string? CallbackUrl = null) : ICqrsResultV2
 {
     public static ResendConfirmationResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
@@ -39,7 +39,7 @@ public class ResendConfirmationCommandValidator : AbstractValidator<ResendConfir
 public class ResendConfirmationCommandHandler(
     UserManager<IdentityUser> userManager,
     IEmailSender<IdentityUser> emailSender,
-    IOptions<PostmarkOptions> postmarkOptions, 
+    IOptions<PostmarkOptions> postmarkOptions,
     ILogger<ResendConfirmationCommandHandler> logger) : IRequestHandler<ResendConfirmationCommand, ResendConfirmationResult>
 {
     private readonly UserManager<IdentityUser> _userManager = userManager;
@@ -59,7 +59,7 @@ public class ResendConfirmationCommandHandler(
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
-        
+
         if (request.SendEmail)
         {
             try
@@ -73,7 +73,7 @@ public class ResendConfirmationCommandHandler(
                 return ResendConfirmationResult.SendFailed();
             }
         }
-        
+
         return ResendConfirmationResult.MockCallback(callbackUrl);
     }
 }

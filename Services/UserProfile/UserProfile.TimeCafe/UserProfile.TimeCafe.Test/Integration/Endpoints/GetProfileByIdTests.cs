@@ -2,12 +2,8 @@ using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
 
-public class GetProfileByIdTests : BaseEndpointTest
+public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    public GetProfileByIdTests(IntegrationApiFactory factory) : base(factory)
-    {
-    }
-
     [Fact]
     public async Task Endpoint_GetProfileById_Should_Return200_WhenProfileExists()
     {

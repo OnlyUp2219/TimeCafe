@@ -1,18 +1,11 @@
 namespace Main.TimeCafe.Infrastructure.Services.ClientServices;
 
-public class ClientUtilities : IClientUtilities
+public class ClientUtilities(TimeCafeContext context, IClientValidation clientValidation) : IClientUtilities
 {
     private readonly Dictionary<string, string> _phoneConfirmationCodes = new();
     private readonly Dictionary<int, bool> _confirmedPhones = new();
-    private readonly TimeCafeContext _context;
-    private readonly IClientValidation _clientValidation;
-
-
-    public ClientUtilities(TimeCafeContext context, IClientValidation clientValidation)
-    {
-        _context = context;
-        _clientValidation = clientValidation;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IClientValidation _clientValidation = clientValidation;
 
     public async Task<bool> SendPhoneConfirmationCodeAsync(string phoneNumber)
     {

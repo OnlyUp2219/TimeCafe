@@ -1,20 +1,12 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class ClientRepository : IClientRepository
+public class ClientRepository(TimeCafeContext context, IClientUtilities clientUtilities, IDistributedCache cache, ILogger<ClientRepository> logger) : IClientRepository
 {
     private readonly Dictionary<int, bool> _confirmedPhones = new();
-    private readonly TimeCafeContext _context;
-    private readonly IClientUtilities _clientUtilities;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<ClientRepository> _logger;
-
-    public ClientRepository(TimeCafeContext context, IClientUtilities clientUtilities, IDistributedCache cache, ILogger<ClientRepository> logger)
-    {
-        _context = context;
-        _clientUtilities = clientUtilities;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IClientUtilities _clientUtilities = clientUtilities;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<ClientRepository> _logger = logger;
 
     public async Task<IEnumerable<Client>> GetAllClientsAsync()
     {

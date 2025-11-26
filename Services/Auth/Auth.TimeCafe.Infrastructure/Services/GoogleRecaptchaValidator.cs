@@ -36,10 +36,10 @@ public class GoogleRecaptchaValidator(
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            
-            var options = new JsonSerializerOptions 
-            { 
-                PropertyNameCaseInsensitive = true 
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
             };
             var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonResponse, options);
 

@@ -1,14 +1,11 @@
-﻿namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
+namespace Main.TimeCafe.Application.CQRS.ClientAdditionalInfos.Command;
 
 public record class UpdateAdditionalInfoCommand(ClientAdditionalInfo info) : IRequest<ClientAdditionalInfo>;
-public class UpdateAdditionalInfoHandler : IRequestHandler<UpdateAdditionalInfoCommand, ClientAdditionalInfo>
+public class UpdateAdditionalInfoHandler(
+    IClientAdditionalInfoRepository repository) : IRequestHandler<UpdateAdditionalInfoCommand, ClientAdditionalInfo>
 {
-    private readonly IClientAdditionalInfoRepository _repository;
-    public UpdateAdditionalInfoHandler(
-        IClientAdditionalInfoRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientAdditionalInfoRepository _repository = repository;
+
     public async Task<ClientAdditionalInfo> Handle(UpdateAdditionalInfoCommand request, CancellationToken cancellationToken)
     {
         return await _repository.UpdateAdditionalInfoAsync(request.info);

@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Domain.Contracts;
-
 namespace Auth.TimeCafe.Test.Integration;
 
 public class IntegrationTestFactory

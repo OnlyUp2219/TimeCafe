@@ -1,18 +1,13 @@
-﻿using Microsoft.Windows.AppNotifications;
+using Microsoft.Windows.AppNotifications;
 
 using System.Collections.Specialized;
 using System.Web;
 
 namespace TimeCafe.UI.Services;
 
-public class AppNotificationService : IAppNotificationService
+public class AppNotificationService(INavigationService navigationService) : IAppNotificationService
 {
-    private readonly INavigationService _navigationService;
-
-    public AppNotificationService(INavigationService navigationService)
-    {
-        _navigationService = navigationService;
-    }
+    private readonly INavigationService _navigationService = navigationService;
 
     ~AppNotificationService()
     {

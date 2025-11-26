@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record SetClientDraftCommand(int ClientId) : IRequest<bool>;
 
-public class SetClientDraftHandler : IRequestHandler<SetClientDraftCommand, bool>
+public class SetClientDraftHandler(IClientRepository repository) : IRequestHandler<SetClientDraftCommand, bool>
 {
-    private readonly IClientRepository _repository;
-
-    public SetClientDraftHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<bool> Handle(SetClientDraftCommand request, CancellationToken cancellationToken)
     {

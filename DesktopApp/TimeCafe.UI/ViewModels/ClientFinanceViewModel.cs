@@ -1,8 +1,8 @@
 namespace TimeCafe.UI.ViewModels;
 
-public partial class ClientFinanceViewModel : ObservableRecipient, INavigationAware
+public partial class ClientFinanceViewModel(IMediator mediator) : ObservableRecipient, INavigationAware
 {
-    private readonly IMediator _mediator;
+    private readonly IMediator _mediator = mediator;
     private int _clientId;
 
     [ObservableProperty] private string clientName;
@@ -18,11 +18,6 @@ public partial class ClientFinanceViewModel : ObservableRecipient, INavigationAw
     [ObservableProperty] private string successMessage;
     [ObservableProperty] private bool isDepositLoading;
     [ObservableProperty] private bool isDebtPaymentLoading;
-
-    public ClientFinanceViewModel(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
 
     public void Initialize(int clientId)
     {

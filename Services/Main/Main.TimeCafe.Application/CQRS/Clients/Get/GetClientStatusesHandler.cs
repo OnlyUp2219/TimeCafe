@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Get;
 
 public record GetClientStatusesQuery() : IRequest<IEnumerable<ClientStatus>>;
 
-public class GetClientStatusesHandler : IRequestHandler<GetClientStatusesQuery, IEnumerable<ClientStatus>>
+public class GetClientStatusesHandler(IClientRepository repository) : IRequestHandler<GetClientStatusesQuery, IEnumerable<ClientStatus>>
 {
-    private readonly IClientRepository _repository;
-
-    public GetClientStatusesHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<IEnumerable<ClientStatus>> Handle(GetClientStatusesQuery request, CancellationToken cancellationToken)
     {

@@ -8,7 +8,6 @@ public enum ShellScrollViewerMode
     Disabled
 }
 
-public class ShellScrollViewerVisibilityMessage : ValueChangedMessage<ShellScrollViewerMode>
+public class ShellScrollViewerVisibilityMessage(ShellScrollViewerMode mode) : ValueChangedMessage<ShellScrollViewerMode>(mode)
 {
-    public ShellScrollViewerVisibilityMessage(ShellScrollViewerMode mode) : base(mode) { }
 }

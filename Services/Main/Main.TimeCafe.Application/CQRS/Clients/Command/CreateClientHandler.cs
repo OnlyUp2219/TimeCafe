@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record CreateClientCommand(Client Client) : IRequest<Client>;
 
-public class CreateClientHandler : IRequestHandler<CreateClientCommand, Client>
+public class CreateClientHandler(IClientRepository repository) : IRequestHandler<CreateClientCommand, Client>
 {
-    private readonly IClientRepository _repository;
-
-    public CreateClientHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<Client> Handle(CreateClientCommand request, CancellationToken cancellationToken)
     {

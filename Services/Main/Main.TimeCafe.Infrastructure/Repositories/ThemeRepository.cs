@@ -1,17 +1,10 @@
 namespace Main.TimeCafe.Infrastructure.Repositories;
 
-public class ThemeRepository : IThemeRepository
+public class ThemeRepository(TimeCafeContext context, IDistributedCache cache, ILogger<ThemeRepository> logger) : IThemeRepository
 {
-    private readonly TimeCafeContext _context;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<ThemeRepository> _logger;
-
-    public ThemeRepository(TimeCafeContext context, IDistributedCache cache, ILogger<ThemeRepository> logger)
-    {
-        _context = context;
-        _cache = cache;
-        _logger = logger;
-    }
+    private readonly TimeCafeContext _context = context;
+    private readonly IDistributedCache _cache = cache;
+    private readonly ILogger<ThemeRepository> _logger = logger;
 
     public async Task<IEnumerable<Theme>> GetThemesAsync()
     {

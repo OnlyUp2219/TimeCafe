@@ -2,14 +2,9 @@ namespace Main.TimeCafe.Application.CQRS.Clients.Command;
 
 public record SetClientActiveCommand(int ClientId) : IRequest<bool>;
 
-public class SetClientActiveHandler : IRequestHandler<SetClientActiveCommand, bool>
+public class SetClientActiveHandler(IClientRepository repository) : IRequestHandler<SetClientActiveCommand, bool>
 {
-    private readonly IClientRepository _repository;
-
-    public SetClientActiveHandler(IClientRepository repository)
-    {
-        _repository = repository;
-    }
+    private readonly IClientRepository _repository = repository;
 
     public async Task<bool> Handle(SetClientActiveCommand request, CancellationToken cancellationToken)
     {

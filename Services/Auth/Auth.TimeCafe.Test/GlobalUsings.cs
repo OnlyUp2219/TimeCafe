@@ -1,10 +1,3 @@
-global using System.Net;
-global using System.Net.Http.Headers;
-global using System.Net.Http.Json;
-global using System.Text;
-global using System.Text.Json;
-global using System.Text.Json.Serialization;
-global using System.Threading.Tasks;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Permissions;
 global using Auth.TimeCafe.Infrastructure.Data;
@@ -12,7 +5,9 @@ global using Auth.TimeCafe.Infrastructure.Permissions;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Test.Integration.Endpoints;
 global using Auth.TimeCafe.Test.Integration.Helpers;
+
 global using FluentAssertions;
+
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc.Testing;
@@ -22,4 +17,12 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
+
+global using System.Net;
+global using System.Net.Http.Headers;
+global using System.Net.Http.Json;
+global using System.Text;
+global using System.Text.Json;
+global using System.Threading.Tasks;
+
 global using Xunit;
