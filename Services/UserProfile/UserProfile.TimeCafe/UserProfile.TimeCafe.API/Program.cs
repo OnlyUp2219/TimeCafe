@@ -7,11 +7,34 @@ builder.Services.AddDbContext<ApplicationDbContext>(op => op.UseNpgsql(builder.C
 builder.Services.AddScoped<IUserRepositories, UserRepositories>();
 builder.Services.AddScoped<IAdditionalInfoRepository, AdditionalInfoRepository>();
 
+// CQRS + behaviors
+builder.Services.AddUserProfileCqrs();
+
+// Swagger & Carter
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerConfiguration(builder.Configuration);
+builder.Services.AddCarter();
+
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe UserProfile API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
+
+app.MapCarter();
+
 await app.RunAsync();
+
+
+public partial class Program { }
 
 
