@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.API.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 //builder.Services.AddRabbitMqMessaging(builder.Configuration);
@@ -9,6 +11,9 @@ builder.Services.AddScoped<IAdditionalInfoRepository, AdditionalInfoRepository>(
 
 // CQRS + behaviors
 builder.Services.AddUserProfileCqrs();
+
+// S3 storage (photos)
+builder.Services.AddS3(builder.Configuration);
 
 // Swagger & Carter
 builder.Services.AddEndpointsApiExplorer();
