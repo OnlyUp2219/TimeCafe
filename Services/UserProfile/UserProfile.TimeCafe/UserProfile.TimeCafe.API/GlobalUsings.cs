@@ -24,3 +24,12 @@ global using UserProfile.TimeCafe.Domain.Models;
 global using UserProfile.TimeCafe.Infrastructure.Data;
 global using UserProfile.TimeCafe.Infrastructure.Repositories;
 global using UserProfile.TimeCafe.Infrastructure.Services;
+global using Microsoft.Extensions.Options;
+global using Amazon.S3;
+global using Amazon.S3.Model;
+global using Amazon.S3.Util;
+
+global using System.Net;
+
+global using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
+global using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
