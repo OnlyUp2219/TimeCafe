@@ -1,6 +1,5 @@
 ﻿using Amazon.S3;
 using Microsoft.Extensions.Options;
-using UserProfile.TimeCafe.Infrastructure.S3.Options;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
@@ -45,7 +44,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     public async Task Endpoint_GetPhoto_Should_ReturnFile_AfterUpload_ToRealS3()
     {
         // Arrange: создаём профиль и загружаем файл (реальный вызов к S3)
-        await SeedProfileAsync("user123", "Иван", "Петров");
+        await SeedProfileAsync("user1234", "Иван", "Петров");
 
         using var content = new MultipartFormDataContent();
         var originalData = LoadTestImage();
