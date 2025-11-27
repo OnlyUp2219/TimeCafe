@@ -20,16 +20,17 @@ public record UploadProfilePhotoResult(
 
 public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
 {
-    public UploadProfilePhotoCommandValidator(PhotoOptions photoOptions)
+    public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
     {
+        var opts = photoOptions.Value;
         RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
         RuleFor(x => x.ContentType)
-            .Must(ct => photoOptions.AllowedContentTypes.Contains(ct))
-            .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", photoOptions.AllowedContentTypes)}");
+            .Must(ct => opts.AllowedContentTypes.Contains(ct))
+            .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
         RuleFor(x => x.Size)
             .GreaterThan(0)
-            .LessThanOrEqualTo(photoOptions.MaxSizeBytes)
-            .WithMessage($"Размер файла превышает лимит {photoOptions.MaxSizeBytes / (1024 * 1024)}MB");
+            .LessThanOrEqualTo(opts.MaxSizeBytes)
+            .WithMessage($"Размер файла превышает лимит {opts.MaxSizeBytes / (1024 * 1024)}MB");
     }
 }
 

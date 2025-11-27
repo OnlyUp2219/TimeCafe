@@ -1,3 +1,6 @@
+﻿using Amazon.S3;
+using Microsoft.Extensions.Options;
+using UserProfile.TimeCafe.Infrastructure.S3.Options;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
@@ -36,6 +39,40 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
             Console.WriteLine($"[Endpoint_UploadPhoto_Should_Return201_WhenValidPhoto] Response: {jsonString}");
             throw;
         }
+    }
+
+    [Fact]
+    public async Task Endpoint_GetPhoto_Should_ReturnFile_AfterUpload_ToRealS3()
+    {
+        // Arrange: создаём профиль и загружаем файл (реальный вызов к S3)
+        await SeedProfileAsync("user123", "Иван", "Петров");
+
+        using var content = new MultipartFormDataContent();
+        var originalData = LoadTestImage();
+        var fileContent = new ByteArrayContent(originalData);
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
+        content.Add(fileContent, "file", "test.png");
+
+        var uploadResponse = await Client.PostAsync("/S3/image/user123", content);
+        uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        // Verify S3 object exists via HEAD/metadata
+        using var scope = Factory.Services.CreateScope();
+        var s3Client = scope.ServiceProvider.GetRequiredService<IAmazonS3>();
+        var s3Options = scope.ServiceProvider.GetRequiredService<IOptions<S3Options>>();
+        var objectExists = await VerifyS3ObjectExistsAsync(s3Options.Value.BucketName, "profiles/user123/photo", s3Client);
+        objectExists.Should().BeTrue("объект должен существовать в S3 после загрузки");
+
+        // Act: запрашиваем обратно фото из S3 через API
+        var getResponse = await Client.GetAsync("/S3/image/user123");
+
+        // Assert: статус OK, корректный content-type и непустое тело
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        getResponse.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
+        var returnedBytes = await getResponse.Content.ReadAsByteArrayAsync();
+        returnedBytes.Should().NotBeNull();
+        returnedBytes.Length.Should().BeGreaterThan(0);
+        returnedBytes.Should().BeEquivalentTo(originalData, "содержимое должно совпадать с загруженным");
     }
 
     [Fact]
@@ -131,7 +168,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         using var content = new MultipartFormDataContent();
         var largeFile = new byte[6 * 1024 * 1024]; // 6 MB
         var fileContent = new ByteArrayContent(largeFile);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
         content.Add(fileContent, "file", "large.jpg");
 
         // Act
@@ -260,7 +297,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     }
 
     [Theory]
-    [InlineData("image/jpeg", "jpg")]
+    [InlineData("image/png", "jpg")]
     [InlineData("image/png", "png")]
     [InlineData("image/webp", "webp")]
     [InlineData("image/gif", "gif")]

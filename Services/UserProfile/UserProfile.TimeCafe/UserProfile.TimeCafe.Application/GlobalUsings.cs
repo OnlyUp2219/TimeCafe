@@ -2,6 +2,7 @@ global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Extensions;
 
 global using FluentValidation;
+global using Microsoft.Extensions.Options;
 
 global using MediatR;
 

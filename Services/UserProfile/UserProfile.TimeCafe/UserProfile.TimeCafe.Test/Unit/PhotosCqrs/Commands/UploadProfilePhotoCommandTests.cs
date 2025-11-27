@@ -1,4 +1,5 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
+using Microsoft.Extensions.Options;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 
@@ -110,12 +111,12 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdEmpty(string userId)
+    public async Task Validator_Should_FailValidation_WhenUserIdEmpty(string? userId)
     {
         // Arrange
         var stream = new MemoryStream([1, 2, 3]);
         var command = new UploadProfilePhotoCommand(userId!, stream, "image/jpeg", "photo.jpg", 3);
-        var validator = new UploadProfilePhotoCommandValidator(_photoOptions);
+        var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
         var result = await validator.ValidateAsync(command);
@@ -134,7 +135,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream([1, 2, 3]);
         var command = new UploadProfilePhotoCommand("user123", stream, contentType, "photo.jpg", 3);
-        var validator = new UploadProfilePhotoCommandValidator(_photoOptions);
+        var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
         var result = await validator.ValidateAsync(command);
@@ -153,7 +154,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream([1, 2, 3]);
         var command = new UploadProfilePhotoCommand("user123", stream, "image/jpeg", "photo.jpg", size);
-        var validator = new UploadProfilePhotoCommandValidator(_photoOptions);
+        var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
         var result = await validator.ValidateAsync(command);
@@ -173,7 +174,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream([1, 2, 3]);
         var command = new UploadProfilePhotoCommand("user123", stream, contentType, "photo.jpg", 1024);
-        var validator = new UploadProfilePhotoCommandValidator(_photoOptions);
+        var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
         var result = await validator.ValidateAsync(command);
