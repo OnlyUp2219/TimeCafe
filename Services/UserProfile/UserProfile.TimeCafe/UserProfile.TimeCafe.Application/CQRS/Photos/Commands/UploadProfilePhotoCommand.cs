@@ -1,0 +1,63 @@
+namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
+
+public record UploadProfilePhotoCommand(string UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
+
+public record UploadProfilePhotoResult(
+    bool Success,
+    string? Code = null,
+    List<ErrorItem>? Errors = null,
+    string? Message = null,
+    int? StatusCode = null,
+    string? Key = null,
+    string? Url = null,
+    long? Size = null,
+    string? ContentType = null) : ICqrsResultV2
+{
+    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => new(true, Key: key, Url: url, Size: size, ContentType: contentType, StatusCode: 201, Message: "Фото загружено");
+    public static UploadProfilePhotoResult Failed() => new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
+    public static UploadProfilePhotoResult ProfileNotFound() => new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
+}
+
+public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
+{
+    public UploadProfilePhotoCommandValidator(PhotoOptions photoOptions)
+    {
+        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.ContentType)
+            .Must(ct => photoOptions.AllowedContentTypes.Contains(ct))
+            .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", photoOptions.AllowedContentTypes)}");
+        RuleFor(x => x.Size)
+            .GreaterThan(0)
+            .LessThanOrEqualTo(photoOptions.MaxSizeBytes)
+            .WithMessage($"Размер файла превышает лимит {photoOptions.MaxSizeBytes / (1024 * 1024)}MB");
+    }
+}
+
+public class UploadProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUserRepositories userRepository) : IRequestHandler<UploadProfilePhotoCommand, UploadProfilePhotoResult>
+{
+    private readonly IProfilePhotoStorage _storage = storage;
+    private readonly IUserRepositories _userRepository = userRepository;
+
+    public async Task<UploadProfilePhotoResult> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            if (profile is null)
+                return UploadProfilePhotoResult.ProfileNotFound();
+
+            var result = await _storage.UploadAsync(request.UserId, request.Data, request.ContentType, request.FileName, cancellationToken);
+            if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
+                return UploadProfilePhotoResult.Failed();
+
+            profile.PhotoUrl = result.Url;
+            await _userRepository.UpdateProfileAsync(profile, cancellationToken);
+
+            return UploadProfilePhotoResult.Ok(result.Key, result.Url, result.Size.Value, result.ContentType);
+        }
+        catch (Exception)
+        {
+            return UploadProfilePhotoResult.Failed();
+        }
+    }
+}
