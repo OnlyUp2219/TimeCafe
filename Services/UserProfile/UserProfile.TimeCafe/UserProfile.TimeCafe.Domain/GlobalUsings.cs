@@ -1,0 +1,1 @@
+global using UserProfile.TimeCafe.Domain.Models;
