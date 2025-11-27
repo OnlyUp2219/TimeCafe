@@ -1,3 +1,6 @@
+using Amazon.S3;
+using Amazon.S3.Model;
+
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 
 public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
@@ -23,6 +26,33 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             };
             context.Profiles.Add(profile);
             await context.SaveChangesAsync();
+        }
+    }
+
+    protected byte[] LoadTestImage()
+    {
+        var projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\..\.."));
+        var imagePath = Path.Combine(projectRoot, "diagrams", "Er-diagrama.png");
+
+        if (!File.Exists(imagePath))
+        {
+            throw new FileNotFoundException($"Тестовое изображение не найдено: {imagePath}");
+        }
+
+        return File.ReadAllBytes(imagePath);
+    }
+
+
+    protected async Task<bool> VerifyS3ObjectExistsAsync(string bucketName, string key, IAmazonS3 s3Client)
+    {
+        try
+        {
+            await s3Client.GetObjectMetadataAsync(bucketName, key);
+            return true;
+        }
+        catch (AmazonS3Exception ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return false;
         }
     }
 }
