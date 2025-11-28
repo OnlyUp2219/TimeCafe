@@ -13,6 +13,9 @@ builder.Services.AddUserProfileCqrs();
 // S3 storage (photos)
 builder.Services.AddS3(builder.Configuration);
 
+// Photo moderation
+builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerationService>();
+
 // Swagger & Carter
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration(builder.Configuration);
