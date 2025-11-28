@@ -63,6 +63,11 @@ public class TestPhotoProfile : ICarterModule
         .WithTags("ProfilePhoto")
         .WithName("TestUserPhoto")
         .WithSummary("Тестовый эндпоинт: создать пользователя и получить фото")
-        .WithDescription("Проверяет существование пользователя. Если нет — создаёт тестового пользователя. Если есть фото в S3 — возвращает его, иначе возвращает JSON с информацией о статусе.");
+        .WithDescription("Проверяет существование пользователя. Если нет — создаёт тестового пользователя. Если есть фото в S3 — возвращает его, иначе возвращает JSON с информацией о статусе.")
+        .WithOpenApi(op =>
+        {
+            op.Parameters[0].Example = new Microsoft.OpenApi.Any.OpenApiString("30a3d946-97f8-470f-98b0-3c1230c09dc6");
+            return op;
+        });
     }
 }
