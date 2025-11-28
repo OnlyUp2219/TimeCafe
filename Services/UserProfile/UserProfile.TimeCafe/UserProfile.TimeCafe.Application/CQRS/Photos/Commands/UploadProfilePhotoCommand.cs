@@ -34,10 +34,14 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     }
 }
 
-public class UploadProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUserRepositories userRepository) : IRequestHandler<UploadProfilePhotoCommand, UploadProfilePhotoResult>
+public class UploadProfilePhotoCommandHandler(
+    IProfilePhotoStorage storage, 
+    IUserRepositories userRepository,
+    IPhotoModerationService moderationService) : IRequestHandler<UploadProfilePhotoCommand, UploadProfilePhotoResult>
 {
     private readonly IProfilePhotoStorage _storage = storage;
     private readonly IUserRepositories _userRepository = userRepository;
+    private readonly IPhotoModerationService _moderationService = moderationService;
 
     public async Task<UploadProfilePhotoResult> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken)
     {
@@ -47,7 +51,26 @@ public class UploadProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUse
             if (profile is null)
                 return UploadProfilePhotoResult.ProfileNotFound();
 
-            var result = await _storage.UploadAsync(request.UserId, request.Data, request.ContentType, request.FileName, cancellationToken);
+            // Модерация фото перед загрузкой
+            using var moderationStream = new MemoryStream();
+            await request.Data.CopyToAsync(moderationStream, cancellationToken);
+            moderationStream.Position = 0;
+            
+            var moderationResult = await _moderationService.ModeratePhotoAsync(moderationStream, cancellationToken);
+            
+            if (!moderationResult.IsSafe)
+            {
+                return new UploadProfilePhotoResult(
+                    false, 
+                    Code: "PhotoRejected", 
+                    Message: $"Фото отклонено: {moderationResult.Reason}", 
+                    StatusCode: 400);
+            }
+
+            // Сбрасываем позицию после модерации
+            moderationStream.Position = 0;
+
+            var result = await _storage.UploadAsync(request.UserId, moderationStream, request.ContentType, request.FileName, cancellationToken);
             if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
                 return UploadProfilePhotoResult.Failed();
 
