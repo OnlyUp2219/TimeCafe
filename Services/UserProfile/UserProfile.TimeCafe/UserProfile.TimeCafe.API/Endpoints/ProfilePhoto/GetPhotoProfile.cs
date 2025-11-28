@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.API.Endpoints.ProfilePhoto;
 
-public class UpdatePhotoProfile : ICarterModule
+public class GetPhotoProfile : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
