@@ -13,4 +13,12 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<AdditionalInfo> AdditionalInfos { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AdditionalInfo>().ToTable("AdditionalInfo");
+        modelBuilder.Entity<Profile>().ToTable("Profiles");
+    }
 }
