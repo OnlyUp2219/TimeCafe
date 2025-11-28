@@ -23,6 +23,11 @@ public class CreatePhotoProfile : ICarterModule
         .WithTags("ProfilePhoto")
         .WithName("UploadProfilePhoto")
         .WithSummary("Загрузить фото профиля в S3")
-        .WithDescription("Загружает фото пользователя в S3 хранилище и обновляет PhotoUrl в профиле. Принимает multipart/form-data с файлом изображения.");
+        .WithDescription("Загружает фото пользователя в S3 хранилище и обновляет PhotoUrl в профиле. Принимает multipart/form-data с файлом изображения.")
+        .WithOpenApi(op =>
+        {
+            op.Parameters[0].Example = new Microsoft.OpenApi.Any.OpenApiString("30a3d946-97f8-470f-98b0-3c1230c09dc6");
+            return op;
+        });
     }
 }
