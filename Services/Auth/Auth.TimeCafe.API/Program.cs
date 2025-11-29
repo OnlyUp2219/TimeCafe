@@ -59,6 +59,7 @@ if (app.Environment.IsDevelopment())
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe Auth API v1");
         c.RoutePrefix = string.Empty;
     });
+    app.UseScalarConfiguration();
 }
 
 app.UseHttpsRedirection();
