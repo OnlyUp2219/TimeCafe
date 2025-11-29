@@ -1,5 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
+var corsPolicyName = builder.Configuration.GetSection("CORS");
+builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
+
 //builder.Services.AddRabbitMqMessaging(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 
@@ -25,6 +28,16 @@ builder.Services.AddCarter();
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+// Применить миграции автоматически при старте
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
+var corsPolicyNameValue = builder.Configuration.GetSection("CORS")["PolicyName"];
+app.UseCors(corsPolicyNameValue ?? "");
 
 if (app.Environment.IsDevelopment())
 {

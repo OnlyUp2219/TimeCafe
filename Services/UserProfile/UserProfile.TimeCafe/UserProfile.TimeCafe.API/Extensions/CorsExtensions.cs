@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Extensions;
+namespace UserProfile.TimeCafe.API.Extensions;
 
 public static class CorsExtensions
 {
@@ -7,9 +7,9 @@ public static class CorsExtensions
         services.AddCors(options =>
         {
             options.AddPolicy(corsPolicyName ?? "", p =>
-                p.AllowAnyHeader().
-                AllowAnyMethod().
-                AllowCredentials()
+                p.AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials()
                 .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
                 .WithOrigins(
                 "http://127.0.0.1:9301",

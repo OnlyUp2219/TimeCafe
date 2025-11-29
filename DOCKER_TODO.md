@@ -1,8 +1,8 @@
 # 🐳 Docker & Deployment для TimeCafe Microservices
 
-> **Статус:** В разработке  
-> **Обновлено:** 25.11.2025  
-> **Архитектура:** Микросервисы на .NET 8
+> **Статус:** ✅ Auth и UserProfile готовы к запуску  
+> **Обновлено:** 26.01.2025  
+> **Архитектура:** Микросервисы на .NET 9
 
 ---
 
@@ -274,7 +274,22 @@ EOSQL
 
 ## 🚀 Команды для работы
 
-### Первый запуск:
+### ⚙️ Подготовка перед первым запуском:
+
+```powershell
+# 1. Скопировать .env.example в .env и заполнить реальные значения
+Copy-Item .env.example .env
+
+# 2. Отредактировать .env файл:
+# - JWT_SECRET (минимум 32 символа)
+# - S3_SECRET_KEY (ваш секретный ключ Selectel)
+# - GOOGLE_CLIENT_ID/SECRET, VK_CLIENT_ID/SECRET (если используете OAuth)
+# - TWILIO_ACCOUNT_SID/AUTH_TOKEN (если используете SMS)
+# - POSTMARK_SERVER_TOKEN (если используете email)
+notepad .env
+```
+
+### 🚀 Первый запуск:
 
 ```powershell
 # 1. Собрать все образы
@@ -283,12 +298,27 @@ docker-compose build
 # 2. Запустить все контейнеры
 docker-compose up -d
 
-# 3. Проверить логи
-docker-compose logs -f
+# 3. Проверить, что все сервисы запустились
+docker-compose ps
 
-# 4. Применить миграции
-docker-compose exec auth-service dotnet ef database update
-docker-compose exec profile-service dotnet ef database update
+# 4. Дождаться инициализации PostgreSQL (проверить логи)
+docker-compose logs postgres
+
+# 5. Применить миграции EF Core
+docker-compose exec auth-service dotnet ef database update --project Auth.TimeCafe.Infrastructure --startup-project Auth.TimeCafe.API
+docker-compose exec profile-service dotnet ef database update --project UserProfile.TimeCafe.Infrastructure --startup-project UserProfile.TimeCafe.API
+
+# 6. Проверить логи сервисов
+docker-compose logs -f auth-service
+docker-compose logs -f profile-service
+
+# 7. Проверить health endpoints
+curl http://localhost:8001/health
+curl http://localhost:8002/health
+
+# 8. Открыть Scalar API документацию
+# Auth API: http://localhost:8001/scalar/v1
+# Profile API: http://localhost:8002/scalar/v1
 ```
 
 ### Разработка:
@@ -386,19 +416,21 @@ docker-compose up -d --build auth-service
 
 ### ✅ Выполнено:
 
-- [x] Настроен Redis
-- [x] Настроен PostgreSQL
-- [x] Настроен RabbitMQ
-- [x] Auth Service в Docker
-- [x] UserProfile Service в Docker
+- [x] Настроен Redis в docker-compose
+- [x] Настроен PostgreSQL в docker-compose
+- [x] Настроен RabbitMQ в docker-compose
+- [x] **Auth Service Dockerfile** создан с multi-stage build, health check
+- [x] **UserProfile Service Dockerfile** создан с multi-stage build, health check
+- [x] **docker-compose.yml** создан с полной конфигурацией всех сервисов
+- [x] **.env.example** создан с шаблоном всех переменных окружения
+- [x] **scripts/init-databases.sh** создан для инициализации AuthDB и ProfileDB
+- [x] **Health checks** настроены для всех сервисов (postgres, redis, rabbitmq, auth, profile)
+- [x] **Environment variables** настроены для Auth (JWT, OAuth, Twilio, Postmark)
+- [x] **Environment variables** настроены для UserProfile (S3, Sightengine)
 
 ### 🔄 В процессе:
 
-- [ ] Создать Dockerfile для каждого сервиса
-- [ ] Создать docker-compose.yml
-- [ ] Создать .env файл с настройками
-- [ ] Создать init-databases.sh для инициализации БД
-- [ ] Настроить health checks
+- [ ] Применить миграции EF Core при первом запуске (см. инструкцию ниже)
 
 ### 📅 Запланировано:
 
@@ -513,5 +545,35 @@ docker-compose exec rabbitmq rabbitmqctl list_queues
 
 ---
 
-Обновлено: 25.11.2025
-Статус: 🚧 В разработке
+---
+
+## 🎉 Готово к запуску!
+
+### Архитектура контейнеризации:
+
+- **Auth Service** (`:8001`) - аутентификация, JWT, OAuth, SMS, Email
+- **UserProfile Service** (`:8002`) - профили, фото с модерацией, S3 storage
+- **PostgreSQL** (`:5432`) - базы данных AuthDB и ProfileDB
+- **Redis** (`:6379`) - кэширование
+- **RabbitMQ** (`:5672`, `:15672`) - межсервисная коммуникация
+
+### Переменные окружения:
+
+Все конфигурации вынесены в `.env` файл:
+
+- ✅ Секреты не хранятся в коде
+- ✅ Легко переключаться между Development/Production
+- ✅ Каждый сервис получает только нужные ему переменные
+
+### Health Checks:
+
+Все сервисы имеют health check endpoints:
+
+- Инфраструктура: postgres, redis, rabbitmq
+- Микросервисы: auth-service, profile-service
+- `docker-compose ps` покажет состояние здоровья каждого сервиса
+
+---
+
+Обновлено: 26.01.2025  
+Статус: ✅ **Auth и UserProfile готовы к production!**
