@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main.TimeCafe.Application",
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{F93731A0-5DE5-4B83-BF52-69C2151283DE}"
+	ProjectSection(SolutionItems) = preProject
+		Services\.env = Services\.env
+		Services\docker-compose.yml = Services\docker-compose.yml
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DesktopApp", "DesktopApp", "{0F4CE3E7-AEC0-42DD-9A0E-FE91638D73D1}"
 EndProject
