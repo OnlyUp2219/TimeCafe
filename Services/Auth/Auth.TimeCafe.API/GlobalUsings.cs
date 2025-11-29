@@ -36,6 +36,8 @@ global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.IdentityModel.Tokens;
 
+global using Scalar.AspNetCore;
+
 global using Swashbuckle.AspNetCore.Filters;
 
 global using System.Security.Claims;
