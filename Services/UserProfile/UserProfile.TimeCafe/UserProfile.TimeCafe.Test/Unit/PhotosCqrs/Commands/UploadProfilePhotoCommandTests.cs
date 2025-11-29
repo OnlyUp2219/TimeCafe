@@ -6,11 +6,17 @@ namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 public class UploadProfilePhotoCommandTests : BaseCqrsTest
 {
     private readonly Mock<IProfilePhotoStorage> _storageMock;
+    private readonly Mock<IPhotoModerationService> _moderationMock;
+    private readonly Mock<ILogger<UploadProfilePhotoCommandHandler>> _loggerMock;
     private readonly PhotoOptions _photoOptions;
 
     public UploadProfilePhotoCommandTests()
     {
         _storageMock = new Mock<IProfilePhotoStorage>();
+        _moderationMock = new Mock<IPhotoModerationService>();
+        _moderationMock.Setup(m => m.ModeratePhotoAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ModerationResult(true, null, null));
+        _loggerMock = new Mock<ILogger<UploadProfilePhotoCommandHandler>>();
         _photoOptions = new PhotoOptions
         {
             AllowedContentTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -35,7 +41,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(true, "profiles/user123/photo", "https://example.com/photo.jpg", 5, "image/jpeg"));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -60,7 +66,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
         var command = new UploadProfilePhotoCommand("nonexistent", stream, "image/jpeg", "photo.jpg", 5);
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -96,7 +102,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(false));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -202,7 +208,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(true, "profiles/user123/photo", "https://new-url.com/photo.jpg", 5, "image/jpeg"));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

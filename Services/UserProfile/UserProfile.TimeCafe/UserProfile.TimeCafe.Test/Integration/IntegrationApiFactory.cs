@@ -45,6 +45,20 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
+
+            // Mock photo moderation service for tests (always returns safe)
+            var moderationDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IPhotoModerationService));
+            if (moderationDescriptor != null)
+            {
+                services.Remove(moderationDescriptor);
+            }
+            services.AddScoped<IPhotoModerationService>(_ => 
+            {
+                var mock = new Mock<IPhotoModerationService>();
+                mock.Setup(m => m.ModeratePhotoAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new ModerationResult(true, null, null));
+                return mock.Object;
+            });
         });
     }
 }
