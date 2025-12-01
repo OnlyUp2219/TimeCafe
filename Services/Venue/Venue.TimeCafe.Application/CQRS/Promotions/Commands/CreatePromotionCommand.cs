@@ -2,7 +2,7 @@ namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
 public record CreatePromotionCommand(
     string Name,
-    string? Description,
+    string Description,
     decimal? DiscountPercent,
     DateTime ValidFrom,
     DateTime ValidTo,
@@ -32,8 +32,8 @@ public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotion
             .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
 
         RuleFor(x => x.Description)
-            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов")
-            .When(x => !string.IsNullOrEmpty(x.Description));
+            .NotEmpty().WithMessage("Описание акции обязательно")
+            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
 
         RuleFor(x => x.DiscountPercent)
             .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
@@ -56,7 +56,7 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IR
             var promotion = new Promotion
             {
                 Name = request.Name,
-                Description = request.Description!,
+                Description = request.Description,
                 DiscountPercent = request.DiscountPercent,
                 ValidFrom = request.ValidFrom,
                 ValidTo = request.ValidTo,
