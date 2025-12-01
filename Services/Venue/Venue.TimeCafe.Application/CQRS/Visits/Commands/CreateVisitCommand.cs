@@ -14,7 +14,7 @@ public record CreateVisitResult(
         new(false, Code: "CreateVisitFailed", Message: "Не удалось создать посещение", StatusCode: 500);
 
     public static CreateVisitResult CreateSuccess(Visit visit) =>
-        new(true, Message: "Посещение успешно создано", Visit: visit);
+        new(true, Message: "Посещение успешно создано", StatusCode: 201, Visit: visit);
 }
 
 public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
