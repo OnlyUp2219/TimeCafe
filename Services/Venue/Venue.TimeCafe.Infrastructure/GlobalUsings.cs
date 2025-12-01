@@ -1,1 +1,10 @@
 global using System.Text;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Caching.Distributed;
+global using Microsoft.Extensions.Logging;
+global using Venue.TimeCafe.Domain.Models;
+global using Venue.TimeCafe.Domain.Contracts.Repositories;
+global using Venue.TimeCafe.Domain.Constants;
+global using Venue.TimeCafe.Infrastructure.Data;
+global using BuildingBlocks.Helpers;
