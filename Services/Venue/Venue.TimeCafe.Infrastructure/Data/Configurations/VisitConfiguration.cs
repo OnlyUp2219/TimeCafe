@@ -13,8 +13,7 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .HasMaxLength(450);
 
         builder.Property(v => v.EntryTime)
-            .IsRequired()
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .IsRequired();
 
         builder.Property(v => v.ExitTime)
             .IsRequired(false);

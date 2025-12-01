@@ -13,11 +13,9 @@ namespace Auth.TimeCafe.Infrastructure.Data
                 entity.HasIndex(x => x.Token)
                     .IsUnique();
 
-                entity.HasIndex(x => new { x.UserId, x.IsRevoked })
-                    .HasDatabaseName("IX_RefreshTokens_UserId_IsRevoked");
+                entity.HasIndex(x => new { x.UserId, x.IsRevoked });
 
-                entity.HasIndex(x => x.Expires)
-                    .HasDatabaseName("IX_RefreshTokens_Expires");
+                entity.HasIndex(x => x.Expires);
             });
         }
     }

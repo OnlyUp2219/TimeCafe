@@ -27,10 +27,10 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
             .HasDefaultValue(true);
 
         builder.Property(t => t.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .IsRequired();
 
         builder.Property(t => t.LastModified)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .IsRequired();
 
         builder.HasOne(t => t.Theme)
             .WithMany(th => th.Tariffs)
