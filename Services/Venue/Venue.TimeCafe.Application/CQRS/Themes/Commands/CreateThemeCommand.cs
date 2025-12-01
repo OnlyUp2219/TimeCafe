@@ -14,7 +14,7 @@ public record CreateThemeResult(
         new(false, Code: "CreateThemeFailed", Message: "Не удалось создать тему", StatusCode: 500);
 
     public static CreateThemeResult CreateSuccess(Theme theme) =>
-        new(true, Message: "Тема успешно создана", Theme: theme);
+        new(true, Message: "Тема успешно создана", StatusCode: 201, Theme: theme);
 }
 
 public class CreateThemeCommandValidator : AbstractValidator<CreateThemeCommand>

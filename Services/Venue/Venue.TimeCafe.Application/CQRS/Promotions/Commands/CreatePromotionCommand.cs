@@ -20,7 +20,7 @@ public record CreatePromotionResult(
         new(false, Code: "CreatePromotionFailed", Message: "Не удалось создать акцию", StatusCode: 500);
 
     public static CreatePromotionResult CreateSuccess(Promotion promotion) =>
-        new(true, Message: "Акция успешно создана", Promotion: promotion);
+        new(true, Message: "Акция успешно создана", StatusCode: 201, Promotion: promotion);
 }
 
 public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotionCommand>
