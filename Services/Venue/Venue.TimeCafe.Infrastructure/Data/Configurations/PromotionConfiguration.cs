@@ -23,7 +23,7 @@ public class PromotionConfiguration : IEntityTypeConfiguration<Promotion>
             .HasDefaultValue(true);
 
         builder.Property(p => p.CreatedAt)
-            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            .IsRequired();
 
         builder.HasIndex(p => p.IsActive);
         builder.HasIndex(p => new { p.ValidFrom, p.ValidTo });

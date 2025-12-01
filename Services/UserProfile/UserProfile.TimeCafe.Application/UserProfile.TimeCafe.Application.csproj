@@ -15,7 +15,7 @@
 
   <ItemGroup>
 	<ProjectReference Include="..\UserProfile.TimeCafe.Domain\UserProfile.TimeCafe.Domain.csproj" />
-	<ProjectReference Include="..\..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
+	<ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
 
 </Project>
