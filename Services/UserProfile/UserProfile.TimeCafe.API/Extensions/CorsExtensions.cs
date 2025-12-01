@@ -18,9 +18,9 @@ public static class CorsExtensions
                 "http://localhost:4173",
                 "http://127.0.0.1:5173",
                 "http://localhost:5173",
-                "http://127.0.0.1:8001",  // Docker Auth API
+                "http://127.0.0.1:8001",  
                 "http://localhost:8001",
-                "http://127.0.0.1:8002",  // Docker Profile API
+                "http://127.0.0.1:8002", 
                 "http://localhost:8002",
                 "https://127.0.0.1:9301",
                 "https://localhost:9301",
