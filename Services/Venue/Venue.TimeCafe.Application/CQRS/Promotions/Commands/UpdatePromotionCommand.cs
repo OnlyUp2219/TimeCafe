@@ -35,8 +35,8 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
             .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
 
         RuleFor(x => x.Promotion.Description)
-            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов")
-            .When(x => !string.IsNullOrEmpty(x.Promotion.Description));
+            .NotEmpty().WithMessage("Описание акции обязательно")
+            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
 
         RuleFor(x => x.Promotion.DiscountPercent)
             .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
