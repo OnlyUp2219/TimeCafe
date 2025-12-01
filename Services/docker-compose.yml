@@ -146,6 +146,38 @@ services:
       retries: 3
       start_period: 10s
 
+  venue-service:
+    build:
+      context: ..
+      dockerfile: Services/Venue/Venue.TimeCafe.API/Dockerfile
+    container_name: timecafe-venue
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:8003
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=VenueDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
+      - Redis__ConnectionString=redis:6379
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-admin}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD:-Admin123!}
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - timecafe-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
 networks:
   timecafe-network:
     driver: bridge
