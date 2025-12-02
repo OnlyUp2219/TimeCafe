@@ -1,16 +1,23 @@
 var builder = WebApplication.CreateBuilder(args);
 
-var corsPolicyName = builder.Configuration.GetSection("CORS");
-builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
+// CORS
+var corsPolicyName = builder.Configuration["CORS:PolicyName"]
+    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
+builder.Services.AddCorsConfiguration(corsPolicyName);
 
+// MassTransit (отключён для разработки без RabbitMQ)
 //builder.Services.AddRabbitMqMessaging(builder.Configuration);
+
+// Redis
 builder.Services.AddRedis(builder.Configuration);
 
-builder.Services.AddDbContext<ApplicationDbContext>(op => op.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IUserRepositories, UserRepositories>();
-builder.Services.AddScoped<IAdditionalInfoRepository, AdditionalInfoRepository>();
+// DbContext
+builder.Services.AddUserProfileDatabase(builder.Configuration);
 
-// CQRS + behaviors
+// Repositories
+builder.Services.AddUserProfilePersistence();
+
+// CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddUserProfileCqrs();
 
 // S3 storage (photos)
@@ -24,32 +31,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration(builder.Configuration);
 builder.Services.AddCarter();
 
-
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Применить миграции автоматически при старте
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
+await app.ApplyMigrationsAsync();
 
-var corsPolicyNameValue = builder.Configuration.GetSection("CORS")["PolicyName"];
-app.UseCors(corsPolicyNameValue ?? "");
+app.UseCors(corsPolicyName);
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe UserProfile API v1");
-        c.RoutePrefix = string.Empty;
-    });
-    app.UseScalarConfiguration();
-}
+// Swagger (Development only)
+app.UseSwaggerDevelopment();
 
+// Endpoints
 app.MapCarter();
 
 await app.RunAsync();

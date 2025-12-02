@@ -13,6 +13,9 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
+        // Отключить автоматические миграции в тестах
+        builder.UseSetting("SkipMigrations", "true");
+
         builder.ConfigureAppConfiguration((ctx, cfg) =>
         {
             var overrides = new Dictionary<string, string?>
@@ -52,7 +55,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             {
                 services.Remove(moderationDescriptor);
             }
-            services.AddScoped<IPhotoModerationService>(_ => 
+            services.AddScoped<IPhotoModerationService>(_ =>
             {
                 var mock = new Mock<IPhotoModerationService>();
                 mock.Setup(m => m.ModeratePhotoAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
