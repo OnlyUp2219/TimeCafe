@@ -13,7 +13,7 @@ public class Registration : ICarterModule
 
             return result.ToHttpResultV2(onSuccess: r =>
             {
-                return Results.Ok(new { message = result.Message });
+                return Results.Ok(new { message = r.Message });
             });
         })
             .WithTags("Authentication")
@@ -30,7 +30,7 @@ public class Registration : ICarterModule
 
             return result.ToHttpResultV2(onSuccess: r =>
             {
-                return Results.Ok(new { message = result.Message, callbackUrl = result.CallbackUrl });
+                return Results.Ok(new { message = r.Message, callbackUrl = r.CallbackUrl });
             });
         })
             .WithTags("Authentication")
