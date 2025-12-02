@@ -1,20 +1,18 @@
-using Microsoft.EntityFrameworkCore;
-using Venue.TimeCafe.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
-// Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddOpenApiConfiguration();
+builder.Services.AddCarterConfiguration();
+builder.Services.AddVenueCqrs();
+builder.Services.AddVenueDatabase(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseScalarConfiguration();
 
+app.MapCarter();
 app.MapControllers();
 
 app.Run();
