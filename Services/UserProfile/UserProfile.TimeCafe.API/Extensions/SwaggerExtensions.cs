@@ -15,4 +15,18 @@ public static class SwaggerExtensions
 
         return services;
     }
+
+    public static void UseSwaggerDevelopment(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe UserProfile API v1");
+                c.RoutePrefix = string.Empty;
+            });
+            app.UseScalarConfiguration();
+        }
+    }
 }

@@ -4,13 +4,19 @@ public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration)
     {
+        var rabbitMqSection = configuration.GetSection("RabbitMQ");
+        if (!rabbitMqSection.Exists())
+            throw new InvalidOperationException("RabbitMQ configuration section is missing.");
+
+        var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
+
         services.AddMassTransit(x =>
         {
             x.AddConsumer<UserRegisteredConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(configuration.GetValue<string>("RabbitMq:Host") ?? "rabbitmq://localhost");
+                cfg.Host(host);
 
                 cfg.ReceiveEndpoint("user-register-queue", e =>
                 {

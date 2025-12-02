@@ -4,10 +4,16 @@ public static class RedisExtensions
 {
     public static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisConnectionString = configuration.GetValue<string>("Redis:ConnectionString") ?? "localhost:6379";
+        var redisSection = configuration.GetSection("Redis");
+        if (!redisSection.Exists())
+            throw new InvalidOperationException("Redis configuration section is missing.");
+
+        var connectionString = redisSection["ConnectionString"]
+            ?? throw new InvalidOperationException("Redis:ConnectionString is not configured.");
+
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = redisConnectionString;
+            options.Configuration = connectionString;
         });
 
         return services;

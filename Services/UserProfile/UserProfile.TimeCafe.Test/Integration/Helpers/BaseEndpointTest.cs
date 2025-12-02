@@ -31,8 +31,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
     protected byte[] LoadTestImage()
     {
-        var projectRoot = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\..\..\..\.."));
-        var imagePath = Path.Combine(projectRoot, "diagrams", "Er-diagrama.png");
+        var imagePath = @"f:\IT\TimeCafe\diagrams\Er-diagrama.png";
 
         if (!File.Exists(imagePath))
         {
