@@ -1,5 +1,3 @@
-using System.Threading.RateLimiting;
-
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class RateLimiterExtensions
@@ -21,9 +19,21 @@ public static class RateLimiterExtensions
 
     public static IServiceCollection AddCustomRateLimiter(this IServiceCollection services, IConfiguration configuration)
     {
-        var minIntervalSeconds = configuration.GetValue<int>("RateLimiter:EmailSms:MinIntervalSeconds");
-        var windowMinutes = configuration.GetValue<int>("RateLimiter:EmailSms:WindowMinutes");
-        var maxRequests = configuration.GetValue<int>("RateLimiter:EmailSms:MaxRequests");
+        var rateLimiterSection = configuration.GetSection("RateLimiter:EmailSms");
+        if (!rateLimiterSection.Exists())
+            throw new InvalidOperationException("RateLimiter:EmailSms configuration section is missing.");
+
+        var minIntervalSeconds = rateLimiterSection.GetValue<int>("MinIntervalSeconds");
+        var windowMinutes = rateLimiterSection.GetValue<int>("WindowMinutes");
+        var maxRequests = rateLimiterSection.GetValue<int>("MaxRequests");
+
+        if (minIntervalSeconds <= 0)
+            throw new InvalidOperationException("RateLimiter:EmailSms:MinIntervalSeconds must be greater than 0.");
+        if (windowMinutes <= 0)
+            throw new InvalidOperationException("RateLimiter:EmailSms:WindowMinutes must be greater than 0.");
+        if (maxRequests <= 0)
+            throw new InvalidOperationException("RateLimiter:EmailSms:MaxRequests must be greater than 0.");
+
         var windowSeconds = windowMinutes * 60;
 
         services.AddSingleton(new RateLimitConfig { MinIntervalSeconds = minIntervalSeconds });

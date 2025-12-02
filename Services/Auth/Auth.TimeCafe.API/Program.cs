@@ -9,6 +9,7 @@ builder.Services.AddIdentityConfiguration(builder.Configuration);
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
 builder.Services.AddAuthorization();
+
 // Permission system registration
 builder.Services.AddPermissionAuthorization();
 
@@ -30,9 +31,10 @@ builder.Services.AddSwaggerConfiguration(builder.Configuration);
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
 
-// CORS 
-var corsPolicyName = builder.Configuration.GetSection("CORS");
-builder.Services.AddCorsConfiguration(corsPolicyName["PolicyName"]);
+// CORS
+var corsPolicyName = builder.Configuration["CORS:PolicyName"]
+    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
+builder.Services.AddCorsConfiguration(corsPolicyName);
 
 // Carter
 builder.Services.AddCarter();
@@ -44,37 +46,12 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    
-    if (dbContext.Database.IsRelational())
-    {
-        await dbContext.Database.MigrateAsync();
-    }
-    else
-    {
-        await dbContext.Database.EnsureCreatedAsync();
-    }
-    
-    var roleService = scope.ServiceProvider.GetRequiredService<IUserRoleService>();
-    await roleService.EnsureRolesCreatedAsync();
-    await SeedData.SeedAdminAsync(scope.ServiceProvider);
-}
+await app.ApplyMigrationsAsync();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TimeCafe Auth API v1");
-        c.RoutePrefix = string.Empty;
-    });
-    app.UseScalarConfiguration();
-}
+app.UseSwaggerDevelopment();
 
 app.UseHttpsRedirection();
-app.UseCors(corsPolicyName["PolicyName"] ?? "");
+app.UseCors(corsPolicyName);
 
 app.UseMiddleware<RateLimitCounterMiddleware>();
 app.UseRateLimiter();

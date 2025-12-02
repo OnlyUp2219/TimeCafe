@@ -8,10 +8,12 @@ public static class AuthenticationExtensions
         services.AddScoped<IJwtService, JwtService>();
 
         var jwtSection = configuration.GetSection("Jwt");
-        var issuer = jwtSection["Issuer"];
-        var audience = jwtSection["Audience"];
-        var signingKey = jwtSection["SigningKey"] ??
-            throw new InvalidOperationException("Jwt:SigningKey missing");
+        if (!jwtSection.Exists())
+            throw new InvalidOperationException("Jwt configuration section is missing.");
+
+        var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+        var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
         var keyBytes = Encoding.UTF8.GetBytes(signingKey);
 
         var authBuilder = services
