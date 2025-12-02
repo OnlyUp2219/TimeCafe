@@ -4,8 +4,6 @@ public static class EmailExtensions
 {
     public static IServiceCollection AddEmailSender(this IServiceCollection services, IConfiguration configuration)
     {
-
-
         services.Configure<PostmarkOptions>(configuration.GetSection("Postmark"));
 
         var postmarkSection = configuration.GetSection("Postmark");
@@ -24,10 +22,7 @@ public static class EmailExtensions
         if (string.IsNullOrWhiteSpace(postmarkSection["FrontendBaseUrl"]))
             throw new InvalidOperationException("Postmark:FrontendBaseUrl is not configured.");
 
-
-
         services.AddSingleton<PostmarkEmailSender>();
-
 
         services.AddSingleton<IEmailSender<IdentityUser>>(sp =>
             new BackgroundEmailSender(sp.GetRequiredService<PostmarkEmailSender>(), sp.GetRequiredService<ILogger<BackgroundEmailSender>>()));
