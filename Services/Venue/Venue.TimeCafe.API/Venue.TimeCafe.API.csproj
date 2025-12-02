@@ -20,11 +20,16 @@
 	<PackageReference Include="Scalar.AspNetCore" Version="2.11.0" />
 	<PackageReference Include="Scalar.AspNetCore.Microsoft" Version="2.10.3" />
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+	<PackageReference Include="Carter" Version="8.0.0" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.10.2" />
+	<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="9.0.1" />
 
   </ItemGroup>
 
   <ItemGroup>
 	<ProjectReference Include="..\Venue.TimeCafe.Infrastructure\Venue.TimeCafe.Infrastructure.csproj" />
+	<ProjectReference Include="..\Venue.TimeCafe.Application\Venue.TimeCafe.Application.csproj" />
+	<ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
   </ItemGroup>
 
 </Project>

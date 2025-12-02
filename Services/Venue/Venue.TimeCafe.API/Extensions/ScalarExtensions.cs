@@ -1,5 +1,3 @@
-using Scalar.AspNetCore;
-
 namespace Venue.TimeCafe.API.Extensions;
 
 public static class ScalarExtensions
