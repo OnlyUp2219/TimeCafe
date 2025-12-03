@@ -36,10 +36,14 @@ public class DeleteVisitCommandHandler(IVisitRepository repository) : IRequestHa
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.VisitId);
+            if (existing == null)
+                return DeleteVisitResult.VisitNotFound();
+
             var result = await _repository.DeleteAsync(request.VisitId);
 
             if (!result)
-                return DeleteVisitResult.VisitNotFound();
+                return DeleteVisitResult.DeleteFailed();
 
             return DeleteVisitResult.DeleteSuccess();
         }
