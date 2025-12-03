@@ -27,24 +27,27 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
         RuleFor(x => x.Promotion)
             .NotNull().WithMessage("Акция обязательна");
 
-        RuleFor(x => x.Promotion.PromotionId)
-            .GreaterThan(0).WithMessage("ID акции обязателен");
+        When(x => x.Promotion != null, () =>
+        {
+            RuleFor(x => x.Promotion.PromotionId)
+                .GreaterThan(0).WithMessage("ID акции обязателен");
 
-        RuleFor(x => x.Promotion.Name)
-            .NotEmpty().WithMessage("Название акции обязательно")
-            .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
+            RuleFor(x => x.Promotion.Name)
+                .NotEmpty().WithMessage("Название акции обязательно")
+                .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
 
-        RuleFor(x => x.Promotion.Description)
-            .NotEmpty().WithMessage("Описание акции обязательно")
-            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
+            RuleFor(x => x.Promotion.Description)
+                .NotEmpty().WithMessage("Описание акции обязательно")
+                .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
 
-        RuleFor(x => x.Promotion.DiscountPercent)
-            .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
-            .LessThanOrEqualTo(100).WithMessage("Процент скидки не может превышать 100")
-            .When(x => x.Promotion.DiscountPercent.HasValue);
+            RuleFor(x => x.Promotion.DiscountPercent)
+                .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
+                .LessThanOrEqualTo(100).WithMessage("Процент скидки не может превышать 100")
+                .When(x => x.Promotion.DiscountPercent.HasValue);
 
-        RuleFor(x => x.Promotion.ValidFrom)
-            .LessThan(x => x.Promotion.ValidTo).WithMessage("Дата начала должна быть раньше даты окончания");
+            RuleFor(x => x.Promotion.ValidFrom)
+                .LessThan(x => x.Promotion.ValidTo).WithMessage("Дата начала должна быть раньше даты окончания");
+        });
     }
 }
 
