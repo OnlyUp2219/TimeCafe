@@ -1,0 +1,59 @@
+namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Queries;
+
+public class GetActiveVisitsQueryTests : BaseCqrsHandlerTest
+{
+    private readonly GetActiveVisitsQueryHandler _handler;
+
+    public GetActiveVisitsQueryTests()
+    {
+        _handler = new GetActiveVisitsQueryHandler(VisitRepositoryMock.Object);
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnSuccess_WhenActiveVisitsFound()
+    {
+        var query = new GetActiveVisitsQuery();
+        var visits = new List<Visit>
+        {
+            new() { VisitId = 1, UserId = "user1", TariffId = 1, Status = VisitStatus.Active },
+            new() { VisitId = 2, UserId = "user2", TariffId = 1, Status = VisitStatus.Active }
+        };
+
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitsAsync()).ReturnsAsync(visits);
+
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Visits.Should().NotBeNull();
+        result.Visits.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnSuccess_WhenNoActiveVisits()
+    {
+        var query = new GetActiveVisitsQuery();
+        var visits = new List<Visit>();
+
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitsAsync()).ReturnsAsync(visits);
+
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        result.Success.Should().BeTrue();
+        result.Visits.Should().NotBeNull();
+        result.Visits.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    {
+        var query = new GetActiveVisitsQuery();
+
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitsAsync()).ThrowsAsync(new Exception());
+
+        var result = await _handler.Handle(query, CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Code.Should().Be("GetActiveVisitsFailed");
+        result.StatusCode.Should().Be(500);
+    }
+}
