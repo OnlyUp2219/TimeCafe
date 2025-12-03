@@ -36,10 +36,14 @@ public class DeleteThemeCommandHandler(IThemeRepository repository) : IRequestHa
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.ThemeId);
+            if (existing == null)
+                return DeleteThemeResult.ThemeNotFound();
+
             var result = await _repository.DeleteAsync(request.ThemeId);
 
             if (!result)
-                return DeleteThemeResult.ThemeNotFound();
+                return DeleteThemeResult.DeleteFailed();
 
             return DeleteThemeResult.DeleteSuccess();
         }
