@@ -151,6 +151,8 @@ public class TariffRepository(
 
     public async Task<Tariff> CreateAsync(Tariff tariff)
     {
+        ArgumentNullException.ThrowIfNull(tariff);
+
         tariff.CreatedAt = DateTime.UtcNow;
         tariff.LastModified = DateTime.UtcNow;
         _context.Tariffs.Add(tariff);
@@ -170,6 +172,8 @@ public class TariffRepository(
 
     public async Task<Tariff> UpdateAsync(Tariff tariff)
     {
+        ArgumentNullException.ThrowIfNull(tariff);
+
         var existingTariff = await _context.Tariffs.FindAsync(tariff.TariffId);
         if (existingTariff == null)
             return null!;
