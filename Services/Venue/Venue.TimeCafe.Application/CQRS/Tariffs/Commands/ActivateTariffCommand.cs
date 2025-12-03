@@ -36,10 +36,14 @@ public class ActivateTariffCommandHandler(ITariffRepository repository) : IReque
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.TariffId);
+            if (existing == null)
+                return ActivateTariffResult.TariffNotFound();
+
             var result = await _repository.ActivateAsync(request.TariffId);
 
             if (!result)
-                return ActivateTariffResult.TariffNotFound();
+                return ActivateTariffResult.ActivateFailed();
 
             return ActivateTariffResult.ActivateSuccess();
         }
