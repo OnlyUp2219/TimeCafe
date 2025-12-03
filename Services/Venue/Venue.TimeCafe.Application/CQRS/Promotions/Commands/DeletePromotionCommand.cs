@@ -36,10 +36,14 @@ public class DeletePromotionCommandHandler(IPromotionRepository repository) : IR
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            if (existing == null)
+                return DeletePromotionResult.PromotionNotFound();
+
             var result = await _repository.DeleteAsync(request.PromotionId);
 
             if (!result)
-                return DeletePromotionResult.PromotionNotFound();
+                return DeletePromotionResult.DeleteFailed();
 
             return DeletePromotionResult.DeleteSuccess();
         }

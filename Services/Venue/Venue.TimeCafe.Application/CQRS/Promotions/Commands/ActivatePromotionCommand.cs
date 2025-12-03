@@ -36,10 +36,14 @@ public class ActivatePromotionCommandHandler(IPromotionRepository repository) : 
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            if (existing == null)
+                return ActivatePromotionResult.PromotionNotFound();
+
             var result = await _repository.ActivateAsync(request.PromotionId);
 
             if (!result)
-                return ActivatePromotionResult.PromotionNotFound();
+                return ActivatePromotionResult.ActivateFailed();
 
             return ActivatePromotionResult.ActivateSuccess();
         }

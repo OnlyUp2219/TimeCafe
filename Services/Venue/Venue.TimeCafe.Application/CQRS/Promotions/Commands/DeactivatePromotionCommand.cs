@@ -36,10 +36,14 @@ public class DeactivatePromotionCommandHandler(IPromotionRepository repository) 
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            if (existing == null)
+                return DeactivatePromotionResult.PromotionNotFound();
+
             var result = await _repository.DeactivateAsync(request.PromotionId);
 
             if (!result)
-                return DeactivatePromotionResult.PromotionNotFound();
+                return DeactivatePromotionResult.DeactivateFailed();
 
             return DeactivatePromotionResult.DeactivateSuccess();
         }
