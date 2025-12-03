@@ -112,6 +112,8 @@ public class PromotionRepository(
 
     public async Task<Promotion> CreateAsync(Promotion promotion)
     {
+        ArgumentNullException.ThrowIfNull(promotion);
+
         promotion.CreatedAt = DateTime.UtcNow;
         _context.Promotions.Add(promotion);
         await _context.SaveChangesAsync().ConfigureAwait(false);
@@ -127,6 +129,8 @@ public class PromotionRepository(
 
     public async Task<Promotion> UpdateAsync(Promotion promotion)
     {
+        ArgumentNullException.ThrowIfNull(promotion);
+
         var existingPromotion = await _context.Promotions.FindAsync(promotion.PromotionId);
         if (existingPromotion == null)
             return null!;
