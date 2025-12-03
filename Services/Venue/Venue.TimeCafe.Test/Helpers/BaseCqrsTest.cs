@@ -48,13 +48,6 @@ public abstract class BaseCqrsTest : IDisposable
 
         CacheMock.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-
-        CacheMock.Setup(c => c.GetStringAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string?)null);
-
-        CacheMock.Setup(c => c.SetStringAsync(It.IsAny<string>(), It.IsAny<string>(),
-            It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m)
