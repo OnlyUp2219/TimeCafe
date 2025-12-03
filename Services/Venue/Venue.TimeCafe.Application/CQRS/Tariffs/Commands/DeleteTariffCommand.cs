@@ -36,10 +36,14 @@ public class DeleteTariffCommandHandler(ITariffRepository repository) : IRequest
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.TariffId);
+            if (existing == null)
+                return DeleteTariffResult.TariffNotFound();
+
             var result = await _repository.DeleteAsync(request.TariffId);
 
             if (!result)
-                return DeleteTariffResult.TariffNotFound();
+                return DeleteTariffResult.DeleteFailed();
 
             return DeleteTariffResult.DeleteSuccess();
         }

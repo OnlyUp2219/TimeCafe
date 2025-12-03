@@ -27,19 +27,22 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
         RuleFor(x => x.Tariff)
             .NotNull().WithMessage("Тариф обязателен");
 
-        RuleFor(x => x.Tariff.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+        When(x => x.Tariff != null, () =>
+        {
+            RuleFor(x => x.Tariff.TariffId)
+                .GreaterThan(0).WithMessage("ID тарифа обязателен");
 
-        RuleFor(x => x.Tariff.Name)
-            .NotEmpty().WithMessage("Название тарифа обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+            RuleFor(x => x.Tariff.Name)
+                .NotEmpty().WithMessage("Название тарифа обязательно")
+                .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
 
-        RuleFor(x => x.Tariff.Description)
-            .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
-            .When(x => !string.IsNullOrEmpty(x.Tariff.Description));
+            RuleFor(x => x.Tariff.Description)
+                .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
+                .When(x => !string.IsNullOrEmpty(x.Tariff.Description));
 
-        RuleFor(x => x.Tariff.PricePerMinute)
-            .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
+            RuleFor(x => x.Tariff.PricePerMinute)
+                .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
+        });
     }
 }
 

@@ -36,10 +36,14 @@ public class DeactivateTariffCommandHandler(ITariffRepository repository) : IReq
     {
         try
         {
+            var existing = await _repository.GetByIdAsync(request.TariffId);
+            if (existing == null)
+                return DeactivateTariffResult.TariffNotFound();
+
             var result = await _repository.DeactivateAsync(request.TariffId);
 
             if (!result)
-                return DeactivateTariffResult.TariffNotFound();
+                return DeactivateTariffResult.DeactivateFailed();
 
             return DeactivateTariffResult.DeactivateSuccess();
         }
