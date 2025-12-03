@@ -127,7 +127,6 @@ public class VisitRepository(
     public async Task<Visit> CreateAsync(Visit visit)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        
         visit.EntryTime = DateTime.UtcNow;
         visit.Status = VisitStatus.Active;
         _context.Visits.Add(visit);
@@ -146,7 +145,6 @@ public class VisitRepository(
     public async Task<Visit> UpdateAsync(Visit visit)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        
         var existingVisit = await _context.Visits.FindAsync(visit.VisitId);
         if (existingVisit == null)
             return null!;

@@ -66,16 +66,16 @@ public abstract class BaseCqrsTest : IDisposable
         return tariff;
     }
 
-    protected async Task<Promotion> SeedPromotionAsync(string name = "Test Promotion")
+    protected async Task<Promotion> SeedPromotionAsync(string name = "Test Promotion", decimal discount = 10m, bool isActive = true)
     {
         var promotion = new Promotion
         {
             Name = name,
             Description = "Test Description",
-            DiscountPercent = 10,
+            DiscountPercent = discount,
             ValidFrom = DateTime.UtcNow,
             ValidTo = DateTime.UtcNow.AddDays(30),
-            IsActive = true,
+            IsActive = isActive,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -84,13 +84,13 @@ public abstract class BaseCqrsTest : IDisposable
         return promotion;
     }
 
-    protected async Task<Theme> SeedThemeAsync(string name = "Test Theme")
+    protected async Task<Theme> SeedThemeAsync(string name = "Test Theme", string? emoji = null, string? colors = null)
     {
         var theme = new Theme
         {
             Name = name,
-            Emoji = "🎨",
-            Colors = "{\"primary\":\"#000000\",\"secondary\":\"#FFFFFF\"}"
+            Emoji = emoji ?? "🎨",
+            Colors = colors ?? "{\"primary\":\"#000000\",\"secondary\":\"#FFFFFF\"}"
         };
 
         Context.Themes.Add(theme);
