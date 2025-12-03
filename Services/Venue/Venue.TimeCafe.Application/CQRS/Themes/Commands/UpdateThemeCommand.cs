@@ -27,16 +27,19 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
         RuleFor(x => x.Theme)
             .NotNull().WithMessage("Тема обязательна");
 
-        RuleFor(x => x.Theme.ThemeId)
-            .GreaterThan(0).WithMessage("ID темы обязателен");
+        When(x => x.Theme != null, () =>
+        {
+            RuleFor(x => x.Theme.ThemeId)
+                .GreaterThan(0).WithMessage("ID темы обязателен");
 
-        RuleFor(x => x.Theme.Name)
-            .NotEmpty().WithMessage("Название темы обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+            RuleFor(x => x.Theme.Name)
+                .NotEmpty().WithMessage("Название темы обязательно")
+                .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
 
-        RuleFor(x => x.Theme.Emoji)
-            .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
-            .When(x => !string.IsNullOrEmpty(x.Theme.Emoji));
+            RuleFor(x => x.Theme.Emoji)
+                .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
+                .When(x => !string.IsNullOrEmpty(x.Theme.Emoji));
+        });
     }
 }
 
