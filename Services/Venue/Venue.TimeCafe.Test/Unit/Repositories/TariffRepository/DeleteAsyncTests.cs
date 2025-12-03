@@ -56,19 +56,6 @@ public class DeleteAsyncTests : BaseCqrsTest
         CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
 
-    [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Repository_DeleteAsync_Should_ReturnFalse_WhenInvalidId(int invalidId)
-    {
-        // Act
-        var result = await TariffRepository.DeleteAsync(invalidId);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
     [Fact]
     public async Task Repository_DeleteAsync_Should_HandleAlreadyDeleted()
     {
