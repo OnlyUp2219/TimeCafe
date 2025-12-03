@@ -27,15 +27,18 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
         RuleFor(x => x.Visit)
             .NotNull().WithMessage("Посещение обязательно");
 
-        RuleFor(x => x.Visit.VisitId)
-            .GreaterThan(0).WithMessage("ID посещения обязателен");
+        When(x => x.Visit != null, () =>
+        {
+            RuleFor(x => x.Visit.VisitId)
+                .GreaterThan(0).WithMessage("ID посещения обязателен");
 
-        RuleFor(x => x.Visit.UserId)
-            .NotEmpty().WithMessage("ID пользователя обязателен")
-            .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+            RuleFor(x => x.Visit.UserId)
+                .NotEmpty().WithMessage("ID пользователя обязателен")
+                .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
 
-        RuleFor(x => x.Visit.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+            RuleFor(x => x.Visit.TariffId)
+                .GreaterThan(0).WithMessage("ID тарифа обязателен");
+        });
     }
 }
 
