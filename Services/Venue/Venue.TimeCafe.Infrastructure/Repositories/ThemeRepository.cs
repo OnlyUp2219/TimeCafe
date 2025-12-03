@@ -60,6 +60,8 @@ public class ThemeRepository(
 
     public async Task<Theme> CreateAsync(Theme theme)
     {
+        ArgumentNullException.ThrowIfNull(theme);
+
         _context.Themes.Add(theme);
         await _context.SaveChangesAsync().ConfigureAwait(false);
 
@@ -73,6 +75,8 @@ public class ThemeRepository(
 
     public async Task<Theme> UpdateAsync(Theme theme)
     {
+        ArgumentNullException.ThrowIfNull(theme);
+
         var existingTheme = await _context.Themes.FindAsync(theme.ThemeId);
         if (existingTheme == null)
             return null!;
