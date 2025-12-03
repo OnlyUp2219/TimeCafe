@@ -85,6 +85,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venue.TimeCafe.Domain", "Se
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venue.TimeCafe.Infrastructure", "Services\Venue\Venue.TimeCafe.Infrastructure\Venue.TimeCafe.Infrastructure.csproj", "{CD3A903C-2495-4890-A3DA-DE63FE92213E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venue.TimeCafe.Test", "Services\Venue\Venue.TimeCafe.Test\Venue.TimeCafe.Test.csproj", "{5C6C505D-9FA1-479C-B281-366870983674}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -431,6 +433,22 @@ Global
 		{CD3A903C-2495-4890-A3DA-DE63FE92213E}.Release|x64.Build.0 = Release|Any CPU
 		{CD3A903C-2495-4890-A3DA-DE63FE92213E}.Release|x86.ActiveCfg = Release|Any CPU
 		{CD3A903C-2495-4890-A3DA-DE63FE92213E}.Release|x86.Build.0 = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|arm64.Build.0 = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Debug|x86.Build.0 = Debug|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|arm64.ActiveCfg = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|arm64.Build.0 = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|x64.Build.0 = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|x86.ActiveCfg = Release|Any CPU
+		{5C6C505D-9FA1-479C-B281-366870983674}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -462,6 +480,7 @@ Global
 		{7EA7269D-8061-449D-B1E6-83CF5E04C95E} = {FCAEF426-51FE-4F4F-A9B1-E250336EB244}
 		{C585679A-5345-47FF-924D-551BBECF1198} = {FCAEF426-51FE-4F4F-A9B1-E250336EB244}
 		{CD3A903C-2495-4890-A3DA-DE63FE92213E} = {FCAEF426-51FE-4F4F-A9B1-E250336EB244}
+		{5C6C505D-9FA1-479C-B281-366870983674} = {FCAEF426-51FE-4F4F-A9B1-E250336EB244}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {795744BB-5BCC-42C7-ADFD-5B26192C92DD}
