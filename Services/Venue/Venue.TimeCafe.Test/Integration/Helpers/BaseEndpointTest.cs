@@ -5,6 +5,38 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected readonly HttpClient Client = factory.CreateClient();
     protected readonly IntegrationApiFactory Factory = factory;
 
+    protected async Task ClearDatabaseAndCacheAsync()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        context.Themes.RemoveRange(context.Themes);
+        context.Tariffs.RemoveRange(context.Tariffs);
+        context.Promotions.RemoveRange(context.Promotions);
+        context.Visits.RemoveRange(context.Visits);
+        await context.SaveChangesAsync();
+
+        try
+        {
+            var connectionMultiplexer = scope.ServiceProvider.GetService<StackExchange.Redis.IConnectionMultiplexer>();
+            if (connectionMultiplexer != null)
+            {
+                var db = connectionMultiplexer.GetDatabase();
+                var server = connectionMultiplexer.GetServer(connectionMultiplexer.GetEndPoints().First());
+
+                var keys = server.Keys(pattern: "venue:*").ToArray();
+                if (keys.Length > 0)
+                {
+                    await db.KeyDeleteAsync(keys);
+                }
+            }
+        }
+        catch
+        {
+            // Redis может быть не доступен в тестах, игнорируем
+        }
+    }
+
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute)
     {
         using var scope = Factory.Services.CreateScope();

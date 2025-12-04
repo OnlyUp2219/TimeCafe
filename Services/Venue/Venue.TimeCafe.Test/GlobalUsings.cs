@@ -24,3 +24,7 @@ global using Venue.TimeCafe.Infrastructure.Repositories;
 global using Venue.TimeCafe.Test.Helpers;
 
 global using Xunit;
+
+global using System.Net;
+global using System.Net.Http.Json;
+global using Venue.TimeCafe.Test.Integration.Helpers;
