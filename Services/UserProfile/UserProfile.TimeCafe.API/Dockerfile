@@ -10,20 +10,20 @@ WORKDIR /src
 COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
 
 # Copy UserProfile service projects
-COPY ["Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj", "Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.API/"]
-COPY ["Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Application/UserProfile.TimeCafe.Application.csproj", "Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Application/"]
-COPY ["Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Domain/UserProfile.TimeCafe.Domain.csproj", "Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Domain/"]
-COPY ["Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Infrastructure/UserProfile.TimeCafe.Infrastructure.csproj", "Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.Infrastructure/"]
+COPY ["Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj", "Services/UserProfile/UserProfile.TimeCafe.API/"]
+COPY ["Services/UserProfile/UserProfile.TimeCafe.Application/UserProfile.TimeCafe.Application.csproj", "Services/UserProfile/UserProfile.TimeCafe.Application/"]
+COPY ["Services/UserProfile/UserProfile.TimeCafe.Domain/UserProfile.TimeCafe.Domain.csproj", "Services/UserProfile/UserProfile.TimeCafe.Domain/"]
+COPY ["Services/UserProfile/UserProfile.TimeCafe.Infrastructure/UserProfile.TimeCafe.Infrastructure.csproj", "Services/UserProfile/UserProfile.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN dotnet restore "Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj"
+RUN dotnet restore "Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj"
 
 # Copy all source files
 COPY ["BuildingBlocks/", "BuildingBlocks/"]
 COPY ["Services/UserProfile/", "Services/UserProfile/"]
 
 # Build
-WORKDIR "/src/Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.API"
+WORKDIR "/src/Services/UserProfile/UserProfile.TimeCafe.API"
 RUN dotnet build "UserProfile.TimeCafe.API.csproj" -c Release -o /app/build
 
 FROM build AS publish

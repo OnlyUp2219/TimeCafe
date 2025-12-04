@@ -8,6 +8,9 @@ builder.Services.AddCorsConfiguration(corsPolicyName);
 // MassTransit (отключён для разработки без RabbitMQ)
 //builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
+// Redis
+builder.Services.AddRedis(builder.Configuration);
+
 // DbContext
 builder.Services.AddVenueDatabase(builder.Configuration);
 

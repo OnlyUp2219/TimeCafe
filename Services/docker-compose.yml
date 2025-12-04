@@ -108,7 +108,7 @@ services:
   profile-service:
     build:
       context: ..
-      dockerfile: Services/UserProfile/UserProfile.TimeCafe/UserProfile.TimeCafe.API/Dockerfile
+      dockerfile: Services/UserProfile/UserProfile.TimeCafe.API/Dockerfile
     container_name: timecafe-profile
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
