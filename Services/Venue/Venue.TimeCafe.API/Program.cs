@@ -28,7 +28,7 @@ builder.Services.AddCarter();
 
 var app = builder.Build();
 
-// app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 await app.ApplyMigrationsAsync();
 
