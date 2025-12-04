@@ -26,3 +26,4 @@ global using Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 global using Venue.TimeCafe.Application.CQRS.Themes.Commands;
 global using Venue.TimeCafe.Application.CQRS.Themes.Queries;
 global using Venue.TimeCafe.Domain.Models;
+global using BuildingBlocks.Middleware;
