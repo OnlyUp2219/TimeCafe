@@ -37,7 +37,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         }
     }
 
-    protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute)
+    protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute, bool isActive = true)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -47,7 +47,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             Name = name,
             PricePerMinute = price,
             BillingType = billingType,
-            IsActive = true,
+            IsActive = isActive,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -56,7 +56,12 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return tariff;
     }
 
-    protected async Task<Promotion> SeedPromotionAsync(string name = "Test Promotion", int discountPercentage = 10)
+    protected async Task<Promotion> SeedPromotionAsync(
+        string name = "Test Promotion",
+        int discountPercentage = 10,
+        bool isActive = true,
+        DateTime? validFrom = null,
+        DateTime? validTo = null)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -66,9 +71,9 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             Name = name,
             Description = "Test Description",
             DiscountPercent = discountPercentage,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(30),
-            IsActive = true,
+            ValidFrom = validFrom ?? DateTime.UtcNow,
+            ValidTo = validTo ?? DateTime.UtcNow.AddDays(30),
+            IsActive = isActive,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -94,7 +99,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return theme;
     }
 
-    protected async Task<Visit> SeedVisitAsync(string userId = "user123", int? tariffId = null)
+    protected async Task<Visit> SeedVisitAsync(string userId = "user123", int? tariffId = null, bool isActive = true)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -115,7 +120,9 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             UserId = userId,
             TariffId = tariff.TariffId,
             EntryTime = DateTime.UtcNow,
-            Status = VisitStatus.Active
+            Status = isActive ? VisitStatus.Active : VisitStatus.Completed,
+            ExitTime = isActive ? null : DateTime.UtcNow.AddMinutes(30),
+            CalculatedCost = isActive ? null : 100m
         };
 
         context.Visits.Add(visit);
