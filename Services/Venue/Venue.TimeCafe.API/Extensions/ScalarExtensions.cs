@@ -8,7 +8,8 @@ public static class ScalarExtensions
         {
             options.WithTitle("TimeCafe Venue API")
                    .WithTheme(ScalarTheme.DeepSpace)
-                   .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient);
+                   .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+                   .WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
         });
 
         return app;
