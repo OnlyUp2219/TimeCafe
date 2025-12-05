@@ -18,7 +18,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Microsoft.IdentityModel.Tokens;
-
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 global using System.IdentityModel.Tokens.Jwt;
