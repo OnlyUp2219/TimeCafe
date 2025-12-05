@@ -41,6 +41,9 @@ public class ConfirmEmailCommandHandler(
 
     public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
+        //if (!Guid.TryParse(request.UserId, out var userGuid))
+        //    return ConfirmEmailResult.UserNotFound();
+
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
             return ConfirmEmailResult.UserNotFound();

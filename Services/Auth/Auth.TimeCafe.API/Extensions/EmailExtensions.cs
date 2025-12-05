@@ -23,7 +23,6 @@ public static class EmailExtensions
             throw new InvalidOperationException("Postmark:FrontendBaseUrl is not configured.");
 
         services.AddSingleton<PostmarkEmailSender>();
-
         services.AddSingleton<IEmailSender<ApplicationUser>>(sp =>
             new BackgroundEmailSender(sp.GetRequiredService<PostmarkEmailSender>(), sp.GetRequiredService<ILogger<BackgroundEmailSender>>()));
         services.AddHttpClient();

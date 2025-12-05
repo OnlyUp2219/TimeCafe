@@ -10,7 +10,7 @@ public class ExternalProviders : ICarterModule
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Google"]);
         })
-            .WithTags("ExternalProviders"); ;
+            .WithTags("ExternalProviders");
         app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
