@@ -30,7 +30,8 @@ public class ConfirmEmailCommandValidator : AbstractValidator<ConfirmEmailComman
     public ConfirmEmailCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Пользователь не найден");
     }
 }
 
