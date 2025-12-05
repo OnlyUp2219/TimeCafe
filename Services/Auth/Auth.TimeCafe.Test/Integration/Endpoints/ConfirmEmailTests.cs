@@ -15,7 +15,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     public async Task Endpoint_ConfirmEmail_Should_ReturnUserNotFound_WhenUserDoesNotExist()
     {
         // Arrange
-        var dto = new { UserId = "nonexistent-user-id", Token = "dummy-token" };
+        var dto = new { UserId = Guid.NewGuid().ToString(), Token = "dummy-token" };
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
