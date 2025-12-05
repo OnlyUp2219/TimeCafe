@@ -34,9 +34,9 @@ public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCo
     }
 }
 
-public class ChangePasswordCommandHandler(UserManager<IdentityUser> userManager, IJwtService jwt) : IRequestHandler<ChangePasswordCommand, ChangePasswordResult>
+public class ChangePasswordCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwt) : IRequestHandler<ChangePasswordCommand, ChangePasswordResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtService _jwt = jwt;
 
     public async Task<ChangePasswordResult> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)

@@ -61,7 +61,7 @@ app.UseAuthorization();
 
 app.MapCarter();
 
-//app.MapIdentityApi<IdentityUser>();
+//app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllers();
 

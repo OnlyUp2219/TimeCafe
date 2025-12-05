@@ -5,7 +5,7 @@ public static class IdentityExtensions
     public static IServiceCollection AddIdentityConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services
-        .AddIdentityCore<IdentityUser>(options =>
+        .AddIdentityCore<ApplicationUser>(options =>
         {
             options.SignIn.RequireConfirmedAccount = true;
             options.SignIn.RequireConfirmedPhoneNumber = false;
@@ -17,7 +17,7 @@ public static class IdentityExtensions
             options.Password.RequiredLength = 6;
             options.Password.RequiredUniqueChars = 0;
         })
-        .AddRoles<IdentityRole>()
+        .AddRoles<IdentityRole<Guid>>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddSignInManager()
         .AddDefaultTokenProviders()
@@ -28,7 +28,7 @@ public static class IdentityExtensions
             options.TokenLifespan = TimeSpan.FromMinutes(10);
         });
 
-        services.AddScoped<IPasswordValidator<IdentityUser>, CustomPasswordValidator>();
+        services.AddScoped<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
 
         return services;
     }

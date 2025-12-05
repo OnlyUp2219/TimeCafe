@@ -45,13 +45,13 @@ public class GeneratePhoneVerificationCommandValidator : AbstractValidator<Gener
 }
 
 public class GeneratePhoneVerificationCommandHandler(
-UserManager<IdentityUser> userManager,
+UserManager<ApplicationUser> userManager,
 IConfiguration configuration,
 ISender sender,
 ISmsVerificationAttemptTracker attemptTracker
 ) : IRequestHandler<GeneratePhoneVerificationCommand, GeneratePhoneVerificationResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IConfiguration _configuration = configuration;
     private readonly ISender _sender = sender;
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
