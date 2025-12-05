@@ -13,8 +13,8 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
 
         // создаём пользователя
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user, oldPassword);
 
         // логинимся и получаем оба токена
