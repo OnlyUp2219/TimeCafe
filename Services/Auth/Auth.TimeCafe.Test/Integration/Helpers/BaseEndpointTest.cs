@@ -8,11 +8,11 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected void SeedUser(string email, string password, bool emailConfirmed)
     {
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = userManager.FindByEmailAsync(email).Result;
         if (user == null)
         {
-            user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = emailConfirmed };
+            user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = emailConfirmed };
             userManager.CreateAsync(user, password).Wait();
         }
         else if (user.EmailConfirmed != emailConfirmed)
@@ -40,7 +40,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected async Task<string> GenerateConfirmationTokenAsync(string email)
     {
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(email);
         var token = await userManager.GenerateEmailConfirmationTokenAsync(user!);
         return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
@@ -49,17 +49,17 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected async Task<bool> IsEmailConfirmedAsync(string email)
     {
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(email);
         return user!.EmailConfirmed;
     }
 
-    protected async Task<(string userId, string accessToken)> CreateAuthenticatedUserAsync()
+    protected async Task<(Guid userId, string accessToken)> CreateAuthenticatedUserAsync()
     {
         var email = $"user_{Guid.NewGuid():N}@example.com";
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user, "P@ssw0rd!");
 
         var loginDto = new { Email = email, Password = "P@ssw0rd!" };

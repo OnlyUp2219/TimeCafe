@@ -1,3 +1,5 @@
+using Auth.TimeCafe.Application.Contracts;
+
 namespace Auth.TimeCafe.Test.Integration;
 
 public class PermissionsAndRolesTests
@@ -13,20 +15,18 @@ public class PermissionsAndRolesTests
 
     private void SeedUsersAndRoles()
     {
-        var userManager = _services.GetRequiredService<UserManager<IdentityUser>>();
-        var roleManager = _services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = _services.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = _services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-        // Создаём роли
         if (!roleManager.RoleExistsAsync("admin").Result)
-            roleManager.CreateAsync(new IdentityRole("admin")).Wait();
+            roleManager.CreateAsync(new IdentityRole<Guid>("admin")).Wait();
         if (!roleManager.RoleExistsAsync("client").Result)
-            roleManager.CreateAsync(new IdentityRole("client")).Wait();
+            roleManager.CreateAsync(new IdentityRole<Guid>("client")).Wait();
 
-        // Создаём пользователей
         var admin = userManager.FindByEmailAsync("admin@timecafe.local").Result;
         if (admin == null)
         {
-            admin = new IdentityUser { UserName = "admin", Email = "admin@timecafe.local", EmailConfirmed = true };
+            admin = new ApplicationUser { UserName = "admin", Email = "admin@timecafe.local", EmailConfirmed = true };
             userManager.CreateAsync(admin, "P@ssw0rd!").Wait();
         }
         if (!userManager.IsInRoleAsync(admin, "admin").Result)
@@ -35,7 +35,7 @@ public class PermissionsAndRolesTests
         var client = userManager.FindByEmailAsync("client@timecafe.local").Result;
         if (client == null)
         {
-            client = new IdentityUser { UserName = "client", Email = "client@timecafe.local", EmailConfirmed = true };
+            client = new ApplicationUser { UserName = "client", Email = "client@timecafe.local", EmailConfirmed = true };
             userManager.CreateAsync(client, "P@ssw0rd!").Wait();
         }
         if (!userManager.IsInRoleAsync(client, "client").Result)
@@ -45,10 +45,13 @@ public class PermissionsAndRolesTests
     [Fact]
     public async Task Admin_Should_Have_All_Permissions()
     {
-        var userManager = _services.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = _services.GetRequiredService<UserManager<ApplicationUser>>();
+        var jwt = _services.GetRequiredService<IJwtService>();
         var permissionService = _services.GetRequiredService<IPermissionService>();
         var admin = await userManager.FindByEmailAsync("admin@timecafe.local");
         admin.Should().NotBeNull();
+
+        var tokensRevoked = await jwt.RevokeUserTokensAsync(admin.Id, CancellationToken.None);
 
         foreach (var permission in Enum.GetValues(typeof(Permission)).Cast<Permission>())
         {
@@ -60,7 +63,7 @@ public class PermissionsAndRolesTests
     [Fact]
     public async Task Client_Should_Have_Only_Client_Permissions()
     {
-        var userManager = _services.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = _services.GetRequiredService<UserManager<ApplicationUser>>();
         var permissionService = _services.GetRequiredService<IPermissionService>();
         var client = await userManager.FindByEmailAsync("client@timecafe.local");
         client.Should().NotBeNull();
@@ -82,7 +85,7 @@ public class PermissionsAndRolesTests
     [Fact]
     public async Task Role_Check_Should_Work()
     {
-        var userManager = _services.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = _services.GetRequiredService<UserManager<ApplicationUser>>();
         var userRoleService = _services.GetRequiredService<IUserRoleService>();
         var admin = await userManager.FindByEmailAsync("admin@timecafe.local");
         var client = await userManager.FindByEmailAsync("client@timecafe.local");
