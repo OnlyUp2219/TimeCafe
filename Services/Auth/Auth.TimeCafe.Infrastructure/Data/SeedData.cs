@@ -19,7 +19,7 @@ public static class SeedData
 
 
         if (!await roleManager.RoleExistsAsync(adminRole))
-            await roleManager.CreateAsync(new IdentityRole(adminRole));
+            await roleManager.CreateAsync(new IdentityRole<Guid>(adminRole));
 
         var user = await userManager.FindByEmailAsync(adminEmail);
         if (user == null)
