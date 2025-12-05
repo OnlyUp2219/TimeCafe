@@ -1,6 +1,6 @@
 namespace Auth.TimeCafe.Infrastructure.Services.Email;
 
-public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<IdentityUser>
+public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<ApplicationUser>
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly PostmarkOptions _options = options.Value;
@@ -47,14 +47,14 @@ public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IO
         response.EnsureSuccessStatusCode();
     }
 
-    public async Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink)
+    public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
         var subject = "Подтвердите ваш email";
         var htmlMessage = EmailTemplates.GetConfirmationEmailTemplate(confirmationLink);
         await SendEmailAsync(email, subject, htmlMessage);
     }
 
-    public async Task SendPasswordResetLinkAsync(IdentityUser user, string email, string resetLink)
+    public async Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
     {
         if (string.IsNullOrWhiteSpace(_options.FrontendBaseUrl))
             throw new InvalidOperationException("Postmark FrontendBaseUrl is not configured.");
@@ -64,7 +64,7 @@ public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IO
         await SendEmailAsync(email, subject, htmlMessage);
     }
 
-    public async Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode)
+    public async Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
     {
         var subject = "Код для сброса пароля";
         var htmlMessage = EmailTemplates.GetPasswordResetCodeTemplate(resetCode);

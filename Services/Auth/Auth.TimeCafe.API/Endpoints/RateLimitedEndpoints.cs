@@ -36,7 +36,7 @@ public class RateLimitedEndpoints : ICarterModule
 
         app.MapGet("/protected-test",
         async (
-        UserManager<IdentityUser> userManager,
+        UserManager<ApplicationUser> userManager,
         ClaimsPrincipal user) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;

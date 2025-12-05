@@ -3,10 +3,16 @@ global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Application.Permissions;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Permissions;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
-
+global using Auth.TimeCafe.Domain.Models;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using System.Text;
+global using System.Security.Claims;
+global using System.Security.Cryptography;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

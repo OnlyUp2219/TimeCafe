@@ -6,7 +6,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
     private readonly ApplicationDbContext _context = context;
     private readonly IUserRoleService _userRoleService = userRoleService;
 
-    public async Task<AuthResponse> GenerateTokens(IdentityUser user)
+    public async Task<AuthResponse> GenerateTokens(ApplicationUser user)
     {
         var jwtSection = _configuration.GetSection("Jwt");
         var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
@@ -18,7 +18,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(ClaimTypes.Role, userRole)
@@ -111,7 +111,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         return newTokens;
     }
 
-    public async Task<int> RevokeUserTokensAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<int> RevokeUserTokensAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var tokens = await _context.RefreshTokens.Where(t => t.UserId == userId && !t.IsRevoked).ToListAsync(cancellationToken);
         if (tokens.Count > 0)

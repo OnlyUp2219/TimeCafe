@@ -4,7 +4,7 @@ namespace Auth.TimeCafe.Infrastructure.Data.Configurations
     {
         public void Configure(EntityTypeBuilder<RefreshToken> builder)
         {
-            builder.HasOne<IdentityUser>()
+            builder.HasOne<ApplicationUser>()
                 .WithMany()
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);

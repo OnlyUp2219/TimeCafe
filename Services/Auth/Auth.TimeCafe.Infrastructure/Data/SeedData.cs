@@ -4,8 +4,8 @@ public static class SeedData
 {
     public static async Task SeedAdminAsync(IServiceProvider serviceProvider)
     {
-        var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
         var admin = configuration.GetSection("Seed:Admin");
@@ -24,7 +24,7 @@ public static class SeedData
         var user = await userManager.FindByEmailAsync(adminEmail);
         if (user == null)
         {
-            user = new IdentityUser
+            user = new ApplicationUser
             {
                 UserName = adminEmail,
                 Email = adminEmail,

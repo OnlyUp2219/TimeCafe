@@ -53,12 +53,12 @@ public class VerifyPhoneCommandValidator : AbstractValidator<VerifyPhoneCommand>
 }
 
 public class VerifyPhoneCommandHandler(
-    UserManager<IdentityUser> userManager,
+    UserManager<ApplicationUser> userManager,
     ISmsVerificationAttemptTracker attemptTracker,
     ICaptchaValidator captchaValidator
 ) : IRequestHandler<VerifyPhoneCommand, VerifyPhoneResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
     private readonly ICaptchaValidator _captchaValidator = captchaValidator;
 

@@ -34,13 +34,13 @@ public class ForgotPasswordCommandValidator : AbstractValidator<ForgotPasswordCo
 }
 
 public class ForgotPasswordCommandHandler(
-    UserManager<IdentityUser> userManager,
-    IEmailSender<IdentityUser> emailSender,
+    UserManager<ApplicationUser> userManager,
+    IEmailSender<ApplicationUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
     ILogger<ForgotPasswordCommandHandler> logger) : IRequestHandler<ForgotPasswordCommand, ForgotPasswordResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
-    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
 

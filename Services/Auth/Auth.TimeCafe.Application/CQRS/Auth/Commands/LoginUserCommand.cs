@@ -36,9 +36,9 @@ public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>
 }
 
 
-public class LoginUserCommandHandler(UserManager<IdentityUser> userManager, IJwtService jwtService) : IRequestHandler<LoginUserCommand, LoginUserResult>
+public class LoginUserCommandHandler(UserManager<ApplicationUser> userManager, IJwtService jwtService) : IRequestHandler<LoginUserCommand, LoginUserResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtService _jwtService = jwtService;
 
     public async Task<LoginUserResult> Handle(LoginUserCommand request, CancellationToken cancellationToken)

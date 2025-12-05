@@ -37,13 +37,13 @@ public class ResendConfirmationCommandValidator : AbstractValidator<ResendConfir
 
 
 public class ResendConfirmationCommandHandler(
-    UserManager<IdentityUser> userManager,
-    IEmailSender<IdentityUser> emailSender,
+    UserManager<ApplicationUser> userManager,
+    IEmailSender<ApplicationUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
     ILogger<ResendConfirmationCommandHandler> logger) : IRequestHandler<ResendConfirmationCommand, ResendConfirmationResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
-    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly ILogger<ResendConfirmationCommandHandler> _logger = logger;
 

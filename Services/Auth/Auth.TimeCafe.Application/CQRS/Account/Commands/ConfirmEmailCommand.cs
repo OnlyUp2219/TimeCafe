@@ -35,9 +35,9 @@ public class ConfirmEmailCommandValidator : AbstractValidator<ConfirmEmailComman
 }
 
 public class ConfirmEmailCommandHandler(
-    UserManager<IdentityUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
+    UserManager<ApplicationUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
