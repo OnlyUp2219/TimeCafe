@@ -82,30 +82,27 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
     public async Task<AuthResponse?> RefreshTokens(string refreshToken)
     {
         var tokenEntity = await _context.RefreshTokens
-            .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.Token == refreshToken);
 
-        // Token not found or expired
         if (tokenEntity == null || tokenEntity.Expires < DateTimeOffset.UtcNow)
             return null;
 
-        // Suspicious activity: trying to reuse a revoked token (token theft detected)
         if (tokenEntity.IsRevoked)
         {
-            // Revoke entire token family to protect user
             await RevokeFamilyTokensAsync(refreshToken);
             return null;
         }
 
-        // Token rotation: generate new tokens first
-        var newTokens = await GenerateTokens(tokenEntity.User);
+        var user = await _context.Users.FindAsync(tokenEntity.UserId);
+        if (user is null)
+            return null;
 
-        // Get the newly created token from database to link them
+        var newTokens = await GenerateTokens(user);
+
         var newTokenEntity = await _context.RefreshTokens
             .OrderByDescending(t => t.Created)
             .FirstAsync(t => t.UserId == tokenEntity.UserId && !t.IsRevoked);
 
-        // Mark old token as revoked and link to new token
         tokenEntity.IsRevoked = true;
         tokenEntity.ReplacedByToken = newTokenEntity.Token;
 

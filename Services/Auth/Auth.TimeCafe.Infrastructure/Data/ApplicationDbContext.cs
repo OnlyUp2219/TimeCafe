@@ -8,15 +8,7 @@ namespace Auth.TimeCafe.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<RefreshToken>(entity =>
-            {
-                entity.HasIndex(x => x.Token)
-                    .IsUnique();
-
-                entity.HasIndex(x => new { x.UserId, x.IsRevoked });
-
-                entity.HasIndex(x => x.Expires);
-            });
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
     }
 }
