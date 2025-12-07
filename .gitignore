@@ -118,6 +118,9 @@ ipch/
 *.vspx
 *.sap
 
+# Visual Studio diagnostics session files
+*.diagsession
+
 # Visual Studio Trace Files
 *.e2e
 
