@@ -32,5 +32,6 @@ public static class DatabaseExtension
         var roleService = scope.ServiceProvider.GetRequiredService<IUserRoleService>();
         await roleService.EnsureRolesCreatedAsync();
         await SeedData.SeedAdminAsync(scope.ServiceProvider);
+        await SeedData.SeedLoadTestUserAsync(scope.ServiceProvider);
     }
 }

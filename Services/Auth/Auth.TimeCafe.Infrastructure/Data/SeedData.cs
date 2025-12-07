@@ -36,4 +36,27 @@ public static class SeedData
                 await userManager.AddToRoleAsync(user, adminRole);
         }
     }
+
+    public static async Task SeedLoadTestUserAsync(IServiceProvider serviceProvider)
+    {
+        var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+        var load = configuration.GetSection("Seed:LoadUser");
+        var email = load["Email"] ?? "load.user@example.com";
+        var password = load["Password"] ?? "P@ssw0rd!";
+
+        var existing = await userManager.FindByEmailAsync(email);
+        if (existing != null)
+            return;
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true
+        };
+
+        await userManager.CreateAsync(user, password);
+    }
 }
