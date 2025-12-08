@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record DeleteAdditionalInfoCommand(Guid InfoId) : IRequest<DeleteAdditionalInfoResult>;
+public record DeleteAdditionalInfoCommand(string InfoId) : IRequest<DeleteAdditionalInfoResult>;
 
 public record DeleteAdditionalInfoResult(
     bool Success,
@@ -10,13 +10,13 @@ public record DeleteAdditionalInfoResult(
     List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
     public static DeleteAdditionalInfoResult InfoNotFound() =>
-        new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
+        new(false, Code: "NotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
 
     public static DeleteAdditionalInfoResult DeleteFailed() =>
         new(false, Code: "DeleteAdditionalInfoFailed", Message: "Не удалось удалить дополнительную информацию", StatusCode: 500);
 
     public static DeleteAdditionalInfoResult DeleteSuccess() =>
-        new(true, Message: "Дополнительная информация успешно удалена");
+        new(true, Message: "Дополнительная информация успешно удалена", StatusCode: 204);
 }
 
 public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAdditionalInfoCommand>
@@ -24,7 +24,9 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
     public DeleteAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.InfoId)
-            .NotEmpty().WithMessage("InfoId не должен быть пустым");
+            .NotEmpty().WithMessage("Идентификатор информации не указан")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор информации не указан")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор информации");
     }
 }
 
@@ -36,7 +38,8 @@ public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var deleted = await _repository.DeleteAdditionalInfoAsync(request.InfoId, cancellationToken);
+            var infoId = Guid.Parse(request.InfoId);
+            var deleted = await _repository.DeleteAdditionalInfoAsync(infoId, cancellationToken);
 
             if (!deleted)
                 return DeleteAdditionalInfoResult.InfoNotFound();

@@ -11,7 +11,7 @@ public record UpdateAdditionalInfoResult(
     AdditionalInfo? AdditionalInfo = null) : ICqrsResultV2
 {
     public static UpdateAdditionalInfoResult InfoNotFound() =>
-        new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
+        new(false, Code: "NotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
 
     public static UpdateAdditionalInfoResult UpdateFailed() =>
         new(false, Code: "UpdateAdditionalInfoFailed", Message: "Не удалось обновить дополнительную информацию", StatusCode: 500);

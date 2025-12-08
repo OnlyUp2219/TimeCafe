@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfoByIdQuery(Guid InfoId) : IRequest<GetAdditionalInfoByIdResult>;
+public record GetAdditionalInfoByIdQuery(string InfoId) : IRequest<GetAdditionalInfoByIdResult>;
 
 public record GetAdditionalInfoByIdResult(
     bool Success,
@@ -25,7 +25,9 @@ public class GetAdditionalInfoByIdQueryValidator : AbstractValidator<GetAddition
     public GetAdditionalInfoByIdQueryValidator()
     {
         RuleFor(x => x.InfoId)
-            .NotEmpty().WithMessage("InfoId обязателен");
+            .NotEmpty().WithMessage("Идентификатор информации не указан")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор информации не указан")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор информации");
     }
 }
 
@@ -37,7 +39,8 @@ public class GetAdditionalInfoByIdQueryHandler(IAdditionalInfoRepository reposit
     {
         try
         {
-            var info = await _repository.GetAdditionalInfoByIdAsync(request.InfoId, cancellationToken);
+            var infoId = Guid.Parse(request.InfoId);
+            var info = await _repository.GetAdditionalInfoByIdAsync(infoId, cancellationToken);
 
             if (info == null)
                 return GetAdditionalInfoByIdResult.InfoNotFound();

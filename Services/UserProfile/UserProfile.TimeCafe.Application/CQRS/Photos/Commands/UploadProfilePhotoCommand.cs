@@ -2,7 +2,7 @@ using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record UploadProfilePhotoCommand(Guid UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
+public record UploadProfilePhotoCommand(string UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
 
 public record UploadProfilePhotoResult(
     bool Success,
@@ -25,7 +25,10 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
     {
         var opts = photoOptions.Value;
-        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
             .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
@@ -51,7 +54,8 @@ public class UploadProfilePhotoCommandHandler(
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile is null)
                 return UploadProfilePhotoResult.ProfileNotFound();
 
@@ -85,7 +89,7 @@ public class UploadProfilePhotoCommandHandler(
 
                 moderationStream.Position = 0;
 
-                var result = await _storage.UploadAsync(request.UserId, moderationStream, request.ContentType, request.FileName, cancellationToken);
+                var result = await _storage.UploadAsync(userId, moderationStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
                     return UploadProfilePhotoResult.Failed();

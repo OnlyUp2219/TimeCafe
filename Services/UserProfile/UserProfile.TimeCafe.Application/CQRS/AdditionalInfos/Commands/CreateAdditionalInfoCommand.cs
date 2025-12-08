@@ -15,6 +15,9 @@ public record CreateAdditionalInfoResult(
 
     public static CreateAdditionalInfoResult CreateSuccess(AdditionalInfo info) =>
         new(true, Message: "Дополнительная информация успешно создана", StatusCode: 201, AdditionalInfo: info);
+
+    public static CreateAdditionalInfoResult ProfileNotFound() =>
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
 public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAdditionalInfoCommand>
@@ -34,14 +37,20 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     }
 }
 
-public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : IRequestHandler<CreateAdditionalInfoCommand, CreateAdditionalInfoResult>
+public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository, IUserRepositories userRepository) : IRequestHandler<CreateAdditionalInfoCommand, CreateAdditionalInfoResult>
 {
     private readonly IAdditionalInfoRepository _repository = repository;
+    private readonly IUserRepositories _userRepository = userRepository;
 
     public async Task<CreateAdditionalInfoResult> Handle(CreateAdditionalInfoCommand request, CancellationToken cancellationToken)
     {
         try
         {
+            // Проверка существования профиля
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            if (profile == null)
+                return CreateAdditionalInfoResult.ProfileNotFound();
+
             var info = new AdditionalInfo
             {
                 UserId = request.UserId,

@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record DeleteProfilePhotoCommand(Guid UserId) : IRequest<DeleteProfilePhotoResult>;
+public record DeleteProfilePhotoCommand(string UserId) : IRequest<DeleteProfilePhotoResult>;
 
 public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
@@ -14,7 +14,10 @@ public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfil
 {
     public DeleteProfilePhotoCommandValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty();
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
     }
 }
 
@@ -27,11 +30,12 @@ public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUse
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile is null)
                 return DeleteProfilePhotoResult.ProfileNotFound();
 
-            var deleted = await _storage.DeleteAsync(request.UserId, cancellationToken);
+            var deleted = await _storage.DeleteAsync(userId, cancellationToken);
             if (!deleted)
                 return DeleteProfilePhotoResult.PhotoNotFound();
 
