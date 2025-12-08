@@ -42,7 +42,6 @@ public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository re
         {
             var userId = Guid.Parse(request.UserId);
 
-            // Проверка существования профиля
             var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile == null)
                 return GetAdditionalInfosByUserIdResult.ProfileNotFound();

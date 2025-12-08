@@ -10,13 +10,13 @@ public record DeleteAdditionalInfoResult(
     List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
     public static DeleteAdditionalInfoResult InfoNotFound() =>
-        new(false, Code: "NotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
+        new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
 
     public static DeleteAdditionalInfoResult DeleteFailed() =>
         new(false, Code: "DeleteAdditionalInfoFailed", Message: "Не удалось удалить дополнительную информацию", StatusCode: 500);
 
     public static DeleteAdditionalInfoResult DeleteSuccess() =>
-        new(true, Message: "Дополнительная информация успешно удалена", StatusCode: 204);
+        new(true, Message: "Дополнительная информация успешно удалена");
 }
 
 public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAdditionalInfoCommand>
