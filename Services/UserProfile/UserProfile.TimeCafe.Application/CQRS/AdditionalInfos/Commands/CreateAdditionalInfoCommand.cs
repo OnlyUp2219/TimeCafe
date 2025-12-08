@@ -46,7 +46,6 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            // Проверка существования профиля
             var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile == null)
                 return CreateAdditionalInfoResult.ProfileNotFound();
