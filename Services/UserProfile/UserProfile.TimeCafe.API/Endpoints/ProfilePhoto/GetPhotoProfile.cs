@@ -9,7 +9,7 @@ public class GetPhotoProfile : ICarterModule
             ISender sender,
             CancellationToken ct) =>
         {
-            var query = new GetProfilePhotoQuery(Guid.Parse(userId));
+            var query = new GetProfilePhotoQuery(userId);
             var result = await sender.Send(query, ct);
             return result.ToHttpResultV2(r => Results.File(r.Stream!, r.ContentType!, enableRangeProcessing: true));
         })

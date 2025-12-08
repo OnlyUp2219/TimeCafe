@@ -6,7 +6,7 @@ public class GetAdditionalInfoById : ICarterModule
     {
         app.MapGet("/infos/{infoId:guid}", async (
             ISender sender,
-            Guid infoId) =>
+            string infoId) =>
         {
             var query = new GetAdditionalInfoByIdQuery(infoId);
             var result = await sender.Send(query);

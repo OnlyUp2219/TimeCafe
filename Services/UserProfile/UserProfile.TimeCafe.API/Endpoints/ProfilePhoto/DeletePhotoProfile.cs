@@ -9,7 +9,7 @@ public class DeletePhotoProfile : ICarterModule
             ISender sender,
             CancellationToken ct) =>
         {
-            var cmd = new DeleteProfilePhotoCommand(Guid.Parse(userId));
+            var cmd = new DeleteProfilePhotoCommand(userId);
             var result = await sender.Send(cmd, ct);
             return result.ToHttpResultV2(_ => Results.NoContent());
         })

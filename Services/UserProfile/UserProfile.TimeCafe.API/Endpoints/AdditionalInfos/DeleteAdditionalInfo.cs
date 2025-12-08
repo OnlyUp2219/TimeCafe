@@ -6,7 +6,7 @@ public class DeleteAdditionalInfo : ICarterModule
     {
         app.MapDelete("/infos/{infoId:guid}", async (
             ISender sender,
-            Guid infoId) =>
+            string infoId) =>
         {
             var command = new DeleteAdditionalInfoCommand(infoId);
             var result = await sender.Send(command);
