@@ -10,7 +10,7 @@ public class AdditionalInfoRepository(
     private readonly ILogger _cacheLogger = cacheLogger;
 
     public async Task<IEnumerable<AdditionalInfo>> GetAdditionalInfosByUserIdAsync(
-        string userId,
+        Guid userId,
         CancellationToken? cancellationToken = null)
     {
         var cacheKey = CacheKeys.AdditionalInfo_ByUserId(userId);
@@ -38,7 +38,7 @@ public class AdditionalInfoRepository(
     }
 
     public async Task<AdditionalInfo?> GetAdditionalInfoByIdAsync(
-        int infoId,
+        Guid infoId,
         CancellationToken? cancellationToken = null)
     {
         var cacheKey = CacheKeys.AdditionalInfo_ById(infoId);
@@ -106,7 +106,7 @@ public class AdditionalInfoRepository(
     }
 
     public async Task<bool> DeleteAdditionalInfoAsync(
-        int infoId,
+        Guid infoId,
         CancellationToken? cancellationToken = null)
     {
         var info = await _context.AdditionalInfos.FindAsync(infoId);

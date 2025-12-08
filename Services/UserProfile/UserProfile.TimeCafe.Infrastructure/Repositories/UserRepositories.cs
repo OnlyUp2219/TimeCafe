@@ -67,7 +67,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
         return await _context.Profiles.CountAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
     }
 
-    public async Task<Profile?> GetProfileByIdAsync(string userId, CancellationToken? cancellationToken)
+    public async Task<Profile?> GetProfileByIdAsync(Guid userId, CancellationToken? cancellationToken)
     {
         var cached = await CacheHelper.GetAsync<Profile>(
             _cache,
@@ -131,7 +131,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
         return profile;
     }
 
-    public async Task DeleteProfileAsync(string userId, CancellationToken? cancellationToken)
+    public async Task DeleteProfileAsync(Guid userId, CancellationToken? cancellationToken)
     {
         var client = await _context.Profiles.FindAsync(userId).ConfigureAwait(false);
 
@@ -153,7 +153,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
         await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
     }
 
-    public async Task CreateEmptyAsync(string userId, CancellationToken? cancellationToken)
+    public async Task CreateEmptyAsync(Guid userId, CancellationToken? cancellationToken)
     {
         var exist = await _context.Profiles
             .AnyAsync(u => u.UserId == userId, cancellationToken ?? CancellationToken.None)

@@ -24,7 +24,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Profile>(entity =>
         {
             entity.HasKey(e => e.UserId);
-            entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.UserId).IsRequired();
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.MiddleName).HasMaxLength(100);
@@ -35,13 +35,13 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<AdditionalInfo>(entity =>
         {
             entity.HasKey(e => e.InfoId);
-            entity.Property(e => e.UserId).IsRequired().HasMaxLength(450);
+            entity.Property(e => e.UserId).IsRequired();
             entity.Property(e => e.InfoText).IsRequired().HasMaxLength(2000);
             entity.Property(e => e.CreatedBy).HasMaxLength(450);
             entity.Property(e => e.CreatedAt).IsRequired();
 
             entity.HasOne<Profile>()
-                  .WithMany(u => u.AdditionalInfos)
+                  .WithMany()
                   .HasForeignKey(ai => ai.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
