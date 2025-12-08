@@ -8,7 +8,7 @@ public class DeleteProfile : ICarterModule
             ISender sender,
             string userId) =>
         {
-            var command = new DeleteProfileCommand(Guid.Parse(userId));
+            var command = new DeleteProfileCommand(userId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
