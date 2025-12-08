@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfileByIdQuery(string UserId) : IRequest<GetProfileByIdResult>;
+public record GetProfileByIdQuery(Guid UserId) : IRequest<GetProfileByIdResult>;
 
 public record GetProfileByIdResult(
     bool Success,
@@ -25,8 +25,7 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
     public GetProfileByIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
     }
 }
 

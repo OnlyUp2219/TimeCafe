@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record CreateProfileCommand(string UserId, string FirstName, string LastName, Gender Gender) : IRequest<CreateProfileResult>;
+public record CreateProfileCommand(Guid UserId, string FirstName, string LastName, Gender Gender) : IRequest<CreateProfileResult>;
 
 public record CreateProfileResult(
     bool Success,
@@ -25,8 +25,7 @@ public class CreateProfileCommandValidator : AbstractValidator<CreateProfileComm
     public CreateProfileCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
 
         RuleFor(x => x.FirstName)
             .NotEmpty().WithMessage("Имя обязательно")

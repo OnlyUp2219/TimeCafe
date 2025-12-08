@@ -28,12 +28,11 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
             .NotNull().WithMessage("Дополнительная информация обязательна");
 
         RuleFor(x => x.AdditionalInfo.InfoId)
-            .GreaterThan(0).WithMessage("InfoId должен быть больше 0")
+            .NotEmpty().WithMessage("InfoId обязателен")
             .When(x => x.AdditionalInfo != null);
 
         RuleFor(x => x.AdditionalInfo.UserId)
             .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов")
             .When(x => x.AdditionalInfo != null);
 
         RuleFor(x => x.AdditionalInfo.InfoText)

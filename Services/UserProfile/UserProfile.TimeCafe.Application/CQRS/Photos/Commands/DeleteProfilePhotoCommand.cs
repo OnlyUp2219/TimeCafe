@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record DeleteProfilePhotoCommand(string UserId) : IRequest<DeleteProfilePhotoResult>;
+public record DeleteProfilePhotoCommand(Guid UserId) : IRequest<DeleteProfilePhotoResult>;
 
 public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
@@ -14,7 +14,7 @@ public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfil
 {
     public DeleteProfilePhotoCommandValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.UserId).NotEmpty();
     }
 }
 

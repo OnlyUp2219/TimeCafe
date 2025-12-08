@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfosByUserIdQuery(string UserId) : IRequest<GetAdditionalInfosByUserIdResult>;
+public record GetAdditionalInfosByUserIdQuery(Guid UserId) : IRequest<GetAdditionalInfosByUserIdResult>;
 
 public record GetAdditionalInfosByUserIdResult(
     bool Success,
@@ -22,8 +22,7 @@ public class GetAdditionalInfosByUserIdQueryValidator : AbstractValidator<GetAdd
     public GetAdditionalInfosByUserIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
     }
 }
 

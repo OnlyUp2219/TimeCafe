@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 
-public record GetProfilePhotoQuery(string UserId) : IRequest<GetProfilePhotoResult>;
+public record GetProfilePhotoQuery(Guid UserId) : IRequest<GetProfilePhotoResult>;
 
 public record GetProfilePhotoResult(bool Success,
     string? Code = null,
@@ -20,7 +20,7 @@ public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQu
 {
     public GetProfilePhotoQueryValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.UserId).NotEmpty();
     }
 }
 

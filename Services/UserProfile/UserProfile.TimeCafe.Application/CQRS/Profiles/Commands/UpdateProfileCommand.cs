@@ -28,8 +28,7 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
             .NotNull().WithMessage("Профиль обязателен");
 
         RuleFor(x => x.User.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
 
         RuleFor(x => x.User.FirstName)
             .NotEmpty().WithMessage("Имя обязательно")

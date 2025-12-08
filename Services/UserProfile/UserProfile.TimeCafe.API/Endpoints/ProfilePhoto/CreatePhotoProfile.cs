@@ -13,7 +13,7 @@ public class CreatePhotoProfile : ICarterModule
             if (file is null)
                 return Results.BadRequest("Файл обязателен");
             var stream = file.OpenReadStream();
-            var cmd = new UploadProfilePhotoCommand(userId, stream, file.ContentType, file.FileName, file.Length);
+            var cmd = new UploadProfilePhotoCommand(Guid.Parse(userId), stream, file.ContentType, file.FileName, file.Length);
             var result = await sender.Send(cmd, ct);
             return result.ToHttpResultV2(r =>
                 Results.Created($"/S3/image/{userId}", new { r.Key, r.Url, r.Size, r.ContentType }));

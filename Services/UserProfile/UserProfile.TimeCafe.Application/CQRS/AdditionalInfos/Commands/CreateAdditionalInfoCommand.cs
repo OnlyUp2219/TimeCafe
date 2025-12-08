@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record CreateAdditionalInfoCommand(string UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
+public record CreateAdditionalInfoCommand(Guid UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
 
 public record CreateAdditionalInfoResult(
     bool Success,
@@ -22,8 +22,7 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     public CreateAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
 
         RuleFor(x => x.InfoText)
             .NotEmpty().WithMessage("Текст информации обязателен")

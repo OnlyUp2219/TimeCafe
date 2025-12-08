@@ -1,6 +1,8 @@
+using UserProfile.TimeCafe.Domain.DTOs;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record UploadProfilePhotoCommand(string UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
+public record UploadProfilePhotoCommand(Guid UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
 
 public record UploadProfilePhotoResult(
     bool Success,
@@ -23,7 +25,7 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
     {
         var opts = photoOptions.Value;
-        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.UserId).NotEmpty();
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
             .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
