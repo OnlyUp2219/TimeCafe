@@ -12,7 +12,7 @@ using UserProfile.TimeCafe.Infrastructure.Data;
 namespace UserProfile.TimeCafe.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251208151240_GuidMigration")]
+    [Migration("20251208151829_GuidMigration")]
     partial class GuidMigration
     {
         /// <inheritdoc />
