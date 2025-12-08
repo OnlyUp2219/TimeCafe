@@ -33,7 +33,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var userId = Guid.NewGuid();
         var profile = await SeedProfileAsync(userId, "Иван", "Петров");
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
-        var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "photo.jpg", 5);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, "image/jpeg", "photo.jpg", 5);
 
         _storageMock.Setup(s => s.UploadAsync(
                 userId,
@@ -68,7 +68,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
         var userId = Guid.NewGuid();
-        var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "photo.jpg", 5);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, "image/jpeg", "photo.jpg", 5);
         var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
@@ -96,7 +96,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId, "Иван", "Петров");
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
-        var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "photo.jpg", 5);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, "image/jpeg", "photo.jpg", 5);
 
         _storageMock.Setup(s => s.UploadAsync(
                 It.IsAny<Guid>(),
@@ -125,7 +125,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var stream = new MemoryStream([1, 2, 3]);
-        Guid userId = isEmpty ? Guid.Empty : Guid.NewGuid();
+        string userId = isEmpty ? string.Empty : Guid.NewGuid().ToString();
         var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "photo.jpg", 3);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
@@ -153,7 +153,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream([1, 2, 3]);
-        var command = new UploadProfilePhotoCommand(userId, stream, contentType, "photo.jpg", 3);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, contentType, "photo.jpg", 3);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -173,7 +173,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream([1, 2, 3]);
-        var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "photo.jpg", size);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, "image/jpeg", "photo.jpg", size);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -194,7 +194,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream([1, 2, 3]);
-        var command = new UploadProfilePhotoCommand(userId, stream, contentType, "photo.jpg", 1024);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, contentType, "photo.jpg", 1024);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -214,7 +214,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         await Context.SaveChangesAsync();
 
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
-        var command = new UploadProfilePhotoCommand(userId, stream, "image/jpeg", "new-photo.jpg", 5);
+        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, "image/jpeg", "new-photo.jpg", 5);
 
         _storageMock.Setup(s => s.UploadAsync(
                 It.IsAny<Guid>(),

@@ -9,10 +9,11 @@ public class CreateAdditionalInfoCommandHandlerTests
         var userId = Guid.NewGuid();
         var infoId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
+        var userRepoMock = new Mock<IUserRepositories>();
         var command = new CreateAdditionalInfoCommand(userId, "Text info", "creator");
         repoMock.Setup(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AdditionalInfo a, CancellationToken _) => { a.InfoId = infoId; return a; });
-        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object);
+        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -58,9 +59,10 @@ public class CreateAdditionalInfoCommandHandlerTests
     {
         // Arrange
         var repoMock = new Mock<IAdditionalInfoRepository>();
+        var userRepoMock = new Mock<IUserRepositories>();
         repoMock.Setup(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("DB error"));
-        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object);
+        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
 
         // Act
         var result = await handler.Handle(new CreateAdditionalInfoCommand(Guid.NewGuid(), "Txt"), CancellationToken.None);

@@ -8,7 +8,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId, "Иван", "Петров");
-        var query = new GetProfileByIdQuery(userId);
+        var query = new GetProfileByIdQuery(userId.ToString());
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -28,7 +28,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var query = new GetProfileByIdQuery(userId);
+        var query = new GetProfileByIdQuery(userId.ToString());
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -48,7 +48,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var userId = Guid.NewGuid();
-        var query = new GetProfileByIdQuery(userId);
+        var query = new GetProfileByIdQuery(userId.ToString());
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -65,8 +65,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var userId = Guid.Empty; // Empty GUID represents invalid user
-        var query = new GetProfileByIdQuery(userId);
+        var query = new GetProfileByIdQuery(string.Empty);
         var validator = new GetProfileByIdQueryValidator();
 
         // Act
@@ -80,7 +79,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(Guid.NewGuid());
+        var query = new GetProfileByIdQuery(Guid.NewGuid().ToString());
         var validator = new GetProfileByIdQueryValidator();
 
         // Act

@@ -12,7 +12,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         repoMock.Setup(r => r.DeleteAdditionalInfoAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        var cmd = new DeleteAdditionalInfoCommand(infoId);
+        var cmd = new DeleteAdditionalInfoCommand(infoId.ToString());
         var handler = new DeleteAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act
@@ -28,7 +28,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
     public void Validator_Should_Pass_For_Valid_Id()
     {
         var validator = new DeleteAdditionalInfoCommandValidator();
-        var cmd = new DeleteAdditionalInfoCommand(Guid.NewGuid());
+        var cmd = new DeleteAdditionalInfoCommand(Guid.NewGuid().ToString());
         validator.Validate(cmd).IsValid.Should().BeTrue();
     }
 
@@ -36,7 +36,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_For_Invalid_Id()
     {
         var validator = new DeleteAdditionalInfoCommandValidator();
-        var cmd = new DeleteAdditionalInfoCommand(Guid.Empty);
+        var cmd = new DeleteAdditionalInfoCommand(string.Empty);
         validator.Validate(cmd).IsValid.Should().BeFalse();
     }
     [Fact]
@@ -46,7 +46,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var infoId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
-        var cmd = new DeleteAdditionalInfoCommand(infoId);
+        var cmd = new DeleteAdditionalInfoCommand(infoId.ToString());
         var handler = new DeleteAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act

@@ -12,7 +12,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(info);
         var handler = new GetAdditionalInfoByIdQueryHandler(repoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.AdditionalInfo.Should().NotBeNull();
@@ -24,7 +24,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
     public void Validator_Should_Pass_For_Valid_Id()
     {
         var validator = new GetAdditionalInfoByIdQueryValidator();
-        var q = new GetAdditionalInfoByIdQuery(Guid.NewGuid());
+        var q = new GetAdditionalInfoByIdQuery(Guid.NewGuid().ToString());
         validator.Validate(q).IsValid.Should().BeTrue();
     }
 
@@ -32,7 +32,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
     public void Validator_Should_Fail_For_Invalid_Id()
     {
         var validator = new GetAdditionalInfoByIdQueryValidator();
-        var q = new GetAdditionalInfoByIdQuery(Guid.Empty);
+        var q = new GetAdditionalInfoByIdQuery(string.Empty);
         validator.Validate(q).IsValid.Should().BeFalse();
     }
 
@@ -44,7 +44,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
         var handler = new GetAdditionalInfoByIdQueryHandler(repoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.Code.Should().Be("AdditionalInfoNotFound");
@@ -57,7 +57,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("boom"));
         var handler = new GetAdditionalInfoByIdQueryHandler(repoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.Code.Should().Be("GetAdditionalInfoFailed");

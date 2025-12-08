@@ -7,11 +7,12 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     {
         var userId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
+        var userRepoMock = new Mock<IUserRepositories>();
         repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Enumerable.Empty<AdditionalInfo>());
-        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object);
+        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.AdditionalInfos.Should().NotBeNull();
@@ -22,7 +23,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     public void Validator_Should_Pass_For_Valid_UserId()
     {
         var validator = new GetAdditionalInfosByUserIdQueryValidator();
-        var q = new GetAdditionalInfosByUserIdQuery(Guid.NewGuid());
+        var q = new GetAdditionalInfosByUserIdQuery(Guid.NewGuid().ToString());
         validator.Validate(q).IsValid.Should().BeTrue();
     }
 
@@ -30,7 +31,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     public void Validator_Should_Fail_For_Empty_UserId()
     {
         var validator = new GetAdditionalInfosByUserIdQueryValidator();
-        var q = new GetAdditionalInfosByUserIdQuery(Guid.Empty);
+        var q = new GetAdditionalInfosByUserIdQuery(string.Empty);
         validator.Validate(q).IsValid.Should().BeFalse();
     }
 
@@ -39,6 +40,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     {
         var userId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
+        var userRepoMock = new Mock<IUserRepositories>();
         var list = new List<AdditionalInfo>
         {
             new AdditionalInfo { InfoId = Guid.NewGuid(), UserId = userId, InfoText = "A" },
@@ -46,9 +48,9 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         };
         repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(list);
-        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object);
+        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.AdditionalInfos.Should().HaveCount(2);
@@ -59,11 +61,12 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     {
         var userId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
+        var userRepoMock = new Mock<IUserRepositories>();
         repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("db"));
-        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object);
+        var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.Code.Should().Be("GetAdditionalInfosFailed");

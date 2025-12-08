@@ -7,7 +7,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var command = new CreateEmptyCommand(userId);
+        var command = new CreateEmptyCommand(userId.ToString());
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -30,7 +30,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId);
-        var command = new CreateEmptyCommand(userId);
+        var command = new CreateEmptyCommand(userId.ToString());
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -49,7 +49,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var userId = Guid.NewGuid();
-        var command = new CreateEmptyCommand(userId);
+        var command = new CreateEmptyCommand(userId.ToString());
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -66,8 +66,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var userId = Guid.Empty; // Empty GUID represents invalid user
-        var command = new CreateEmptyCommand(userId);
+        var command = new CreateEmptyCommand(string.Empty);
         var validator = new CreateEmptyCommandValidator();
 
         // Act
@@ -81,7 +80,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var command = new CreateEmptyCommand(Guid.NewGuid());
+        var command = new CreateEmptyCommand(Guid.NewGuid().ToString());
         var validator = new CreateEmptyCommandValidator();
 
         // Act
