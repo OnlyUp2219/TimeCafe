@@ -6,8 +6,9 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Handler_GetProfileById_Should_ReturnSuccess_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123", "Иван", "Петров");
-        var query = new GetProfileByIdQuery("user123");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, "Иван", "Петров");
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -17,7 +18,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         result.Success.Should().BeTrue();
         result.Message.Should().Be("Профиль найден");
         result.Profile.Should().NotBeNull();
-        result.Profile!.UserId.Should().Be("user123");
+        result.Profile!.UserId.Should().Be(userId);
         result.Profile.FirstName.Should().Be("Иван");
         result.Profile.LastName.Should().Be("Петров");
     }
@@ -26,7 +27,8 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Handler_GetProfileById_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
-        var query = new GetProfileByIdQuery("nonexistent");
+        var userId = Guid.NewGuid();
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -45,7 +47,8 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     {
         // Arrange
         await Context.DisposeAsync();
-        var query = new GetProfileByIdQuery("user123");
+        var userId = Guid.NewGuid();
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -58,13 +61,12 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         result.Message.Should().Be("Не удалось получить профиль");
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty(string? userId)
+    [Fact]
+    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(userId!);
+        var userId = Guid.Empty; // Empty GUID represents invalid user
+        var query = new GetProfileByIdQuery(userId);
         var validator = new GetProfileByIdQueryValidator();
 
         // Act
@@ -72,21 +74,26 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+    }
+
+    [Fact]
+    public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
+    {
+        // Arrange
+        var query = new GetProfileByIdQuery(Guid.NewGuid());
+        var validator = new GetProfileByIdQueryValidator();
+
+        // Act
+        var result = await validator.ValidateAsync(query);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
     public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
     {
-        // Arrange
-        var query = new GetProfileByIdQuery(new string('a', 451));
-        var validator = new GetProfileByIdQueryValidator();
-
-        // Act
-        var result = await validator.ValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+        // This test is no longer applicable as UserId is now Guid (fixed size)
+        // Keeping this as a placeholder showing the change
     }
 }

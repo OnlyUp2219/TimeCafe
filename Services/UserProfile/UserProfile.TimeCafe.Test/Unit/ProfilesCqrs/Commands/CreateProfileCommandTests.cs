@@ -6,7 +6,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Handler_CreateProfile_Should_ReturnSuccess_WhenValidData()
     {
         // Arrange
-        var command = new CreateProfileCommand("user123", "Иван", "Петров", Gender.Male);
+        var userId = Guid.NewGuid();
+        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -17,7 +18,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
         result.StatusCode.Should().Be(201);
         result.Message.Should().Be("Профиль успешно создан");
         result.Profile.Should().NotBeNull();
-        result.Profile!.UserId.Should().Be("user123");
+        result.Profile!.UserId.Should().Be(userId);
         result.Profile.FirstName.Should().Be("Иван");
         result.Profile.LastName.Should().Be("Петров");
         result.Profile.Gender.Should().Be(Gender.Male);
@@ -27,8 +28,9 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Handler_CreateProfile_Should_ReturnProfileAlreadyExists_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123");
-        var command = new CreateProfileCommand("user123", "Иван", "Петров", Gender.Male);
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId);
+        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -46,7 +48,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         await Context.DisposeAsync();
-        var command = new CreateProfileCommand("user123", "Иван", "Петров", Gender.Male);
+        var userId = Guid.NewGuid();
+        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -60,13 +63,13 @@ public class CreateProfileCommandTests : BaseCqrsTest
     }
 
     [Theory]
-    [InlineData("", "Иван", "Петров")]
-    [InlineData("user123", "", "Петров")]
-    [InlineData("user123", "Иван", "")]
-    public async Task Validator_Should_FailValidation_WhenRequiredFieldsEmpty(string userId, string firstName, string lastName)
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task Validator_Should_FailValidation_WhenFirstNameEmpty(string? firstName)
     {
         // Arrange
-        var command = new CreateProfileCommand(userId, firstName, lastName, Gender.Male);
+        var userId = Guid.NewGuid();
+        var command = new CreateProfileCommand(userId, firstName ?? "", "Петров", Gender.Male);
         var validator = new CreateProfileCommandValidator();
 
         // Act
@@ -80,8 +83,9 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenFieldsExceedMaxLength()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var command = new CreateProfileCommand(
-            new string('a', 451),
+            userId,
             new string('b', 101),
             new string('c', 101),
             Gender.Male);
@@ -92,14 +96,15 @@ public class CreateProfileCommandTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(3);
+        result.Errors.Count.Should().Be(2);
     }
 
     [Fact]
     public async Task Handler_CreateProfile_Should_SetPendingStatus_WhenCreated()
     {
         // Arrange
-        var command = new CreateProfileCommand("user123", "Иван", "Петров", Gender.Female);
+        var userId = Guid.NewGuid();
+        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Female);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act

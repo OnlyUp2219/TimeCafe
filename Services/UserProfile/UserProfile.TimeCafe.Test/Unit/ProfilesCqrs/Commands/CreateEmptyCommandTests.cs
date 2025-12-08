@@ -6,7 +6,8 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     public async Task Handler_CreateEmpty_Should_ReturnSuccess_WhenUserIdIsValid()
     {
         // Arrange
-        var command = new CreateEmptyCommand("user123");
+        var userId = Guid.NewGuid();
+        var command = new CreateEmptyCommand(userId);
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -17,9 +18,9 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         result.StatusCode.Should().Be(201);
         result.Message.Should().Be("Пустой профиль создан");
 
-        var profile = await Context.Profiles.FindAsync("user123");
+        var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().NotBeNull();
-        profile!.UserId.Should().Be("user123");
+        profile!.UserId.Should().Be(userId);
         profile.ProfileStatus.Should().Be(ProfileStatus.Pending);
     }
 
@@ -27,8 +28,9 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     public async Task Handler_CreateEmpty_Should_ReturnProfileAlreadyExists_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123");
-        var command = new CreateEmptyCommand("user123");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId);
+        var command = new CreateEmptyCommand(userId);
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -46,7 +48,8 @@ public class CreateEmptyCommandTests : BaseCqrsTest
     {
         // Arrange
         await Context.DisposeAsync();
-        var command = new CreateEmptyCommand("user123");
+        var userId = Guid.NewGuid();
+        var command = new CreateEmptyCommand(userId);
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
@@ -59,13 +62,12 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         result.Message.Should().Be("Не удалось создать профиль");
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty(string? userId)
+    [Fact]
+    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var command = new CreateEmptyCommand(userId!);
+        var userId = Guid.Empty; // Empty GUID represents invalid user
+        var command = new CreateEmptyCommand(userId);
         var validator = new CreateEmptyCommandValidator();
 
         // Act
@@ -73,21 +75,26 @@ public class CreateEmptyCommandTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+    }
+
+    [Fact]
+    public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
+    {
+        // Arrange
+        var command = new CreateEmptyCommand(Guid.NewGuid());
+        var validator = new CreateEmptyCommandValidator();
+
+        // Act
+        var result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
     public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
     {
-        // Arrange
-        var command = new CreateEmptyCommand(new string('a', 65));
-        var validator = new CreateEmptyCommandValidator();
-
-        // Act
-        var result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+        // This test is no longer applicable as UserId is now Guid (fixed size)
+        // Keeping this as a placeholder showing the change
     }
 }

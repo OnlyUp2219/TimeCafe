@@ -8,7 +8,7 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         // Arrange
         for (int i = 1; i <= 25; i++)
         {
-            await SeedProfileAsync($"user{i}", $"FirstName{i}", $"LastName{i}");
+            await SeedProfileAsync(Guid.NewGuid(), $"FirstName{i}", $"LastName{i}");
         }
 
         var query = new GetProfilesPageQuery(1, 10);
@@ -32,7 +32,7 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         // Arrange
         for (int i = 1; i <= 15; i++)
         {
-            await SeedProfileAsync($"user{i}", $"FirstName{i}", $"LastName{i}");
+            await SeedProfileAsync(Guid.NewGuid(), $"FirstName{i}", $"LastName{i}");
         }
 
         var query = new GetProfilesPageQuery(2, 10);

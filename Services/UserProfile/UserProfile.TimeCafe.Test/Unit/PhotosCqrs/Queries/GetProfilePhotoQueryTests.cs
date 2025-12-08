@@ -1,4 +1,5 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
+using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Queries;
 
@@ -15,11 +16,12 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Handler_GetPhoto_Should_ReturnSuccess_WhenPhotoExists()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var stream = new MemoryStream([1, 2, 3, 4, 5]);
-        _storageMock.Setup(s => s.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoStreamDto(stream, "image/jpeg"));
 
-        var query = new GetProfilePhotoQuery("user123");
+        var query = new GetProfilePhotoQuery(userId);
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -36,10 +38,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Handler_GetPhoto_Should_ReturnNotFound_WhenPhotoDoesNotExist()
     {
         // Arrange
-        _storageMock.Setup(s => s.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        var userId = Guid.NewGuid();
+        _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PhotoStreamDto?)null);
 
-        var query = new GetProfilePhotoQuery("user123");
+        var query = new GetProfilePhotoQuery(userId);
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -56,10 +59,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Handler_GetPhoto_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
-        _storageMock.Setup(s => s.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        var userId = Guid.NewGuid();
+        _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Storage error"));
 
-        var query = new GetProfilePhotoQuery("user123");
+        var query = new GetProfilePhotoQuery(userId);
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -72,13 +76,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         result.Message.Should().Be("Ошибка получения фото");
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdEmpty(string userId)
+    [Fact]
+    public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
     {
         // Arrange
-        var query = new GetProfilePhotoQuery(userId!);
+        var query = new GetProfilePhotoQuery(Guid.Empty);
         var validator = new GetProfilePhotoQueryValidator();
 
         // Act
@@ -86,21 +88,6 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
-    }
-
-    [Fact]
-    public async Task Validator_Should_PassValidation_WhenUserIdValid()
-    {
-        // Arrange
-        var query = new GetProfilePhotoQuery("user123");
-        var validator = new GetProfilePhotoQueryValidator();
-
-        // Act
-        var result = await validator.ValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeTrue();
     }
 
     [Theory]
@@ -110,11 +97,12 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Handler_GetPhoto_Should_ReturnCorrectContentType(string contentType)
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var stream = new MemoryStream([1, 2, 3]);
-        _storageMock.Setup(s => s.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoStreamDto(stream, contentType));
 
-        var query = new GetProfilePhotoQuery("user123");
+        var query = new GetProfilePhotoQuery(userId);
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act

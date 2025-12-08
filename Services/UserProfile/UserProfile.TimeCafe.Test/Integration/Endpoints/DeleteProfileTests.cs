@@ -8,10 +8,11 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_DeleteProfile_Should_Return200_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user789", "Петр", "Иванов");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, "Петр", "Иванов");
 
         // Act
-        var response = await Client.DeleteAsync("/profiles/user789");
+        var response = await Client.DeleteAsync($"/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -33,7 +34,8 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_DeleteProfile_Should_Return404_WhenProfileNotFound()
     {
         // Act
-        var response = await Client.DeleteAsync("/profiles/nonexistent");
+        var randomGuid = Guid.NewGuid();
+        var response = await Client.DeleteAsync($"/profiles/{randomGuid}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

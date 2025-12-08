@@ -8,7 +8,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected readonly HttpClient Client = factory.CreateClient();
     protected readonly IntegrationApiFactory Factory = factory;
 
-    protected async Task SeedProfileAsync(string userId, string firstName, string lastName, Gender gender = Gender.NotSpecified)
+    protected async Task SeedProfileAsync(Guid userId, string firstName, string lastName, Gender gender = Gender.NotSpecified)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -27,6 +27,12 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             context.Profiles.Add(profile);
             await context.SaveChangesAsync();
         }
+    }
+
+    // Перегрузка для совместимости со string
+    protected async Task SeedProfileAsync(string userIdStr, string firstName, string lastName, Gender gender = Gender.NotSpecified)
+    {
+        await SeedProfileAsync(Guid.Parse(userIdStr), firstName, lastName, gender);
     }
 
     protected byte[] LoadTestImage()

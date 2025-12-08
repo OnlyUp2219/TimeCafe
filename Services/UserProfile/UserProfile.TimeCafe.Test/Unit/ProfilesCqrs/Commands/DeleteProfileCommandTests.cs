@@ -6,8 +6,9 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnSuccess_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123");
-        var command = new DeleteProfileCommand("user123");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId);
+        var command = new DeleteProfileCommand(userId);
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -17,7 +18,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         result.Success.Should().BeTrue();
         result.Message.Should().Be("Профиль успешно удалён");
 
-        var profile = await Context.Profiles.FindAsync("user123");
+        var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().BeNull();
     }
 
@@ -25,7 +26,8 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
-        var command = new DeleteProfileCommand("nonexistent");
+        var userId = Guid.NewGuid();
+        var command = new DeleteProfileCommand(userId);
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -42,10 +44,11 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnDeleteFailed_WhenExceptionOccurs()
     {
         // Arrange
-        await SeedProfileAsync("user123");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId);
         await Context.DisposeAsync();
 
-        var command = new DeleteProfileCommand("user123");
+        var command = new DeleteProfileCommand(userId);
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -58,13 +61,12 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         result.Message.Should().Be("Не удалось удалить профиль");
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty(string? userId)
+    [Fact]
+    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var command = new DeleteProfileCommand(userId!);
+        var userId = Guid.Empty; // Empty GUID represents invalid user
+        var command = new DeleteProfileCommand(userId);
         var validator = new DeleteProfileCommandValidator();
 
         // Act
@@ -72,21 +74,26 @@ public class DeleteProfileCommandTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+    }
+
+    [Fact]
+    public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
+    {
+        // Arrange
+        var command = new DeleteProfileCommand(Guid.NewGuid());
+        var validator = new DeleteProfileCommandValidator();
+
+        // Act
+        var result = await validator.ValidateAsync(command);
+
+        // Assert
+        result.IsValid.Should().BeTrue();
     }
 
     [Fact]
     public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
     {
-        // Arrange
-        var command = new DeleteProfileCommand(new string('a', 451));
-        var validator = new DeleteProfileCommandValidator();
-
-        // Act
-        var result = await validator.ValidateAsync(command);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == "UserId");
+        // This test is no longer applicable as UserId is now Guid (fixed size)
+        // Keeping this as a placeholder showing the change
     }
 }

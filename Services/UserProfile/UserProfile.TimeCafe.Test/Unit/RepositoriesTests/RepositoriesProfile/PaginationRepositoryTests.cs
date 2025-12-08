@@ -19,8 +19,8 @@ public class PaginationRepositoryTests : BaseRepositoryTest
         // Assert
         result.Should().NotBeNull()
             .And.HaveCount(2)
-            .And.Contain(p => p!.UserId == "1")
-            .And.Contain(p => p!.UserId == "2");
+            .And.Contain(p => p!.UserId == TestProfiles[0].UserId)
+            .And.Contain(p => p!.UserId == TestProfiles[1].UserId);
 
         CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_Page(1, 1), It.IsAny<CancellationToken>()), Times.Once());
     }
@@ -68,7 +68,7 @@ public class PaginationRepositoryTests : BaseRepositoryTest
         // Assert
         result.Should().NotBeNull()
             .And.HaveCount(1) // только 1 профиль на второй странице
-            .And.Contain(p => p!.UserId == "3");
+            .And.Contain(p => p!.UserId == TestProfiles[2].UserId);
     }
 
     [Fact]

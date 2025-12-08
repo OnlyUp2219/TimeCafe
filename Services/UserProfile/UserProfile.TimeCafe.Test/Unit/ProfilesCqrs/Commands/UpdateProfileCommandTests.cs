@@ -6,10 +6,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Handler_UpdateProfile_Should_ReturnSuccess_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123", "Иван", "Петров");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, "Иван", "Петров");
         var updatedProfile = new Profile
         {
-            UserId = "user123",
+            UserId = userId,
             FirstName = "Александр",
             LastName = "Сидоров",
             Gender = Gender.Male,
@@ -33,9 +34,10 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Handler_UpdateProfile_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var profile = new Profile
         {
-            UserId = "nonexistent",
+            UserId = userId,
             FirstName = "Test",
             LastName = "User"
         };
@@ -56,10 +58,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Handler_UpdateProfile_Should_ReturnUpdateFailed_WhenExceptionOccurs()
     {
         // Arrange
-        await SeedProfileAsync("user123");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId);
         await Context.DisposeAsync();
 
-        var profile = new Profile { UserId = "user123", FirstName = "Test", LastName = "User" };
+        var profile = new Profile { UserId = userId, FirstName = "Test", LastName = "User" };
         var command = new UpdateProfileCommand(profile);
         var handler = new UpdateProfileCommandHandler(Repository);
 
@@ -88,10 +91,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty(string? userId)
+    public async Task Validator_Should_FailValidation_WhenFirstNameEmpty(string? firstName)
     {
         // Arrange
-        var profile = new Profile { UserId = userId!, FirstName = "Test", LastName = "User" };
+        var userId = Guid.NewGuid();
+        var profile = new Profile { UserId = userId, FirstName = firstName ?? "", LastName = "User" };
         var command = new UpdateProfileCommand(profile);
         var validator = new UpdateProfileCommandValidator();
 
@@ -108,7 +112,7 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         // Arrange
         var profile = new Profile
         {
-            UserId = new string('a', 451),
+            UserId = Guid.NewGuid(),
             FirstName = new string('b', 101),
             LastName = new string('c', 101)
         };
@@ -120,6 +124,6 @@ public class UpdateProfileCommandTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().BeGreaterThanOrEqualTo(3);
+        result.Errors.Count.Should().Be(2); 
     }
 }

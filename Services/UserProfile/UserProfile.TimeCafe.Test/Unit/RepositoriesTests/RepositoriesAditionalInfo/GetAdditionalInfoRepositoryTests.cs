@@ -11,13 +11,13 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetAdditionalInfosByUserIdAsync("U1", CancellationToken.None);
+        var result = await Repository.GetAdditionalInfosByUserIdAsync(TestInfos[0].UserId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);
         result.First().InfoText.Should().Be("Second info"); // сортировка по CreatedAt DESC
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ByUserId("U1"), It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.SetAsync(CacheKeys.AdditionalInfo_ByUserId("U1"), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ByUserId(TestInfos[0].UserId), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.SetAsync(CacheKeys.AdditionalInfo_ByUserId(TestInfos[0].UserId), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -25,17 +25,17 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         // Arrange
         await SeedAsync();
-        var cachedList = TestInfos.Where(i => i.UserId == "U1").ToList();
-        SetupCache(CacheKeys.AdditionalInfo_ByUserId("U1"), cachedList);
+        var cachedList = TestInfos.Where(i => i.UserId == TestInfos[0].UserId).ToList();
+        SetupCache(CacheKeys.AdditionalInfo_ByUserId(TestInfos[0].UserId), cachedList);
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetAdditionalInfosByUserIdAsync("U1", CancellationToken.None);
+        var result = await Repository.GetAdditionalInfosByUserIdAsync(TestInfos[0].UserId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2)
             .And.BeEquivalentTo(cachedList, o => o.Including(i => i.InfoId).Including(i => i.InfoText));
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ByUserId("U1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ByUserId(TestInfos[0].UserId), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
@@ -48,14 +48,14 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetAdditionalInfoByIdAsync(2, CancellationToken.None);
+        var result = await Repository.GetAdditionalInfoByIdAsync(TestInfos[1].InfoId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result!.InfoId.Should().Be(2);
+        result!.InfoId.Should().Be(TestInfos[1].InfoId);
         result.InfoText.Should().Be("Second info");
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(2), It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.SetAsync(CacheKeys.AdditionalInfo_ById(2), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(TestInfos[1].InfoId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.SetAsync(CacheKeys.AdditionalInfo_ById(TestInfos[1].InfoId.ToString()), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -63,17 +63,17 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         // Arrange
         await SeedAsync();
-        var cached = TestInfos.First(i => i.InfoId == 1);
-        SetupCache(CacheKeys.AdditionalInfo_ById(1), cached);
+        var cached = TestInfos.First(i => i.InfoId == TestInfos[0].InfoId);
+        SetupCache(CacheKeys.AdditionalInfo_ById(cached.InfoId.ToString()), cached);
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetAdditionalInfoByIdAsync(1, CancellationToken.None);
+        var result = await Repository.GetAdditionalInfoByIdAsync(cached.InfoId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
-        result!.InfoId.Should().Be(1);
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(1), It.IsAny<CancellationToken>()), Times.Once());
+        result!.InfoId.Should().Be(cached.InfoId);
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(cached.InfoId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
@@ -83,13 +83,14 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
         // Arrange
         SetupCacheNoData();
         SetupCacheOperations();
+        var nonexistentId = Guid.NewGuid();
 
         // Act
-        var result = await Repository.GetAdditionalInfoByIdAsync(999, CancellationToken.None);
+        var result = await Repository.GetAdditionalInfoByIdAsync(nonexistentId, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(999), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.AdditionalInfo_ById(nonexistentId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 }

@@ -7,7 +7,8 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
     {
         // Arrange
         await SeedProfilesAsync();
-        var updatedProfile = new Profile { UserId = "1", FirstName = "Jane" };
+        var userId = TestProfiles[0].UserId;
+        var updatedProfile = new Profile { UserId = userId, FirstName = "Jane" };
         SetupCacheOperations();
         CacheMock.Setup(c => c.GetAsync(CacheKeys.ProfilePagesVersion(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("1"));
@@ -18,11 +19,11 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
         // Assert
         result.Should().NotBeNull();
 
-        var dbProfile = await Context.Profiles.FindAsync("1");
+        var dbProfile = await Context.Profiles.FindAsync(userId);
         dbProfile!.FirstName.Should().Be("Jane");
 
         CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_All, It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById("1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById(userId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(CacheKeys.ProfilePagesVersion(),
             It.Is<byte[]>(b => System.Text.Encoding.UTF8.GetString(b) == "2"),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -33,9 +34,10 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
     {
         // Arrange
         await SeedProfilesAsync();
+        var userId = TestProfiles[0].UserId;
         var updatedProfile = new Profile
         {
-            UserId = "1",
+            UserId = userId,
             FirstName = "Updated",
             LastName = "User",
             Gender = Gender.Female,
@@ -62,7 +64,7 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
     public async Task Repository_UpdateProfile_Should_ReturnNull_WhenProfileNotExists()
     {
         // Arrange
-        var nonExistentProfile = new Profile { UserId = "nonexistent", FirstName = "Test" };
+        var nonExistentProfile = new Profile { UserId = Guid.NewGuid(), FirstName = "Test" };
         SetupCacheOperations();
 
         // Act
@@ -78,7 +80,8 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
     {
         // Arrange
         await SeedProfilesAsync();
-        var updatedProfile = new Profile { UserId = "2", FirstName = "UpdatedJane" };
+        var userId = TestProfiles[1].UserId;
+        var updatedProfile = new Profile { UserId = userId, FirstName = "UpdatedJane" };
         SetupCacheOperations();
         CacheMock.Setup(c => c.GetAsync(CacheKeys.ProfilePagesVersion(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("5"));
@@ -88,7 +91,7 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
 
         // Assert
         CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_All, It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById("2"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById(userId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(CacheKeys.ProfilePagesVersion(),
             It.Is<byte[]>(b => System.Text.Encoding.UTF8.GetString(b) == "6"),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
