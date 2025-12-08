@@ -22,11 +22,14 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
         CacheLoggerMock = new Mock<ILogger<AdditionalInfoRepository>>();
         Repository = new AdditionalInfoRepository(Context, CacheMock.Object, CacheLoggerMock.Object);
 
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
+
         TestInfos = new List<AdditionalInfo>
         {
-            new() { InfoId = 1, UserId = "U1", InfoText = "First info", CreatedAt = DateTime.UtcNow.AddMinutes(-10) },
-            new() { InfoId = 2, UserId = "U1", InfoText = "Second info", CreatedAt = DateTime.UtcNow.AddMinutes(-5) },
-            new() { InfoId = 3, UserId = "U2", InfoText = "Another user info", CreatedAt = DateTime.UtcNow.AddMinutes(-2) }
+            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "First info", CreatedAt = DateTime.UtcNow.AddMinutes(-10) },
+            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "Second info", CreatedAt = DateTime.UtcNow.AddMinutes(-5) },
+            new() { InfoId = Guid.NewGuid(), UserId = userId2, InfoText = "Another user info", CreatedAt = DateTime.UtcNow.AddMinutes(-2) }
         };
     }
 

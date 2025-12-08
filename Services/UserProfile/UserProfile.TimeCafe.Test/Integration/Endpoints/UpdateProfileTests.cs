@@ -8,10 +8,11 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_UpdateProfile_Should_Return200_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user456", "Мария", "Сидорова");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, "Мария", "Сидорова");
         var dto = new
         {
-            userId = "user456",
+            userId = userId.ToString(),
             firstName = "Мария",
             lastName = "Петрова",
             middleName = "Ивановна",
@@ -47,9 +48,10 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_UpdateProfile_Should_Return404_WhenProfileNotFound()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var dto = new
         {
-            userId = "nonexistent",
+            userId = userId.ToString(),
             firstName = "Test",
             lastName = "User",
             middleName = (string?)null,
@@ -86,7 +88,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         // Arrange
         var dto = new
         {
-            userId = "",
+            userId = Guid.NewGuid().ToString(),
             firstName = "",
             lastName = "",
             middleName = (string?)null,

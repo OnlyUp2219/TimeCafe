@@ -6,11 +6,13 @@ public class DeleteAdditionalInfoCommandHandlerTests
     public async Task Handle_Should_Delete_Info_When_Exists()
     {
         // Arrange
-        var existing = new AdditionalInfo { InfoId = 7, UserId = "U1", InfoText = "Some text", CreatedAt = DateTime.UtcNow, CreatedBy = "creator" };
+        var infoId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = "Some text", CreatedAt = DateTime.UtcNow, CreatedBy = "creator" };
         var repoMock = new Mock<IAdditionalInfoRepository>();
-        repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
-        repoMock.Setup(r => r.DeleteAdditionalInfoAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(true);
-        var cmd = new DeleteAdditionalInfoCommand(7);
+        repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
+        repoMock.Setup(r => r.DeleteAdditionalInfoAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        var cmd = new DeleteAdditionalInfoCommand(infoId);
         var handler = new DeleteAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act
@@ -19,14 +21,14 @@ public class DeleteAdditionalInfoCommandHandlerTests
         // Assert
         result.Success.Should().BeTrue();
         result.Code.Should().BeNull();
-        repoMock.Verify(r => r.DeleteAdditionalInfoAsync(7, It.IsAny<CancellationToken>()), Times.Once());
+        repoMock.Verify(r => r.DeleteAdditionalInfoAsync(infoId, It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
     public void Validator_Should_Pass_For_Valid_Id()
     {
         var validator = new DeleteAdditionalInfoCommandValidator();
-        var cmd = new DeleteAdditionalInfoCommand(10);
+        var cmd = new DeleteAdditionalInfoCommand(Guid.NewGuid());
         validator.Validate(cmd).IsValid.Should().BeTrue();
     }
 
@@ -34,16 +36,17 @@ public class DeleteAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_For_Invalid_Id()
     {
         var validator = new DeleteAdditionalInfoCommandValidator();
-        var cmd = new DeleteAdditionalInfoCommand(0);
+        var cmd = new DeleteAdditionalInfoCommand(Guid.Empty);
         validator.Validate(cmd).IsValid.Should().BeFalse();
     }
     [Fact]
     public async Task Handle_Should_Return_NotFound_When_Not_Exist()
     {
         // Arrange
+        var infoId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
-        repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
-        var cmd = new DeleteAdditionalInfoCommand(7);
+        repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
+        var cmd = new DeleteAdditionalInfoCommand(infoId);
         var handler = new DeleteAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act

@@ -6,9 +6,13 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
     public async Task Handler_GetAllProfiles_Should_ReturnSuccess_WhenProfilesExist()
     {
         // Arrange
-        await SeedProfileAsync("user1", "Иван", "Петров");
-        await SeedProfileAsync("user2", "Мария", "Сидорова");
-        await SeedProfileAsync("user3", "Алексей", "Смирнов");
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
+        var userId3 = Guid.NewGuid();
+
+        await SeedProfileAsync(userId1, "Иван", "Петров");
+        await SeedProfileAsync(userId2, "Мария", "Сидорова");
+        await SeedProfileAsync(userId3, "Алексей", "Смирнов");
 
         var query = new GetAllProfilesQuery();
         var handler = new GetAllProfilesQueryHandler(Repository);

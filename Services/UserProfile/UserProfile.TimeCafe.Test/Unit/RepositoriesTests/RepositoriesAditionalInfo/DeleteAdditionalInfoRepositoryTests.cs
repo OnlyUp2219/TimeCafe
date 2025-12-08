@@ -7,18 +7,20 @@ public class DeleteAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
     {
         // Arrange
         await SeedAsync();
+        var infoIdToDelete = TestInfos[0].InfoId;
+        var userIdToDelete = TestInfos[0].UserId;
         SetupCacheOperations();
 
         // Act
-        var ok = await Repository.DeleteAdditionalInfoAsync(1, CancellationToken.None);
+        var ok = await Repository.DeleteAdditionalInfoAsync(infoIdToDelete, CancellationToken.None);
 
         // Assert
         ok.Should().BeTrue();
-        var db = await Context.AdditionalInfos.FindAsync(1);
+        var db = await Context.AdditionalInfos.FindAsync(infoIdToDelete);
         db.Should().BeNull();
         CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_All, It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ById(1), It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ByUserId("U1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ById(infoIdToDelete.ToString()), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ByUserId(userIdToDelete.ToString()), It.IsAny<CancellationToken>()), Times.Once());
     }
 
     [Fact]
@@ -26,9 +28,10 @@ public class DeleteAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
     {
         // Arrange
         SetupCacheOperations();
+        var nonexistentId = Guid.NewGuid();
 
         // Act
-        var ok = await Repository.DeleteAdditionalInfoAsync(999, CancellationToken.None);
+        var ok = await Repository.DeleteAdditionalInfoAsync(nonexistentId, CancellationToken.None);
 
         // Assert
         ok.Should().BeFalse();

@@ -8,10 +8,11 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_GetProfileById_Should_Return200_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user123", "Иван", "Петров");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, "Иван", "Петров");
 
         // Act
-        var response = await Client.GetAsync("/profiles/user123");
+        var response = await Client.GetAsync($"/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -19,8 +20,8 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("userId", out var userId).Should().BeTrue();
-            userId.GetString()!.Should().Be("user123");
+            json.TryGetProperty("userId", out var userIdProp).Should().BeTrue();
+            Guid.Parse(userIdProp.GetString()!).Should().Be(userId);
             json.TryGetProperty("firstName", out var firstName).Should().BeTrue();
             firstName.GetString()!.Should().Be("Иван");
             json.TryGetProperty("lastName", out var lastName).Should().BeTrue();
@@ -37,7 +38,8 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_GetProfileById_Should_Return404_WhenProfileNotFound()
     {
         // Act
-        var response = await Client.GetAsync("/profiles/unknown");
+        var randomGuid = Guid.NewGuid();
+        var response = await Client.GetAsync($"/profiles/{randomGuid}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

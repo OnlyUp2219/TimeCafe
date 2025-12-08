@@ -6,11 +6,12 @@ public class CreateAdditionalInfoCommandHandlerTests
     public async Task Handle_Should_Create_Info_And_Return_Success_Result()
     {
         // Arrange
-
+        var userId = Guid.NewGuid();
+        var infoId = Guid.NewGuid();
         var repoMock = new Mock<IAdditionalInfoRepository>();
-        var command = new CreateAdditionalInfoCommand("U1", "Text info", "creator");
+        var command = new CreateAdditionalInfoCommand(userId, "Text info", "creator");
         repoMock.Setup(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((AdditionalInfo a, CancellationToken _) => { a.InfoId = 10; return a; });
+            .ReturnsAsync((AdditionalInfo a, CancellationToken _) => { a.InfoId = infoId; return a; });
         var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act
@@ -19,7 +20,7 @@ public class CreateAdditionalInfoCommandHandlerTests
         // Assert
         result.Success.Should().BeTrue();
         result.AdditionalInfo.Should().NotBeNull();
-        result.AdditionalInfo!.InfoId.Should().Be(10);
+        result.AdditionalInfo!.InfoId.Should().Be(infoId);
         result.Message.Should().Contain("успешно");
         repoMock.Verify(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Once());
     }
@@ -28,7 +29,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Pass_For_Valid_Data()
     {
         var validator = new CreateAdditionalInfoCommandValidator();
-        var cmd = new CreateAdditionalInfoCommand("U1", "text", "creator");
+        var cmd = new CreateAdditionalInfoCommand(Guid.NewGuid(), "text", "creator");
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeTrue();
     }
@@ -37,7 +38,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_When_UserId_Empty()
     {
         var validator = new CreateAdditionalInfoCommandValidator();
-        var cmd = new CreateAdditionalInfoCommand("", "text");
+        var cmd = new CreateAdditionalInfoCommand(Guid.Empty, "text");
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -47,7 +48,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     {
         var validator = new CreateAdditionalInfoCommandValidator();
         var longText = new string('x', 2001);
-        var cmd = new CreateAdditionalInfoCommand("U1", longText);
+        var cmd = new CreateAdditionalInfoCommand(Guid.NewGuid(), longText);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -62,7 +63,7 @@ public class CreateAdditionalInfoCommandHandlerTests
         var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act
-        var result = await handler.Handle(new CreateAdditionalInfoCommand("U1", "Txt"), CancellationToken.None);
+        var result = await handler.Handle(new CreateAdditionalInfoCommand(Guid.NewGuid(), "Txt"), CancellationToken.None);
 
         // Assert
         result.Success.Should().BeFalse();

@@ -7,7 +7,7 @@ public class CreateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
     {
         // Arrange
         await SeedAsync();
-        var newInfo = new AdditionalInfo { UserId = "U1", InfoText = "New cached removal" };
+        var newInfo = new AdditionalInfo { UserId = TestInfos[0].UserId, InfoText = "New cached removal" };
         SetupCacheOperations();
 
         // Act
@@ -20,6 +20,6 @@ public class CreateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
         db!.InfoText.Should().Be("New cached removal");
 
         CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_All, It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ByUserId("U1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.AdditionalInfo_ByUserId(TestInfos[0].UserId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
     }
 }

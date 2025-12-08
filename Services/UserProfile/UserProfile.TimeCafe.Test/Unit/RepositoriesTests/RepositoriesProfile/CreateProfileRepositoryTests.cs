@@ -6,7 +6,8 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
     public async Task Repository_CreateProfile_Should_AddProfileAndInvalidateCache()
     {
         // Arrange
-        var profile = new Profile { UserId = "4", FirstName = "Alice" };
+        var userId = Guid.NewGuid();
+        var profile = new Profile { UserId = userId, FirstName = "Alice" };
         SetupCacheOperations();
         CacheMock.Setup(c => c.GetAsync(CacheKeys.ProfilePagesVersion(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("1"));
@@ -17,7 +18,7 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
         // Assert
         result.Should().NotBeNull();
 
-        var dbProfile = await Context.Profiles.FindAsync("4");
+        var dbProfile = await Context.Profiles.FindAsync(userId);
         dbProfile.Should().NotBeNull()
             .And.BeEquivalentTo(profile, options => options
                 .Including(p => p.UserId)
@@ -33,9 +34,10 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
     public async Task Repository_CreateProfile_Should_ReturnCreatedProfile()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var profile = new Profile
         {
-            UserId = "5",
+            UserId = userId,
             FirstName = "Bob",
             LastName = "Smith",
             Gender = Gender.Male,
@@ -50,7 +52,7 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserId.Should().Be("5");
+        result!.UserId.Should().Be(userId);
         result.FirstName.Should().Be("Bob");
         result.LastName.Should().Be("Smith");
         result.Gender.Should().Be(Gender.Male);
@@ -60,7 +62,7 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
     public async Task Repository_CreateEmpty_Should_CreateEmptyProfileAndInvalidateCache()
     {
         // Arrange
-        var userId = "6";
+        var userId = Guid.NewGuid();
         SetupCacheOperations();
         CacheMock.Setup(c => c.GetAsync(CacheKeys.ProfilePagesVersion(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("1"));
@@ -86,14 +88,15 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
     {
         // Arrange
         await SeedProfilesAsync();
+        var firstProfile = TestProfiles[0];
 
         // Act
-        await Repository.CreateEmptyAsync("1", CancellationToken.None);
+        await Repository.CreateEmptyAsync(firstProfile.UserId, CancellationToken.None);
 
         // Assert
         var dbProfiles = await Context.Profiles.ToListAsync();
         dbProfiles.Should().HaveCount(TestProfiles.Count);
-        dbProfiles.First(p => p.UserId == "1").FirstName.Should().Be("John");
+        dbProfiles.First(p => p.UserId == firstProfile.UserId).FirstName.Should().Be("John");
 
         CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(),
@@ -104,7 +107,7 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
     public async Task Repository_CreateProfile_Should_IncrementVersionFromZero()
     {
         // Arrange
-        var profile = new Profile { UserId = "7", FirstName = "Test" };
+        var profile = new Profile { UserId = Guid.NewGuid(), FirstName = "Test" };
         SetupCacheOperations();
         CacheMock.Setup(c => c.GetAsync(CacheKeys.ProfilePagesVersion(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((byte[]?)null); // Версия отсутствует
