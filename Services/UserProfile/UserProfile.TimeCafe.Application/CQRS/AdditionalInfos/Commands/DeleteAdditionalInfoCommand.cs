@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record DeleteAdditionalInfoCommand(int InfoId) : IRequest<DeleteAdditionalInfoResult>;
+public record DeleteAdditionalInfoCommand(Guid InfoId) : IRequest<DeleteAdditionalInfoResult>;
 
 public record DeleteAdditionalInfoResult(
     bool Success,
@@ -24,7 +24,7 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
     public DeleteAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.InfoId)
-            .GreaterThan(0).WithMessage("InfoId должен быть больше 0");
+            .NotEmpty().WithMessage("InfoId не должен быть пустым");
     }
 }
 

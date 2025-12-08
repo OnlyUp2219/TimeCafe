@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record DeleteProfileCommand(string UserId) : IRequest<DeleteProfileResult>;
+public record DeleteProfileCommand(Guid UserId) : IRequest<DeleteProfileResult>;
 
 public record DeleteProfileResult(
     bool Success,
@@ -24,8 +24,8 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     public DeleteProfileCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("UserId обязателен");
+            
     }
 }
 

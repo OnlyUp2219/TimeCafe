@@ -1,7 +1,7 @@
 
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record CreateEmptyCommand(string UserId) : IRequest<CreateEmptyResult>;
+public record CreateEmptyCommand(Guid UserId) : IRequest<CreateEmptyResult>;
 
 public record CreateEmptyResult(
     bool Success,
@@ -25,8 +25,7 @@ public class CreateEmptyCommandValidator : AbstractValidator<CreateEmptyCommand>
     public CreateEmptyCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(64).WithMessage("UserId не может превышать 64 символа");
+            .NotEmpty().WithMessage("UserId обязателен");
     }
 }
 

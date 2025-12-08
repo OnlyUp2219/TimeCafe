@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfoByIdQuery(int InfoId) : IRequest<GetAdditionalInfoByIdResult>;
+public record GetAdditionalInfoByIdQuery(Guid InfoId) : IRequest<GetAdditionalInfoByIdResult>;
 
 public record GetAdditionalInfoByIdResult(
     bool Success,
@@ -25,7 +25,7 @@ public class GetAdditionalInfoByIdQueryValidator : AbstractValidator<GetAddition
     public GetAdditionalInfoByIdQueryValidator()
     {
         RuleFor(x => x.InfoId)
-            .GreaterThan(0).WithMessage("InfoId должен быть больше 0");
+            .NotEmpty().WithMessage("InfoId обязателен");
     }
 }
 

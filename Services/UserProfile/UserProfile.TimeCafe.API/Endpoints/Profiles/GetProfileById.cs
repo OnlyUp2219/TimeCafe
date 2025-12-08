@@ -8,7 +8,7 @@ public class GetProfileById : ICarterModule
             ISender sender,
             string userId) =>
         {
-            var query = new GetProfileByIdQuery(userId);
+            var query = new GetProfileByIdQuery(Guid.Parse(userId));
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.Profile));
         })

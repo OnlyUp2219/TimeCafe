@@ -8,7 +8,7 @@ public class GetAdditionalInfosByUserId : ICarterModule
             ISender sender,
             string userId) =>
         {
-            var query = new GetAdditionalInfosByUserIdQuery(userId);
+            var query = new GetAdditionalInfosByUserIdQuery(Guid.Parse(userId));
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.AdditionalInfos));
         })

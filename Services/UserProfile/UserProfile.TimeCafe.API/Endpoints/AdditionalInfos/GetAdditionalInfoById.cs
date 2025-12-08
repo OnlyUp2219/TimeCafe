@@ -4,9 +4,9 @@ public class GetAdditionalInfoById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/infos/{infoId:int}", async (
+        app.MapGet("/infos/{infoId:guid}", async (
             ISender sender,
-            int infoId) =>
+            Guid infoId) =>
         {
             var query = new GetAdditionalInfoByIdQuery(infoId);
             var result = await sender.Send(query);
