@@ -21,7 +21,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoStreamDto(stream, "image/jpeg"));
 
-        var query = new GetProfilePhotoQuery(userId);
+        var query = new GetProfilePhotoQuery(userId.ToString());
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -42,7 +42,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PhotoStreamDto?)null);
 
-        var query = new GetProfilePhotoQuery(userId);
+        var query = new GetProfilePhotoQuery(userId.ToString());
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -63,7 +63,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Storage error"));
 
-        var query = new GetProfilePhotoQuery(userId);
+        var query = new GetProfilePhotoQuery(userId.ToString());
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
@@ -80,7 +80,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
     {
         // Arrange
-        var query = new GetProfilePhotoQuery(Guid.Empty);
+        var query = new GetProfilePhotoQuery(string.Empty);
         var validator = new GetProfilePhotoQueryValidator();
 
         // Act
@@ -102,7 +102,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoStreamDto(stream, contentType));
 
-        var query = new GetProfilePhotoQuery(userId);
+        var query = new GetProfilePhotoQuery(userId.ToString());
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act

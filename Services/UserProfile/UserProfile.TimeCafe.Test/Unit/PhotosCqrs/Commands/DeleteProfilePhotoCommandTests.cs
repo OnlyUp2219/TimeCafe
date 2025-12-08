@@ -23,7 +23,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var command = new DeleteProfilePhotoCommand(userId);
+        var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
@@ -44,7 +44,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var command = new DeleteProfilePhotoCommand(userId);
+        var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
@@ -72,7 +72,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
-        var command = new DeleteProfilePhotoCommand(userId);
+        var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
@@ -97,7 +97,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Storage error"));
 
-        var command = new DeleteProfilePhotoCommand(userId);
+        var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
@@ -114,7 +114,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
     {
         // Arrange
-        var command = new DeleteProfilePhotoCommand(Guid.Empty);
+        var command = new DeleteProfilePhotoCommand(string.Empty);
         var validator = new DeleteProfilePhotoCommandValidator();
 
         // Act
@@ -129,7 +129,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdValid()
     {
         // Arrange
-        var command = new DeleteProfilePhotoCommand(Guid.NewGuid());
+        var command = new DeleteProfilePhotoCommand(Guid.NewGuid().ToString());
         var validator = new DeleteProfilePhotoCommandValidator();
 
         // Act
@@ -151,7 +151,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        var command = new DeleteProfilePhotoCommand(userId);
+        var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act

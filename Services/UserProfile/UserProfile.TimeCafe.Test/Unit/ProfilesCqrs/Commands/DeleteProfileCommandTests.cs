@@ -8,7 +8,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId);
-        var command = new DeleteProfileCommand(userId);
+        var command = new DeleteProfileCommand(userId.ToString());
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -27,7 +27,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var command = new DeleteProfileCommand(userId);
+        var command = new DeleteProfileCommand(userId.ToString());
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -48,7 +48,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         await SeedProfileAsync(userId);
         await Context.DisposeAsync();
 
-        var command = new DeleteProfileCommand(userId);
+        var command = new DeleteProfileCommand(userId.ToString());
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
@@ -65,8 +65,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var userId = Guid.Empty; // Empty GUID represents invalid user
-        var command = new DeleteProfileCommand(userId);
+        var command = new DeleteProfileCommand(string.Empty);
         var validator = new DeleteProfileCommandValidator();
 
         // Act
@@ -80,7 +79,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var command = new DeleteProfileCommand(Guid.NewGuid());
+        var command = new DeleteProfileCommand(Guid.NewGuid().ToString());
         var validator = new DeleteProfileCommandValidator();
 
         // Act
