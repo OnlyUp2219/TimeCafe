@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record DeleteProfileCommand(Guid UserId) : IRequest<DeleteProfileResult>;
+public record DeleteProfileCommand(string UserId) : IRequest<DeleteProfileResult>;
 
 public record DeleteProfileResult(
     bool Success,
@@ -24,8 +24,10 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     public DeleteProfileCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен");
-            
+            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
+
     }
 }
 
@@ -37,11 +39,12 @@ public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : I
     {
         try
         {
-            var existing = await _userRepositories.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var existing = await _userRepositories.GetProfileByIdAsync(userId, cancellationToken);
             if (existing == null)
                 return DeleteProfileResult.ProfileNotFound();
 
-            await _userRepositories.DeleteProfileAsync(request.UserId, cancellationToken);
+            await _userRepositories.DeleteProfileAsync(userId, cancellationToken);
             return DeleteProfileResult.DeleteSuccess();
         }
         catch (Exception)
