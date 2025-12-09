@@ -4,17 +4,24 @@ public record DeleteProfilePhotoCommand(string UserId) : IRequest<DeleteProfileP
 
 public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
-    public static DeleteProfilePhotoResult PhotoNotFound() => new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
-    public static DeleteProfilePhotoResult ProfileNotFound() => new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-    public static DeleteProfilePhotoResult Ok() => new(true, Message: "Фото удалено", StatusCode: 204);
-    public static DeleteProfilePhotoResult Failed() => new(false, Code: "PhotoDeleteFailed", Message: "Ошибка удаления фото", StatusCode: 500);
+    public static DeleteProfilePhotoResult PhotoNotFound() => 
+        new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
+    public static DeleteProfilePhotoResult ProfileNotFound() => 
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
+    public static DeleteProfilePhotoResult Ok() => 
+        new(true, Message: "Фото удалено", StatusCode: 204);
+    public static DeleteProfilePhotoResult Failed() => 
+        new(false, Code: "PhotoDeleteFailed", Message: "Ошибка удаления фото", StatusCode: 500);
 }
 
 public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfilePhotoCommand>
 {
     public DeleteProfilePhotoCommandValidator()
     {
-        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
     }
 }
 
@@ -27,11 +34,13 @@ public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUse
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile is null)
                 return DeleteProfilePhotoResult.ProfileNotFound();
 
-            var deleted = await _storage.DeleteAsync(request.UserId, cancellationToken);
+            var deleted = await _storage.DeleteAsync(userId, cancellationToken);
             if (!deleted)
                 return DeleteProfilePhotoResult.PhotoNotFound();
 

@@ -30,17 +30,21 @@ public class ConfirmEmailCommandValidator : AbstractValidator<ConfirmEmailComman
     public ConfirmEmailCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Пользователь не найден");
     }
 }
 
 public class ConfirmEmailCommandHandler(
-    UserManager<IdentityUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
+    UserManager<ApplicationUser> userManager) : IRequestHandler<ConfirmEmailCommand, ConfirmEmailResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
 
     public async Task<ConfirmEmailResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
+        //if (!Guid.TryParse(request.UserId, out var userGuid))
+        //    return ConfirmEmailResult.UserNotFound();
+
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)
             return ConfirmEmailResult.UserNotFound();

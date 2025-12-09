@@ -3,6 +3,8 @@ using Amazon.S3.Model;
 
 using System.Net;
 
+using UserProfile.TimeCafe.Domain.DTOs;
+
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 
 public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptions photoOptions) : IProfilePhotoStorage
@@ -11,7 +13,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
     private readonly S3Options _s3Options = s3Options;
     private readonly PhotoOptions _photoOptions = photoOptions;
 
-    public async Task<PhotoUploadDto> UploadAsync(string userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
+    public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
     {
         var key = BuildKey(userId);
         try
@@ -50,7 +52,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
         }
     }
 
-    public async Task<PhotoStreamDto?> GetAsync(string userId, CancellationToken cancellationToken)
+    public async Task<PhotoStreamDto?> GetAsync(Guid userId, CancellationToken cancellationToken)
     {
         var key = BuildKey(userId);
         try
@@ -70,7 +72,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
         }
     }
 
-    public async Task<bool> DeleteAsync(string userId, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid userId, CancellationToken cancellationToken)
     {
         var key = BuildKey(userId);
         try
@@ -88,5 +90,5 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
         }
     }
 
-    private static string BuildKey(string userId) => $"profiles/{userId}/photo";
+    private static string BuildKey(Guid userId) => $"profiles/{userId}/photo";
 }

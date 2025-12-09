@@ -37,7 +37,7 @@ public abstract class BaseCqrsTest : IDisposable
             .Returns(Task.CompletedTask);
     }
 
-    protected async Task<Profile> SeedProfileAsync(string userId, string firstName = "Test", string lastName = "User")
+    protected async Task<Profile> SeedProfileAsync(Guid userId, string firstName = "Test", string lastName = "User")
     {
         var profile = new Profile
         {
@@ -52,6 +52,12 @@ public abstract class BaseCqrsTest : IDisposable
         Context.Profiles.Add(profile);
         await Context.SaveChangesAsync();
         return profile;
+    }
+
+    // Перегрузка для совместимости со string
+    protected async Task<Profile> SeedProfileAsync(string userIdStr, string firstName = "Test", string lastName = "User")
+    {
+        return await SeedProfileAsync(Guid.Parse(userIdStr), firstName, lastName);
     }
 
     protected async Task ClearProfilesAsync()

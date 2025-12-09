@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace Auth.TimeCafe.Infrastructure.Permissions;
 
 public class PermissionHandler(IPermissionService permissionService) : AuthorizationHandler<PermissionRequirement>
@@ -6,8 +8,8 @@ public class PermissionHandler(IPermissionService permissionService) : Authoriza
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
     {
-        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (userId != null && await _permissionService.HasPermissionAsync(userId, requirement.Permission))
+        var userIdStr = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (Guid.TryParse(userIdStr, out var userId) && await _permissionService.HasPermissionAsync(userId, requirement.Permission))
         {
             context.Succeed(requirement);
         }

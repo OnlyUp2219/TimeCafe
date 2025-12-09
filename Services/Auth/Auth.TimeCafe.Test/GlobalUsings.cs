@@ -1,4 +1,5 @@
 global using Auth.TimeCafe.Domain.Contracts;
+global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Permissions;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Permissions;
@@ -23,6 +24,3 @@ global using System.Net.Http.Headers;
 global using System.Net.Http.Json;
 global using System.Text;
 global using System.Text.Json;
-global using System.Threading.Tasks;
-
-global using Xunit;

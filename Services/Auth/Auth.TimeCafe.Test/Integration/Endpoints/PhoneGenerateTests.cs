@@ -33,8 +33,8 @@ public class PhoneGenerateTests(IntegrationApiFactory factory) : BaseEndpointTes
         var (userId, accessToken) = await CreateAuthenticatedUserAsync();
 
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-        var user = await userManager.FindByIdAsync(userId);
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = await userManager.FindByIdAsync(userId.ToString());
         await userManager.DeleteAsync(user!);
 
         var dto = new { PhoneNumber = "+79123456789" };

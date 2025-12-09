@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Domain.DTOs;
+
 namespace UserProfile.TimeCafe.API.Extensions;
 
 public static class S3Extensions

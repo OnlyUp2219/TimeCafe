@@ -7,7 +7,7 @@ public class CreateProfileDtoExample : IExamplesProvider<CreateProfileDto>
     public CreateProfileDto GetExamples()
     {
         return new CreateProfileDto(
-            UserId: "user-123-abc",
+            UserId: Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479").ToString(),
             FirstName: "Иван",
             LastName: "Петров",
             Gender: Gender.Male

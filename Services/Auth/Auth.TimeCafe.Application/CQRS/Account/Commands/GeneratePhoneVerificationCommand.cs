@@ -37,7 +37,8 @@ public class GeneratePhoneVerificationCommandValidator : AbstractValidator<Gener
     public GeneratePhoneVerificationCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Пользователь не найден");
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Номер телефона не может быть пустым")
             .Matches(@"^\+\d{10,15}$").WithMessage("Неверный формат номера телефона. Используйте формат +12345678901");
@@ -45,13 +46,13 @@ public class GeneratePhoneVerificationCommandValidator : AbstractValidator<Gener
 }
 
 public class GeneratePhoneVerificationCommandHandler(
-UserManager<IdentityUser> userManager,
+UserManager<ApplicationUser> userManager,
 IConfiguration configuration,
 ISender sender,
 ISmsVerificationAttemptTracker attemptTracker
 ) : IRequestHandler<GeneratePhoneVerificationCommand, GeneratePhoneVerificationResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IConfiguration _configuration = configuration;
     private readonly ISender _sender = sender;
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;

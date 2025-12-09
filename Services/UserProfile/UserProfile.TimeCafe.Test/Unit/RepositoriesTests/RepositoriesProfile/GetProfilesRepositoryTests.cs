@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public class GetProfilesRepositoryTests : BaseRepositoryTest
@@ -54,7 +56,7 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetProfileByIdAsync("1", CancellationToken.None);
+        var result = await Repository.GetProfileByIdAsync(TestProfiles[0].UserId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull()
@@ -62,8 +64,8 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
                 .Including(p => p.UserId)
                 .Including(p => p.FirstName));
 
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById("1"), It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.SetAsync(CacheKeys.Profile_ById("1"), It.IsAny<byte[]>(),
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById(TestProfiles[0].UserId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.SetAsync(CacheKeys.Profile_ById(TestProfiles[0].UserId.ToString()), It.IsAny<byte[]>(),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -72,11 +74,11 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         // Arrange
         var profile = TestProfiles[0];
-        SetupCache(CacheKeys.Profile_ById("1"), profile);
+        SetupCache(CacheKeys.Profile_ById(profile.UserId.ToString()), profile);
         SetupCacheOperations();
 
         // Act
-        var result = await Repository.GetProfileByIdAsync("1", CancellationToken.None);
+        var result = await Repository.GetProfileByIdAsync(profile.UserId, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull()
@@ -84,7 +86,7 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
                 .Including(p => p.UserId)
                 .Including(p => p.FirstName));
 
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById("1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById(profile.UserId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Never());
     }
@@ -95,13 +97,14 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
         // Arrange
         SetupCacheNoData();
         SetupCacheOperations();
+        var nonexistentId = Guid.NewGuid();
 
         // Act
-        var result = await Repository.GetProfileByIdAsync("nonexistent", CancellationToken.None);
+        var result = await Repository.GetProfileByIdAsync(nonexistentId, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
-        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById("nonexistent"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.GetAsync(CacheKeys.Profile_ById(nonexistentId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Never());
     }

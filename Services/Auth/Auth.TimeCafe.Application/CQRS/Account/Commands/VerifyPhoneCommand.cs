@@ -45,7 +45,8 @@ public class VerifyPhoneCommandValidator : AbstractValidator<VerifyPhoneCommand>
     public VerifyPhoneCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(id => Guid.TryParse(id, out _)).WithMessage("Пользователь не найден");
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Номер телефона не может быть пустым")
             .Matches(@"^\+\d{10,15}$").WithMessage("Неверный формат номера телефона");
@@ -53,12 +54,12 @@ public class VerifyPhoneCommandValidator : AbstractValidator<VerifyPhoneCommand>
 }
 
 public class VerifyPhoneCommandHandler(
-    UserManager<IdentityUser> userManager,
+    UserManager<ApplicationUser> userManager,
     ISmsVerificationAttemptTracker attemptTracker,
     ICaptchaValidator captchaValidator
 ) : IRequestHandler<VerifyPhoneCommand, VerifyPhoneResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
     private readonly ICaptchaValidator _captchaValidator = captchaValidator;
 

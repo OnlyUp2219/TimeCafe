@@ -4,14 +4,14 @@ public class ExternalProviders : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/authenticate/login/google", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
+        app.MapGet("/authenticate/login/google", async ([FromQuery] string returnUrl, SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Google"]);
         })
-            .WithTags("ExternalProviders"); ;
-        app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<IdentityUser> signInManager) =>
+            .WithTags("ExternalProviders");
+        app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
@@ -22,9 +22,9 @@ public class ExternalProviders : ICarterModule
         app.MapGet("/authenticate/login/google/callback", async (
             [FromQuery] string returnUrl,
             HttpContext context,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<ApplicationUser> signInManager,
             IJwtService jwtService,
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             ApplicationDbContext db,
             ILogger<ExternalProviders> logger) =>
         {
@@ -61,7 +61,7 @@ public class ExternalProviders : ICarterModule
 
             if (user == null)
             {
-                user = new IdentityUser
+                user = new ApplicationUser
                 {
                     UserName = email,
                     Email = email,
@@ -122,9 +122,9 @@ public class ExternalProviders : ICarterModule
         app.MapGet("/authenticate/login/microsoft/callback", async (
             [FromQuery] string returnUrl,
             HttpContext context,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<ApplicationUser> signInManager,
             IJwtService jwtService,
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             ApplicationDbContext db,
             ILogger<ExternalProviders> logger) =>
         {
@@ -162,7 +162,7 @@ public class ExternalProviders : ICarterModule
 
             if (user == null)
             {
-                user = new IdentityUser
+                user = new ApplicationUser
                 {
                     UserName = email,
                     Email = email,

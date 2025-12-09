@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record UpdateAdditionalInfoCommand(AdditionalInfo AdditionalInfo) : IRequest<UpdateAdditionalInfoResult>;
+public record UpdateAdditionalInfoCommand(string InfoId, string UserId, string InfoText, string? CreatedBy = null) : IRequest<UpdateAdditionalInfoResult>;
 
 public record UpdateAdditionalInfoResult(
     bool Success,
@@ -24,22 +24,22 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
 {
     public UpdateAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.AdditionalInfo)
-            .NotNull().WithMessage("Дополнительная информация обязательна");
+        RuleFor(x => x.InfoId)
+            .NotEmpty().WithMessage("Информации отсутствует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Информации отсутствует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Информации отсутствует");
 
-        RuleFor(x => x.AdditionalInfo.InfoId)
-            .GreaterThan(0).WithMessage("InfoId должен быть больше 0")
-            .When(x => x.AdditionalInfo != null);
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
 
-        RuleFor(x => x.AdditionalInfo.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов")
-            .When(x => x.AdditionalInfo != null);
-
-        RuleFor(x => x.AdditionalInfo.InfoText)
+        RuleFor(x => x.InfoText)
             .NotEmpty().WithMessage("Текст информации обязателен")
-            .MaximumLength(2000).WithMessage("Текст не может превышать 2000 символов")
-            .When(x => x.AdditionalInfo != null);
+            .MaximumLength(2000).WithMessage("Текст не может превышать 2000 символов");
+
+        RuleFor(x => x.CreatedBy)
+            .MaximumLength(450).WithMessage("Создано кем - не может превышать 450 символов");
     }
 }
 
@@ -51,11 +51,24 @@ public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var existing = await _repository.GetAdditionalInfoByIdAsync(request.AdditionalInfo.InfoId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var infoId = Guid.Parse(request.InfoId);
+
+            var existing = await _repository.GetAdditionalInfoByIdAsync(infoId, cancellationToken);
             if (existing == null)
                 return UpdateAdditionalInfoResult.InfoNotFound();
 
-            var updated = await _repository.UpdateAdditionalInfoAsync(request.AdditionalInfo, cancellationToken);
+            //TODO : Mapping and updating CreatedBy
+            var additionalInfo = new AdditionalInfo
+            {
+                InfoId = infoId,
+                UserId = userId,
+                InfoText = request.InfoText,
+                CreatedAt = existing.CreatedAt,
+                CreatedBy =  request.CreatedBy,
+            };
+
+            var updated = await _repository.UpdateAdditionalInfoAsync(additionalInfo, cancellationToken);
 
             if (updated == null)
                 return UpdateAdditionalInfoResult.UpdateFailed();

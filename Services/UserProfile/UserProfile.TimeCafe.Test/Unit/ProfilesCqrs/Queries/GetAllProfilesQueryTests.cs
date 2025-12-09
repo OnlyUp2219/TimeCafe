@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Queries;
 
 public class GetAllProfilesQueryTests : BaseCqrsTest
@@ -6,9 +8,13 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
     public async Task Handler_GetAllProfiles_Should_ReturnSuccess_WhenProfilesExist()
     {
         // Arrange
-        await SeedProfileAsync("user1", "Иван", "Петров");
-        await SeedProfileAsync("user2", "Мария", "Сидорова");
-        await SeedProfileAsync("user3", "Алексей", "Смирнов");
+        var userId1 = Guid.NewGuid();
+        var userId2 = Guid.NewGuid();
+        var userId3 = Guid.NewGuid();
+
+        await SeedProfileAsync(userId1, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
+        await SeedProfileAsync(userId2, ExistingUsers.User2FirstName, ExistingUsers.User2LastName);
+        await SeedProfileAsync(userId3, ExistingUsers.User3FirstName, ExistingUsers.User3LastName);
 
         var query = new GetAllProfilesQuery();
         var handler = new GetAllProfilesQueryHandler(Repository);

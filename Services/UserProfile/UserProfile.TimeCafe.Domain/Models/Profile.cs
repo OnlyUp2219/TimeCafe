@@ -4,10 +4,10 @@ namespace UserProfile.TimeCafe.Domain.Models;
 
 public class Profile
 {
+
     [Key]
     [Required]
-    [MaxLength(450)]
-    public string UserId { get; set; } = null!;
+    public Guid UserId { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -39,8 +39,6 @@ public class Profile
 
     [MaxLength(500)]
     public string? BanReason { get; set; }
-
-    public virtual ICollection<AdditionalInfo> AdditionalInfos { get; set; } = new List<AdditionalInfo>();
 }
 
 public enum Gender : byte

@@ -8,13 +8,14 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_UpdateProfile_Should_Return200_WhenProfileExists()
     {
         // Arrange
-        await SeedProfileAsync("user456", "Мария", "Сидорова");
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
         var dto = new
         {
-            userId = "user456",
-            firstName = "Мария",
-            lastName = "Петрова",
-            middleName = "Ивановна",
+            userId = userId.ToString(),
+            firstName = TestData.ExistingUsers.User2FirstName,
+            lastName = TestData.UpdateData.UpdatedLastName2,
+            middleName = TestData.UpdateData.UpdatedMiddleName,
             accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
@@ -33,8 +34,8 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("profile", out var profile).Should().BeTrue();
-            profile.GetProperty("lastName").GetString()!.Should().Be("Петрова");
-            profile.GetProperty("middleName").GetString()!.Should().Be("Ивановна");
+            profile.GetProperty("lastName").GetString()!.Should().Be(TestData.UpdateData.UpdatedLastName2);
+            profile.GetProperty("middleName").GetString()!.Should().Be(TestData.UpdateData.UpdatedMiddleName);
         }
         catch (Exception)
         {
@@ -47,9 +48,10 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_UpdateProfile_Should_Return404_WhenProfileNotFound()
     {
         // Arrange
+        var userId = Guid.NewGuid();
         var dto = new
         {
-            userId = "nonexistent",
+            userId = userId.ToString(),
             firstName = "Test",
             lastName = "User",
             middleName = (string?)null,
@@ -86,7 +88,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         // Arrange
         var dto = new
         {
-            userId = "",
+            userId = Guid.NewGuid().ToString(),
             firstName = "",
             lastName = "",
             middleName = (string?)null,

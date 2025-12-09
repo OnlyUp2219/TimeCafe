@@ -15,7 +15,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     public async Task Endpoint_ConfirmEmail_Should_ReturnUserNotFound_WhenUserDoesNotExist()
     {
         // Arrange
-        var dto = new { UserId = "nonexistent-user-id", Token = "dummy-token" };
+        var dto = new { UserId = Guid.NewGuid().ToString(), Token = "dummy-token" };
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
@@ -42,7 +42,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("confirmed@example.com");
         var dto = new { UserId = user!.Id, Token = "dummy-token" };
 
@@ -71,7 +71,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("unconfirmed@example.com");
         var dto = new { UserId = user!.Id, Token = "!!!@@@###" };
 
@@ -100,7 +100,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("unconfirmed@example.com");
         var invalidToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("invalid-token-value"));
         var dto = new { UserId = user!.Id, Token = invalidToken };
@@ -131,7 +131,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         // Arrange
         var email = "unconfirmed@example.com";
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(email);
         var token = await GenerateConfirmationTokenAsync(email);
         var dto = new { UserId = user!.Id, Token = token };
@@ -219,7 +219,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("unconfirmed@example.com");
         var malformedToken = "invalid_base64_without_padding";
         var dto = new { UserId = user!.Id, Token = malformedToken };
@@ -251,7 +251,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         var anotherEmail = "another_user@example.com";
         var token = await GenerateConfirmationTokenAsync(anotherEmail);
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("unconfirmed@example.com");
         var dto = new { UserId = user!.Id, Token = token };
 
@@ -282,7 +282,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         var email = "unconfirmed@example.com";
         var token = await GenerateConfirmationTokenAsync(email);
         using var scope = Factory.Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(email);
         var dto = new { UserId = user!.Id, Token = token };
 

@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public class DeleteProfileRepositoryTests : BaseRepositoryTest
@@ -12,14 +14,14 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("1"));
 
         // Act
-        await Repository.DeleteProfileAsync("1", CancellationToken.None);
+        await Repository.DeleteProfileAsync(TestProfiles[0].UserId, CancellationToken.None);
 
         // Assert
-        var dbProfile = await Context.Profiles.FindAsync("1");
+        var dbProfile = await Context.Profiles.FindAsync(TestProfiles[0].UserId);
         dbProfile.Should().BeNull();
 
         CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_All, It.IsAny<CancellationToken>()), Times.Once());
-        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById("1"), It.IsAny<CancellationToken>()), Times.Once());
+        CacheMock.Verify(c => c.RemoveAsync(CacheKeys.Profile_ById(TestProfiles[0].UserId.ToString()), It.IsAny<CancellationToken>()), Times.Once());
         CacheMock.Verify(c => c.SetAsync(CacheKeys.ProfilePagesVersion(),
             It.Is<byte[]>(b => System.Text.Encoding.UTF8.GetString(b) == "2"),
             It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()), Times.Once());
@@ -32,7 +34,7 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
         SetupCacheOperations();
 
         // Act
-        await Repository.DeleteProfileAsync("nonexistent", CancellationToken.None);
+        await Repository.DeleteProfileAsync(Guid.NewGuid(), CancellationToken.None);
 
         // Assert
         CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never());
@@ -52,7 +54,7 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
         var countBefore = await Repository.GetTotalPageAsync(CancellationToken.None);
 
         // Act
-        await Repository.DeleteProfileAsync("1", CancellationToken.None);
+        await Repository.DeleteProfileAsync(TestProfiles[0].UserId, CancellationToken.None);
 
         // Assert
         var countAfter = await Repository.GetTotalPageAsync(CancellationToken.None);
@@ -69,7 +71,7 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("10"));
 
         // Act
-        await Repository.DeleteProfileAsync("2", CancellationToken.None);
+        await Repository.DeleteProfileAsync(TestProfiles[1].UserId, CancellationToken.None);
 
         // Assert
         CacheMock.Verify(c => c.SetAsync(CacheKeys.ProfilePagesVersion(),
@@ -87,12 +89,12 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
             .ReturnsAsync(System.Text.Encoding.UTF8.GetBytes("1"));
 
         // Act
-        await Repository.DeleteProfileAsync("2", CancellationToken.None);
+        await Repository.DeleteProfileAsync(TestProfiles[1].UserId, CancellationToken.None);
 
         // Assert
-        var profile1 = await Context.Profiles.FindAsync("1");
-        var profile2 = await Context.Profiles.FindAsync("2");
-        var profile3 = await Context.Profiles.FindAsync("3");
+        var profile1 = await Context.Profiles.FindAsync(TestProfiles[0].UserId);
+        var profile2 = await Context.Profiles.FindAsync(TestProfiles[1].UserId);
+        var profile3 = await Context.Profiles.FindAsync(TestProfiles[2].UserId);
 
         profile1.Should().NotBeNull();
         profile2.Should().BeNull();

@@ -8,7 +8,8 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_CreateProfile_Should_Return201_WhenValid()
     {
         // Arrange
-        var dto = new { userId = "newuser", firstName = "Анна", lastName = "Иванова", gender = (byte)Gender.Female };
+        var userId = Guid.NewGuid();
+        var dto = new { userId = userId.ToString(), firstName = TestData.TestProfiles.CreateTestFirstName, lastName = TestData.TestProfiles.CreateTestLastName, gender = (byte)Gender.Female };
 
         // Act
         var response = await Client.PostAsJsonAsync("/profiles", dto);
@@ -23,7 +24,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             message.GetString()!.Should().NotBeNullOrWhiteSpace();
             json.TryGetProperty("profile", out var profile).Should().BeTrue();
             profile.ValueKind.Should().Be(JsonValueKind.Object);
-            profile.GetProperty("userId").GetString()!.Should().Be("newuser");
+            Guid.Parse(profile.GetProperty("userId").GetString()!).Should().Be(userId);
         }
         catch (Exception)
         {
@@ -36,7 +37,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_CreateProfile_Should_Return422_WhenValidationFails()
     {
         // Arrange
-        var dto = new { userId = "", firstName = "", lastName = "", gender = (byte)Gender.NotSpecified };
+        var dto = new { userId = Guid.NewGuid().ToString(), firstName = "", lastName = "", gender = (byte)Gender.NotSpecified };
 
         // Act
         var response = await Client.PostAsJsonAsync("/profiles", dto);
@@ -51,7 +52,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             code.GetString()!.Should().Be("ValidationError");
             json.TryGetProperty("errors", out var errors).Should().BeTrue();
             errors.ValueKind.Should().Be(JsonValueKind.Array);
-            errors.GetArrayLength().Should().BeGreaterThan(0);
+            errors.GetArrayLength().Should().BeGreaterThanOrEqualTo(2);
         }
         catch (Exception)
         {

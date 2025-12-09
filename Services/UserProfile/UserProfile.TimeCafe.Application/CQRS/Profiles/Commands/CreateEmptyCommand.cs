@@ -25,8 +25,9 @@ public class CreateEmptyCommandValidator : AbstractValidator<CreateEmptyCommand>
     public CreateEmptyCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(64).WithMessage("UserId не может превышать 64 символа");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
     }
 }
 
@@ -38,11 +39,13 @@ public class CreateEmptyCommandHandler(IUserRepositories repositories) : IReques
     {
         try
         {
-            var existing = await _repositories.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+
+            var existing = await _repositories.GetProfileByIdAsync(userId, cancellationToken);
             if (existing != null)
                 return CreateEmptyResult.ProfileAlreadyExists();
 
-            await _repositories.CreateEmptyAsync(request.UserId, cancellationToken);
+            await _repositories.CreateEmptyAsync(userId, cancellationToken);
             return CreateEmptyResult.CreateSuccess();
         }
         catch (Exception)
