@@ -26,13 +26,14 @@ public static class TestData
         public static readonly string User3LastName = "Иванов";
         public static readonly Gender User3Gender = Gender.Male;
     }
-    
+
+
+
     public static class NonExistingUsers
     {
         public static readonly string UserId1 = "99999999-9999-9999-9999-999999999999";
         public static readonly string UserId2 = "88888888-8888-8888-8888-888888888888";
     }
-
     public static class InvalidIds
     {
         public static readonly string NotAGuid = "not-a-guid";
@@ -46,7 +47,7 @@ public static class TestData
         public static readonly string NewUser1Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
         public static readonly string NewUser1FirstName = "Новый";
         public static readonly string NewUser1LastName = "Пользователь";
-        
+
         public static readonly string NewUser2Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
         public static readonly string NewUser2FirstName = "Тест";
         public static readonly string NewUser2LastName = "Тестов";
@@ -71,6 +72,62 @@ public static class TestData
         public static readonly string UpdatedFirstName = "ОбновленноеИмя";
         public static readonly string UpdatedLastName = "ОбновленнаяФамилия";
         public static readonly Gender UpdatedGender = Gender.Female;
+        public static readonly string UpdatedMiddleName = "Ивановна";
+        public static readonly string UpdatedLastName2 = "Петрова";
+    }
+
+    public static class TestProfiles
+    {
+        public static readonly string TestFirstName = "Тест";
+        public static readonly string TestLastName = "Юзер";
+
+        public static readonly string CreateTestFirstName = "Анна";
+        public static readonly string CreateTestLastName = "Иванова";
+    }
+
+    public static class TestInfoTexts
+    {
+        public static readonly string NewInfo = "Новая информация";
+        public static readonly string TestInfo = "Тестовая информация";
+        public static readonly string FirstInfo = "Первая информация";
+        public static readonly string SecondInfo = "Вторая информация";
+        public static readonly string OriginalInfo = "Исходная информация";
+        public static readonly string UpdatedInfo = "Обновлённая информация";
+    }
+
+    public static class PaginationData
+    {
+        public static readonly int DefaultPageSize = 2;
+        public static readonly int FirstPage = 1;
+        public static readonly int SecondPage = 2;
+        public static readonly int InvalidPage = 0;
+        public static readonly int LargePageSize = 10;
+    }
+
+    public static class PhotoTestData
+    {
+        public static readonly string JpegContentType = "image/jpeg";
+        public static readonly string PngContentType = "image/png";
+        public static readonly string WebpContentType = "image/webp";
+        public static readonly string GifContentType = "image/gif";
+        public static readonly string BmpContentType = "image/bmp";
+        public static readonly string PdfContentType = "application/pdf";
+        public static readonly string SvgContentType = "image/svg+xml";
+
+        public static readonly string TestFileName = "test.jpg";
+        public static readonly string TestFileNamePng = "test.png";
+        public static readonly string LargeFileName = "large.jpg";
+
+        public static readonly string PhotoUrl = "https://example.com/photo.jpg";
+        public static readonly string OldPhotoUrl = "https://old-url.com/photo.jpg";
+        public static readonly string NewPhotoUrl = "https://new-url.com/photo.jpg";
+
+        public static readonly long ValidPhotoSize = 5;
+        public static readonly long SmallPhotoSize = 1024;
+        public static readonly long MaxPhotoSize = 5 * 1024 * 1024;
+
+        public static readonly byte[] TestPhotoBytes = [1, 2, 3, 4, 5];
+        public static readonly byte[] SmallPhotoBytes = [1, 2, 3];
     }
 
     public static IEnumerable<(string Id, string FirstName, string LastName, Gender Gender)> GetAllExistingUsers()

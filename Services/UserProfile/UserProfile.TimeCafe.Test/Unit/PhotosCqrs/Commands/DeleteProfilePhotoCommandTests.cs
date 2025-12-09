@@ -1,4 +1,5 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 
@@ -16,8 +17,8 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var profile = await SeedProfileAsync(userId, "Иван", "Петров");
-        profile.PhotoUrl = "https://example.com/photo.jpg";
+        var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
+        profile.PhotoUrl = PhotoTestData.PhotoUrl;
         await Context.SaveChangesAsync();
 
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
@@ -43,7 +44,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     public async Task Handler_DeletePhoto_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
         var command = new DeleteProfilePhotoCommand(userId.ToString());
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
@@ -67,7 +68,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
 
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
@@ -90,8 +91,8 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var profile = await SeedProfileAsync(userId, "Иван", "Петров");
-        profile.PhotoUrl = "https://example.com/photo.jpg";
+        var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
+        profile.PhotoUrl = PhotoTestData.PhotoUrl;
         await Context.SaveChangesAsync();
 
         _storageMock.Setup(s => s.DeleteAsync(userId, It.IsAny<CancellationToken>()))
@@ -114,7 +115,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
     {
         // Arrange
-        var command = new DeleteProfilePhotoCommand(string.Empty);
+        var command = new DeleteProfilePhotoCommand(InvalidIds.EmptyString);
         var validator = new DeleteProfilePhotoCommandValidator();
 
         // Act
@@ -144,7 +145,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var profile = await SeedProfileAsync(userId, "Иван", "Петров");
+        var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         profile.PhotoUrl = null;
         await Context.SaveChangesAsync();
 

@@ -9,8 +9,8 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
-        var dto = new { userId = userId.ToString(), infoText = "Новая информация", createdBy = (string?)null };
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
+        var dto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.NewInfo, createdBy = (string?)null };
 
         // Act
         var response = await Client.PostAsJsonAsync("/infos", dto);
@@ -25,7 +25,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
             info.TryGetProperty("infoId", out var infoId).Should().BeTrue();
             infoId.GetString().Should().NotBeNullOrEmpty();
             info.TryGetProperty("infoText", out var text).Should().BeTrue();
-            text.GetString()!.Should().Be("Новая информация");
+            text.GetString()!.Should().Be(TestData.TestInfoTexts.NewInfo);
             info.TryGetProperty("userId", out var uid).Should().BeTrue();
             uid.GetString()!.Should().Be(userId.ToString());
         }
@@ -37,7 +37,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     }
 
     [Fact]
-    public async Task Endpoint_CreateAdditionalInfo_Should_Return201_EvenWithoutProfile()
+    public async Task Endpoint_CreateAdditionalInfo_Should_Return404_WhenProfileNotFound()
     {
         // Arrange
         var nonExistentUserId = TestData.NonExistingUsers.UserId1;
@@ -45,9 +45,13 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
 
         // Act
         var response = await Client.PostAsJsonAsync("/infos", dto);
+        var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var json = JsonDocument.Parse(jsonString).RootElement;
+        json.TryGetProperty("code", out var code).Should().BeTrue();
+        code.GetString()!.Should().Be("ProfileNotFound");
     }
 
     [Fact]
@@ -55,7 +59,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
         var dto = new { userId = userId.ToString(), infoText = "", createdBy = (string?)null };
 
         // Act

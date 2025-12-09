@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
 
 public class DeleteProfileCommandTests : BaseCqrsTest
@@ -6,7 +8,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnSuccess_WhenProfileExists()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
         var command = new DeleteProfileCommand(userId.ToString());
         var handler = new DeleteProfileCommandHandler(Repository);
@@ -26,7 +28,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
         var command = new DeleteProfileCommand(userId.ToString());
         var handler = new DeleteProfileCommandHandler(Repository);
 
@@ -44,7 +46,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Handler_DeleteProfile_Should_ReturnDeleteFailed_WhenExceptionOccurs()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(ExistingUsers.User2Id);
         await SeedProfileAsync(userId);
         await Context.DisposeAsync();
 
@@ -65,7 +67,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var command = new DeleteProfileCommand(string.Empty);
+        var command = new DeleteProfileCommand(InvalidIds.EmptyString);
         var validator = new DeleteProfileCommandValidator();
 
         // Act
@@ -79,7 +81,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var command = new DeleteProfileCommand(Guid.NewGuid().ToString());
+        var command = new DeleteProfileCommand(ExistingUsers.User1Id);
         var validator = new DeleteProfileCommandValidator();
 
         // Act

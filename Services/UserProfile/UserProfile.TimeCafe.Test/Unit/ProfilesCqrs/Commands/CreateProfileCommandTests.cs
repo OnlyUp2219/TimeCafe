@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
 
 public class CreateProfileCommandTests : BaseCqrsTest
@@ -6,8 +8,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Handler_CreateProfile_Should_ReturnSuccess_WhenValidData()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
+        var userId = Guid.Parse(NewProfiles.NewUser1Id);
+        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -19,18 +21,18 @@ public class CreateProfileCommandTests : BaseCqrsTest
         result.Message.Should().Be("Профиль успешно создан");
         result.Profile.Should().NotBeNull();
         result.Profile!.UserId.Should().Be(userId);
-        result.Profile.FirstName.Should().Be("Иван");
-        result.Profile.LastName.Should().Be("Петров");
-        result.Profile.Gender.Should().Be(Gender.Male);
+        result.Profile.FirstName.Should().Be(ExistingUsers.User1FirstName);
+        result.Profile.LastName.Should().Be(ExistingUsers.User1LastName);
+        result.Profile.Gender.Should().Be(ExistingUsers.User1Gender);
     }
 
     [Fact]
     public async Task Handler_CreateProfile_Should_ReturnProfileAlreadyExists_WhenProfileExists()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
-        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
+        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -48,8 +50,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         await Context.DisposeAsync();
-        var userId = Guid.NewGuid();
-        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Male);
+        var userId = Guid.Parse(NewProfiles.NewUser2Id);
+        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -68,8 +70,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenFirstNameEmpty(string? firstName)
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var command = new CreateProfileCommand(userId, firstName ?? "", "Петров", Gender.Male);
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
+        var command = new CreateProfileCommand(userId.ToString(), firstName ?? "", ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var validator = new CreateProfileCommandValidator();
 
         // Act
@@ -83,9 +85,9 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenFieldsExceedMaxLength()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(NonExistingUsers.UserId2);
         var command = new CreateProfileCommand(
-            userId,
+            userId.ToString(),
             new string('b', 101),
             new string('c', 101),
             Gender.Male);
@@ -103,8 +105,8 @@ public class CreateProfileCommandTests : BaseCqrsTest
     public async Task Handler_CreateProfile_Should_SetPendingStatus_WhenCreated()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var command = new CreateProfileCommand(userId, "Иван", "Петров", Gender.Female);
+        var userId = Guid.Parse(NewProfiles.NewUser1Id);
+        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, Gender.Female);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act

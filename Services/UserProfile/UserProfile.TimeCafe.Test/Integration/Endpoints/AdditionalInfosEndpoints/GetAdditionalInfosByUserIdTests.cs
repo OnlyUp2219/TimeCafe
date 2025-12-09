@@ -1,6 +1,3 @@
-using FluentAssertions;
-using System.Net;
-using System.Text.Json;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
@@ -12,11 +9,11 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         // Create multiple infos
-        var createDto1 = new { userId = userId.ToString(), infoText = "Первая информация", createdBy = (string?)null };
-        var createDto2 = new { userId = userId.ToString(), infoText = "Вторая информация", createdBy = (string?)null };
+        var createDto1 = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.FirstInfo, createdBy = (string?)null };
+        var createDto2 = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.SecondInfo, createdBy = (string?)null };
 
         await Client.PostAsJsonAsync("/infos", createDto1);
         await Client.PostAsJsonAsync("/infos", createDto2);
@@ -48,7 +45,7 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         // Act
         var response = await Client.GetAsync($"/profiles/{userId}/infos");
@@ -71,20 +68,19 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
     }
 
     [Fact]
-    public async Task Endpoint_GetAdditionalInfosByUserId_Should_Return200_WithEmptyArray_WhenUserNotFound()
+    public async Task Endpoint_GetAdditionalInfosByUserId_Should_Return404_WhenProfileNotFound()
     {
         // Arrange
-        var nonExistentUserId = TestData.NonExistingUsers.UserId1;
+        var nonExistentUserId = NonExistingUsers.UserId1;
 
         // Act
         var response = await Client.GetAsync($"/profiles/{nonExistentUserId}/infos");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var json = JsonDocument.Parse(jsonString).RootElement;
-        json.ValueKind.Should().Be(JsonValueKind.Array);
-        var items = json.EnumerateArray().ToList();
-        items.Should().BeEmpty();
+        json.TryGetProperty("code", out var code).Should().BeTrue();
+        code.GetString()!.Should().Be("ProfileNotFound");
     }
 }

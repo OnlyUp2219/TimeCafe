@@ -22,8 +22,8 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             json.TryGetProperty("message", out var message).Should().BeTrue();
             message.GetString()!.Should().Contain("удалён");
 
-            await SeedProfileAsync(userId, TestData.ExistingUsers.User3FirstName, 
-                                 TestData.ExistingUsers.User3LastName, 
+            await SeedProfileAsync(userId, TestData.ExistingUsers.User3FirstName,
+                                 TestData.ExistingUsers.User3LastName,
                                  TestData.ExistingUsers.User3Gender);
         }
         catch (Exception)

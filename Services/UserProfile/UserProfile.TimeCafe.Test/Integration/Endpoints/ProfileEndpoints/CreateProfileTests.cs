@@ -9,7 +9,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var dto = new { userId = userId.ToString(), firstName = "Анна", lastName = "Иванова", gender = (byte)Gender.Female };
+        var dto = new { userId = userId.ToString(), firstName = TestData.TestProfiles.CreateTestFirstName, lastName = TestData.TestProfiles.CreateTestLastName, gender = (byte)Gender.Female };
 
         // Act
         var response = await Client.PostAsJsonAsync("/profiles", dto);
