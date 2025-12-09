@@ -24,9 +24,9 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
     public DeleteAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.InfoId)
-            .NotEmpty().WithMessage("Идентификатор информации не указан")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор информации не указан")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор информации");
+            .NotEmpty().WithMessage("Информации отсутствует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Информации отсутствует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Информации отсутствует");
     }
 }
 

@@ -15,9 +15,13 @@ public record UploadProfilePhotoResult(
     long? Size = null,
     string? ContentType = null) : ICqrsResultV2
 {
-    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => new(true, Key: key, Url: url, Size: size, ContentType: contentType, StatusCode: 201, Message: "Фото загружено");
-    public static UploadProfilePhotoResult Failed() => new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
-    public static UploadProfilePhotoResult ProfileNotFound() => new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
+    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => 
+        new(true, Key: key, Url: url, Size: size, ContentType: contentType, 
+            StatusCode: 201, Message: "Фото загружено");
+    public static UploadProfilePhotoResult Failed() => 
+        new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
+    public static UploadProfilePhotoResult ProfileNotFound() => 
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
 public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
@@ -26,12 +30,14 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     {
         var opts = photoOptions.Value;
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
             .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
+
         RuleFor(x => x.Size)
             .GreaterThan(0)
             .LessThanOrEqualTo(opts.MaxSizeBytes)

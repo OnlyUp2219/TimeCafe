@@ -24,9 +24,9 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     public DeleteProfileCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
 
     }
 }
@@ -40,6 +40,7 @@ public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : I
         try
         {
             var userId = Guid.Parse(request.UserId);
+
             var existing = await _userRepositories.GetProfileByIdAsync(userId, cancellationToken);
             if (existing == null)
                 return DeleteProfileResult.ProfileNotFound();

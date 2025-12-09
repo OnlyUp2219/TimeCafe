@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record CreateAdditionalInfoCommand(Guid UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
+public record CreateAdditionalInfoCommand(string UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
 
 public record CreateAdditionalInfoResult(
     bool Success,
@@ -25,7 +25,9 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     public CreateAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.InfoText)
             .NotEmpty().WithMessage("Текст информации обязателен")
@@ -46,13 +48,15 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile == null)
                 return CreateAdditionalInfoResult.ProfileNotFound();
 
             var info = new AdditionalInfo
             {
-                UserId = request.UserId,
+                UserId = userId,
                 InfoText = request.InfoText,
                 CreatedBy = request.CreatedBy,
                 CreatedAt = DateTime.UtcNow
