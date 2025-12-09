@@ -10,10 +10,13 @@ public record GetProfilePhotoResult(bool Success,
     Stream? Stream = null,
     string? ContentType = null) : ICqrsResultV2
 {
-    public static GetProfilePhotoResult NotFound() => new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
-    public static GetProfilePhotoResult Ok(Stream stream, string contentType) => new(true, StatusCode: 200,
+    public static GetProfilePhotoResult NotFound() => 
+        new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
+    public static GetProfilePhotoResult Ok(Stream stream, string contentType) => 
+        new(true, StatusCode: 200,
         Stream: stream, ContentType: contentType);
-    public static GetProfilePhotoResult Failed() => new(false, Code: "PhotoGetFailed", Message: "Ошибка получения фото", StatusCode: 500);
+    public static GetProfilePhotoResult Failed() => 
+        new(false, Code: "PhotoGetFailed", Message: "Ошибка получения фото", StatusCode: 500);
 }
 
 public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQuery>
@@ -21,9 +24,9 @@ public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQu
     public GetProfilePhotoQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Идентификатор пользователя не указан")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Идентификатор пользователя не указан")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный идентификатор пользователя");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
     }
 }
 
@@ -35,9 +38,11 @@ public class GetProfilePhotoQueryHandler(IProfilePhotoStorage storage) : IReques
         try
         {
             var userId = Guid.Parse(request.UserId);
+
             var data = await _storage.GetAsync(userId, cancellationToken);
             if (data is null)
                 return GetProfilePhotoResult.NotFound();
+
             return GetProfilePhotoResult.Ok(data.Stream, data.ContentType);
         }
         catch (Exception)
