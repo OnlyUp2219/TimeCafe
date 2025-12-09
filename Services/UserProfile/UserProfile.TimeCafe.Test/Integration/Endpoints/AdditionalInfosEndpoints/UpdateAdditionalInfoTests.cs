@@ -1,6 +1,3 @@
-using FluentAssertions;
-using System.Net;
-using System.Text.Json;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
@@ -12,17 +9,17 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         // Create info first
-        var createDto = new { userId = userId.ToString(), infoText = "Исходная информация", createdBy = (string?)null };
+        var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.OriginalInfo, createdBy = (string?)null };
         var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
         createResponse.EnsureSuccessStatusCode();
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
 
         // Update info
-        var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = "Обновлённая информация", createdBy = (string?)null };
+        var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = TestData.TestInfoTexts.UpdatedInfo, createdBy = (string?)null };
 
         // Act
         var response = await Client.PutAsJsonAsync("/infos", updateDto);
@@ -35,7 +32,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("info", out var info).Should().BeTrue();
             info.TryGetProperty("infoText", out var text).Should().BeTrue();
-            text.GetString()!.Should().Be("Обновлённая информация");
+            text.GetString()!.Should().Be(TestData.TestInfoTexts.UpdatedInfo);
         }
         catch (Exception)
         {
@@ -67,9 +64,9 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
-        var createDto = new { userId = userId.ToString(), infoText = "Исходная информация", createdBy = (string?)null };
+        var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.OriginalInfo, createdBy = (string?)null };
         var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();

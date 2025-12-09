@@ -1,7 +1,3 @@
-using FluentAssertions;
-using System.Net;
-using System.Text.Json;
-using UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
@@ -14,8 +10,8 @@ public class GetAllProfilesTests(IntegrationApiFactory factory) : BaseEndpointTe
         // Arrange
         var userId1 = Guid.NewGuid();
         var userId2 = Guid.NewGuid();
-        await SeedProfileAsync(userId1, "Иван", "Петров");
-        await SeedProfileAsync(userId2, "Мария", "Сидорова");
+        await SeedProfileAsync(userId1, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
+        await SeedProfileAsync(userId2, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
 
         // Act
         var response = await Client.GetAsync("/profiles");

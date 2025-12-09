@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Queries;
 
 public class GetProfileByIdQueryTests : BaseCqrsTest
@@ -7,7 +9,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         var query = new GetProfileByIdQuery(userId.ToString());
         var handler = new GetProfileByIdQueryHandler(Repository);
 
@@ -19,8 +21,8 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         result.Message.Should().Be("Профиль найден");
         result.Profile.Should().NotBeNull();
         result.Profile!.UserId.Should().Be(userId);
-        result.Profile.FirstName.Should().Be("Иван");
-        result.Profile.LastName.Should().Be("Петров");
+        result.Profile.FirstName.Should().Be(ExistingUsers.User1FirstName);
+        result.Profile.LastName.Should().Be(ExistingUsers.User1LastName);
     }
 
     [Fact]
@@ -65,7 +67,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(string.Empty);
+        var query = new GetProfileByIdQuery(InvalidIds.EmptyString);
         var validator = new GetProfileByIdQueryValidator();
 
         // Act
@@ -79,7 +81,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(Guid.NewGuid().ToString());
+        var query = new GetProfileByIdQuery(ExistingUsers.User1Id);
         var validator = new GetProfileByIdQueryValidator();
 
         // Act

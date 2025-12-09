@@ -9,8 +9,8 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Тест", "Юзер");
-        var createDto = new { userId = userId.ToString(), infoText = "Тестовая информация", createdBy = (string?)null };
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
+        var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.TestInfo, createdBy = (string?)null };
         var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
         createResponse.EnsureSuccessStatusCode();
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
@@ -28,7 +28,7 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
             json.TryGetProperty("infoId", out var id).Should().BeTrue();
             id.GetString()!.Should().Be(infoId);
             json.TryGetProperty("infoText", out var text).Should().BeTrue();
-            text.GetString()!.Should().Be("Тестовая информация");
+            text.GetString()!.Should().Be(TestData.TestInfoTexts.TestInfo);
         }
         catch (Exception)
         {

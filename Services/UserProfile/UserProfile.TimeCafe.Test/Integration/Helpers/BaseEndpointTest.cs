@@ -1,5 +1,4 @@
 using Amazon.S3;
-using Amazon.S3.Model;
 
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 

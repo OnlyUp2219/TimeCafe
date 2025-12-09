@@ -67,7 +67,7 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         // Assert
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity); 
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
         }
         catch (Exception)
         {

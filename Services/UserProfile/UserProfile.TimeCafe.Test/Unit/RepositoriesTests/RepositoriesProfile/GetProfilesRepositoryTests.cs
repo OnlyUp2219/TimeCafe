@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public class GetProfilesRepositoryTests : BaseRepositoryTest

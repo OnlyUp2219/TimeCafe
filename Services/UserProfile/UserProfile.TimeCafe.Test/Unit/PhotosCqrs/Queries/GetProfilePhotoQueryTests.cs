@@ -1,5 +1,6 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 using UserProfile.TimeCafe.Domain.DTOs;
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Queries;
 
@@ -17,9 +18,9 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var stream = new MemoryStream([1, 2, 3, 4, 5]);
+        var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PhotoStreamDto(stream, "image/jpeg"));
+            .ReturnsAsync(new PhotoStreamDto(stream, PhotoTestData.JpegContentType));
 
         var query = new GetProfilePhotoQuery(userId.ToString());
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
@@ -31,14 +32,14 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         result.Success.Should().BeTrue();
         result.StatusCode.Should().Be(200);
         result.Stream.Should().NotBeNull();
-        result.ContentType.Should().Be("image/jpeg");
+        result.ContentType.Should().Be(PhotoTestData.JpegContentType);
     }
 
     [Fact]
     public async Task Handler_GetPhoto_Should_ReturnNotFound_WhenPhotoDoesNotExist()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PhotoStreamDto?)null);
 
@@ -80,7 +81,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
     {
         // Arrange
-        var query = new GetProfilePhotoQuery(string.Empty);
+        var query = new GetProfilePhotoQuery(InvalidIds.EmptyString);
         var validator = new GetProfilePhotoQueryValidator();
 
         // Act
@@ -98,7 +99,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var stream = new MemoryStream([1, 2, 3]);
+        var stream = new MemoryStream(PhotoTestData.SmallPhotoBytes);
         _storageMock.Setup(s => s.GetAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoStreamDto(stream, contentType));
 

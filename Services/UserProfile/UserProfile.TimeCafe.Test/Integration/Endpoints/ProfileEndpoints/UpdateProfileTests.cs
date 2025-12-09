@@ -9,13 +9,13 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Мария", "Сидорова");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
         var dto = new
         {
             userId = userId.ToString(),
-            firstName = "Мария",
-            lastName = "Петрова",
-            middleName = "Ивановна",
+            firstName = TestData.ExistingUsers.User2FirstName,
+            lastName = TestData.UpdateData.UpdatedLastName2,
+            middleName = TestData.UpdateData.UpdatedMiddleName,
             accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
@@ -34,8 +34,8 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("profile", out var profile).Should().BeTrue();
-            profile.GetProperty("lastName").GetString()!.Should().Be("Петрова");
-            profile.GetProperty("middleName").GetString()!.Should().Be("Ивановна");
+            profile.GetProperty("lastName").GetString()!.Should().Be(TestData.UpdateData.UpdatedLastName2);
+            profile.GetProperty("middleName").GetString()!.Should().Be(TestData.UpdateData.UpdatedMiddleName);
         }
         catch (Exception)
         {

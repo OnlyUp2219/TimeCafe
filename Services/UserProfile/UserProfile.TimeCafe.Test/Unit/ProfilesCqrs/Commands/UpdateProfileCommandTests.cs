@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
 
 public class UpdateProfileCommandTests : BaseCqrsTest
@@ -6,13 +8,13 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Handler_UpdateProfile_Should_ReturnSuccess_WhenProfileExists()
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        var userId = Guid.Parse(ExistingUsers.User1Id);
+        await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         var updatedProfile = new Profile
         {
             UserId = userId,
-            FirstName = "Александр",
-            LastName = "Сидоров",
+            FirstName = UpdateData.UpdatedFirstName,
+            LastName = UpdateData.UpdatedLastName,
             Gender = Gender.Male,
             ProfileStatus = ProfileStatus.Completed
         };
@@ -26,20 +28,20 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         result.Success.Should().BeTrue();
         result.Message.Should().Be("Профиль успешно обновлён");
         result.Profile.Should().NotBeNull();
-        result.Profile!.FirstName.Should().Be("Александр");
-        result.Profile.LastName.Should().Be("Сидоров");
+        result.Profile!.FirstName.Should().Be(UpdateData.UpdatedFirstName);
+        result.Profile.LastName.Should().Be(UpdateData.UpdatedLastName);
     }
 
     [Fact]
     public async Task Handler_UpdateProfile_Should_ReturnProfileNotFound_WhenProfileDoesNotExist()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
         var profile = new Profile
         {
             UserId = userId,
-            FirstName = "Test",
-            LastName = "User"
+            FirstName = TestProfiles.TestFirstName,
+            LastName = TestProfiles.TestLastName
         };
         var command = new UpdateProfileCommand(profile);
         var handler = new UpdateProfileCommandHandler(Repository);
@@ -58,11 +60,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Handler_UpdateProfile_Should_ReturnUpdateFailed_WhenExceptionOccurs()
     {
         // Arrange
-        var userId = Guid.NewGuid();
+        var userId = Guid.Parse(ExistingUsers.User2Id);
         await SeedProfileAsync(userId);
         await Context.DisposeAsync();
 
-        var profile = new Profile { UserId = userId, FirstName = "Test", LastName = "User" };
+        var profile = new Profile { UserId = userId, FirstName = TestProfiles.TestFirstName, LastName = TestProfiles.TestLastName };
         var command = new UpdateProfileCommand(profile);
         var handler = new UpdateProfileCommandHandler(Repository);
 
@@ -94,8 +96,8 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenFirstNameEmpty(string? firstName)
     {
         // Arrange
-        var userId = Guid.NewGuid();
-        var profile = new Profile { UserId = userId, FirstName = firstName ?? "", LastName = "User" };
+        var userId = Guid.Parse(NonExistingUsers.UserId1);
+        var profile = new Profile { UserId = userId, FirstName = firstName ?? "", LastName = TestProfiles.TestLastName };
         var command = new UpdateProfileCommand(profile);
         var validator = new UpdateProfileCommandValidator();
 
@@ -112,7 +114,7 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         // Arrange
         var profile = new Profile
         {
-            UserId = Guid.NewGuid(),
+            UserId = Guid.Parse(NonExistingUsers.UserId2),
             FirstName = new string('b', 101),
             LastName = new string('c', 101)
         };
@@ -124,6 +126,6 @@ public class UpdateProfileCommandTests : BaseCqrsTest
 
         // Assert
         result.IsValid.Should().BeFalse();
-        result.Errors.Count.Should().Be(2); 
+        result.Errors.Count.Should().Be(2);
     }
 }

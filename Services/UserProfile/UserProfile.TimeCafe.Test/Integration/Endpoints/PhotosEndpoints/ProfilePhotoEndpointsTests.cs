@@ -1,4 +1,5 @@
 using Amazon.S3;
+
 using Microsoft.Extensions.Options;
 
 using UserProfile.TimeCafe.Domain.DTOs;
@@ -13,12 +14,12 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
+        content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
         var response = await Client.PostAsync($"/S3/image/{userId}", content);
@@ -34,7 +35,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
             json.TryGetProperty("url", out var url).Should().BeTrue();
             url.GetString()!.Should().NotBeNullOrWhiteSpace();
             json.TryGetProperty("contentType", out var ct).Should().BeTrue();
-            ct.GetString()!.Should().Be("image/jpeg");
+            ct.GetString()!.Should().Be(TestData.PhotoTestData.JpegContentType);
         }
         catch (Exception)
         {
@@ -48,13 +49,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange: создаём профиль и загружаем файл (реальный вызов к S3)
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         using var content = new MultipartFormDataContent();
         var originalData = LoadTestImage();
         var fileContent = new ByteArrayContent(originalData);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-        content.Add(fileContent, "file", "test.png");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.PngContentType);
+        content.Add(fileContent, "file", TestData.PhotoTestData.TestFileNamePng);
 
         var uploadResponse = await Client.PostAsync($"/S3/image/{userId}", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -71,7 +72,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
 
         // Assert: статус OK, корректный content-type и непустое тело
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-        getResponse.Content.Headers.ContentType!.MediaType.Should().Be("image/png");
+        getResponse.Content.Headers.ContentType!.MediaType.Should().Be(TestData.PhotoTestData.PngContentType);
         var returnedBytes = await getResponse.Content.ReadAsByteArrayAsync();
         returnedBytes.Should().NotBeNull();
         returnedBytes.Length.Should().BeGreaterThan(0);
@@ -85,8 +86,8 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         var invalidUserId = Guid.NewGuid();
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
+        content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
         var response = await Client.PostAsync($"/S3/image/{invalidUserId}", content);
@@ -112,7 +113,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
         using var content = new MultipartFormDataContent();
 
         // Act
@@ -139,7 +140,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
@@ -170,13 +171,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         using var content = new MultipartFormDataContent();
         var largeFile = new byte[6 * 1024 * 1024]; // 6 MB
         var fileContent = new ByteArrayContent(largeFile);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/png");
-        content.Add(fileContent, "file", "large.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.PngContentType);
+        content.Add(fileContent, "file", TestData.PhotoTestData.LargeFileName);
 
         // Act
         var response = await Client.PostAsync($"/S3/image/{userId}", content);
@@ -213,13 +214,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         // First upload a photo
         using var uploadContent = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        uploadContent.Add(fileContent, "file", "test.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
+        uploadContent.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
         await Client.PostAsync($"/S3/image/{userId}", uploadContent);
 
         // Act - Delete the photo
@@ -257,12 +258,12 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        content.Add(fileContent, "file", "test.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
+        content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
         var uploadResponse = await Client.PostAsync($"/S3/image/{userId}", content);
@@ -285,13 +286,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Иван", "Петров");
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User1FirstName, TestData.ExistingUsers.User1LastName);
 
         // Upload photo first
         using var uploadContent = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
-        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-        uploadContent.Add(fileContent, "file", "test.jpg");
+        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
+        uploadContent.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
         await Client.PostAsync($"/S3/image/{userId}", uploadContent);
 
         // Act - Delete photo
@@ -317,7 +318,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, "Test", "User");
+        await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
