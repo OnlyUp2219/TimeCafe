@@ -8,14 +8,7 @@ public class UpdateAdditionalInfo : ICarterModule
             ISender sender,
             [FromBody] UpdateAdditionalInfoDto dto) =>
         {
-            var info = new AdditionalInfo
-            {
-                InfoId = dto.InfoId,
-                UserId = dto.UserId,
-                InfoText = dto.InfoText,
-                CreatedBy = dto.CreatedBy
-            };
-            var command = new UpdateAdditionalInfoCommand(info);
+            var command = new UpdateAdditionalInfoCommand(dto.InfoId, dto.UserId, dto.InfoText, dto.CreatedBy);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, info = r.AdditionalInfo }));
         })
