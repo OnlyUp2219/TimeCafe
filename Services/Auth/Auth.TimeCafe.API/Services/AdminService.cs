@@ -1,8 +1,8 @@
 namespace Auth.TimeCafe.API.Services;
 
-public class AdminService(UserManager<IdentityUser> userManager, IUserRoleService roleService)
+public class AdminService(UserManager<ApplicationUser> userManager, IUserRoleService roleService)
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IUserRoleService _roleService = roleService;
 
     public async Task<(bool Success, IEnumerable<IdentityError> Errors)> CreateAdminAsync(string email, string password)
@@ -10,7 +10,7 @@ public class AdminService(UserManager<IdentityUser> userManager, IUserRoleServic
         var user = await _userManager.FindByEmailAsync(email);
         if (user == null)
         {
-            user = new IdentityUser
+            user = new ApplicationUser
             {
                 UserName = email,
                 Email = email,

@@ -3,8 +3,8 @@ namespace Auth.TimeCafe.Domain.Contracts;
 public interface IUserRoleService
 {
     Task EnsureRolesCreatedAsync();
-    Task AssignRoleAsync(IdentityUser user, string role);
-    Task<bool> IsUserInRoleAsync(IdentityUser user, string role);
-    Task<IList<string>> GetUserRolesAsync(IdentityUser user);
-    Task<IdentityUser?> FindUserByIdAsync(string userId);
+    Task AssignRoleAsync(ApplicationUser user, string role);
+    Task<bool> IsUserInRoleAsync(ApplicationUser user, string role);
+    Task<IList<string>> GetUserRolesAsync(ApplicationUser user);
+    Task<ApplicationUser?> FindUserByIdAsync(Guid userId);
 }

@@ -14,7 +14,7 @@ public class PermissionService(IUserRoleService userRoleService) : IPermissionSe
         }
     };
 
-    public async Task<bool> HasPermissionAsync(string userId, Permission permission)
+    public async Task<bool> HasPermissionAsync(Guid userId, Permission permission)
     {
         var user = await _userRoleService.FindUserByIdAsync(userId);
         if (user == null) return false;

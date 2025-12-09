@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Domain.DTOs;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
 public record UploadProfilePhotoCommand(string UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
@@ -13,9 +15,13 @@ public record UploadProfilePhotoResult(
     long? Size = null,
     string? ContentType = null) : ICqrsResultV2
 {
-    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => new(true, Key: key, Url: url, Size: size, ContentType: contentType, StatusCode: 201, Message: "Фото загружено");
-    public static UploadProfilePhotoResult Failed() => new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
-    public static UploadProfilePhotoResult ProfileNotFound() => new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
+    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => 
+        new(true, Key: key, Url: url, Size: size, ContentType: contentType, 
+            StatusCode: 201, Message: "Фото загружено");
+    public static UploadProfilePhotoResult Failed() => 
+        new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
+    public static UploadProfilePhotoResult ProfileNotFound() => 
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
 public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
@@ -23,10 +29,15 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
     {
         var opts = photoOptions.Value;
-        RuleFor(x => x.UserId).NotEmpty().MaximumLength(450);
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
             .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
+
         RuleFor(x => x.Size)
             .GreaterThan(0)
             .LessThanOrEqualTo(opts.MaxSizeBytes)
@@ -49,7 +60,8 @@ public class UploadProfilePhotoCommandHandler(
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
             if (profile is null)
                 return UploadProfilePhotoResult.ProfileNotFound();
 
@@ -83,7 +95,7 @@ public class UploadProfilePhotoCommandHandler(
 
                 moderationStream.Position = 0;
 
-                var result = await _storage.UploadAsync(request.UserId, moderationStream, request.ContentType, request.FileName, cancellationToken);
+                var result = await _storage.UploadAsync(userId, moderationStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
                     return UploadProfilePhotoResult.Failed();

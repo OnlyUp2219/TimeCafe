@@ -15,6 +15,9 @@ public record CreateAdditionalInfoResult(
 
     public static CreateAdditionalInfoResult CreateSuccess(AdditionalInfo info) =>
         new(true, Message: "Дополнительная информация успешно создана", StatusCode: 201, AdditionalInfo: info);
+
+    public static CreateAdditionalInfoResult ProfileNotFound() =>
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
 public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAdditionalInfoCommand>
@@ -22,8 +25,9 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     public CreateAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.InfoText)
             .NotEmpty().WithMessage("Текст информации обязателен")
@@ -35,17 +39,24 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     }
 }
 
-public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : IRequestHandler<CreateAdditionalInfoCommand, CreateAdditionalInfoResult>
+public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository, IUserRepositories userRepository) : IRequestHandler<CreateAdditionalInfoCommand, CreateAdditionalInfoResult>
 {
     private readonly IAdditionalInfoRepository _repository = repository;
+    private readonly IUserRepositories _userRepository = userRepository;
 
     public async Task<CreateAdditionalInfoResult> Handle(CreateAdditionalInfoCommand request, CancellationToken cancellationToken)
     {
         try
         {
+            var userId = Guid.Parse(request.UserId);
+
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            if (profile == null)
+                return CreateAdditionalInfoResult.ProfileNotFound();
+
             var info = new AdditionalInfo
             {
-                UserId = request.UserId,
+                UserId = userId,
                 InfoText = request.InfoText,
                 CreatedBy = request.CreatedBy,
                 CreatedAt = DateTime.UtcNow

@@ -1,3 +1,5 @@
+using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
+
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Queries;
 
 public class GetTotalPagesQueryTests : BaseCqrsTest
@@ -8,7 +10,7 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         // Arrange
         for (int i = 1; i <= 42; i++)
         {
-            await SeedProfileAsync($"user{i}", $"FirstName{i}", $"LastName{i}");
+            await SeedProfileAsync(Guid.NewGuid(), $"FirstName{i}", $"LastName{i}");
         }
 
         var query = new GetTotalPagesQuery();

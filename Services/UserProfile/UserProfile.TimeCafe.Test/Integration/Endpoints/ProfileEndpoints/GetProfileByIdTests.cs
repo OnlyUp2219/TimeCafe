@@ -7,11 +7,11 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     [Fact]
     public async Task Endpoint_GetProfileById_Should_Return200_WhenProfileExists()
     {
-        // Arrange
-        await SeedProfileAsync("user123", "Иван", "Петров");
+        // Arrange - данные уже загружены в InitializeAsync
+        var userId = TestData.ExistingUsers.User1Id;
 
         // Act
-        var response = await Client.GetAsync("/profiles/user123");
+        var response = await Client.GetAsync($"/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -19,12 +19,12 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("userId", out var userId).Should().BeTrue();
-            userId.GetString()!.Should().Be("user123");
+            json.TryGetProperty("userId", out var userIdProp).Should().BeTrue();
+            userIdProp.GetString()!.Should().Be(userId);
             json.TryGetProperty("firstName", out var firstName).Should().BeTrue();
-            firstName.GetString()!.Should().Be("Иван");
+            firstName.GetString()!.Should().Be(TestData.ExistingUsers.User1FirstName);
             json.TryGetProperty("lastName", out var lastName).Should().BeTrue();
-            lastName.GetString()!.Should().Be("Петров");
+            lastName.GetString()!.Should().Be(TestData.ExistingUsers.User1LastName);
         }
         catch (Exception)
         {
@@ -36,8 +36,11 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     [Fact]
     public async Task Endpoint_GetProfileById_Should_Return404_WhenProfileNotFound()
     {
+        // Arrange
+        var userId = TestData.NonExistingUsers.UserId1;
+
         // Act
-        var response = await Client.GetAsync("/profiles/unknown");
+        var response = await Client.GetAsync($"/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -51,6 +54,28 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         catch (Exception)
         {
             Console.WriteLine($"[Endpoint_GetProfileById_Should_Return404_WhenProfileNotFound] Response: {jsonString}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_GetProfileById_Should_Return422_WhenInvalidGuid()
+    {
+        // Arrange
+        var invalidId = TestData.InvalidIds.NotAGuid;
+
+        // Act
+        var response = await Client.GetAsync($"/profiles/{invalidId}");
+        var jsonString = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_GetProfileById_Should_Return400_WhenInvalidGuid] Response: {jsonString}");
             throw;
         }
     }

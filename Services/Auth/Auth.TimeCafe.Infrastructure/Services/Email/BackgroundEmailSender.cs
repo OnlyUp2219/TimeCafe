@@ -1,11 +1,11 @@
 namespace Auth.TimeCafe.Infrastructure.Services.Email;
 
-public sealed class BackgroundEmailSender(IEmailSender<IdentityUser> innerSender, ILogger<BackgroundEmailSender> logger) : IEmailSender<IdentityUser>
+public sealed class BackgroundEmailSender(IEmailSender<ApplicationUser> innerSender, ILogger<BackgroundEmailSender> logger) : IEmailSender<ApplicationUser>
 {
-    private readonly IEmailSender<IdentityUser> _innerSender = innerSender;
+    private readonly IEmailSender<ApplicationUser> _innerSender = innerSender;
     private readonly ILogger<BackgroundEmailSender> _logger = logger;
 
-    public Task SendConfirmationLinkAsync(IdentityUser user, string email, string confirmationLink)
+    public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
         _ = Task.Run(async () =>
         {
@@ -23,7 +23,7 @@ public sealed class BackgroundEmailSender(IEmailSender<IdentityUser> innerSender
         return Task.CompletedTask;
     }
 
-    public Task SendPasswordResetLinkAsync(IdentityUser user, string email, string resetLink)
+    public Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
     {
         _ = Task.Run(async () =>
         {
@@ -41,7 +41,7 @@ public sealed class BackgroundEmailSender(IEmailSender<IdentityUser> innerSender
         return Task.CompletedTask;
     }
 
-    public Task SendPasswordResetCodeAsync(IdentityUser user, string email, string resetCode)
+    public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
     {
         _ = Task.Run(async () =>
         {

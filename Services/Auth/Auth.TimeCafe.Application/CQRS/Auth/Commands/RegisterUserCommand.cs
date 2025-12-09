@@ -34,17 +34,17 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 }
 
 public class RegisterUserCommandHandler(
-    UserManager<IdentityUser> userManager,
-    IEmailSender<IdentityUser> emailSender,
+    UserManager<ApplicationUser> userManager,
+    IEmailSender<ApplicationUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
-    private readonly UserManager<IdentityUser> _userManager = userManager;
-    private readonly IEmailSender<IdentityUser> _emailSender = emailSender;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
 
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-        var user = new IdentityUser
+        var user = new ApplicationUser
         {
             UserName = request.Username,
             Email = request.Email,

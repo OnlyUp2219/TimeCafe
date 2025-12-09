@@ -11,13 +11,14 @@ public class TestPhotoProfile : ICarterModule
             IProfilePhotoStorage photoStorage,
             CancellationToken ct) =>
         {
-            var profile = await userRepo.GetProfileByIdAsync(userId, ct);
+            var guidUserId = Guid.Parse(userId);
+            var profile = await userRepo.GetProfileByIdAsync(guidUserId, ct);
 
             if (profile is null)
             {
                 profile = new Profile
                 {
-                    UserId = userId,
+                    UserId = guidUserId,
                     FirstName = "Test",
                     LastName = "User",
                     Gender = Gender.NotSpecified,
@@ -45,7 +46,7 @@ public class TestPhotoProfile : ICarterModule
                 });
             }
 
-            var photoDto = await photoStorage.GetAsync(userId, ct);
+            var photoDto = await photoStorage.GetAsync(guidUserId, ct);
 
             if (photoDto is null)
             {

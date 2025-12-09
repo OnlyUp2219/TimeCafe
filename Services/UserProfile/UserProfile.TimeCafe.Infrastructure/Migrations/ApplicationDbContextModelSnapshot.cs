@@ -24,11 +24,9 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
 
             modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.AdditionalInfo", b =>
                 {
-                    b.Property<int>("InfoId")
+                    b.Property<Guid>("InfoId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("InfoId"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -42,10 +40,8 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("InfoId");
 
@@ -56,9 +52,9 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
 
             modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.Profile", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AccessCardNumber")
                         .HasMaxLength(50)
@@ -106,15 +102,10 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
             modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.AdditionalInfo", b =>
                 {
                     b.HasOne("UserProfile.TimeCafe.Domain.Models.Profile", null)
-                        .WithMany("AdditionalInfos")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.Profile", b =>
-                {
-                    b.Navigation("AdditionalInfos");
                 });
 #pragma warning restore 612, 618
         }

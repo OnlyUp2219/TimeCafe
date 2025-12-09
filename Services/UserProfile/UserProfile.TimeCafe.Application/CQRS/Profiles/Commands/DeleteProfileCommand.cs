@@ -24,8 +24,10 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     public DeleteProfileCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+
     }
 }
 
@@ -37,11 +39,13 @@ public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : I
     {
         try
         {
-            var existing = await _userRepositories.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+
+            var existing = await _userRepositories.GetProfileByIdAsync(userId, cancellationToken);
             if (existing == null)
                 return DeleteProfileResult.ProfileNotFound();
 
-            await _userRepositories.DeleteProfileAsync(request.UserId, cancellationToken);
+            await _userRepositories.DeleteProfileAsync(userId, cancellationToken);
             return DeleteProfileResult.DeleteSuccess();
         }
         catch (Exception)

@@ -6,12 +6,11 @@ namespace UserProfile.TimeCafe.Domain.Models;
 public class AdditionalInfo
 {
     [Key]
-    public int InfoId { get; set; }
+    public Guid InfoId { get; set; }
 
     [Required]
-    [MaxLength(450)]
     [ForeignKey(nameof(Profile))]
-    public string UserId { get; set; } = null!;
+    public Guid UserId { get; set; }
 
     [Required]
     [MaxLength(2000)]

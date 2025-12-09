@@ -1,4 +1,4 @@
-namespace UserProfile.TimeCafe.Domain.Models;
+namespace UserProfile.TimeCafe.Domain.DTOs;
 
 public record ModerationResult(
     bool IsSafe,

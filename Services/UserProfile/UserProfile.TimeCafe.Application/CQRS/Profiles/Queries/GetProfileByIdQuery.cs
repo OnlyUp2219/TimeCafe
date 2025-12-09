@@ -25,8 +25,9 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
     public GetProfileByIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
     }
 }
 
@@ -38,7 +39,8 @@ public class GetProfileByIdQueryHandler(IUserRepositories repository) : IRequest
     {
         try
         {
-            var profile = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+            var profile = await _repository.GetProfileByIdAsync(userId, cancellationToken);
 
             if (profile == null)
                 return GetProfileByIdResult.ProfileNotFound();

@@ -1,10 +1,10 @@
 ﻿namespace Auth.TimeCafe.Infrastructure.Services;
 
-public class CustomPasswordValidator : IPasswordValidator<IdentityUser>
+public class CustomPasswordValidator : IPasswordValidator<ApplicationUser>
 {
-    public Task<IdentityResult> ValidateAsync(UserManager<IdentityUser> manager, IdentityUser user, string? password)
+    public Task<IdentityResult> ValidateAsync(UserManager<ApplicationUser> manager, ApplicationUser user, string? password)
     {
-        if (!password.Any(ch => char.IsLower(ch) || (ch >= 'а' && ch <= 'я')))
+        if (!password!.Any(ch => char.IsLower(ch) || (ch >= 'а' && ch <= 'я')))
         {
             return Task.FromResult(IdentityResult.Failed(new IdentityError()
             {

@@ -10,7 +10,7 @@ public class CreateAdditionalInfoDtoExample : IExamplesProvider<CreateAdditional
     public CreateAdditionalInfoDto GetExamples()
     {
         return new CreateAdditionalInfoDto(
-            UserId: "user-123-abc",
+            UserId: Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479").ToString(),
             InfoText: "Дополнительная информация о пользователе: VIP-клиент, предпочитает утренние посещения",
             CreatedBy: "admin-456"
         );

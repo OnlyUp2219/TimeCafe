@@ -15,6 +15,9 @@ public record GetAdditionalInfosByUserIdResult(
 
     public static GetAdditionalInfosByUserIdResult GetSuccess(IEnumerable<AdditionalInfo> infos) =>
         new(true, Message: "Дополнительная информация получена", AdditionalInfos: infos);
+
+    public static GetAdditionalInfosByUserIdResult ProfileNotFound() =>
+        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
 public class GetAdditionalInfosByUserIdQueryValidator : AbstractValidator<GetAdditionalInfosByUserIdQuery>
@@ -22,20 +25,28 @@ public class GetAdditionalInfosByUserIdQueryValidator : AbstractValidator<GetAdd
     public GetAdditionalInfosByUserIdQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("UserId обязателен")
-            .MaximumLength(450).WithMessage("UserId не может превышать 450 символов");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
     }
 }
 
-public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository repository) : IRequestHandler<GetAdditionalInfosByUserIdQuery, GetAdditionalInfosByUserIdResult>
+public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository repository, IUserRepositories userRepository) : IRequestHandler<GetAdditionalInfosByUserIdQuery, GetAdditionalInfosByUserIdResult>
 {
     private readonly IAdditionalInfoRepository _repository = repository;
+    private readonly IUserRepositories _userRepository = userRepository;
 
     public async Task<GetAdditionalInfosByUserIdResult> Handle(GetAdditionalInfosByUserIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var infos = await _repository.GetAdditionalInfosByUserIdAsync(request.UserId, cancellationToken);
+            var userId = Guid.Parse(request.UserId);
+
+            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            if (profile == null)
+                return GetAdditionalInfosByUserIdResult.ProfileNotFound();
+
+            var infos = await _repository.GetAdditionalInfosByUserIdAsync(userId, cancellationToken);
 
             return GetAdditionalInfosByUserIdResult.GetSuccess(infos);
         }
