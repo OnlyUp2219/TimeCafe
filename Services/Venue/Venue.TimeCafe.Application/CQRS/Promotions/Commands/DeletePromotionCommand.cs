@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record DeletePromotionCommand(int PromotionId) : IRequest<DeletePromotionResult>;
+public record DeletePromotionCommand(string PromotionId) : IRequest<DeletePromotionResult>;
 
 public record DeletePromotionResult(
     bool Success,
@@ -24,7 +24,9 @@ public class DeletePromotionCommandValidator : AbstractValidator<DeletePromotion
     public DeletePromotionCommandValidator()
     {
         RuleFor(x => x.PromotionId)
-            .GreaterThan(0).WithMessage("ID акции обязателен");
+    .NotEmpty().WithMessage("Акция не найдена")
+    .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Акция не найдена")
+    .Must(x => Guid.TryParse(x, out _)).WithMessage("Акция не найдена");
     }
 }
 
@@ -36,11 +38,13 @@ public class DeletePromotionCommandHandler(IPromotionRepository repository) : IR
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            var promotionId = Guid.Parse(request.PromotionId);
+
+            var existing = await _repository.GetByIdAsync(promotionId);
             if (existing == null)
                 return DeletePromotionResult.PromotionNotFound();
 
-            var result = await _repository.DeleteAsync(request.PromotionId);
+            var result = await _repository.DeleteAsync(promotionId);
 
             if (!result)
                 return DeletePromotionResult.DeleteFailed();
