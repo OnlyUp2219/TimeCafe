@@ -6,7 +6,7 @@ public class GetPromotionById : ICarterModule
     {
         app.MapGet("/promotions/{promotionId}", async (
             ISender sender,
-            int promotionId) =>
+            string promotionId) =>
         {
             var query = new GetPromotionByIdQuery(promotionId);
             var result = await sender.Send(query);

@@ -6,9 +6,9 @@ public class DeactivatePromotion : ICarterModule
     {
         app.MapPost("/promotions/{promotionId}/deactivate", async (
             ISender sender,
-            int promotionId) =>
+            DeactivatePromotionDto dto) =>
         {
-            var command = new DeactivatePromotionCommand(promotionId);
+            var command = new DeactivatePromotionCommand(dto.PromotionId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
