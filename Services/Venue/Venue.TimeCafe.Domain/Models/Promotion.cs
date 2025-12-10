@@ -2,6 +2,16 @@ namespace Venue.TimeCafe.Domain.Models;
 
 public class Promotion
 {
+    public Promotion()
+    {
+        PromotionId = Guid.NewGuid();
+    }
+
+    public Promotion(Guid promotionId)
+    {
+        PromotionId = promotionId;
+    }
+
     public Guid PromotionId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
