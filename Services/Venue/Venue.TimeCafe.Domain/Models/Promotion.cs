@@ -2,7 +2,7 @@ namespace Venue.TimeCafe.Domain.Models;
 
 public class Promotion
 {
-    public int PromotionId { get; set; }
+    public Guid PromotionId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public decimal? DiscountPercent { get; set; }

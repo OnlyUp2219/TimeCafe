@@ -22,6 +22,6 @@ public static class CacheKeys
 
     public const string Promotion_All = "venue:promotion:all";
     public const string Promotion_Active = "venue:promotion:active";
-    public static string Promotion_ById(int id) => $"venue:promotion:id:{id}";
+    public static string Promotion_ById(Guid id) => $"venue:promotion:id:{id}";
     public static string Promotion_ActiveByDate(string date) => $"venue:promotion:active:date:{date}";
 }

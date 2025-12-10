@@ -9,7 +9,7 @@ public class PromotionRepository(
     private readonly IDistributedCache _cache = cache;
     private readonly ILogger _cacheLogger = cacheLogger;
 
-    public async Task<Promotion?> GetByIdAsync(int promotionId)
+    public async Task<Promotion?> GetByIdAsync(Guid promotionId)
     {
         var cached = await CacheHelper.GetAsync<Promotion>(
             _cache,
@@ -148,7 +148,7 @@ public class PromotionRepository(
         return promotion;
     }
 
-    public async Task<bool> DeleteAsync(int promotionId)
+    public async Task<bool> DeleteAsync(Guid promotionId)
     {
         var promotion = await _context.Promotions.FindAsync(promotionId);
         if (promotion == null)
@@ -167,7 +167,7 @@ public class PromotionRepository(
         return true;
     }
 
-    public async Task<bool> ActivateAsync(int promotionId)
+    public async Task<bool> ActivateAsync(Guid promotionId)
     {
         var promotion = await _context.Promotions.FindAsync(promotionId);
         if (promotion == null)
@@ -186,7 +186,7 @@ public class PromotionRepository(
         return true;
     }
 
-    public async Task<bool> DeactivateAsync(int promotionId)
+    public async Task<bool> DeactivateAsync(Guid promotionId)
     {
         var promotion = await _context.Promotions.FindAsync(promotionId);
         if (promotion == null)
