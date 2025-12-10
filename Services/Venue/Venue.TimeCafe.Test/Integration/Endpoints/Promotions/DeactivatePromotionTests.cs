@@ -6,7 +6,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     public async Task Endpoint_DeactivatePromotion_Should_Return200_WhenPromotionExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Активная акция", 10, isActive: true);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
 
         var response = await Client.PostAsync($"/promotions/{promotion.PromotionId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -28,7 +28,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync("/promotions/9999/deactivate", null);
+        var response = await Client.PostAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -41,11 +41,19 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         }
     }
 
+    [Fact]
+    public async Task Endpoint_DeactivatePromotion_Should_Return404_WhenPromotionIdIsEmpty()
+    {
+        await ClearDatabaseAndCacheAsync();
+
+        var response = await Client.PostAsync($"/promotions//deactivate", null);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_DeactivatePromotion_Should_Return422_WhenPromotionIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("123-invalid")]
+    public async Task Endpoint_DeactivatePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -66,7 +74,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     public async Task Endpoint_DeactivatePromotion_Should_ActuallyDeactivatePromotion_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Акция для деактивации", 10, isActive: true);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true);
 
         await Client.PostAsync($"/promotions/{promotion.PromotionId}/deactivate", null);
 

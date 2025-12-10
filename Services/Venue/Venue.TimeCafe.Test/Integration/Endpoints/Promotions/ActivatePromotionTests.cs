@@ -6,7 +6,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     public async Task Endpoint_ActivatePromotion_Should_Return200_WhenPromotionExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Неактивная акция", 10, isActive: false);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: false);
 
         var response = await Client.PostAsync($"/promotions/{promotion.PromotionId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -28,7 +28,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync("/promotions/9999/activate", null);
+        var response = await Client.PostAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -41,11 +41,19 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
         }
     }
 
+    [Fact]
+    public async Task Endpoint_ActivatePromotion_Should_Return404_WhenPromotionIdIsEmpty()
+    {
+        await ClearDatabaseAndCacheAsync();
+
+        var response = await Client.PostAsync($"/promotions//activate", null);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("123-invalid")]
+    public async Task Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -66,7 +74,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     public async Task Endpoint_ActivatePromotion_Should_ActuallyActivatePromotion_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Акция для активации", 10, isActive: false);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
 
         await Client.PostAsync($"/promotions/{promotion.PromotionId}/activate", null);
 

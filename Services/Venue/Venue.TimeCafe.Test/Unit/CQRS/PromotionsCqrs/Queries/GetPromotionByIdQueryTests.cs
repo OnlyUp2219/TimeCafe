@@ -12,24 +12,25 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenPromotionFound()
     {
-        var query = new GetPromotionByIdQuery(1);
-        var promotion = new Promotion { PromotionId = 1, Name = "Test Promotion", Description = "Desc", ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddDays(30) };
+        var promotionId = TestData.ExistingPromotions.Promotion1Id;
+        var query = new GetPromotionByIdQuery(promotionId.ToString());
+        var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Promotion.Should().NotBeNull();
-        result.Promotion!.Name.Should().Be("Test Promotion");
+        result.Promotion!.Name.Should().Be(TestData.ExistingPromotions.Promotion1Name);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenPromotionDoesNotExist()
     {
-        var query = new GetPromotionByIdQuery(999);
+        var query = new GetPromotionByIdQuery(TestData.NonExistingIds.NonExistingPromotionIdString);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Promotion?)null);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId)).ReturnsAsync((Promotion?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -41,9 +42,10 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var query = new GetPromotionByIdQuery(1);
+        var promotionId = TestData.ExistingPromotions.Promotion2Id;
+        var query = new GetPromotionByIdQuery(promotionId.ToString());
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -53,11 +55,11 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID акции обязателен")]
-    [InlineData(-1, false, "ID акции обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int promotionId, bool isValid, string? expectedError)
+    [InlineData("", false, "Акция не найдена")]
+    [InlineData("not-a-guid", false, "Акция не найдена")]
+    [InlineData("00000000-0000-0000-0000-000000000000", true, null)]
+    [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
+    public async Task Validator_Should_ValidateCorrectly(string promotionId, bool isValid, string? expectedError)
     {
         var query = new GetPromotionByIdQuery(promotionId);
         var validator = new GetPromotionByIdQueryValidator();
