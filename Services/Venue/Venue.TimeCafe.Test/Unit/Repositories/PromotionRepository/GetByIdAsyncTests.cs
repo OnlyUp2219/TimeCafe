@@ -6,7 +6,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_ReturnPromotion_WhenExists()
     {
         // Arrange
-        var promotion = await SeedPromotionAsync("Test Promo", 10m);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
 
         // Act
         var result = await PromotionRepository.GetByIdAsync(promotion.PromotionId);
@@ -14,15 +14,15 @@ public class GetByIdAsyncTests : BaseCqrsTest
         // Assert
         result.Should().NotBeNull();
         result!.PromotionId.Should().Be(promotion.PromotionId);
-        result.Name.Should().Be("Test Promo");
-        result.DiscountPercent.Should().Be(10m);
+        result.Name.Should().Be(TestData.ExistingPromotions.Promotion1Name);
+        result.DiscountPercent.Should().Be(TestData.ExistingPromotions.Promotion1DiscountPercent);
     }
 
     [Fact]
     public async Task Repository_GetByIdAsync_Should_ReturnNull_WhenNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingPromotionId;
 
         // Act
         var result = await PromotionRepository.GetByIdAsync(nonExistentId);
@@ -35,7 +35,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        var promotion = await SeedPromotionAsync("Test", 15m);
+        var promotion = await SeedPromotionAsync(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultDiscountPercent);
         await PromotionRepository.GetByIdAsync(promotion.PromotionId);
         await PromotionRepository.GetByIdAsync(promotion.PromotionId);
 
@@ -49,11 +49,11 @@ public class GetByIdAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = "Full Promo",
-            Description = "Test Description",
-            DiscountPercent = 25m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(30),
+            Name = TestData.ExistingPromotions.Promotion2Name,
+            Description = TestData.ExistingPromotions.Promotion2Description,
+            DiscountPercent = TestData.ExistingPromotions.Promotion2DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -65,9 +65,9 @@ public class GetByIdAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result!.Name.Should().Be("Full Promo");
-        result.Description.Should().Be("Test Description");
-        result.DiscountPercent.Should().Be(25m);
+        result!.Name.Should().Be(TestData.ExistingPromotions.Promotion2Name);
+        result.Description.Should().Be(TestData.ExistingPromotions.Promotion2Description);
+        result.DiscountPercent.Should().Be(TestData.ExistingPromotions.Promotion2DiscountPercent);
         result.IsActive.Should().BeTrue();
     }
 }

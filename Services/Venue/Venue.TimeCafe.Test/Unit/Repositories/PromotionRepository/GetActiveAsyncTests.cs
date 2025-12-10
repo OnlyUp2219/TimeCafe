@@ -6,9 +6,9 @@ public class GetActiveAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveAsync_Should_ReturnOnlyActivePromotions()
     {
         // Arrange
-        await SeedPromotionAsync("Active 1", 10m, true);
-        await SeedPromotionAsync("Active 2", 20m, true);
-        await SeedPromotionAsync("Inactive", 30m, false);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent, true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent, true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent, false);
 
         // Act
         var result = await PromotionRepository.GetActiveAsync();
@@ -22,8 +22,8 @@ public class GetActiveAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveAsync_Should_ReturnEmptyList_WhenNoActivePromotions()
     {
         // Arrange
-        await SeedPromotionAsync("Inactive 1", 10m, false);
-        await SeedPromotionAsync("Inactive 2", 20m, false);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, TestData.NewPromotions.NewPromotion1DiscountPercent, false);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion2Name, TestData.NewPromotions.NewPromotion2DiscountPercent, false);
 
         // Act
         var result = await PromotionRepository.GetActiveAsync();
@@ -36,24 +36,24 @@ public class GetActiveAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveAsync_Should_ReturnOrderedByCreatedAtDesc()
     {
         // Arrange
-        var promo1 = await SeedPromotionAsync("First", 10m, true);
+        var promo1 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent, true);
         await Task.Delay(100);
-        var promo2 = await SeedPromotionAsync("Second", 20m, true);
+        var promo2 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent, true);
 
         // Act
         var result = (await PromotionRepository.GetActiveAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Name.Should().Be("Second");
-        result[1].Name.Should().Be("First");
+        result[0].Name.Should().Be(TestData.ExistingPromotions.Promotion2Name);
+        result[1].Name.Should().Be(TestData.ExistingPromotions.Promotion1Name);
     }
 
     [Fact]
     public async Task Repository_GetActiveAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        await SeedPromotionAsync("Active", 10m, true);
+        await SeedPromotionAsync(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultDiscountPercent, true);
         await PromotionRepository.GetActiveAsync();
         await PromotionRepository.GetActiveAsync();
 
