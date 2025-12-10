@@ -5,7 +5,7 @@ public class GetPromotionById : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/promotions/{promotionId}", async (
-            ISender sender,
+            [FromServices] ISender sender,
             string promotionId) =>
         {
             var query = new GetPromotionByIdQuery(promotionId);

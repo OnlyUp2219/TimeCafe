@@ -5,7 +5,7 @@ public class UpdatePromotion : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/promotions", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] UpdatePromotionDto dto) =>
         {
             var command = new UpdatePromotionCommand(dto.PromotionId, dto.Name, dto.Description, dto.DiscountPercent, dto.ValidFrom, dto.ValidTo, dto.IsActive);

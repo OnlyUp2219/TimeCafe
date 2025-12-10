@@ -5,8 +5,8 @@ public class DeactivatePromotion : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/promotions/{promotionId}/deactivate", async (
-            ISender sender,
-            DeactivatePromotionDto dto) =>
+            [FromServices] ISender sender,
+            [AsParameters] DeactivatePromotionDto dto) =>
         {
             var command = new DeactivatePromotionCommand(dto.PromotionId);
             var result = await sender.Send(command);
