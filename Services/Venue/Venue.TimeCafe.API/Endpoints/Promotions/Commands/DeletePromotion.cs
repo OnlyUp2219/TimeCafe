@@ -6,9 +6,9 @@ public class DeletePromotion : ICarterModule
     {
         app.MapDelete("/promotions/{promotionId}", async (
             ISender sender,
-            int promotionId) =>
+            DeletePromotionDto dto) =>
         {
-            var command = new DeletePromotionCommand(promotionId);
+            var command = new DeletePromotionCommand(dto.PromotionId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
