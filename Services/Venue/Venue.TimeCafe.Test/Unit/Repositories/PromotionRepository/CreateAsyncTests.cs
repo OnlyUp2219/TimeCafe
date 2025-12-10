@@ -34,7 +34,6 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.PromotionId.Should().BeGreaterThan(0);
         result.Name.Should().Be(TestData.NewPromotions.NewPromotion1Name);
         result.DiscountPercent.Should().Be(TestData.NewPromotions.NewPromotion1DiscountPercent);
     }

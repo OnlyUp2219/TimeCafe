@@ -8,11 +8,11 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            name = "Новая акция",
-            description = "Описание акции",
-            discountPercent = 15m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            name = TestData.NewPromotions.NewPromotion1Name,
+            description = TestData.NewPromotions.NewPromotion1Description,
+            discountPercent = TestData.NewPromotions.NewPromotion1DiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -24,7 +24,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out _).Should().BeTrue();
             json.TryGetProperty("promotion", out var promotion).Should().BeTrue();
-            promotion.GetProperty("name").GetString().Should().Be("Новая акция");
+            promotion.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion1Name);
         }
         catch (Exception)
         {
@@ -42,10 +42,10 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         var payload = new
         {
             name = invalidName,
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -66,14 +66,14 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_CreatePromotion_Should_Return422_WhenNameExceedsMaxLength()
     {
         await ClearDatabaseAndCacheAsync();
-        var longName = new string('A', 201);
+        var longName = TestData.ValidationBoundaries.VeryLongString;
         var payload = new
         {
             name = longName,
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -99,11 +99,11 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            name = "Акция",
-            description = "Описание",
+            name = TestData.ExistingPromotions.Promotion1Name,
+            description = TestData.DefaultValues.DefaultPromotionDescription,
             discountPercent = invalidDiscount,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -126,11 +126,11 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            name = "Акция",
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow.AddDays(7),
-            validTo = DateTime.UtcNow,
+            name = TestData.ExistingPromotions.Promotion1Name,
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidToDate(),
+            validTo = TestData.DateTimeData.GetValidFromDate(),
             isActive = true
         };
 
@@ -153,11 +153,11 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            name = "Акция с ID",
-            description = "Описание",
-            discountPercent = 20m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            name = TestData.NewPromotions.NewPromotion2Name,
+            description = TestData.NewPromotions.NewPromotion2Description,
+            discountPercent = TestData.NewPromotions.NewPromotion2DiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -168,8 +168,8 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var promotion = json.GetProperty("promotion");
-            promotion.GetProperty("promotionId").GetInt32().Should().BeGreaterThan(0);
-            promotion.GetProperty("name").GetString().Should().Be("Акция с ID");
+            promotion.GetProperty("promotionId").GetGuid().Should().NotBeEmpty();
+            promotion.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion2Name);
         }
         catch (Exception)
         {

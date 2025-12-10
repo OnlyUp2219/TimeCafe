@@ -15,8 +15,8 @@ public class GetActivePromotionsQueryTests : BaseCqrsHandlerTest
         var query = new GetActivePromotionsQuery();
         var promotions = new List<Promotion>
         {
-            new() { PromotionId = 1, Name = "Promotion 1", Description = "Desc 1", IsActive = true, ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddDays(30) },
-            new() { PromotionId = 2, Name = "Promotion 2", Description = "Desc 2", IsActive = true, ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddDays(60) }
+            new Promotion(TestData.ExistingPromotions.Promotion1Id) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, IsActive = true, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() },
+            new Promotion(TestData.ExistingPromotions.Promotion2Id) { Name = TestData.ExistingPromotions.Promotion2Name, Description = TestData.ExistingPromotions.Promotion2Description, IsActive = true, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() }
         };
 
         PromotionRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(promotions);
