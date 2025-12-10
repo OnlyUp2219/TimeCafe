@@ -83,7 +83,7 @@ public class PromotionRepository(
         return entity;
     }
 
-    public async Task<IEnumerable<Promotion>> GetActiveByDateAsync(DateTime date)
+    public async Task<IEnumerable<Promotion>> GetActiveByDateAsync(DateTimeOffset date)
     {
         var dateKey = date.ToString("yyyy-MM-dd");
         var cached = await CacheHelper.GetAsync<IEnumerable<Promotion>>(
