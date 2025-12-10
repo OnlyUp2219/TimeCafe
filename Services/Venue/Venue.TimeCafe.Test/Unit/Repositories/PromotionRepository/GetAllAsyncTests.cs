@@ -6,9 +6,9 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnAllPromotions()
     {
         // Arrange
-        await SeedPromotionAsync("Promo 1", 10m);
-        await SeedPromotionAsync("Promo 2", 20m);
-        await SeedPromotionAsync("Promo 3", 30m);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent);
 
         // Act
         var result = await PromotionRepository.GetAllAsync();
@@ -33,28 +33,28 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnOrderedByCreatedAtDesc()
     {
         // Arrange
-        var promo1 = await SeedPromotionAsync("First", 10m);
+        var promo1 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
         await Task.Delay(100);
-        var promo2 = await SeedPromotionAsync("Second", 20m);
+        var promo2 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent);
         await Task.Delay(100);
-        var promo3 = await SeedPromotionAsync("Third", 30m);
+        var promo3 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent);
 
         // Act
         var result = (await PromotionRepository.GetAllAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].Name.Should().Be("Third");
-        result[1].Name.Should().Be("Second");
-        result[2].Name.Should().Be("First");
+        result[0].Name.Should().Be(TestData.ExistingPromotions.Promotion3Name);
+        result[1].Name.Should().Be(TestData.ExistingPromotions.Promotion2Name);
+        result[2].Name.Should().Be(TestData.ExistingPromotions.Promotion1Name);
     }
 
     [Fact]
     public async Task Repository_GetAllAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        await SeedPromotionAsync("Promo1", 10m);
-        await SeedPromotionAsync("Promo2", 20m);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, TestData.NewPromotions.NewPromotion1DiscountPercent);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion2Name, TestData.NewPromotions.NewPromotion2DiscountPercent);
         await PromotionRepository.GetAllAsync();
         await PromotionRepository.GetAllAsync();
 
@@ -66,8 +66,8 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnBothActiveAndInactive()
     {
         // Arrange
-        await SeedPromotionAsync("Active", 10m, true);
-        await SeedPromotionAsync("Inactive", 20m, false);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent, true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent, false);
 
         // Act
         var result = await PromotionRepository.GetAllAsync();
