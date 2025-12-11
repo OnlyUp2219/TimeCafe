@@ -57,7 +57,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     [Theory]
     [InlineData("", false, "Акция не найдена")]
     [InlineData("not-a-guid", false, "Акция не найдена")]
-    [InlineData("00000000-0000-0000-0000-000000000000", true, null)]
+    [InlineData("00000000-0000-0000-0000-000000000000", false, "Акция не найдена")]
     [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
     public async Task Validator_Should_ValidateCorrectly(string promotionId, bool isValid, string? expectedError)
     {

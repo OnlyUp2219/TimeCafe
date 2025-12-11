@@ -1,6 +1,5 @@
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Themes;
 
-[Collection("ThemesSequential")]
 public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]

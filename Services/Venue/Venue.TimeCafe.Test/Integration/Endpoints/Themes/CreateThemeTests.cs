@@ -1,13 +1,12 @@
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Themes;
 
-[Collection("ThemesSequential")]
 public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
     public async Task Endpoint_CreateTheme_Should_Return201_WhenValid()
     {
         // Arrange
-        var dto = new { Name = "Новая тема", Emoji = "🎮", Colors = "{\"primary\":\"#FF0000\"}" };
+        var dto = new { Name = TestData.NewThemes.NewTheme1Name, Emoji = TestData.NewThemes.NewTheme1Emoji, Colors = TestData.NewThemes.NewTheme1Colors };
 
         // Act
         var response = await Client.PostAsJsonAsync("/themes", dto);
@@ -23,8 +22,8 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
 
             json.TryGetProperty("theme", out var theme).Should().BeTrue();
             theme.ValueKind.Should().Be(JsonValueKind.Object);
-            theme.GetProperty("name").GetString().Should().Be("Новая тема");
-            theme.GetProperty("emoji").GetString().Should().Be("🎮");
+            theme.GetProperty("name").GetString().Should().Be(TestData.NewThemes.NewTheme1Name);
+            theme.GetProperty("emoji").GetString().Should().Be(TestData.NewThemes.NewTheme1Emoji);
         }
         catch (Exception)
         {
@@ -91,7 +90,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_CreateTheme_Should_CreateWithNullEmoji_WhenEmojiNotProvided()
     {
         // Arrange
-        var dto = new { Name = "Тема без эмодзи", Emoji = (string?)null, Colors = "{}" };
+        var dto = new { Name = TestData.DefaultValues.DefaultThemeName, Emoji = (string?)null, Colors = "{}" };
 
         // Act
         var response = await Client.PostAsJsonAsync("/themes", dto);
@@ -103,7 +102,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.GetProperty("name").GetString().Should().Be("Тема без эмодзи");
+            theme.GetProperty("name").GetString().Should().Be(TestData.DefaultValues.DefaultThemeName);
         }
         catch (Exception)
         {
@@ -155,7 +154,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             var json = JsonDocument.Parse(jsonString).RootElement;
             var theme = json.GetProperty("theme");
             theme.TryGetProperty("themeId", out var themeId).Should().BeTrue();
-            themeId.GetInt32().Should().BeGreaterThan(0);
+            themeId.GetGuid().Should().NotBe(Guid.Empty);
         }
         catch (Exception)
         {

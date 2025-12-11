@@ -26,7 +26,7 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     [Fact]
     public async Task Endpoint_DeleteTheme_Should_Return404_WhenThemeNotFound()
     {
-        var response = await Client.DeleteAsync("/themes/99999");
+        var response = await Client.DeleteAsync($"/themes/{TestData.NonExistingIds.NonExistingThemeId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -67,10 +67,9 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsInvalid(int invalidId)
+    [InlineData("invalid-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
     {
         var response = await Client.DeleteAsync($"/themes/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -84,6 +83,22 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         catch (Exception)
         {
             Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsInvalid] Response: {jsonString}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_DeleteTheme_Should_Return405_WhenThemeIdIsEmpty()
+    {
+        var response = await Client.DeleteAsync($"/themes/");
+        var jsonString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return405_WhenThemeIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
