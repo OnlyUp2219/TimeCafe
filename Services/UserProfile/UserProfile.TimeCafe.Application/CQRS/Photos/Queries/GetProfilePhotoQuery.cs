@@ -10,12 +10,12 @@ public record GetProfilePhotoResult(bool Success,
     Stream? Stream = null,
     string? ContentType = null) : ICqrsResultV2
 {
-    public static GetProfilePhotoResult NotFound() => 
+    public static GetProfilePhotoResult NotFound() =>
         new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
-    public static GetProfilePhotoResult Ok(Stream stream, string contentType) => 
+    public static GetProfilePhotoResult Ok(Stream stream, string contentType) =>
         new(true, StatusCode: 200,
         Stream: stream, ContentType: contentType);
-    public static GetProfilePhotoResult Failed() => 
+    public static GetProfilePhotoResult Failed() =>
         new(false, Code: "PhotoGetFailed", Message: "Ошибка получения фото", StatusCode: 500);
 }
 
@@ -26,7 +26,7 @@ public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQu
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
     }
 }
 

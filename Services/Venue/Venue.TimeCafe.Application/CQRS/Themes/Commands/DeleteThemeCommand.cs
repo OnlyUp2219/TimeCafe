@@ -26,7 +26,7 @@ public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
         RuleFor(x => x.ThemeId)
             .NotEmpty().WithMessage("Тема не найдена")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тема не найдена")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Тема не найдена");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тема не найдена");
     }
 }
 
