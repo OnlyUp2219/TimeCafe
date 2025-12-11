@@ -4,13 +4,13 @@ public record DeleteProfilePhotoCommand(string UserId) : IRequest<DeleteProfileP
 
 public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
-    public static DeleteProfilePhotoResult PhotoNotFound() => 
+    public static DeleteProfilePhotoResult PhotoNotFound() =>
         new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
-    public static DeleteProfilePhotoResult ProfileNotFound() => 
+    public static DeleteProfilePhotoResult ProfileNotFound() =>
         new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-    public static DeleteProfilePhotoResult Ok() => 
+    public static DeleteProfilePhotoResult Ok() =>
         new(true, Message: "Фото удалено", StatusCode: 204);
-    public static DeleteProfilePhotoResult Failed() => 
+    public static DeleteProfilePhotoResult Failed() =>
         new(false, Code: "PhotoDeleteFailed", Message: "Ошибка удаления фото", StatusCode: 500);
 }
 
@@ -21,7 +21,7 @@ public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfil
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
     }
 }
 
