@@ -5,7 +5,7 @@ public record CreateTariffCommand(
     string? Description,
     decimal PricePerMinute,
     BillingType BillingType,
-    int? ThemeId,
+    Guid? ThemeId,
     bool IsActive = true) : IRequest<CreateTariffResult>;
 
 public record CreateTariffResult(

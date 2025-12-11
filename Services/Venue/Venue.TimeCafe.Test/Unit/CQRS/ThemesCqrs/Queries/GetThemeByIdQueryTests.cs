@@ -17,7 +17,7 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
         var query = new GetThemeByIdQuery(TestData.ExistingThemes.Theme1Id.ToString());
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name, Emoji = TestData.ExistingThemes.Theme1Emoji, Colors = TestData.ExistingThemes.Theme1Colors };
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -31,7 +31,7 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetThemeByIdQuery(TestData.NonExistingIds.NonExistingThemeId.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingThemeId)).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId))).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -45,7 +45,7 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetThemeByIdQuery(TestData.ExistingThemes.Theme1Id.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
