@@ -7,7 +7,7 @@ public class Tariff
     public string? Description { get; set; }
     public decimal PricePerMinute { get; set; }
     public BillingType BillingType { get; set; }
-    public int? ThemeId { get; set; }
+    public Guid? ThemeId { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime LastModified { get; set; } = DateTime.UtcNow;
