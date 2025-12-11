@@ -24,7 +24,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             message.GetString().Should().NotBeNullOrWhiteSpace();
 
             json.TryGetProperty("theme", out var updatedTheme).Should().BeTrue();
-            updatedTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            updatedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             updatedTheme.GetProperty("name").GetString().Should().Be("Обновленная тема");
             updatedTheme.GetProperty("emoji").GetString().Should().Be("🎭");
         }
@@ -141,7 +141,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var updatedTheme = json.GetProperty("theme");
-            updatedTheme.GetProperty("themeId").GetInt32().Should().Be(originalTheme.ThemeId);
+            updatedTheme.GetProperty("themeId").GetGuid().Should().Be(originalTheme.ThemeId);
             updatedTheme.GetProperty("name").GetString().Should().Be("Только имя изменилось");
         }
         catch (Exception)

@@ -14,7 +14,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("theme", out var returnedTheme).Should().BeTrue();
-            returnedTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             returnedTheme.GetProperty("name").GetString().Should().Be("Тестовая тема");
         }
         catch (Exception)
@@ -81,7 +81,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             var returnedTheme = json.GetProperty("theme");
 
-            returnedTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             returnedTheme.GetProperty("name").GetString().Should().Be("Полная тема");
         }
         catch (Exception)

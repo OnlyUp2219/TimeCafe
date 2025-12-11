@@ -103,7 +103,7 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.GetProperty("themeId").GetInt32().Should().Be(theme2.ThemeId);
+            theme.GetProperty("themeId").GetGuid().Should().Be(theme2.ThemeId);
             theme.GetProperty("name").GetString().Should().Be("Вторая тема");
         }
         catch (Exception)
