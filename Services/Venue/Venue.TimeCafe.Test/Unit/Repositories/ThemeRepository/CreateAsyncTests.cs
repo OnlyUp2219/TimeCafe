@@ -21,9 +21,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var theme = new Theme
         {
-            Name = "New Theme",
-            Emoji = "🎯",
-            Colors = "#123456"
+            Name = TestData.NewThemes.NewTheme1Name,
+            Emoji = TestData.NewThemes.NewTheme1Emoji,
+            Colors = TestData.NewThemes.NewTheme1Colors
         };
 
         // Act
@@ -31,10 +31,10 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.ThemeId.Should().BeGreaterThan(0);
-        result.Name.Should().Be("New Theme");
-        result.Emoji.Should().Be("🎯");
-        result.Colors.Should().Be("#123456");
+        result.ThemeId.Should().NotBe(Guid.Empty);
+        result.Name.Should().Be(TestData.NewThemes.NewTheme1Name);
+        result.Emoji.Should().Be(TestData.NewThemes.NewTheme1Emoji);
+        result.Colors.Should().Be(TestData.NewThemes.NewTheme1Colors);
     }
 
     [Fact]
@@ -43,8 +43,8 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var theme = new Theme
         {
-            Name = "Persisted Theme",
-            Emoji = "💾"
+            Name = TestData.NewThemes.NewTheme2Name,
+            Emoji = TestData.NewThemes.NewTheme2Emoji
         };
 
         // Act
@@ -53,15 +53,15 @@ public class CreateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Themes.FindAsync(result.ThemeId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted Theme");
-        fromDb.Emoji.Should().Be("💾");
+        fromDb!.Name.Should().Be(TestData.NewThemes.NewTheme2Name);
+        fromDb.Emoji.Should().Be(TestData.NewThemes.NewTheme2Emoji);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var theme = new Theme { Name = "Cache Test" };
+        var theme = new Theme { Name = TestData.DefaultValues.DefaultThemeName };
 
         // Act
         await ThemeRepository.CreateAsync(theme);
@@ -74,15 +74,15 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_CreateThemeWithMinimalData()
     {
         // Arrange
-        var theme = new Theme { Name = "Minimal" };
+        var theme = new Theme { Name = TestData.DefaultValues.DefaultThemeName };
 
         // Act
         var result = await ThemeRepository.CreateAsync(theme);
 
         // Assert
         result.Should().NotBeNull();
-        result.ThemeId.Should().BeGreaterThan(0);
-        result.Name.Should().Be("Minimal");
+        result.ThemeId.Should().NotBe(Guid.Empty);
+        result.Name.Should().Be(TestData.DefaultValues.DefaultThemeName);
         result.Emoji.Should().BeNull();
         result.Colors.Should().BeNull();
     }
@@ -93,9 +93,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var theme = new Theme
         {
-            Name = "Full Theme",
-            Emoji = "🔥",
-            Colors = "#FF0000,#00FF00,#0000FF"
+            Name = TestData.ExistingThemes.Theme1Name,
+            Emoji = TestData.ExistingThemes.Theme1Emoji,
+            Colors = TestData.ExistingThemes.Theme1Colors
         };
 
         // Act
@@ -103,8 +103,8 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Name.Should().Be("Full Theme");
-        result.Emoji.Should().Be("🔥");
-        result.Colors.Should().Be("#FF0000,#00FF00,#0000FF");
+        result.Name.Should().Be(TestData.ExistingThemes.Theme1Name);
+        result.Emoji.Should().Be(TestData.ExistingThemes.Theme1Emoji);
+        result.Colors.Should().Be(TestData.ExistingThemes.Theme1Colors);
     }
 }

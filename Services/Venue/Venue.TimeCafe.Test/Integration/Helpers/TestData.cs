@@ -59,7 +59,7 @@ public static class TestData
         public static readonly Guid NonExistingPromotionId = Guid.Parse("99999999-9999-9999-9999-999999999999");
         public static readonly string NonExistingPromotionIdString = "99999999-9999-9999-9999-999999999999";
         public static readonly int NonExistingTariffId = 9999;
-        public static readonly int NonExistingThemeId = 9999;
+        public static readonly Guid NonExistingThemeId = Guid.Parse("99999999-9999-9999-9999-999999999998");
         public static readonly string NonExistingUserId = "99999999-9999-9999-9999-999999999999";
     }
 
@@ -112,14 +112,17 @@ public static class TestData
     /// </summary>
     public static class ExistingThemes
     {
+        public static readonly Guid Theme1Id = Guid.Parse("a1111111-1111-1111-1111-111111111111");
         public static readonly string Theme1Name = "Темная тема";
         public static readonly string Theme1Emoji = "🌙";
         public static readonly string Theme1Colors = "{\"primary\":\"#1a1a1a\",\"secondary\":\"#ffffff\"}";
 
+        public static readonly Guid Theme2Id = Guid.Parse("a2222222-2222-2222-2222-222222222222");
         public static readonly string Theme2Name = "Светлая тема";
         public static readonly string Theme2Emoji = "☀️";
         public static readonly string Theme2Colors = "{\"primary\":\"#ffffff\",\"secondary\":\"#000000\"}";
 
+        public static readonly Guid Theme3Id = Guid.Parse("a3333333-3333-3333-3333-333333333333");
         public static readonly string Theme3Name = "Синяя тема";
         public static readonly string Theme3Emoji = "🔵";
         public static readonly string Theme3Colors = "{\"primary\":\"#0066cc\",\"secondary\":\"#ffffff\"}";

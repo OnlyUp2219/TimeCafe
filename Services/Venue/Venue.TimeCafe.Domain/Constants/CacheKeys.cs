@@ -11,8 +11,10 @@ public static class CacheKeys
     public static string Tariff_Page(int page, int version) => $"{TariffPagesPrefix}:v{version}:p{page}";
     public static string TariffPagesVersion() => TariffPagesVersionKey;
 
+
     public const string Theme_All = "venue:theme:all";
-    public static string Theme_ById(int id) => $"venue:theme:id:{id}";
+    public static string Theme_ById(Guid id) => $"venue:theme:id:{id}";
+
 
     public const string Visit_Active = "venue:visit:active";
     public static string Visit_ById(int id) => $"venue:visit:id:{id}";
