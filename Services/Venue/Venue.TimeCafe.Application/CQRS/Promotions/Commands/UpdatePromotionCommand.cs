@@ -61,9 +61,8 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IR
                 return UpdatePromotionResult.PromotionNotFound();
 
             // TODO : AutoMapper
-            var promotion = new Promotion
+            var promotion = new Promotion(promotionId)
             {
-                PromotionId = promotionId,
                 Name = request.Name,
                 Description = request.Description,
                 DiscountPercent = request.DiscountPercent,
