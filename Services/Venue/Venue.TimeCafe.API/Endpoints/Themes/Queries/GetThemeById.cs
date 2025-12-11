@@ -5,9 +5,10 @@ public class GetThemeById : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/themes/{themeId:int}", async (
-            ISender sender,
-            int themeId) =>
+            [FromServices] ISender sender,
+            [FromRoute] string themeId) =>
         {
+            // TODO : DTO
             var query = new GetThemeByIdQuery(themeId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { theme = r.Theme }));
