@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.ThemesCqrs.Queries;
 
 public class GetAllThemesQueryTests : BaseCqrsHandlerTest
@@ -15,8 +17,8 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
         var query = new GetAllThemesQuery();
         var themes = new List<Theme>
         {
-            new() { ThemeId = 1, Name = "Theme 1" },
-            new() { ThemeId = 2, Name = "Theme 2" }
+            new() { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name },
+            new() { ThemeId = TestData.ExistingThemes.Theme2Id, Name = TestData.ExistingThemes.Theme2Name }
         };
 
         ThemeRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(themes);

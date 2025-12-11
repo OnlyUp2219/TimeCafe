@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.ThemesCqrs.Commands;
 
 public class UpdateThemeCommandTests : BaseCqrsHandlerTest
@@ -12,26 +14,25 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenThemeUpdated()
     {
-        var theme = new Theme { ThemeId = 1, Name = "Updated Theme", Emoji = "🎨", Colors = "#FF0000" };
-        var command = new UpdateThemeCommand(theme);
+        var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
+        var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.UpdateAsync(theme)).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>())).ReturnsAsync(theme);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Theme.Should().NotBeNull();
-        result.Theme!.Name.Should().Be("Updated Theme");
+        result.Theme!.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenThemeDoesNotExist()
     {
-        var theme = new Theme { ThemeId = 999, Name = "Nonexistent", Emoji = "🎨", Colors = "#FF0000" };
-        var command = new UpdateThemeCommand(theme);
+        var command = new UpdateThemeCommand(TestData.NonExistingIds.NonExistingThemeId.ToString(), TestData.ExistingThemes.Theme1Name, TestData.ExistingThemes.Theme1Emoji, TestData.ExistingThemes.Theme1Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingThemeId)).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -43,11 +44,11 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
-        var theme = new Theme { ThemeId = 1, Name = "Updated Theme", Emoji = "🎨", Colors = "#FF0000" };
-        var command = new UpdateThemeCommand(theme);
+        var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
+        var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.UpdateAsync(theme)).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>())).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -59,10 +60,9 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var theme = new Theme { ThemeId = 1, Name = "Updated Theme", Emoji = "🎨", Colors = "#FF0000" };
-        var command = new UpdateThemeCommand(theme);
+        var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -72,19 +72,17 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(null, "Test", "🎨", "#FF0000", false, "Тема обязательна")]
-    [InlineData(0, "Test", "🎨", "#FF0000", false, "ID темы обязателен")]
-    [InlineData(-1, "Test", "🎨", "#FF0000", false, "ID темы обязателен")]
-    [InlineData(1, "", "🎨", "#FF0000", false, "Название темы обязательно")]
-    [InlineData(1, null, "🎨", "#FF0000", false, "Название темы обязательно")]
-    [InlineData(1, "A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название не может превышать 100 символов")]
-    [InlineData(1, "Valid Name", "🎨🎨🎨🎨🎨🎨", "#FF0000", false, "Эмодзи не может превышать 10 символов")]
-    [InlineData(1, "Valid Name", "🎨", "#FF0000", true, null)]
-    [InlineData(1, "Valid Name", null, null, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int? themeId, string? name, string? emoji, string? colors, bool isValid, string? expectedError)
+    [InlineData("", "Test", "🎨", "#FF0000", false, "Тема не найдена")]
+    [InlineData("invalid-guid", "Test", "🎨", "#FF0000", false, "Тема не найдена")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "", "🎨", "#FF0000", false, "Название темы обязательно")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", null, "🎨", "#FF0000", false, "Название темы обязательно")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название не может превышать 100 символов")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", "🎨🎨🎨🎨🎨🎨", "#FF0000", false, "Эмодзи не может превышать 10 символов")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", "🎨", "#FF0000", true, null)]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", null, null, true, null)]
+    public async Task Validator_Should_ValidateCorrectly(string themeId, string? name, string? emoji, string? colors, bool isValid, string? expectedError)
     {
-        var theme = themeId.HasValue ? new Theme { ThemeId = themeId.Value, Name = name!, Emoji = emoji, Colors = colors } : null;
-        var command = new UpdateThemeCommand(theme!);
+        var command = new UpdateThemeCommand(themeId, name!, emoji, colors);
         var validator = new UpdateThemeCommandValidator();
 
         var result = await validator.ValidateAsync(command);
