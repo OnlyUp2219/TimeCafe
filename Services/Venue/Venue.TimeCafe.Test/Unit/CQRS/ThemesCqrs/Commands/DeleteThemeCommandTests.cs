@@ -17,8 +17,8 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
         var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.DeleteAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(true);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.DeleteAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -30,7 +30,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new DeleteThemeCommand(TestData.NonExistingIds.NonExistingThemeId.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingThemeId)).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId))).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -45,8 +45,8 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
         var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.DeleteAsync(TestData.ExistingThemes.Theme1Id)).ReturnsAsync(false);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.DeleteAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -60,7 +60,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(TestData.ExistingThemes.Theme1Id)).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
