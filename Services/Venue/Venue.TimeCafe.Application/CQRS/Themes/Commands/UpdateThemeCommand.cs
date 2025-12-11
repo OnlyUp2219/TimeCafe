@@ -56,7 +56,7 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
                 return UpdateThemeResult.ThemeNotFound();
 
             // TODO : automapper
-            var theme = new Theme
+            var theme = new Theme(themeId)
             {
                 Name = request.Name,
                 Emoji = request.Emoji,
