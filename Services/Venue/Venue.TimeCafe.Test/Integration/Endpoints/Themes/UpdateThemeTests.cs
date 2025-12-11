@@ -8,7 +8,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Оригинальная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId,
+            ThemeId = theme.ThemeId.ToString(),
             Name = "Обновленная тема",
             Emoji = "🎭",
             Colors = "{\"primary\":\"#00FF00\"}"
@@ -40,7 +40,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         var dto = new
         {
-            ThemeId = 99999,
+            ThemeId = TestData.NonExistingIds.NonExistingThemeId.ToString(),
             Name = "Несуществующая тема",
             Emoji = "🚫",
             Colors = "{}"
@@ -68,7 +68,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Исходная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId,
+            ThemeId = theme.ThemeId.ToString(),
             Name = "Новое имя",
             Emoji = "🎨",
             Colors = "{\"primary\":\"#FF0000\"}"
@@ -100,7 +100,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Исходная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId,
+            ThemeId = theme.ThemeId.ToString(),
             Name = invalidName,
             Emoji = "🎨",
             Colors = (string?)null
@@ -128,7 +128,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var originalTheme = await SeedThemeAsync("Оригинальная тема");
         var dto = new
         {
-            ThemeId = originalTheme.ThemeId,
+            ThemeId = originalTheme.ThemeId.ToString(),
             Name = "Только имя изменилось",
             Emoji = "🆕",
             Colors = "{\"new\":\"colors\"}"
@@ -152,10 +152,10 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-999)]
-    public async Task Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsInvalid(int invalidId)
+    [InlineData("")]
+    [InlineData("invalid-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
     {
         var dto = new
         {
