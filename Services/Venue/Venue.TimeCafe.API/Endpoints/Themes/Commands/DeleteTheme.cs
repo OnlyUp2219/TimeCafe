@@ -4,7 +4,7 @@ public class DeleteTheme : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/themes/{themeId:int}", async (
+        app.MapDelete("/themes/{themeId}", async (
             [FromServices] ISender sender,
             [FromRoute] string themeId) =>
         {
