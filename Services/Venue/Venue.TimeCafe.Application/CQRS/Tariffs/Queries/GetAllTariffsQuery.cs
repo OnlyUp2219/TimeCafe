@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetAllTariffsQuery() : IRequest<GetAllTariffsResult>;
@@ -8,12 +10,12 @@ public record GetAllTariffsResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Tariff>? Tariffs = null) : ICqrsResultV2
+    IEnumerable<TariffWithThemeDto>? Tariffs = null) : ICqrsResultV2
 {
     public static GetAllTariffsResult GetFailed() =>
         new(false, Code: "GetTariffsFailed", Message: "Не удалось получить тарифы", StatusCode: 500);
 
-    public static GetAllTariffsResult GetSuccess(IEnumerable<Tariff> tariffs) =>
+    public static GetAllTariffsResult GetSuccess(IEnumerable<TariffWithThemeDto> tariffs) =>
         new(true, Tariffs: tariffs);
 }
 
