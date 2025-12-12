@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffsPageQuery(int PageNumber, int PageSize) : IRequest<GetTariffsPageResult>;
@@ -8,13 +10,13 @@ public record GetTariffsPageResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Tariff>? Tariffs = null,
+    IEnumerable<TariffWithThemeDto>? Tariffs = null,
     int TotalCount = 0) : ICqrsResultV2
 {
     public static GetTariffsPageResult GetFailed() =>
         new(false, Code: "GetTariffsPageFailed", Message: "Не удалось получить страницу тарифов", StatusCode: 500);
 
-    public static GetTariffsPageResult GetSuccess(IEnumerable<Tariff> tariffs, int totalCount) =>
+    public static GetTariffsPageResult GetSuccess(IEnumerable<TariffWithThemeDto> tariffs, int totalCount) =>
         new(true, Tariffs: tariffs, TotalCount: totalCount);
 }
 

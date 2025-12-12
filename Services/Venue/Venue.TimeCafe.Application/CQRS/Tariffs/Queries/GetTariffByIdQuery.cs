@@ -1,6 +1,8 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
-public record GetTariffByIdQuery(int TariffId) : IRequest<GetTariffByIdResult>;
+public record GetTariffByIdQuery(string TariffId) : IRequest<GetTariffByIdResult>;
 
 public record GetTariffByIdResult(
     bool Success,
@@ -8,7 +10,7 @@ public record GetTariffByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Tariff? Tariff = null) : ICqrsResultV2
+    TariffWithThemeDto? Tariff = null) : ICqrsResultV2
 {
     public static GetTariffByIdResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
@@ -16,7 +18,7 @@ public record GetTariffByIdResult(
     public static GetTariffByIdResult GetFailed() =>
         new(false, Code: "GetTariffFailed", Message: "Не удалось получить тариф", StatusCode: 500);
 
-    public static GetTariffByIdResult GetSuccess(Tariff tariff) =>
+    public static GetTariffByIdResult GetSuccess(TariffWithThemeDto tariff) =>
         new(true, Tariff: tariff);
 }
 
@@ -25,7 +27,9 @@ public class GetTariffByIdQueryValidator : AbstractValidator<GetTariffByIdQuery>
     public GetTariffByIdQueryValidator()
     {
         RuleFor(x => x.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+              .NotEmpty().WithMessage("Тариф не найден")
+              .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+              .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
 
@@ -37,7 +41,9 @@ public class GetTariffByIdQueryHandler(ITariffRepository repository) : IRequestH
     {
         try
         {
-            var tariff = await _repository.GetByIdAsync(request.TariffId);
+            var tariffId = Guid.Parse(request.TariffId);    
+
+            var tariff = await _repository.GetByIdAsync(tariffId);
 
             if (tariff == null)
                 return GetTariffByIdResult.TariffNotFound();
