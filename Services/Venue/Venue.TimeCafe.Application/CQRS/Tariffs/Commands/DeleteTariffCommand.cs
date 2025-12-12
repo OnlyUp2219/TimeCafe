@@ -1,6 +1,8 @@
+using Venue.TimeCafe.Domain.Models;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record DeleteTariffCommand(int TariffId) : IRequest<DeleteTariffResult>;
+public record DeleteTariffCommand(string TariffId) : IRequest<DeleteTariffResult>;
 
 public record DeleteTariffResult(
     bool Success,
@@ -24,7 +26,9 @@ public class DeleteTariffCommandValidator : AbstractValidator<DeleteTariffComman
     public DeleteTariffCommandValidator()
     {
         RuleFor(x => x.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+                   .NotEmpty().WithMessage("Тариф не найден")
+                   .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+                   .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
 
@@ -36,11 +40,13 @@ public class DeleteTariffCommandHandler(ITariffRepository repository) : IRequest
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.TariffId);
+            var tariffId = Guid.Parse(request.TariffId);
+
+            var existing = await _repository.GetByIdAsync(tariffId);
             if (existing == null)
                 return DeleteTariffResult.TariffNotFound();
 
-            var result = await _repository.DeleteAsync(request.TariffId);
+            var result = await _repository.DeleteAsync(tariffId);
 
             if (!result)
                 return DeleteTariffResult.DeleteFailed();

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record UpdateTariffCommand(Tariff Tariff) : IRequest<UpdateTariffResult>;
+public record UpdateTariffCommand(string TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, string? ThemeId, bool IsActive) : IRequest<UpdateTariffResult>;
 
 public record UpdateTariffResult(
     bool Success,
@@ -24,28 +24,35 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 {
     public UpdateTariffCommandValidator()
     {
-        RuleFor(x => x.Tariff)
-            .NotNull().WithMessage("Тариф обязателен");
 
-        When(x => x.Tariff != null, () =>
-        {
-            RuleFor(x => x.Tariff.TariffId)
-                .GreaterThan(0).WithMessage("ID тарифа обязателен");
+        RuleFor(x => x.TariffId)
+            .NotEmpty().WithMessage("Тариф не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
 
-            RuleFor(x => x.Tariff.Name)
-                .NotEmpty().WithMessage("Название тарифа обязательно")
-                .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Название тарифа обязательно")
+            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
 
-            RuleFor(x => x.Tariff.Description)
-                .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
-                .When(x => !string.IsNullOrEmpty(x.Tariff.Description));
+        RuleFor(x => x.Description)
+            .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
+            .When(x => !string.IsNullOrEmpty(x.Description));
 
-            RuleFor(x => x.Tariff.PricePerMinute)
-                .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
-        });
+        RuleFor(x => x.PricePerMinute)
+            .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
+
+        RuleFor(x => x.BillingType)
+            .IsInEnum().WithMessage("Некорректный тип биллинга");
+
+        RuleFor(x => x.ThemeId)
+            .Must(x => string.IsNullOrWhiteSpace(x) || (Guid.TryParse(x, out var guid) && guid != Guid.Empty))
+            .WithMessage("Темы не существует")
+            .When(x => !string.IsNullOrWhiteSpace(x.ThemeId));
     }
 }
 
+
+// Todo : Patch commands
 public class UpdateTariffCommandHandler(ITariffRepository repository) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
 {
     private readonly ITariffRepository _repository = repository;
@@ -54,11 +61,24 @@ public class UpdateTariffCommandHandler(ITariffRepository repository) : IRequest
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.Tariff.TariffId);
+            var tariffId = Guid.Parse(request.TariffId);
+
+            var existing = await _repository.GetByIdAsync(tariffId);
             if (existing == null)
                 return UpdateTariffResult.TariffNotFound();
 
-            var updated = await _repository.UpdateAsync(request.Tariff);
+            // TODO: AutoMapper 
+            Tariff tariff = new Tariff(tariffId)
+            {
+                Name = request.Name,
+                Description = request.Description,
+                PricePerMinute = request.PricePerMinute,
+                BillingType = request.BillingType,
+                ThemeId = Guid.Parse(request.ThemeId!),
+                IsActive = request.IsActive
+            };
+
+            var updated = await _repository.UpdateAsync(tariff);
 
             if (updated == null)
                 return UpdateTariffResult.UpdateFailed();

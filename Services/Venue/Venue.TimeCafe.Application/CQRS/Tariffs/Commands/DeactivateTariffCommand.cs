@@ -1,6 +1,8 @@
+using Venue.TimeCafe.Domain.Models;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record DeactivateTariffCommand(int TariffId) : IRequest<DeactivateTariffResult>;
+public record DeactivateTariffCommand(string TariffId) : IRequest<DeactivateTariffResult>;
 
 public record DeactivateTariffResult(
     bool Success,
@@ -24,7 +26,9 @@ public class DeactivateTariffCommandValidator : AbstractValidator<DeactivateTari
     public DeactivateTariffCommandValidator()
     {
         RuleFor(x => x.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+                   .NotEmpty().WithMessage("Тариф не найден")
+                   .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+                   .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
 
@@ -36,11 +40,13 @@ public class DeactivateTariffCommandHandler(ITariffRepository repository) : IReq
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.TariffId);
+            var tariffId = Guid.Parse(request.TariffId);
+
+            var existing = await _repository.GetByIdAsync(tariffId);
             if (existing == null)
                 return DeactivateTariffResult.TariffNotFound();
 
-            var result = await _repository.DeactivateAsync(request.TariffId);
+            var result = await _repository.DeactivateAsync(tariffId);
 
             if (!result)
                 return DeactivateTariffResult.DeactivateFailed();
