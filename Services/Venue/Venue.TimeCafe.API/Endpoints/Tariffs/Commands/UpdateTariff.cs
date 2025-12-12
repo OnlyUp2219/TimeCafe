@@ -1,3 +1,7 @@
+using System.Xml.Linq;
+
+using Venue.TimeCafe.Domain.Models;
+
 namespace Venue.TimeCafe.API.Endpoints.Tariffs.Commands;
 
 public class UpdateTariff : ICarterModule
@@ -5,21 +9,24 @@ public class UpdateTariff : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/tariffs", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] UpdateTariffDto dto) =>
         {
             var tariff = new Tariff
             {
-                TariffId = dto.TariffId,
-                Name = dto.Name,
-                Description = dto.Description,
-                PricePerMinute = dto.PricePerMinute,
-                BillingType = (BillingType)dto.BillingType,
-                ThemeId = dto.ThemeId,
-                IsActive = dto.IsActive,
-                LastModified = DateTime.UtcNow
+
             };
-            var command = new UpdateTariffCommand(tariff);
+            var command = new UpdateTariffCommand
+            (
+                TariffId: dto.TariffId.ToString(),
+                Name: dto.Name,
+                Description: dto.Description,
+                PricePerMinute: dto.PricePerMinute,
+                BillingType: (BillingType)dto.BillingType,
+                ThemeId: dto.ThemeId.ToString(),
+                IsActive: dto.IsActive
+            );
+
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, tariff = r.Tariff }));
         })
