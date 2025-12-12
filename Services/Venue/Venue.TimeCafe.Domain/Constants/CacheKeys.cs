@@ -6,7 +6,7 @@ public static class CacheKeys
     public const string Tariff_Active = "venue:tariff:active";
     private const string TariffPagesPrefix = "venue:tariff:page";
     private const string TariffPagesVersionKey = "venue:tariff:page:version";
-    public static string Tariff_ById(int id) => $"venue:tariff:id:{id}";
+    public static string Tariff_ById(Guid id) => $"venue:tariff:id:{id}";
     public static string Tariff_ByBillingType(int billingType) => $"venue:tariff:billing:{billingType}";
     public static string Tariff_Page(int page, int version) => $"{TariffPagesPrefix}:v{version}:p{page}";
     public static string TariffPagesVersion() => TariffPagesVersionKey;
