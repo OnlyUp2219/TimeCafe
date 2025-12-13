@@ -8,11 +8,11 @@ public class ActivateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff1BillingType,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();
@@ -30,11 +30,11 @@ public class ActivateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "To Activate",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff2BillingType,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();
@@ -52,7 +52,7 @@ public class ActivateAsyncTests : BaseCqrsTest
     public async Task Repository_ActivateAsync_Should_ReturnFalse_WhenTariffNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingTariffId;
 
         // Act
         var result = await TariffRepository.ActivateAsync(nonExistentId);
@@ -67,12 +67,12 @@ public class ActivateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Test",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+            BillingType = TestData.DefaultValues.DefaultBillingType,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow.AddDays(-1),
-            LastModified = DateTime.UtcNow.AddDays(-1)
+            CreatedAt = DateTimeOffset.UtcNow.AddDays(-1),
+            LastModified = DateTimeOffset.UtcNow.AddDays(-1)
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();
@@ -92,11 +92,11 @@ public class ActivateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Cache Test",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.ExistingTariffs.Tariff3Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff3PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff3BillingType,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();

@@ -6,7 +6,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
     public async Task Repository_DeactivateAsync_Should_ReturnTrue_WhenTariffExists()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Active", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         // Act
         var result = await TariffRepository.DeactivateAsync(tariff.TariffId);
@@ -19,7 +19,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
     public async Task Repository_DeactivateAsync_Should_SetIsActiveToFalse()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("To Deactivate", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
 
         // Act
         await TariffRepository.DeactivateAsync(tariff.TariffId);
@@ -34,7 +34,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
     public async Task Repository_DeactivateAsync_Should_ReturnFalse_WhenTariffNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingTariffId;
 
         // Act
         var result = await TariffRepository.DeactivateAsync(nonExistentId);
@@ -47,7 +47,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
     public async Task Repository_DeactivateAsync_Should_UpdateLastModified()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var originalModified = tariff.LastModified;
         await Task.Delay(100);
 
@@ -63,7 +63,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
     public async Task Repository_DeactivateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Cache Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         // Act
         await TariffRepository.DeactivateAsync(tariff.TariffId);

@@ -6,16 +6,16 @@ public class GetActiveAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveAsync_Should_ReturnOnlyActiveTariffs()
     {
         // Arrange
-        await SeedTariffAsync("Active 1", 100m);
-        await SeedTariffAsync("Active 2", 200m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
 
         var inactiveTariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 300m,
+            Name = TestData.ExistingTariffs.Tariff3Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff3PricePerMinute,
             BillingType = BillingType.PerMinute,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(inactiveTariff);
         await Context.SaveChangesAsync();
@@ -25,7 +25,7 @@ public class GetActiveAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(t => t.IsActive);
+        result.Should().OnlyContain(t => t.TariffIsActive);
     }
 
     [Fact]
@@ -34,11 +34,11 @@ public class GetActiveAsyncTests : BaseCqrsTest
         // Arrange
         var inactiveTariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 100m,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
             BillingType = BillingType.PerMinute,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(inactiveTariff);
         await Context.SaveChangesAsync();
@@ -54,25 +54,25 @@ public class GetActiveAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveAsync_Should_OrderByName()
     {
         // Arrange
-        await SeedTariffAsync("Charlie", 100m);
-        await SeedTariffAsync("Alpha", 200m);
-        await SeedTariffAsync("Bravo", 300m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
 
         // Act
         var result = (await TariffRepository.GetActiveAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].Name.Should().Be("Alpha");
-        result[1].Name.Should().Be("Bravo");
-        result[2].Name.Should().Be("Charlie");
+        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
     }
 
     [Fact]
     public async Task Repository_GetActiveAsync_Should_ReturnFromCache_WhenCached()
     {
         // Arrange
-        await SeedTariffAsync("Active", 100m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         // First call - should cache
         var firstResult = await TariffRepository.GetActiveAsync();

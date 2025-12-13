@@ -6,16 +6,16 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
     public async Task Repository_GetByBillingTypeAsync_Should_ReturnMatchingTariffs()
     {
         // Arrange
-        await SeedTariffAsync("PerMinute1", 100m);
-        await SeedTariffAsync("PerMinute2", 150m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
         var hourlyTariff = new Tariff
         {
-            Name = "Hourly",
-            PricePerMinute = 200m,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.Hourly,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(hourlyTariff);
         await Context.SaveChangesAsync();
@@ -25,14 +25,14 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(t => t.BillingType == BillingType.PerMinute);
+        result.Should().OnlyContain(t => t.TariffBillingType == BillingType.PerMinute);
     }
 
     [Fact]
     public async Task Repository_GetByBillingTypeAsync_Should_ReturnEmptyList_WhenNoMatches()
     {
         // Arrange
-        await SeedTariffAsync("PerMinute", 100m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
 
         // Act
         var result = await TariffRepository.GetByBillingTypeAsync(BillingType.Hourly);
@@ -45,15 +45,15 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
     public async Task Repository_GetByBillingTypeAsync_Should_ReturnOnlyActive()
     {
         // Arrange
-        await SeedTariffAsync("Active", 100m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         var inactiveTariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 150m,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.NewTariffs.NewTariff2Price,
             BillingType = BillingType.PerMinute,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(inactiveTariff);
         await Context.SaveChangesAsync();
@@ -63,24 +63,24 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(1);
-        result.Should().OnlyContain(t => t.IsActive);
+        result.Should().OnlyContain(t => t.TariffIsActive);
     }
 
     [Fact]
     public async Task Repository_GetByBillingTypeAsync_Should_OrderByPricePerMinute()
     {
         // Arrange
-        await SeedTariffAsync("Expensive", 300m);
-        await SeedTariffAsync("Cheap", 100m);
-        await SeedTariffAsync("Medium", 200m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
 
         // Act
         var result = (await TariffRepository.GetByBillingTypeAsync(BillingType.PerMinute)).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].PricePerMinute.Should().Be(100m);
-        result[1].PricePerMinute.Should().Be(200m);
-        result[2].PricePerMinute.Should().Be(300m);
+        result[0].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff1PricePerMinute);
+        result[1].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff2PricePerMinute);
+        result[2].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
     }
 }

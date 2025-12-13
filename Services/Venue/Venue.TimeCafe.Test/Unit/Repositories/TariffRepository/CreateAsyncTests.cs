@@ -21,9 +21,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "New Tariff",
-            PricePerMinute = 150m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.NewTariffs.NewTariff1Name,
+            PricePerMinute = TestData.NewTariffs.NewTariff1Price,
+            BillingType = TestData.NewTariffs.NewTariff1BillingType,
             IsActive = true
         };
 
@@ -32,11 +32,11 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.TariffId.Should().BeGreaterThan(0);
-        result.Name.Should().Be("New Tariff");
-        result.PricePerMinute.Should().Be(150m);
-        result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-        result.LastModified.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.TariffId.Should().NotBe(Guid.Empty);
+        result.Name.Should().Be(TestData.NewTariffs.NewTariff1Name);
+        result.PricePerMinute.Should().Be(TestData.NewTariffs.NewTariff1Price);
+        result.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+        result.LastModified.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -45,9 +45,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Test",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+            BillingType = TestData.DefaultValues.DefaultBillingType,
             IsActive = true
         };
 
@@ -66,9 +66,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Persisted",
-            PricePerMinute = 200m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff2BillingType,
             IsActive = true
         };
 
@@ -78,7 +78,7 @@ public class CreateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Tariffs.FindAsync(result.TariffId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted");
+        fromDb!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var tariff = new Tariff
         {
-            Name = "Cache Test",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+            BillingType = TestData.DefaultValues.DefaultBillingType,
             IsActive = true
         };
 
@@ -127,12 +127,12 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_CreateWithTheme_WhenThemeIdProvided()
     {
         // Arrange
-        var theme = await SeedThemeAsync("Test Theme");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
         var tariff = new Tariff
         {
-            Name = "Tariff with Theme",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute,
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff1BillingType,
             ThemeId = theme.ThemeId,
             IsActive = true
         };
