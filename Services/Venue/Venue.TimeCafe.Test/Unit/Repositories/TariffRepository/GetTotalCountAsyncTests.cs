@@ -6,9 +6,9 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
     public async Task Repository_GetTotalCountAsync_Should_ReturnCorrectCount()
     {
         // Arrange
-        await SeedTariffAsync("Tariff 1", 100m);
-        await SeedTariffAsync("Tariff 2", 200m);
-        await SeedTariffAsync("Tariff 3", 300m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         // Act
         var result = await TariffRepository.GetTotalCountAsync();
@@ -31,15 +31,15 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
     public async Task Repository_GetTotalCountAsync_Should_CountBothActiveAndInactive()
     {
         // Arrange
-        await SeedTariffAsync("Active", 100m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         var inactiveTariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 200m,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.PerMinute,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(inactiveTariff);
         await Context.SaveChangesAsync();
@@ -55,11 +55,11 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
     public async Task Repository_GetTotalCountAsync_Should_UpdateAfterCreate()
     {
         // Arrange
-        await SeedTariffAsync("Initial", 100m);
+        await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var countBefore = await TariffRepository.GetTotalCountAsync();
 
         // Act
-        await SeedTariffAsync("New", 200m);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var countAfter = await TariffRepository.GetTotalCountAsync();
 
         // Assert
@@ -71,8 +71,8 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
     public async Task Repository_GetTotalCountAsync_Should_UpdateAfterDelete()
     {
         // Arrange
-        var tariff1 = await SeedTariffAsync("To Keep", 100m);
-        var tariff2 = await SeedTariffAsync("To Delete", 200m);
+        var tariff1 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
+        var tariff2 = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
         var countBefore = await TariffRepository.GetTotalCountAsync();
 
         // Act

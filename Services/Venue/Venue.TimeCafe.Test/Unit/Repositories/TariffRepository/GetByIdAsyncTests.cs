@@ -6,7 +6,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_ReturnTariff_WhenExists()
     {
         // Arrange
-        var seededTariff = await SeedTariffAsync("Test Tariff", 100m);
+        var seededTariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
 
         // Act
         var result = await TariffRepository.GetByIdAsync(seededTariff.TariffId);
@@ -14,15 +14,15 @@ public class GetByIdAsyncTests : BaseCqrsTest
         // Assert
         result.Should().NotBeNull();
         result!.TariffId.Should().Be(seededTariff.TariffId);
-        result.Name.Should().Be("Test Tariff");
-        result.PricePerMinute.Should().Be(100m);
+        result.TariffName.Should().Be(TestData.DefaultValues.DefaultTariffName);
+        result.TariffPricePerMinute.Should().Be(TestData.DefaultValues.DefaultTariffPrice);
     }
 
     [Fact]
     public async Task Repository_GetByIdAsync_Should_ReturnNull_WhenNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingTariffId;
 
         // Act
         var result = await TariffRepository.GetByIdAsync(nonExistentId);
@@ -35,7 +35,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         await TariffRepository.GetByIdAsync(tariff.TariffId);
         await TariffRepository.GetByIdAsync(tariff.TariffId);
 
@@ -47,11 +47,11 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_IncludeTheme_WhenExists()
     {
         // Arrange
-        var theme = await SeedThemeAsync("Test Theme");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
         var tariff = new Tariff
         {
-            Name = "Tariff with Theme",
-            PricePerMinute = 200m,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.PerMinute,
             ThemeId = theme.ThemeId,
             IsActive = true,
@@ -65,7 +65,6 @@ public class GetByIdAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result!.Theme.Should().NotBeNull();
-        result.Theme!.ThemeId.Should().Be(theme.ThemeId);
+        result!.ThemeId.Should().Be(theme.ThemeId);
     }
 }
