@@ -1,3 +1,4 @@
+using Venue.TimeCafe.Domain.DTOs;
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
@@ -12,24 +13,24 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenTariffFound()
     {
-        var query = new GetTariffByIdQuery(1);
-        var tariff = new Tariff { TariffId = 1, Name = "Test Tariff", PricePerMinute = 10m, BillingType = BillingType.PerMinute };
+        var query = new GetTariffByIdQuery(TestData.ExistingThemes.Theme1Id.ToString());
+        var tariff = new TariffWithThemeDto { TariffId = TestData.ExistingThemes.Theme1Id, TariffName = "Test Tariff", TariffPricePerMinute = 10m, TariffBillingType = BillingType.PerMinute };
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(tariff);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be("Test Tariff");
+        result.Tariff!.TariffName.Should().Be("Test Tariff");
     }
 
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenTariffDoesNotExist()
     {
-        var query = new GetTariffByIdQuery(999);
+        var query = new GetTariffByIdQuery(TestData.NonExistingIds.NonExistingTariffId.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Tariff?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingTariffId))).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -41,9 +42,9 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var query = new GetTariffByIdQuery(1);
+        var query = new GetTariffByIdQuery(TestData.ExistingThemes.Theme1Id.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -53,11 +54,12 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID тарифа обязателен")]
-    [InlineData(-1, false, "ID тарифа обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int tariffId, bool isValid, string? expectedError)
+    [InlineData("", false, "Тариф не найден")]
+    [InlineData("not-a-guid", false, "Тариф не найден")]
+    [InlineData("00000000-0000-0000-0000-000000000000", false, "Тариф не найден")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", true, null)]
+    [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
+    public async Task Validator_Should_ValidateCorrectly(string tariffId, bool isValid, string? expectedError)
     {
         var query = new GetTariffByIdQuery(tariffId);
         var validator = new GetTariffByIdQueryValidator();

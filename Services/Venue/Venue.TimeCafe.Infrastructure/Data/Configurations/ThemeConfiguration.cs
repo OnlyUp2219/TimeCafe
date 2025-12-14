@@ -19,7 +19,7 @@ public class ThemeConfiguration : IEntityTypeConfiguration<Theme>
             .HasColumnType("jsonb");
 
         builder.HasMany(t => t.Tariffs)
-            .WithOne(tar => tar.Theme)
+            .WithOne()
             .HasForeignKey(tar => tar.ThemeId)
             .OnDelete(DeleteBehavior.SetNull);
     }

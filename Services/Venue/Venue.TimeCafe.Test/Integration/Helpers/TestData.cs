@@ -58,8 +58,9 @@ public static class TestData
     {
         public static readonly Guid NonExistingPromotionId = Guid.Parse("99999999-9999-9999-9999-999999999999");
         public static readonly string NonExistingPromotionIdString = "99999999-9999-9999-9999-999999999999";
-        public static readonly int NonExistingTariffId = 9999;
-        public static readonly Guid NonExistingThemeId = Guid.Parse("99999999-9999-9999-9999-999999999998");
+        public static readonly Guid NonExistingTariffId = Guid.Parse("99999999-9999-9999-9999-999999999998");
+        public static readonly string NonExistingTariffIdString = "99999999-9999-9999-9999-999999999998";
+        public static readonly Guid NonExistingThemeId = Guid.Parse("99999999-9999-9999-9999-999999999997");
         public static readonly string NonExistingUserId = "99999999-9999-9999-9999-999999999999";
     }
 
