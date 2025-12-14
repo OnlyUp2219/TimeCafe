@@ -1,7 +1,7 @@
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using UserProfile.TimeCafe.Domain.Contracts;
+
+using System.Text.Json;
+
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Infrastructure.Services;

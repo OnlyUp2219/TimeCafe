@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Domain.Models;
-
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
 public record DeleteTariffCommand(string TariffId) : IRequest<DeleteTariffResult>;

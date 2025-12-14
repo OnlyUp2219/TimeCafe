@@ -2,7 +2,6 @@ using Microsoft.Extensions.Options;
 
 using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 using UserProfile.TimeCafe.Domain.DTOs;
-using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 

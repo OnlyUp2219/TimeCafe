@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Domain.Models;
-
 namespace Auth.TimeCafe.Domain.Contracts;
 
 public interface ITwilioSender

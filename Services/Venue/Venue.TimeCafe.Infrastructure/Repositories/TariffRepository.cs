@@ -1,5 +1,4 @@
 using Venue.TimeCafe.Domain.DTOs;
-using Venue.TimeCafe.Domain.Models;
 
 namespace Venue.TimeCafe.Infrastructure.Repositories;
 

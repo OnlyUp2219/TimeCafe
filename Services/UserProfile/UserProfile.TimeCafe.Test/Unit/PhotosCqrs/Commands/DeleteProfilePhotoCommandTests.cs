@@ -1,5 +1,4 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
-using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 

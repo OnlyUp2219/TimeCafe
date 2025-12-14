@@ -13,13 +13,13 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenVisitDeleted()
     {
         var command = new DeleteVisitCommand(1);
-        var visit = new Visit 
-        { 
-            VisitId = 1, 
-            UserId = "user123", 
-            TariffId = 1, 
-            EntryTime = DateTime.UtcNow, 
-            Status = VisitStatus.Active 
+        var visit = new Visit
+        {
+            VisitId = 1,
+            UserId = "user123",
+            TariffId = 1,
+            EntryTime = DateTime.UtcNow,
+            Status = VisitStatus.Active
         };
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
@@ -48,13 +48,13 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
         var command = new DeleteVisitCommand(1);
-        var visit = new Visit 
-        { 
-            VisitId = 1, 
-            UserId = "user123", 
-            TariffId = 1, 
-            EntryTime = DateTime.UtcNow, 
-            Status = VisitStatus.Active 
+        var visit = new Visit
+        {
+            VisitId = 1,
+            UserId = "user123",
+            TariffId = 1,
+            EntryTime = DateTime.UtcNow,
+            Status = VisitStatus.Active
         };
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
