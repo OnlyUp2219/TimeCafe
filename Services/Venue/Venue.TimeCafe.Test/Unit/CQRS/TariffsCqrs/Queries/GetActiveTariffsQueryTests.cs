@@ -1,3 +1,4 @@
+using Venue.TimeCafe.Domain.DTOs;
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
@@ -13,10 +14,10 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenActiveTariffsFound()
     {
         var query = new GetActiveTariffsQuery();
-        var tariffs = new List<Tariff>
+        var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = 1, Name = "Tariff 1", PricePerMinute = 10m, IsActive = true },
-            new() { TariffId = 2, Name = "Tariff 2", PricePerMinute = 20m, IsActive = true }
+            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 1", TariffPricePerMinute = 10m, TariffIsActive = true },
+            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 2", TariffPricePerMinute = 20m, TariffIsActive = true }
         };
 
         TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(tariffs);
@@ -32,7 +33,7 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenNoActiveTariffs()
     {
         var query = new GetActiveTariffsQuery();
-        var tariffs = new List<Tariff>();
+        var tariffs = new List<TariffWithThemeDto>();
 
         TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(tariffs);
 
