@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 namespace Venue.TimeCafe.Test.Unit.CQRS.ThemesCqrs.Commands;
 
 public class UpdateThemeCommandTests : BaseCqrsHandlerTest

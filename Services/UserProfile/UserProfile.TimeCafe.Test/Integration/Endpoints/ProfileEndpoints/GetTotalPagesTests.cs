@@ -1,6 +1,6 @@
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
-namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
+namespace UserProfile.TimeCafe.Test.Integration.Endpoints.ProfileEndpoints;
 
 public class GetTotalPagesTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {

@@ -41,7 +41,7 @@ public class GetTariffByIdQueryHandler(ITariffRepository repository) : IRequestH
     {
         try
         {
-            var tariffId = Guid.Parse(request.TariffId);    
+            var tariffId = Guid.Parse(request.TariffId);
 
             var tariff = await _repository.GetByIdAsync(tariffId);
 

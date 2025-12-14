@@ -1,7 +1,3 @@
-using System.Xml.Linq;
-
-using Venue.TimeCafe.Domain.Models;
-
 namespace Venue.TimeCafe.API.Endpoints.Tariffs.Commands;
 
 public class UpdateTariff : ICarterModule

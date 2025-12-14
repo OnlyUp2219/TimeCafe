@@ -33,18 +33,18 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnOrderedByName()
     {
         // Arrange
-        await SeedThemeAsync(TestData.ExistingThemes.Theme3Name); 
-        await SeedThemeAsync(TestData.ExistingThemes.Theme2Name); 
-        await SeedThemeAsync(TestData.ExistingThemes.Theme1Name); 
+        await SeedThemeAsync(TestData.ExistingThemes.Theme3Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
 
         // Act
         var result = (await ThemeRepository.GetAllAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].Name.Should().Be(TestData.ExistingThemes.Theme2Name); 
-        result[1].Name.Should().Be(TestData.ExistingThemes.Theme3Name); 
-        result[2].Name.Should().Be(TestData.ExistingThemes.Theme1Name); 
+        result[0].Name.Should().Be(TestData.ExistingThemes.Theme2Name);
+        result[1].Name.Should().Be(TestData.ExistingThemes.Theme3Name);
+        result[2].Name.Should().Be(TestData.ExistingThemes.Theme1Name);
     }
 
     [Fact]
