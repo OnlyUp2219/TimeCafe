@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetActiveVisitByUserQuery(string UserId) : IRequest<GetActiveVisitByUserResult>;
@@ -8,7 +10,7 @@ public record GetActiveVisitByUserResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResultV2
+    VisitWithTariffDto? Visit = null) : ICqrsResultV2
 {
     public static GetActiveVisitByUserResult VisitNotFound() =>
         new(false, Code: "ActiveVisitNotFound", Message: "Активное посещение не найдено", StatusCode: 404);
@@ -16,7 +18,7 @@ public record GetActiveVisitByUserResult(
     public static GetActiveVisitByUserResult GetFailed() =>
         new(false, Code: "GetActiveVisitFailed", Message: "Не удалось получить активное посещение", StatusCode: 500);
 
-    public static GetActiveVisitByUserResult GetSuccess(Visit visit) =>
+    public static GetActiveVisitByUserResult GetSuccess(VisitWithTariffDto visit) =>
         new(true, Visit: visit);
 }
 
@@ -25,8 +27,9 @@ public class GetActiveVisitByUserQueryValidator : AbstractValidator<GetActiveVis
     public GetActiveVisitByUserQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("ID пользователя обязателен")
-            .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
     }
 }
 
@@ -38,7 +41,9 @@ public class GetActiveVisitByUserQueryHandler(IVisitRepository repository) : IRe
     {
         try
         {
-            var visit = await _repository.GetActiveVisitByUserAsync(request.UserId);
+            var userId = Guid.Parse(request.UserId);
+
+            var visit = await _repository.GetActiveVisitByUserAsync(userId);
 
             if (visit == null)
                 return GetActiveVisitByUserResult.VisitNotFound();

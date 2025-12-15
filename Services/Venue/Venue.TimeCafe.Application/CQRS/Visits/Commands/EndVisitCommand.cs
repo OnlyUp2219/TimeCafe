@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record EndVisitCommand(int VisitId) : IRequest<EndVisitResult>;
+public record EndVisitCommand(string VisitId) : IRequest<EndVisitResult>;
 
 public record EndVisitResult(
     bool Success,
@@ -26,7 +26,9 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
     public EndVisitCommandValidator()
     {
         RuleFor(x => x.VisitId)
-            .GreaterThan(0).WithMessage("ID посещения обязателен");
+            .NotEmpty().WithMessage("Посещение не найдено")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Посещение не найдено")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
     }
 }
 
@@ -38,28 +40,41 @@ public class EndVisitCommandHandler(IVisitRepository repository) : IRequestHandl
     {
         try
         {
-            var visit = await _repository.GetByIdAsync(request.VisitId);
-            if (visit == null)
+            var visitId = Guid.Parse(request.VisitId);
+
+            var visitDto = await _repository.GetByIdAsync(visitId);
+            if (visitDto == null)
                 return EndVisitResult.VisitNotFound();
 
-            visit.ExitTime = DateTime.UtcNow;
-            visit.Status = VisitStatus.Completed;
+            visitDto.ExitTime = DateTimeOffset.UtcNow;
+            visitDto.Status = VisitStatus.Completed;
 
-            var duration = (visit.ExitTime.Value - visit.EntryTime).TotalMinutes;
+            var duration = (visitDto.ExitTime.Value - visitDto.EntryTime).TotalMinutes;
 
-            if (visit.Tariff != null)
+            if (visitDto.TariffId != null)
             {
-                visit.CalculatedCost = visit.Tariff.BillingType == BillingType.Hourly
-                    ? (decimal)Math.Ceiling(duration / 60) * (visit.Tariff.PricePerMinute * 60)
-                    : (decimal)Math.Ceiling(duration) * visit.Tariff.PricePerMinute;
+                visitDto.CalculatedCost = visitDto.TariffBillingType == BillingType.Hourly
+                    ? (decimal)Math.Ceiling(duration / 60) * (visitDto.TariffPricePerMinute * 60)
+                    : (decimal)Math.Ceiling(duration) * visitDto.TariffPricePerMinute;
             }
+
+            //TODO : AutoMapper
+            var visit = new Visit(visitDto.VisitId)
+            {
+                UserId = visitDto.UserId,
+                TariffId = visitDto.TariffId,
+                EntryTime = visitDto.EntryTime,
+                ExitTime = visitDto.ExitTime,
+                CalculatedCost = visitDto.CalculatedCost,
+                Status = visitDto.Status
+            };
 
             var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
                 return EndVisitResult.EndFailed();
 
-            return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
+            return EndVisitResult.EndSuccess(updated, visitDto.CalculatedCost ?? 0);
         }
         catch (Exception)
         {

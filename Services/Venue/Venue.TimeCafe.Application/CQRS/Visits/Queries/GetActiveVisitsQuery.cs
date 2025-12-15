@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetActiveVisitsQuery() : IRequest<GetActiveVisitsResult>;
@@ -8,12 +10,12 @@ public record GetActiveVisitsResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Visit>? Visits = null) : ICqrsResultV2
+    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResultV2
 {
     public static GetActiveVisitsResult GetFailed() =>
         new(false, Code: "GetActiveVisitsFailed", Message: "Не удалось получить активные посещения", StatusCode: 500);
 
-    public static GetActiveVisitsResult GetSuccess(IEnumerable<Visit> visits) =>
+    public static GetActiveVisitsResult GetSuccess(IEnumerable<VisitWithTariffDto> visits) =>
         new(true, Visits: visits);
 }
 
