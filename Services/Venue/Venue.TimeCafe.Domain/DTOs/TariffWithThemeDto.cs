@@ -10,6 +10,7 @@ public class TariffWithThemeDto
     public bool TariffIsActive { get; set; } = true;
     public DateTimeOffset TariffCreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset TariffLastModified { get; set; } = DateTimeOffset.UtcNow;
+    
     public Guid? ThemeId { get; set; }
     public string ThemeName { get; set; } = string.Empty;
     public string? ThemeEmoji { get; set; }
