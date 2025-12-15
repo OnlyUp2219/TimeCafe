@@ -4,9 +4,9 @@ public class DeleteVisit : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/visits/{visitId:int}", async (
-            ISender sender,
-            int visitId) =>
+        app.MapDelete("/visits/{visitId}", async (
+            [FromServices] ISender sender,
+            [AsParameters] DeleteVisitDto visitId) =>
         {
             var command = new DeleteVisitCommand(visitId);
             var result = await sender.Send(command);
