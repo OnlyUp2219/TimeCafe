@@ -40,7 +40,19 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
-        //TODO : Validate DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status
+        RuleFor(x => x.EntryTime)
+            .NotEmpty().WithMessage("Время входа обязательно")
+            .Must(t => t != default).WithMessage("Время входа некорректно");
+
+        RuleFor(x => x.ExitTime)
+            .Must((cmd, exit) => exit == null || exit.Value != default).WithMessage("Время выхода некорректно")
+            .Must((cmd, exit) => exit == null || exit.Value >= cmd.EntryTime).WithMessage("Время выхода не может быть раньше времени входа");
+
+        RuleFor(x => x.CalculatedCost)
+            .Must(cost => cost == null || cost >= 0).WithMessage("Стоимость не может быть отрицательной");
+
+        RuleFor(x => x.Status)
+            .IsInEnum().WithMessage("Статус посещения некорректен");
     }
 }
 
@@ -62,7 +74,7 @@ public class UpdateVisitCommandHandler(IVisitRepository repository) : IRequestHa
             var visit = new Visit
             {
                 UserId = Guid.Parse(request.UserId),
-                TariffId =  Guid.Parse(request.TariffId),
+                TariffId = Guid.Parse(request.TariffId),
                 VisitId = visitId,
                 EntryTime = request.EntryTime,
                 ExitTime = request.ExitTime,
