@@ -38,7 +38,7 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(t => t.Visits)
-            .WithOne(v => v.Tariff)
+            .WithOne()
             .HasForeignKey(v => v.TariffId)
             .OnDelete(DeleteBehavior.Restrict);
 

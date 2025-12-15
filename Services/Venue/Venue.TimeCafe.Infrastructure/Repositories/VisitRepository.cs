@@ -9,19 +9,36 @@ public class VisitRepository(
     private readonly IDistributedCache _cache = cache;
     private readonly ILogger _cacheLogger = cacheLogger;
 
-    public async Task<Visit?> GetByIdAsync(int visitId)
+    public async Task<VisitWithTariffDto?> GetByIdAsync(Guid visitId)
     {
-        var cached = await CacheHelper.GetAsync<Visit>(
+        var cached = await CacheHelper.GetAsync<VisitWithTariffDto>(
             _cache,
             _cacheLogger,
             CacheKeys.Visit_ById(visitId)).ConfigureAwait(false);
         if (cached != null)
             return cached;
 
-        var entity = await _context.Visits
-            .Include(v => v.Tariff)
-            .FirstOrDefaultAsync(v => v.VisitId == visitId)
-            .ConfigureAwait(false);
+        var entity = await (from v in _context.Visits
+                            join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                            from t in tGroup.DefaultIfEmpty()
+                            where v.VisitId == visitId
+                            select new VisitWithTariffDto
+                            {
+                                VisitId = v.VisitId,
+                                UserId = v.UserId,
+                                TariffId = v.TariffId,
+                                EntryTime = v.EntryTime,
+                                ExitTime = v.ExitTime,
+                                CalculatedCost = v.CalculatedCost,
+                                Status = (int)v.Status,
+
+                                TariffName = t != null ? t.Name : string.Empty,
+                                TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                                TariffDescription = t != null ? t.Description! : string.Empty
+                            })
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
 
         if (entity != null)
         {
@@ -35,78 +52,125 @@ public class VisitRepository(
         return entity;
     }
 
-    public async Task<Visit?> GetActiveVisitByUserAsync(string userId)
+    public async Task<VisitWithTariffDto?> GetActiveVisitByUserAsync(Guid userId)
     {
-        var cached = await CacheHelper.GetAsync<Visit>(
+        var cached = await CacheHelper.GetAsync<VisitWithTariffDto>(
             _cache,
             _cacheLogger,
             CacheKeys.Visit_ActiveByUser(userId)).ConfigureAwait(false);
         if (cached != null)
             return cached;
 
-        var entity = await _context.Visits
-            .Include(v => v.Tariff)
-            .FirstOrDefaultAsync(v => v.UserId == userId && v.Status == VisitStatus.Active)
-            .ConfigureAwait(false);
+        var dto = await (from v in _context.Visits
+                         join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                         from t in tGroup.DefaultIfEmpty()
+                         where v.UserId == userId && v.Status == VisitStatus.Active
+                         select new VisitWithTariffDto
+                         {
+                             VisitId = v.VisitId,
+                             UserId = v.UserId,
+                             TariffId = v.TariffId,
+                             EntryTime = v.EntryTime,
+                             ExitTime = v.ExitTime,
+                             CalculatedCost = v.CalculatedCost,
+                             Status = (int)v.Status,
 
-        if (entity != null)
+                             TariffName = t != null ? t.Name : string.Empty,
+                             TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                             TariffDescription = t != null ? t.Description! : string.Empty
+                         })
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync()
+                        .ConfigureAwait(false);
+
+        if (dto != null)
         {
             await CacheHelper.SetAsync(
                 _cache,
                 _cacheLogger,
                 CacheKeys.Visit_ActiveByUser(userId),
-                entity).ConfigureAwait(false);
+                dto).ConfigureAwait(false);
         }
 
-        return entity;
+        return dto;
     }
 
-    public async Task<IEnumerable<Visit>> GetActiveVisitsAsync()
+    public async Task<IEnumerable<VisitWithTariffDto>> GetActiveVisitsAsync()
     {
-        var cached = await CacheHelper.GetAsync<IEnumerable<Visit>>(
+        var cached = await CacheHelper.GetAsync<IEnumerable<VisitWithTariffDto>>(
             _cache,
             _cacheLogger,
             CacheKeys.Visit_Active).ConfigureAwait(false);
         if (cached != null)
             return cached;
 
-        var entity = await _context.Visits
-            .Include(v => v.Tariff)
-            .AsNoTracking()
-            .Where(v => v.Status == VisitStatus.Active)
-            .OrderByDescending(v => v.EntryTime)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var items = await (from v in _context.Visits
+                           join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                           from t in tGroup.DefaultIfEmpty()
+                           where v.Status == VisitStatus.Active
+                           orderby v.EntryTime descending
+                           select new VisitWithTariffDto
+                           {
+                               VisitId = v.VisitId,
+                               UserId = v.UserId,
+                               TariffId = v.TariffId,
+                               EntryTime = v.EntryTime,
+                               ExitTime = v.ExitTime,
+                               CalculatedCost = v.CalculatedCost,
+                               Status = (int)v.Status,
+
+                               TariffName = t != null ? t.Name : string.Empty,
+                               TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                               TariffDescription = t != null ? t.Description! : string.Empty
+                           })
+                          .AsNoTracking()
+                          .ToListAsync()
+                          .ConfigureAwait(false);
 
         await CacheHelper.SetAsync(
             _cache,
             _cacheLogger,
             CacheKeys.Visit_Active,
-            entity,
+            items,
             new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1) }).ConfigureAwait(false);
 
-        return entity;
+        return items;
     }
 
-    public async Task<IEnumerable<Visit>> GetVisitHistoryByUserAsync(string userId, int pageNumber = 1, int pageSize = 20)
+    public async Task<IEnumerable<VisitWithTariffDto>> GetVisitHistoryByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 20)
     {
         var cacheKey = CacheKeys.Visit_HistoryByUser(userId, pageNumber);
-        var cached = await CacheHelper.GetAsync<IEnumerable<Visit>>(
+        var cached = await CacheHelper.GetAsync<IEnumerable<VisitWithTariffDto>>(
             _cache,
             _cacheLogger,
             cacheKey).ConfigureAwait(false);
         if (cached != null)
             return cached;
 
-        var items = await _context.Visits
-            .Include(v => v.Tariff)
-            .AsNoTracking()
-            .Where(v => v.UserId == userId)
-            .OrderByDescending(v => v.EntryTime)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync()
-            .ConfigureAwait(false);
+        var items = await (from v in _context.Visits
+                           join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                           from t in tGroup.DefaultIfEmpty()
+                           where v.UserId == userId
+                           orderby v.EntryTime descending
+                           select new VisitWithTariffDto
+                           {
+                               VisitId = v.VisitId,
+                               UserId = v.UserId,
+                               TariffId = v.TariffId,
+                               EntryTime = v.EntryTime,
+                               ExitTime = v.ExitTime,
+                               CalculatedCost = v.CalculatedCost,
+                               Status = (int)v.Status,
+
+                               TariffName = t != null ? t.Name : string.Empty,
+                               TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                               TariffDescription = t != null ? t.Description! : string.Empty
+                           })
+                          .AsNoTracking()
+                          .Skip((pageNumber - 1) * pageSize)
+                          .Take(pageSize)
+                          .ToListAsync()
+                          .ConfigureAwait(false);
 
         await CacheHelper.SetAsync(
             _cache,
@@ -118,7 +182,7 @@ public class VisitRepository(
         return items;
     }
 
-    public async Task<bool> HasActiveVisitAsync(string userId)
+    public async Task<bool> HasActiveVisitAsync(Guid userId)
     {
         return await _context.Visits
             .AnyAsync(v => v.UserId == userId && v.Status == VisitStatus.Active);
@@ -163,7 +227,7 @@ public class VisitRepository(
         return visit;
     }
 
-    public async Task<bool> DeleteAsync(int visitId)
+    public async Task<bool> DeleteAsync(Guid visitId)
     {
         var visit = await _context.Visits.FindAsync(visitId);
         if (visit == null)
