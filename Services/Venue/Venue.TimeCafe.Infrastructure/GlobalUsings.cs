@@ -11,3 +11,4 @@ global using Venue.TimeCafe.Domain.Contracts.Repositories;
 global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.Repositories;
+global using Venue.TimeCafe.Domain.DTOs;
