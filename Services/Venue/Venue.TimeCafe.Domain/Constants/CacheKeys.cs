@@ -17,10 +17,10 @@ public static class CacheKeys
 
 
     public const string Visit_Active = "venue:visit:active";
-    public static string Visit_ById(int id) => $"venue:visit:id:{id}";
-    public static string Visit_ByUser(string userId) => $"venue:visit:user:{userId}";
-    public static string Visit_ActiveByUser(string userId) => $"venue:visit:user:{userId}:active";
-    public static string Visit_HistoryByUser(string userId, int page) => $"venue:visit:user:{userId}:history:p{page}";
+    public static string Visit_ById(Guid id) => $"venue:visit:id:{id}";
+    public static string Visit_ByUser(Guid userId) => $"venue:visit:user:{userId}";
+    public static string Visit_ActiveByUser(Guid userId) => $"venue:visit:user:{userId}:active";
+    public static string Visit_HistoryByUser(Guid userId, int page) => $"venue:visit:user:{userId}:history:p{page}";
 
     public const string Promotion_All = "venue:promotion:all";
     public const string Promotion_Active = "venue:promotion:active";
