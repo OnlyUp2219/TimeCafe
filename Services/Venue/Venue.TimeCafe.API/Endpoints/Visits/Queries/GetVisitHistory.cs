@@ -5,8 +5,8 @@ public class GetVisitHistory : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/visits/history/{userId}", async (
-            ISender sender,
-            string userId,
+            [FromServices] ISender sender,
+            [AsParameters] GetVisitHistoryDto userId,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10) =>
         {

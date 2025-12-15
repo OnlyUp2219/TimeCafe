@@ -5,7 +5,7 @@ public class EndVisit : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/visits/end", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] EndVisitDto dto) =>
         {
             var command = new EndVisitCommand(dto.VisitId);

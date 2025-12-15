@@ -5,7 +5,7 @@ public class CreateVisit : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/visits", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreateVisitDto dto) =>
         {
             var command = new CreateVisitCommand(dto.UserId, dto.TariffId);

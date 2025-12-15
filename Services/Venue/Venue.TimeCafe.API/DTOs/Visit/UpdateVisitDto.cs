@@ -1,23 +1,23 @@
 namespace Venue.TimeCafe.API.DTOs.Visit;
 
 public record UpdateVisitDto(
-    int VisitId,
+    string VisitId,
     string UserId,
-    int TariffId,
-    DateTime EntryTime,
-    DateTime? ExitTime,
+    string TariffId,
+    DateTimeOffset EntryTime,
+    DateTimeOffset? ExitTime,
     decimal? CalculatedCost,
-    int Status);
+    VisitStatus Status);
 
 public class UpdateVisitDtoExample : IExamplesProvider<UpdateVisitDto>
 {
     public UpdateVisitDto GetExamples() =>
         new(
-            VisitId: 1,
-            UserId: "user-123-abc",
-            TariffId: 1,
-            EntryTime: DateTime.UtcNow.AddHours(-2),
+            VisitId: "a1111111-1111-1111-1111-111111111111",
+            UserId: "a1111111-1111-1111-1111-111111111111",
+            TariffId: "a1111111-1111-1111-1111-111111111111",
+            EntryTime: DateTimeOffset.UtcNow.AddHours(-2),
             ExitTime: null,
             CalculatedCost: null,
-            Status: 1);
+            Status: VisitStatus.Active);
 }
