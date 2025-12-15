@@ -38,6 +38,24 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
             .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
             .When(x => !string.IsNullOrEmpty(x.Emoji));
 
+        RuleFor(x => x.Colors)
+            .MaximumLength(2000).WithMessage("Colors слишком длинный")
+            .Must(colors => string.IsNullOrEmpty(colors) || IsValidJson(colors)).WithMessage("Colors должен быть корректным JSON")
+            .When(x => x.Colors != null);
+
+        static bool IsValidJson(string json)
+        {
+            try
+            {
+                System.Text.Json.JsonDocument.Parse(json);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
     }
 }
 
