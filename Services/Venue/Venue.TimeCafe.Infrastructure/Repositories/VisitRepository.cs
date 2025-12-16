@@ -30,7 +30,7 @@ public class VisitRepository(
                                 EntryTime = v.EntryTime,
                                 ExitTime = v.ExitTime,
                                 CalculatedCost = v.CalculatedCost,
-                                Status = (int)v.Status,
+                                Status = v.Status,
 
                                 TariffName = t != null ? t.Name : string.Empty,
                                 TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
@@ -73,7 +73,7 @@ public class VisitRepository(
                              EntryTime = v.EntryTime,
                              ExitTime = v.ExitTime,
                              CalculatedCost = v.CalculatedCost,
-                             Status = (int)v.Status,
+                             Status = v.Status,
 
                              TariffName = t != null ? t.Name : string.Empty,
                              TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
@@ -117,7 +117,7 @@ public class VisitRepository(
                                EntryTime = v.EntryTime,
                                ExitTime = v.ExitTime,
                                CalculatedCost = v.CalculatedCost,
-                               Status = (int)v.Status,
+                               Status = v.Status,
 
                                TariffName = t != null ? t.Name : string.Empty,
                                TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
@@ -160,7 +160,7 @@ public class VisitRepository(
                                EntryTime = v.EntryTime,
                                ExitTime = v.ExitTime,
                                CalculatedCost = v.CalculatedCost,
-                               Status = (int)v.Status,
+                               Status = v.Status,
 
                                TariffName = t != null ? t.Name : string.Empty,
                                TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,

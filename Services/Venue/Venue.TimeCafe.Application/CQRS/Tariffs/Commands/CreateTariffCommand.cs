@@ -5,7 +5,7 @@ public record CreateTariffCommand(
     string? Description,
     decimal PricePerMinute,
     BillingType BillingType,
-    Guid? ThemeId,
+    string? ThemeId,
     bool IsActive = true) : IRequest<CreateTariffResult>;
 
 public record CreateTariffResult(
@@ -40,6 +40,11 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
 
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Неверный тип биллинга");
+
+        //TODO: изменить валидацию
+        RuleFor(x => x.ThemeId)
+            .Must(id => string.IsNullOrEmpty(id) || Guid.TryParse(id, out _))
+            .WithMessage("Неверный формат идентификатора темы");
     }
 }
 
@@ -57,7 +62,7 @@ public class CreateTariffCommandHandler(ITariffRepository repository) : IRequest
                 Description = request.Description,
                 PricePerMinute = request.PricePerMinute,
                 BillingType = request.BillingType,
-                ThemeId = request.ThemeId,
+                ThemeId = string.IsNullOrWhiteSpace(request.ThemeId) ? null : Guid.Parse(request.ThemeId),
                 IsActive = request.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 LastModified = DateTime.UtcNow

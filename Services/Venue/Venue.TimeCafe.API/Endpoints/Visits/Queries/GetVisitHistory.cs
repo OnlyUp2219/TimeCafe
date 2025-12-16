@@ -10,7 +10,7 @@ public class GetVisitHistory : ICarterModule
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10) =>
         {
-            var query = new GetVisitHistoryQuery(userId, pageNumber, pageSize);
+            var query = new GetVisitHistoryQuery(userId.UserId, pageNumber, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visits = r.Visits }));
         })

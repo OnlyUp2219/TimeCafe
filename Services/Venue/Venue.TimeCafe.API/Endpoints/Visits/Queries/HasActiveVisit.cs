@@ -8,7 +8,7 @@ public class HasActiveVisit : ICarterModule
             [FromServices] ISender sender,
             [AsParameters] HasActiveVisitDto userId) =>
         {
-            var query = new HasActiveVisitQuery(userId);
+            var query = new HasActiveVisitQuery(userId.UserId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { hasActiveVisit = r.HasActiveVisit }));
         })
