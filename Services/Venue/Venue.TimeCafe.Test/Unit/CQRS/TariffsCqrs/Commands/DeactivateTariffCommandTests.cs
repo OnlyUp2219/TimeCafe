@@ -1,3 +1,6 @@
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Commands;
 
 public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
@@ -12,11 +15,18 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenTariffDeactivated()
     {
-        var command = new DeactivateTariffCommand(1);
-        var tariff = new Tariff { TariffId = 1, Name = "Test", PricePerMinute = 10m, BillingType = BillingType.PerMinute };
+        var tariffId = Guid.NewGuid();
+        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var tariff = new TariffWithThemeDto
+        {
+            TariffId = tariffId,
+            TariffName = TestData.ExistingTariffs.Tariff1Name,
+            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
+        };
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tariff);
-        TariffRepositoryMock.Setup(r => r.DeactivateAsync(1)).ReturnsAsync(true);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.DeactivateAsync(tariffId)).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -26,9 +36,10 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenTariffDoesNotExist()
     {
-        var command = new DeactivateTariffCommand(999);
+        var tariffId = TestData.NonExistingIds.NonExistingTariffId;
+        var command = new DeactivateTariffCommand(tariffId.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Tariff?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -40,11 +51,18 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
-        var command = new DeactivateTariffCommand(1);
-        var tariff = new Tariff { TariffId = 1, Name = "Test", PricePerMinute = 10m, BillingType = BillingType.PerMinute };
+        var tariffId = Guid.NewGuid();
+        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var tariff = new TariffWithThemeDto
+        {
+            TariffId = tariffId,
+            TariffName = TestData.ExistingTariffs.Tariff1Name,
+            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
+        };
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(tariff);
-        TariffRepositoryMock.Setup(r => r.DeactivateAsync(1)).ReturnsAsync(false);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.DeactivateAsync(tariffId)).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -56,9 +74,10 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new DeactivateTariffCommand(1);
+        var tariffId = Guid.NewGuid();
+        var command = new DeactivateTariffCommand(tariffId.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -68,11 +87,10 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID тарифа обязателен")]
-    [InlineData(-1, false, "ID тарифа обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int tariffId, bool isValid, string? expectedError)
+    [InlineData("", false, "Тариф не найден")]
+    [InlineData("not-a-guid", false, "Тариф не найден")]
+    [InlineData("00000000-0000-0000-0000-000000000000", false, "Тариф не найден")]
+    public async Task Validator_Should_ValidateCorrectly_InvalidCases(string tariffId, bool isValid, string? expectedError)
     {
         var command = new DeactivateTariffCommand(tariffId);
         var validator = new DeactivateTariffCommandValidator();
@@ -84,5 +102,16 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
         {
             result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
         }
+    }
+
+    [Fact]
+    public async Task Validator_Should_ValidateCorrectly_ValidGuid()
+    {
+        var command = new DeactivateTariffCommand(Guid.NewGuid().ToString());
+        var validator = new DeactivateTariffCommandValidator();
+
+        var result = await validator.ValidateAsync(command);
+
+        result.IsValid.Should().BeTrue();
     }
 }

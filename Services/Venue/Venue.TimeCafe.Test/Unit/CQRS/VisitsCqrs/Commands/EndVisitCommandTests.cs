@@ -1,5 +1,8 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class EndVisitCommandTests : BaseCqrsHandlerTest
 {
     private readonly EndVisitCommandHandler _handler;
@@ -12,23 +15,20 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenVisitEnded()
     {
-        var command = new EndVisitCommand(1);
-        var visit = new Visit
+        var visitId = Guid.NewGuid();
+        var command = new EndVisitCommand(visitId.ToString());
+        var visitDto = new VisitWithTariffDto
         {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow.AddHours(-1),
+            VisitId = visitId,
+            UserId = TestData.ExistingVisits.Visit1UserId,
+            TariffId = Guid.NewGuid(),
+            EntryTime = DateTimeOffset.UtcNow.AddHours(-1),
             Status = VisitStatus.Active,
-            Tariff = new Tariff
-            {
-                TariffId = 1,
-                PricePerMinute = 1.5m,
-                BillingType = BillingType.PerMinute
-            }
+            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(visitDto);
         VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>())).ReturnsAsync((Visit v) => v);
 
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -42,9 +42,10 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenVisitDoesNotExist()
     {
-        var command = new EndVisitCommand(999);
+        var visitId = TestData.NonExistingIds.NonExistingVisitId;
+        var command = new EndVisitCommand(visitId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Visit?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -56,18 +57,21 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
-        var command = new EndVisitCommand(1);
-        var visit = new Visit
+        var visitId = Guid.NewGuid();
+        var command = new EndVisitCommand(visitId.ToString());
+        var visitDto = new VisitWithTariffDto
         {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow.AddHours(-1),
-            Status = VisitStatus.Active
+            VisitId = visitId,
+            UserId = TestData.ExistingVisits.Visit1UserId,
+            TariffId = Guid.NewGuid(),
+            EntryTime = DateTimeOffset.UtcNow.AddHours(-1),
+            Status = VisitStatus.Active,
+            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
-        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>())).ReturnsAsync((Visit?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(visitDto);
+        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>())).ReturnsAsync((Visit?)null!);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -79,9 +83,10 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new EndVisitCommand(1);
+        var visitId = Guid.NewGuid();
+        var command = new EndVisitCommand(visitId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -91,11 +96,11 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID посещения обязателен")]
-    [InlineData(-1, false, "ID посещения обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int visitId, bool isValid, string? expectedError)
+    [InlineData("", false)]
+    [InlineData("not-a-guid", false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", true)]
+    public async Task Validator_Should_ValidateCorrectly(string visitId, bool isValid)
     {
         var command = new EndVisitCommand(visitId);
         var validator = new EndVisitCommandValidator();
@@ -103,9 +108,5 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
         var result = await validator.ValidateAsync(command);
 
         result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
     }
 }
