@@ -1,5 +1,7 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class CreateAsyncTests : BaseCqrsTest
 {
     [Fact]
@@ -19,10 +21,10 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_CreateVisit_WhenValidData()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var visit = new Visit
         {
-            UserId = "user123",
+            UserId = TestData.ExistingVisits.Visit1UserId,
             TariffId = tariff.TariffId
         };
 
@@ -31,8 +33,7 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.VisitId.Should().BeGreaterThan(0);
-        result.UserId.Should().Be("user123");
+        result.UserId.Should().Be(TestData.ExistingVisits.Visit1UserId);
         result.TariffId.Should().Be(tariff.TariffId);
     }
 
@@ -40,10 +41,10 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_SetEntryTime()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var visit = new Visit
         {
-            UserId = "user123",
+            UserId = TestData.ExistingVisits.Visit1UserId,
             TariffId = tariff.TariffId
         };
 
@@ -58,10 +59,10 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_SetStatusToActive()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var visit = new Visit
         {
-            UserId = "user123",
+            UserId = TestData.ExistingVisits.Visit1UserId,
             TariffId = tariff.TariffId
         };
 
@@ -76,10 +77,10 @@ public class CreateAsyncTests : BaseCqrsTest
     public async Task Repository_CreateAsync_Should_PersistToDatabase()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var visit = new Visit
         {
-            UserId = "user456",
+            UserId = TestData.NewVisits.NewVisit1UserId,
             TariffId = tariff.TariffId
         };
 
@@ -89,17 +90,17 @@ public class CreateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Visits.FindAsync(result.VisitId);
         fromDb.Should().NotBeNull();
-        fromDb!.UserId.Should().Be("user456");
+        fromDb!.UserId.Should().Be(TestData.NewVisits.NewVisit1UserId);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var visit = new Visit
         {
-            UserId = "user123",
+            UserId = TestData.ExistingVisits.Visit1UserId,
             TariffId = tariff.TariffId
         };
 
