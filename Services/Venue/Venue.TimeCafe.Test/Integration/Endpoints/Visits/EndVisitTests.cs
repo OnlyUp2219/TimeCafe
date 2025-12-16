@@ -6,7 +6,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     public async Task Endpoint_EndVisit_Should_Return200_WhenVisitExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1", isActive: true);
+        var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
         var payload = new { visitId = visit.VisitId };
 
         var response = await Client.PostAsJsonAsync("/visits/end", payload);
@@ -30,7 +30,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     public async Task Endpoint_EndVisit_Should_Return404_WhenVisitNotFound()
     {
         await ClearDatabaseAndCacheAsync();
-        var payload = new { visitId = 9999 };
+        var payload = new { visitId = TestData.NonExistingIds.NonExistingVisitIdString };
 
         var response = await Client.PostAsJsonAsync("/visits/end", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -46,10 +46,10 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_EndVisit_Should_Return422_WhenVisitIdIsInvalid(int invalidId)
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_EndVisit_Should_Return422_WhenVisitIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new { visitId = invalidId };
@@ -71,7 +71,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     public async Task Endpoint_EndVisit_Should_CalculateCost_WhenVisitEnded()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1", isActive: true);
+        var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId, isActive: true);
         var payload = new { visitId = visit.VisitId };
 
         var response = await Client.PostAsJsonAsync("/visits/end", payload);

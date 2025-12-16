@@ -6,16 +6,17 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
     public async Task Endpoint_GetActiveVisitByUser_Should_Return200_WhenUserHasActiveVisit()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user123", isActive: true);
+        var userId = TestData.NewVisits.NewVisit1UserId;
+        var visit = await SeedVisitAsync(userId, isActive: true);
 
-        var response = await Client.GetAsync("/visits/active/user123");
+        var response = await Client.GetAsync($"/visits/active/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("visit", out var visitJson).Should().BeTrue();
-            visitJson.GetProperty("userId").GetString().Should().Be("user123");
+            visitJson.GetProperty("userId").GetString().Should().Be(userId.ToString());
         }
         catch (Exception)
         {
@@ -29,7 +30,8 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync("/visits/active/user123");
+        var userId = TestData.NonExistingIds.NonExistingUserId;
+        var response = await Client.GetAsync($"/visits/active/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -46,18 +48,19 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
     public async Task Endpoint_GetActiveVisitByUser_Should_ReturnOnlyActiveVisit_WhenUserHasMultipleVisits()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedVisitAsync("user123", isActive: false);
-        var activeVisit = await SeedVisitAsync("user123", isActive: true);
+        var userId = TestData.NewVisits.NewVisit2UserId;
+        await SeedVisitAsync(userId, isActive: false);
+        var activeVisit = await SeedVisitAsync(userId, isActive: true);
 
-        var response = await Client.GetAsync("/visits/active/user123");
+        var response = await Client.GetAsync($"/visits/active/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var visit = json.GetProperty("visit");
-            visit.GetProperty("visitId").GetInt32().Should().Be(activeVisit.VisitId);
-            visit.GetProperty("status").GetInt32().Should().Be(0);
+            visit.GetProperty("visitId").GetString().Should().Be(activeVisit.VisitId.ToString());
+            visit.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.Active);
         }
         catch (Exception)
         {

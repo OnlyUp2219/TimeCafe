@@ -6,10 +6,10 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_CreateVisit_Should_Return201_WhenValid()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф", 10m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var payload = new
         {
-            userId = "user123",
+            userId = TestData.DefaultValues.DefaultUserId.ToString(),
             tariffId = tariff.TariffId
         };
 
@@ -21,7 +21,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out _).Should().BeTrue();
             json.TryGetProperty("visit", out var visit).Should().BeTrue();
-            visit.GetProperty("userId").GetString().Should().Be("user123");
+            visit.GetProperty("userId").GetString().Should().Be(TestData.DefaultValues.DefaultUserId.ToString());
         }
         catch (Exception)
         {
@@ -36,7 +36,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_CreateVisit_Should_Return422_WhenUserIdIsInvalid(string? invalidUserId)
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф", 10m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var payload = new
         {
             userId = invalidUserId,
@@ -57,14 +57,15 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    public async Task Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsInvalid(int invalidTariffId)
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsInvalid(string invalidTariffId)
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            userId = "user123",
+            userId = TestData.DefaultValues.DefaultUserId.ToString(),
             tariffId = invalidTariffId
         };
 
@@ -85,10 +86,10 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_CreateVisit_Should_ReturnVisitWithId_WhenCreated()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф", 10m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var payload = new
         {
-            userId = "user123",
+            userId = TestData.DefaultValues.DefaultUserId.ToString(),
             tariffId = tariff.TariffId
         };
 
@@ -99,7 +100,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var visit = json.GetProperty("visit");
-            visit.GetProperty("visitId").GetInt32().Should().BeGreaterThan(0);
+            visit.GetProperty("visitId").GetGuid().Should().NotBeEmpty();
         }
         catch (Exception)
         {

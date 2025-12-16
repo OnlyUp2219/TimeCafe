@@ -6,7 +6,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_DeleteVisit_Should_Return200_WhenVisitExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1");
+        var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId);
 
         var response = await Client.DeleteAsync($"/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -28,7 +28,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync("/visits/9999");
+        var response = await Client.DeleteAsync($"/visits/{TestData.NonExistingIds.NonExistingVisitIdString}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -45,7 +45,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_DeleteVisit_Should_ActuallyRemoveFromDatabase_WhenDeleted()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1");
+        var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId);
 
         var deleteResponse = await Client.DeleteAsync($"/visits/{visit.VisitId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -64,10 +64,9 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_DeleteVisit_Should_Return422_WhenVisitIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_DeleteVisit_Should_Return422_WhenVisitIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -88,8 +87,8 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_DeleteVisit_Should_NotAffectOtherVisits_WhenOneIsDeleted()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit1 = await SeedVisitAsync("user1");
-        var visit2 = await SeedVisitAsync("user2");
+        var visit1 = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId);
+        var visit2 = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId);
 
         await Client.DeleteAsync($"/visits/{visit1.VisitId}");
 

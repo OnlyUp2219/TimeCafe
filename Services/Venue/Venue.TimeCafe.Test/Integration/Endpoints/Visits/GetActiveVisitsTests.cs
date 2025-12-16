@@ -6,9 +6,9 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetActiveVisits_Should_Return200_WhenActiveVisitsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedVisitAsync("user1", isActive: true);
-        await SeedVisitAsync("user2", isActive: true);
-        await SeedVisitAsync("user3", isActive: false);
+        await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
+        await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId, isActive: true);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, isActive: false);
 
         var response = await Client.GetAsync("/visits/active");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -31,7 +31,7 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetActiveVisits_Should_Return200_WhenNoActiveVisitsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedVisitAsync("user1", isActive: false);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, isActive: false);
 
         var response = await Client.GetAsync("/visits/active");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -54,8 +54,8 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetActiveVisits_Should_OnlyReturnActiveVisits_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedVisitAsync("user1", isActive: true);
-        await SeedVisitAsync("user2", isActive: false);
+        await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, isActive: false);
 
         var response = await Client.GetAsync("/visits/active");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -66,7 +66,7 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
             var visits = json.GetProperty("visits");
             foreach (var visit in visits.EnumerateArray())
             {
-                visit.GetProperty("status").GetInt32().Should().Be(0);
+                visit.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.Active);
             }
         }
         catch (Exception)
