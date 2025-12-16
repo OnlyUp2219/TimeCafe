@@ -1,3 +1,6 @@
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
@@ -12,14 +15,14 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenPageFound()
     {
-        var query = new GetTariffsPageQuery(1, 10);
-        var tariffs = new List<Tariff>
+        var query = new GetTariffsPageQuery(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize);
+        var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = 1, Name = "Tariff 1", PricePerMinute = 10m },
-            new() { TariffId = 2, Name = "Tariff 2", PricePerMinute = 20m }
+            new() { TariffId = Guid.NewGuid(), TariffName = TestData.ExistingTariffs.Tariff1Name, TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute },
+            new() { TariffId = Guid.NewGuid(), TariffName = TestData.ExistingTariffs.Tariff2Name, TariffPricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute }
         };
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(1, 10)).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize)).ReturnsAsync(tariffs);
         TariffRepositoryMock.Setup(r => r.GetTotalCountAsync()).ReturnsAsync(15);
 
         var result = await _handler.Handle(query, CancellationToken.None);
@@ -33,10 +36,10 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenNoTariffsOnPage()
     {
-        var query = new GetTariffsPageQuery(10, 10);
-        var tariffs = new List<Tariff>();
+        var query = new GetTariffsPageQuery(10, TestData.DefaultValues.DefaultPageSize);
+        var tariffs = new List<TariffWithThemeDto>();
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(10, 10)).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(10, TestData.DefaultValues.DefaultPageSize)).ReturnsAsync(tariffs);
         TariffRepositoryMock.Setup(r => r.GetTotalCountAsync()).ReturnsAsync(5);
 
         var result = await _handler.Handle(query, CancellationToken.None);
@@ -50,9 +53,9 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var query = new GetTariffsPageQuery(1, 10);
+        var query = new GetTariffsPageQuery(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize);
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(1, 10)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
 

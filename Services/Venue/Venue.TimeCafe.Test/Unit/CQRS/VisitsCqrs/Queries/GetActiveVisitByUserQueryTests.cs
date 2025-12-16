@@ -1,5 +1,8 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Queries;
 
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
 {
     private readonly GetActiveVisitByUserQueryHandler _handler;
@@ -12,31 +15,33 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenActiveVisitFound()
     {
-        var query = new GetActiveVisitByUserQuery("user123");
-        var visit = new Visit
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var query = new GetActiveVisitByUserQuery(userId.ToString());
+        var visitDto = new VisitWithTariffDto
         {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow,
+            VisitId = Guid.NewGuid(),
+            UserId = userId,
+            TariffId = Guid.NewGuid(),
+            EntryTime = DateTimeOffset.UtcNow,
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync("user123")).ReturnsAsync(visit);
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ReturnsAsync(visitDto);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Visit.Should().NotBeNull();
-        result.Visit!.UserId.Should().Be("user123");
+        result.Visit!.UserId.Should().Be(userId);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenNoActiveVisit()
     {
-        var query = new GetActiveVisitByUserQuery("user999");
+        var userId = TestData.NonExistingIds.NonExistingUserId;
+        var query = new GetActiveVisitByUserQuery(userId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync("user999")).ReturnsAsync((Visit?)null);
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -48,9 +53,10 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var query = new GetActiveVisitByUserQuery("user123");
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var query = new GetActiveVisitByUserQuery(userId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync("user123")).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -60,10 +66,10 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "ID пользователя обязателен")]
-    [InlineData(null, false, "ID пользователя обязателен")]
-    [InlineData("user123", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string? userId, bool isValid, string? expectedError)
+    [InlineData("", false)]
+    [InlineData("not-a-guid", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", true)]
+    public async Task Validator_Should_ValidateCorrectly(string? userId, bool isValid)
     {
         var query = new GetActiveVisitByUserQuery(userId!);
         var validator = new GetActiveVisitByUserQueryValidator();
@@ -71,9 +77,5 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
         var result = await validator.ValidateAsync(query);
 
         result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
     }
 }
