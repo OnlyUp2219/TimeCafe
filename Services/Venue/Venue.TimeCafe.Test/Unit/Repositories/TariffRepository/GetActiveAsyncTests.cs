@@ -61,11 +61,11 @@ public class GetActiveAsyncTests : BaseCqrsTest
         // Act
         var result = (await TariffRepository.GetActiveAsync()).ToList();
 
-        // Assert
+        // Assert - alphabetical order: Премиум < Стандарт < Эконом (П < С < Э in Cyrillic)
         result.Should().HaveCount(3);
-        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
-        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
-        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name); // Премиум
+        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name); // Стандарт
+        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name); // Эконом
     }
 
     [Fact]

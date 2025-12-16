@@ -1,19 +1,21 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
 {
     [Fact]
     public async Task Repository_GetActiveVisitByUserAsync_Should_ReturnActiveVisit_WhenExists()
     {
         // Arrange
-        await SeedVisitAsync("user123");
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
-        var result = await VisitRepository.GetActiveVisitByUserAsync("user123");
+        var result = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserId.Should().Be("user123");
+        result!.UserId.Should().Be(TestData.ExistingVisits.Visit1UserId);
         result.Status.Should().Be(VisitStatus.Active);
     }
 
@@ -21,12 +23,12 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveVisitByUserAsync_Should_ReturnNull_WhenNoActiveVisit()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         visit.Status = VisitStatus.Completed;
         await Context.SaveChangesAsync();
 
         // Act
-        var result = await VisitRepository.GetActiveVisitByUserAsync("user123");
+        var result = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().BeNull();
@@ -36,7 +38,7 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveVisitByUserAsync_Should_ReturnNull_WhenUserNotExists()
     {
         // Act
-        var result = await VisitRepository.GetActiveVisitByUserAsync("nonexistent");
+        var result = await VisitRepository.GetActiveVisitByUserAsync(TestData.NonExistingIds.NonExistingUserId);
 
         // Assert
         result.Should().BeNull();
@@ -46,9 +48,9 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveVisitByUserAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        await SeedVisitAsync("user123");
-        await VisitRepository.GetActiveVisitByUserAsync("user123");
-        await VisitRepository.GetActiveVisitByUserAsync("user123");
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
@@ -58,30 +60,30 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveVisitByUserAsync_Should_IncludeTariffRelation()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test Tariff", 150m);
-        await SeedVisitAsync("user123", tariff.TariffId);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, tariff.TariffId);
 
         // Act
-        var result = await VisitRepository.GetActiveVisitByUserAsync("user123");
+        var result = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Tariff.Should().NotBeNull();
-        result.Tariff.Name.Should().Be("Test Tariff");
+        result!.TariffName.Should().NotBeNullOrEmpty();
+        result.TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
     public async Task Repository_GetActiveVisitByUserAsync_Should_ReturnOnlyActiveVisit()
     {
         // Arrange
-        var completedVisit = await SeedVisitAsync("user123");
+        var completedVisit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         completedVisit.Status = VisitStatus.Completed;
         await Context.SaveChangesAsync();
 
-        var activeVisit = await SeedVisitAsync("user123");
+        var activeVisit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
-        var result = await VisitRepository.GetActiveVisitByUserAsync("user123");
+        var result = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().NotBeNull();

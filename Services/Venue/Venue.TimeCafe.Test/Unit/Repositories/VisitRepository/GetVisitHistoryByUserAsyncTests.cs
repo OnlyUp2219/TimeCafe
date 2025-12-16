@@ -1,28 +1,30 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
 {
     [Fact]
     public async Task Repository_GetVisitHistoryByUserAsync_Should_ReturnUserVisits()
     {
         // Arrange
-        await SeedVisitAsync("user123");
-        await SeedVisitAsync("user123");
-        await SeedVisitAsync("other_user");
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit2UserId);
 
         // Act
-        var result = await VisitRepository.GetVisitHistoryByUserAsync("user123");
+        var result = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(v => v.UserId == "user123");
+        result.Should().OnlyContain(v => v.UserId == TestData.ExistingVisits.Visit1UserId);
     }
 
     [Fact]
     public async Task Repository_GetVisitHistoryByUserAsync_Should_ReturnEmptyList_WhenUserHasNoVisits()
     {
         // Act
-        var result = await VisitRepository.GetVisitHistoryByUserAsync("nonexistent");
+        var result = await VisitRepository.GetVisitHistoryByUserAsync(TestData.NonExistingIds.NonExistingUserId);
 
         // Assert
         result.Should().BeEmpty();
@@ -32,14 +34,14 @@ public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetVisitHistoryByUserAsync_Should_ReturnOrderedByEntryTimeDesc()
     {
         // Arrange
-        var visit1 = await SeedVisitAsync("user123");
+        var visit1 = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         await Task.Delay(100);
-        var visit2 = await SeedVisitAsync("user123");
+        var visit2 = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         await Task.Delay(100);
-        var visit3 = await SeedVisitAsync("user123");
+        var visit3 = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
-        var result = (await VisitRepository.GetVisitHistoryByUserAsync("user123")).ToList();
+        var result = (await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId)).ToList();
 
         // Assert
         result.Should().HaveCount(3);
@@ -54,41 +56,41 @@ public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
         // Arrange
         for (int i = 0; i < 25; i++)
         {
-            await SeedVisitAsync("user123");
+            await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         }
 
         // Act
-        var page1 = await VisitRepository.GetVisitHistoryByUserAsync("user123", pageNumber: 1, pageSize: 10);
-        var page2 = await VisitRepository.GetVisitHistoryByUserAsync("user123", pageNumber: 2, pageSize: 10);
+        var page1 = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId, pageNumber: 1, pageSize: TestData.DefaultValues.DefaultPageSize);
+        var page2 = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId, pageNumber: 2, pageSize: TestData.DefaultValues.DefaultPageSize);
 
         // Assert
-        page1.Should().HaveCount(10);
-        page2.Should().HaveCount(10);
+        page1.Should().HaveCount(TestData.DefaultValues.DefaultPageSize);
+        page2.Should().HaveCount(TestData.DefaultValues.DefaultPageSize);
     }
 
     [Fact]
     public async Task Repository_GetVisitHistoryByUserAsync_Should_IncludeTariffRelations()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Standard", 100m);
-        await SeedVisitAsync("user123", tariff.TariffId);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, tariff.TariffId);
 
         // Act
-        var result = (await VisitRepository.GetVisitHistoryByUserAsync("user123")).ToList();
+        var result = (await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId)).ToList();
 
         // Assert
         result.Should().HaveCount(1);
-        result[0].Tariff.Should().NotBeNull();
-        result[0].Tariff.Name.Should().Be("Standard");
+        result[0].TariffName.Should().NotBeNullOrEmpty();
+        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
     }
 
     [Fact]
     public async Task Repository_GetVisitHistoryByUserAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        await SeedVisitAsync("user123");
-        await VisitRepository.GetVisitHistoryByUserAsync("user123");
-        await VisitRepository.GetVisitHistoryByUserAsync("user123");
+        await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
@@ -98,13 +100,13 @@ public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
     public async Task Repository_GetVisitHistoryByUserAsync_Should_IncludeBothActiveAndCompleted()
     {
         // Arrange
-        var activeVisit = await SeedVisitAsync("user123");
-        var completedVisit = await SeedVisitAsync("user123");
+        var activeVisit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        var completedVisit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         completedVisit.Status = VisitStatus.Completed;
         await Context.SaveChangesAsync();
 
         // Act
-        var result = await VisitRepository.GetVisitHistoryByUserAsync("user123");
+        var result = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
         result.Should().HaveCount(2);

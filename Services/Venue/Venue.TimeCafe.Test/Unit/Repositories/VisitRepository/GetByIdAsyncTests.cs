@@ -1,12 +1,14 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class GetByIdAsyncTests : BaseCqrsTest
 {
     [Fact]
     public async Task Repository_GetByIdAsync_Should_ReturnVisit_WhenExists()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
         var result = await VisitRepository.GetByIdAsync(visit.VisitId);
@@ -14,7 +16,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
         // Assert
         result.Should().NotBeNull();
         result!.VisitId.Should().Be(visit.VisitId);
-        result.UserId.Should().Be("user123");
+        result.UserId.Should().Be(TestData.ExistingVisits.Visit1UserId);
         result.Status.Should().Be(VisitStatus.Active);
     }
 
@@ -22,7 +24,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_ReturnNull_WhenNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingVisitId;
 
         // Act
         var result = await VisitRepository.GetByIdAsync(nonExistentId);
@@ -35,7 +37,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         await VisitRepository.GetByIdAsync(visit.VisitId);
         await VisitRepository.GetByIdAsync(visit.VisitId);
 
@@ -47,26 +49,26 @@ public class GetByIdAsyncTests : BaseCqrsTest
     public async Task Repository_GetByIdAsync_Should_IncludeTariffRelation()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test Tariff", 100m);
-        var visit = await SeedVisitAsync("user123", tariff.TariffId);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, tariff.TariffId);
 
         // Act
         var result = await VisitRepository.GetByIdAsync(visit.VisitId);
 
         // Assert
         result.Should().NotBeNull();
-        result!.Tariff.Should().NotBeNull();
-        result.Tariff.Name.Should().Be("Test Tariff");
+        result!.TariffName.Should().NotBeNullOrEmpty();
+        result.TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
     public async Task Repository_GetByIdAsync_Should_ReturnVisitWithAllProperties()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Premium", 200m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
         var visit = new Visit
         {
-            UserId = "user456",
+            UserId = TestData.NewVisits.NewVisit1UserId,
             TariffId = tariff.TariffId,
             EntryTime = DateTime.UtcNow,
             Status = VisitStatus.Active
@@ -79,7 +81,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result!.UserId.Should().Be("user456");
+        result!.UserId.Should().Be(TestData.NewVisits.NewVisit1UserId);
         result.TariffId.Should().Be(tariff.TariffId);
         result.Status.Should().Be(VisitStatus.Active);
         result.EntryTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));

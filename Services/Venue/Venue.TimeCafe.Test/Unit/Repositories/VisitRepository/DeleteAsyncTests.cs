@@ -1,12 +1,14 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class DeleteAsyncTests : BaseCqrsTest
 {
     [Fact]
     public async Task Repository_DeleteAsync_Should_ReturnTrue_WhenVisitExists()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
         var result = await VisitRepository.DeleteAsync(visit.VisitId);
@@ -19,7 +21,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_ReturnFalse_WhenVisitNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingVisitId;
 
         // Act
         var result = await VisitRepository.DeleteAsync(nonExistentId);
@@ -32,7 +34,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_RemoveFromDatabase()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         var visitId = visit.VisitId;
 
         // Act
@@ -47,7 +49,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_InvalidateCache()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Act
         await VisitRepository.DeleteAsync(visit.VisitId);
@@ -60,7 +62,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_HandleAlreadyDeleted()
     {
         // Arrange
-        var visit = await SeedVisitAsync("user123");
+        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         var visitId = visit.VisitId;
 
         // Act
