@@ -61,7 +61,10 @@ public static class TestData
         public static readonly Guid NonExistingTariffId = Guid.Parse("99999999-9999-9999-9999-999999999998");
         public static readonly string NonExistingTariffIdString = "99999999-9999-9999-9999-999999999998";
         public static readonly Guid NonExistingThemeId = Guid.Parse("99999999-9999-9999-9999-999999999997");
-        public static readonly string NonExistingUserId = "99999999-9999-9999-9999-999999999999";
+        public static readonly Guid NonExistingVisitId = Guid.Parse("99999999-9999-9999-9999-999999999996");
+        public static readonly string NonExistingVisitIdString = "99999999-9999-9999-9999-999999999996";
+        public static readonly Guid NonExistingUserId = Guid.Parse("99999999-9999-9999-9999-999999999995");
+        public static readonly string NonExistingUserIdString = "99999999-9999-9999-9999-999999999995";
     }
 
     /// <summary>
@@ -148,9 +151,9 @@ public static class TestData
     /// </summary>
     public static class ExistingVisits
     {
-        public static readonly string Visit1UserId = "11111111-1111-1111-1111-111111111111";
-        public static readonly string Visit2UserId = "22222222-2222-2222-2222-222222222222";
-        public static readonly string Visit3UserId = "33333333-3333-3333-3333-333333333333";
+        public static readonly Guid Visit1UserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+        public static readonly Guid Visit2UserId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        public static readonly Guid Visit3UserId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     }
 
     /// <summary>
@@ -158,8 +161,16 @@ public static class TestData
     /// </summary>
     public static class NewVisits
     {
-        public static readonly string NewVisit1UserId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-        public static readonly string NewVisit2UserId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";
+        public static readonly Guid NewVisit1UserId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        public static readonly Guid NewVisit2UserId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    }
+
+    /// <summary>
+    /// Данные для обновления посещений
+    /// </summary>
+    public static class VisitUpdateData
+    {
+        public static readonly decimal UpdatedCalculatedCost = 300m;
     }
 
     /// <summary>
@@ -179,7 +190,7 @@ public static class TestData
         public static readonly string DefaultThemeEmoji = "🎨";
         public static readonly string DefaultThemeColors = "{\"primary\":\"#000000\",\"secondary\":\"#FFFFFF\"}";
 
-        public static readonly string DefaultUserId = "user123";
+        public static readonly Guid DefaultUserId = Guid.Parse("12345678-1234-1234-1234-123456789012");
 
         public static readonly int DefaultPageSize = 10;
         public static readonly int FirstPage = 1;

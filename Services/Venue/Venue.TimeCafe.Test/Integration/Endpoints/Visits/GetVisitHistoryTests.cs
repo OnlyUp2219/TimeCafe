@@ -6,11 +6,12 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetVisitHistory_Should_Return200_WhenUserHasVisits()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedVisitAsync("user123", isActive: false);
-        await SeedVisitAsync("user123", isActive: false);
-        await SeedVisitAsync("user123", isActive: true);
+        var userId = TestData.NewVisits.NewVisit1UserId;
+        await SeedVisitAsync(userId, isActive: false);
+        await SeedVisitAsync(userId, isActive: false);
+        await SeedVisitAsync(userId, isActive: true);
 
-        var response = await Client.GetAsync("/visits/history/user123?pageNumber=1&pageSize=10");
+        var response = await Client.GetAsync($"/visits/history/{userId}?pageNumber={TestData.DefaultValues.FirstPage}&pageSize={TestData.DefaultValues.DefaultPageSize}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -32,7 +33,7 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync("/visits/history/user123?pageNumber=1&pageSize=10");
+        var response = await Client.GetAsync($"/visits/history/{TestData.DefaultValues.DefaultUserId}?pageNumber={TestData.DefaultValues.FirstPage}&pageSize={TestData.DefaultValues.DefaultPageSize}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -53,12 +54,13 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetVisitHistory_Should_RespectPagination_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
+        var userId = TestData.NewVisits.NewVisit2UserId;
         for (int i = 0; i < 5; i++)
         {
-            await SeedVisitAsync("user123", isActive: false);
+            await SeedVisitAsync(userId, isActive: false);
         }
 
-        var response = await Client.GetAsync("/visits/history/user123?pageNumber=1&pageSize=2");
+        var response = await Client.GetAsync($"/visits/history/{userId}?pageNumber={TestData.DefaultValues.FirstPage}&pageSize=2");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
