@@ -8,7 +8,7 @@ public class DeleteVisit : ICarterModule
             [FromServices] ISender sender,
             [AsParameters] DeleteVisitDto visitId) =>
         {
-            var command = new DeleteVisitCommand(visitId);
+            var command = new DeleteVisitCommand(visitId.VisitId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

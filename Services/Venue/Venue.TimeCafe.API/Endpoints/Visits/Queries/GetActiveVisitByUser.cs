@@ -8,7 +8,7 @@ public class GetActiveVisitByUser : ICarterModule
             [FromServices] ISender sender,
             [AsParameters] GetActiveVisitByUserDto userId) =>
         {
-            var query = new GetActiveVisitByUserQuery(userId);
+            var query = new GetActiveVisitByUserQuery(userId.UserId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visit = r.Visit }));
         })

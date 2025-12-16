@@ -74,7 +74,7 @@ public class UpdateTariffCommandHandler(ITariffRepository repository) : IRequest
                 Description = request.Description,
                 PricePerMinute = request.PricePerMinute,
                 BillingType = request.BillingType,
-                ThemeId = Guid.Parse(request.ThemeId!),
+                ThemeId = string.IsNullOrWhiteSpace(request.ThemeId) ? null : Guid.Parse(request.ThemeId),
                 IsActive = request.IsActive
             };
 
