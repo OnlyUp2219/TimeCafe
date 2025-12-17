@@ -19,19 +19,19 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_UpdateTheme_WhenExists()
     {
         // Arrange
-        var existing = await SeedThemeAsync("Original");
-        existing.Name = "Updated";
-        existing.Emoji = "✏️";
-        existing.Colors = "#UPDATED";
+        var existing = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
+        existing.Name = TestData.ExistingThemes.Theme2Name;
+        existing.Emoji = TestData.ExistingThemes.Theme2Emoji;
+        existing.Colors = TestData.ExistingThemes.Theme2Colors;
 
         // Act
         var result = await ThemeRepository.UpdateAsync(existing);
 
         // Assert
         result.Should().NotBeNull();
-        result.Name.Should().Be("Updated");
-        result.Emoji.Should().Be("✏️");
-        result.Colors.Should().Be("#UPDATED");
+        result.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
+        result.Emoji.Should().Be(TestData.ExistingThemes.Theme2Emoji);
+        result.Colors.Should().Be(TestData.ExistingThemes.Theme2Colors);
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Arrange
         var nonExistent = new Theme
         {
-            ThemeId = 99999,
-            Name = "Non-existent"
+            ThemeId = TestData.NonExistingIds.NonExistingThemeId,
+            Name = TestData.DefaultValues.DefaultThemeName
         };
 
         // Act
@@ -55,8 +55,8 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var existing = await SeedThemeAsync("Original");
-        existing.Name = "Updated";
+        var existing = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
+        existing.Name = TestData.ExistingThemes.Theme2Name;
 
         // Act
         await ThemeRepository.UpdateAsync(existing);
@@ -69,9 +69,9 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
-        var existing = await SeedThemeAsync("Original");
-        existing.Name = "Persisted Update";
-        existing.Emoji = "📝";
+        var existing = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
+        existing.Name = TestData.ExistingThemes.Theme3Name;
+        existing.Emoji = TestData.ExistingThemes.Theme3Emoji;
 
         // Act
         await ThemeRepository.UpdateAsync(existing);
@@ -79,23 +79,23 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Themes.FindAsync(existing.ThemeId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted Update");
-        fromDb.Emoji.Should().Be("📝");
+        fromDb!.Name.Should().Be(TestData.ExistingThemes.Theme3Name);
+        fromDb.Emoji.Should().Be(TestData.ExistingThemes.Theme3Emoji);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdateOnlyChangedFields()
     {
         // Arrange
-        var existing = await SeedThemeAsync("Original", "🎨", "#000000");
-        existing.Name = "Changed Name";
+        var existing = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name, TestData.ExistingThemes.Theme1Emoji, TestData.ExistingThemes.Theme1Colors);
+        existing.Name = TestData.ExistingThemes.Theme2Name;
 
         // Act
         var result = await ThemeRepository.UpdateAsync(existing);
 
         // Assert
-        result.Name.Should().Be("Changed Name");
-        result.Emoji.Should().Be("🎨");
-        result.Colors.Should().Be("#000000");
+        result.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
+        result.Emoji.Should().Be(TestData.ExistingThemes.Theme1Emoji);
+        result.Colors.Should().Be(TestData.ExistingThemes.Theme1Colors);
     }
 }

@@ -12,8 +12,8 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenThemeCreated()
     {
-        var command = new CreateThemeCommand("Test Theme", "🎨", "#FF0000");
-        var theme = new Theme { ThemeId = 1, Name = "Test Theme", Emoji = "🎨", Colors = "#FF0000" };
+        var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
+        var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.NewThemes.NewTheme1Name, Emoji = TestData.NewThemes.NewTheme1Emoji, Colors = TestData.NewThemes.NewTheme1Colors };
 
         ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ReturnsAsync(theme);
 
@@ -21,14 +21,14 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
 
         result.Success.Should().BeTrue();
         result.Theme.Should().NotBeNull();
-        result.Theme!.Name.Should().Be("Test Theme");
+        result.Theme!.Name.Should().Be(TestData.NewThemes.NewTheme1Name);
         result.StatusCode.Should().Be(201);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
-        var command = new CreateThemeCommand("Test Theme", "🎨", "#FF0000");
+        var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
         ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ReturnsAsync((Theme?)null);
 
@@ -42,7 +42,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new CreateThemeCommand("Test Theme", "🎨", "#FF0000");
+        var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
         ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ThrowsAsync(new Exception());
 

@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DTO\**" />
+    <EmbeddedResource Remove="DTO\**" />
+    <None Remove="DTO\**" />
+  </ItemGroup>
+
+  <ItemGroup>
 	<PackageReference Include="MassTransit" Version="8.5.5" />
 	<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
 	<PackageReference Include="FluentValidation" Version="12.0.0" />
@@ -16,10 +22,6 @@
   <ItemGroup>
 	<ProjectReference Include="..\UserProfile.TimeCafe.Domain\UserProfile.TimeCafe.Domain.csproj" />
 	<ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DTO\" />
   </ItemGroup>
 
 </Project>

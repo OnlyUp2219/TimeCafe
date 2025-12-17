@@ -1,3 +1,4 @@
+using Venue.TimeCafe.Domain.DTOs;
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
@@ -13,10 +14,10 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenTariffsFound()
     {
         var query = new GetTariffsByBillingTypeQuery(BillingType.PerMinute);
-        var tariffs = new List<Tariff>
+        var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = 1, Name = "Tariff 1", PricePerMinute = 10m, BillingType = BillingType.PerMinute },
-            new() { TariffId = 2, Name = "Tariff 2", PricePerMinute = 20m, BillingType = BillingType.PerMinute }
+            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 1", TariffPricePerMinute = 10m, TariffBillingType = BillingType.PerMinute },
+            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 2", TariffPricePerMinute = 20m, TariffBillingType = BillingType.PerMinute }
         };
 
         TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute)).ReturnsAsync(tariffs);
@@ -32,7 +33,7 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenNoTariffsForType()
     {
         var query = new GetTariffsByBillingTypeQuery(BillingType.Hourly);
-        var tariffs = new List<Tariff>();
+        var tariffs = new List<TariffWithThemeDto>();
 
         TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.Hourly)).ReturnsAsync(tariffs);
 

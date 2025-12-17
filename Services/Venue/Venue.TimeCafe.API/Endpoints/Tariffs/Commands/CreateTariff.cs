@@ -5,7 +5,7 @@ public class CreateTariff : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/tariffs", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreateTariffDto dto) =>
         {
             var command = new CreateTariffCommand(dto.Name, dto.Description, dto.PricePerMinute, (BillingType)dto.BillingType, dto.ThemeId, dto.IsActive);

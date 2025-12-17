@@ -1,9 +1,9 @@
 namespace Venue.TimeCafe.API.DTOs.Promotion;
 
-public record GetActivePromotionsByDateDto(DateTime Date);
+public record GetActivePromotionsByDateDto(DateTimeOffset Date);
 
 public class GetActivePromotionsByDateDtoExample : IExamplesProvider<GetActivePromotionsByDateDto>
 {
     public GetActivePromotionsByDateDto GetExamples() =>
-        new(Date: DateTime.UtcNow);
+        new(Date: DateTimeOffset.UtcNow);
 }

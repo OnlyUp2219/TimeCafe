@@ -4,7 +4,8 @@ public class GetActiveTariffs : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tariffs/active", async (ISender sender) =>
+        app.MapGet("/tariffs/active", async (
+            [FromServices] ISender sender) =>
         {
             var query = new GetActiveTariffsQuery();
             var result = await sender.Send(query);

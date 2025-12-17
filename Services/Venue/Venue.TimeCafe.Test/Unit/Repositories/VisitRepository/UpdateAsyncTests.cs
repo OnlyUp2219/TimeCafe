@@ -1,5 +1,7 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class UpdateAsyncTests : BaseCqrsTest
 {
     [Fact]
@@ -19,10 +21,10 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_UpdateVisit_WhenExists()
     {
         // Arrange
-        var existing = await SeedVisitAsync("user123");
+        var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         existing.Status = VisitStatus.Completed;
         existing.ExitTime = DateTime.UtcNow;
-        existing.CalculatedCost = 250m;
+        existing.CalculatedCost = TestData.VisitUpdateData.UpdatedCalculatedCost;
 
         // Act
         var result = await VisitRepository.UpdateAsync(existing);
@@ -31,18 +33,18 @@ public class UpdateAsyncTests : BaseCqrsTest
         result.Should().NotBeNull();
         result.Status.Should().Be(VisitStatus.Completed);
         result.ExitTime.Should().NotBeNull();
-        result.CalculatedCost.Should().Be(250m);
+        result.CalculatedCost.Should().Be(TestData.VisitUpdateData.UpdatedCalculatedCost);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_ReturnNull_WhenNotExists()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var nonExistent = new Visit
         {
-            VisitId = 99999,
-            UserId = "user123",
+            VisitId = TestData.NonExistingIds.NonExistingVisitId,
+            UserId = TestData.ExistingVisits.Visit1UserId,
             TariffId = tariff.TariffId
         };
 
@@ -57,7 +59,7 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var existing = await SeedVisitAsync("user123");
+        var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         existing.Status = VisitStatus.Completed;
 
         // Act
@@ -71,10 +73,10 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
-        var existing = await SeedVisitAsync("user123");
+        var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         existing.Status = VisitStatus.Completed;
         existing.ExitTime = DateTime.UtcNow;
-        existing.CalculatedCost = 300m;
+        existing.CalculatedCost = TestData.VisitUpdateData.UpdatedCalculatedCost;
 
         // Act
         await VisitRepository.UpdateAsync(existing);
@@ -84,6 +86,6 @@ public class UpdateAsyncTests : BaseCqrsTest
         fromDb.Should().NotBeNull();
         fromDb!.Status.Should().Be(VisitStatus.Completed);
         fromDb.ExitTime.Should().NotBeNull();
-        fromDb.CalculatedCost.Should().Be(300m);
+        fromDb.CalculatedCost.Should().Be(TestData.VisitUpdateData.UpdatedCalculatedCost);
     }
 }

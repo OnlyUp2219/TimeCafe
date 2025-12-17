@@ -1,9 +1,9 @@
 namespace Venue.TimeCafe.API.DTOs.Promotion;
 
-public record DeletePromotionDto(int PromotionId);
+public record DeletePromotionDto(string PromotionId);
 
 public class DeletePromotionDtoExample : IExamplesProvider<DeletePromotionDto>
 {
     public DeletePromotionDto GetExamples() =>
-        new(PromotionId: 1);
+        new(PromotionId: "a1111111-1111-1111-1111-111111111111");
 }

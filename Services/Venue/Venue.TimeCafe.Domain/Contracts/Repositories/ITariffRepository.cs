@@ -1,17 +1,19 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Domain.Contracts.Repositories;
 
 public interface ITariffRepository
 {
-    Task<Tariff?> GetByIdAsync(int tariffId);
-    Task<IEnumerable<Tariff>> GetAllAsync();
-    Task<IEnumerable<Tariff>> GetActiveAsync();
-    Task<IEnumerable<Tariff>> GetByBillingTypeAsync(BillingType billingType);
-    Task<IEnumerable<Tariff>> GetPagedAsync(int pageNumber, int pageSize);
+    Task<TariffWithThemeDto?> GetByIdAsync(Guid tariffId);
+    Task<IEnumerable<TariffWithThemeDto>> GetAllAsync();
+    Task<IEnumerable<TariffWithThemeDto>> GetActiveAsync();
+    Task<IEnumerable<TariffWithThemeDto>> GetByBillingTypeAsync(BillingType billingType);
+    Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize);
     Task<int> GetTotalCountAsync();
 
     Task<Tariff> CreateAsync(Tariff tariff);
     Task<Tariff> UpdateAsync(Tariff tariff);
-    Task<bool> DeleteAsync(int tariffId);
-    Task<bool> ActivateAsync(int tariffId);
-    Task<bool> DeactivateAsync(int tariffId);
+    Task<bool> DeleteAsync(Guid tariffId);
+    Task<bool> ActivateAsync(Guid tariffId);
+    Task<bool> DeactivateAsync(Guid tariffId);
 }

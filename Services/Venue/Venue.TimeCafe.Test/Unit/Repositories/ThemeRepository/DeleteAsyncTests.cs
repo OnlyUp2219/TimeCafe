@@ -6,7 +6,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_ReturnTrue_WhenThemeExists()
     {
         // Arrange
-        var theme = await SeedThemeAsync("To Delete");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
 
         // Act
         var result = await ThemeRepository.DeleteAsync(theme.ThemeId);
@@ -19,7 +19,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_ReturnFalse_WhenThemeNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingThemeId;
 
         // Act
         var result = await ThemeRepository.DeleteAsync(nonExistentId);
@@ -32,7 +32,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_RemoveFromDatabase()
     {
         // Arrange
-        var theme = await SeedThemeAsync("To Remove");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
         var themeId = theme.ThemeId;
 
         // Act
@@ -47,7 +47,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_InvalidateCache()
     {
         // Arrange
-        var theme = await SeedThemeAsync("Cache Test");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme3Name);
 
         // Act
         await ThemeRepository.DeleteAsync(theme.ThemeId);
@@ -60,7 +60,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_HandleAlreadyDeleted()
     {
         // Arrange
-        var theme = await SeedThemeAsync("To Delete Twice");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var themeId = theme.ThemeId;
 
         // Act

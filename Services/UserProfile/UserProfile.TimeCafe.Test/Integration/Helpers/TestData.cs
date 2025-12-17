@@ -1,14 +1,7 @@
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 
-/// <summary>
-/// Централизованное хранилище тестовых данных для интеграционных тестов.
-/// Изменяйте только этот файл при необходимости обновления тестовых данных.
-/// </summary>
 public static class TestData
 {
-    /// <summary>
-    /// Существующие пользователи с профилями (используются в GET-тестах)
-    /// </summary>
     public static class ExistingUsers
     {
         public static readonly string User1Id = "11111111-1111-1111-1111-111111111111";

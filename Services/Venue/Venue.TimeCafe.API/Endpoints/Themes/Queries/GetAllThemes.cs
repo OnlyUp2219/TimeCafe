@@ -4,7 +4,8 @@ public class GetAllThemes : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/themes", async (ISender sender) =>
+        app.MapGet("/themes", async (
+            [FromServices] ISender sender) =>
         {
             var query = new GetAllThemesQuery();
             var result = await sender.Send(query);

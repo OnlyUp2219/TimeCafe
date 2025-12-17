@@ -5,8 +5,8 @@ public class GetActivePromotionsByDate : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/promotions/active/{date}", async (
-            ISender sender,
-            DateTime date) =>
+            [FromServices] ISender sender,
+            DateTimeOffset date) =>
         {
             var query = new GetActivePromotionsByDateQuery(date);
             var result = await sender.Send(query);

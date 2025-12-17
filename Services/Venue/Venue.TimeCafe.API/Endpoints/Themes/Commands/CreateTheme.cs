@@ -5,7 +5,7 @@ public class CreateTheme : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/themes", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreateThemeDto dto) =>
         {
             var command = new CreateThemeCommand(dto.Name, dto.Emoji, dto.Colors);

@@ -6,7 +6,8 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_DeleteTariff_Should_Return200_WhenTariffExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф для удаления", 10m);
+        var name = TestData.NewTariffs.NewTariff1Name;
+        var tariff = await SeedTariffAsync(name, TestData.NewTariffs.NewTariff1Price);
 
         var response = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -28,7 +29,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync("/tariffs/9999");
+        var response = await Client.DeleteAsync($"/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -45,7 +46,8 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_DeleteTariff_Should_ActuallyRemoveFromDatabase_WhenDeleted()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Удаляемый тариф", 10m);
+        var delName = TestData.NewTariffs.NewTariff2Name;
+        var tariff = await SeedTariffAsync(delName, TestData.NewTariffs.NewTariff2Price);
 
         var deleteResponse = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -64,10 +66,9 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -88,8 +89,8 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_DeleteTariff_Should_NotAffectOtherTariffs_WhenOneIsDeleted()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff1 = await SeedTariffAsync("Тариф 1", 10m);
-        var tariff2 = await SeedTariffAsync("Тариф 2", 20m);
+        var tariff1 = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        var tariff2 = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
         await Client.DeleteAsync($"/tariffs/{tariff1.TariffId}");
 
@@ -99,7 +100,12 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.GetProperty("tariff").GetProperty("name").GetString().Should().Be("Тариф 2");
+            var tariffJson = json;
+            if (json.TryGetProperty("tariff", out var t)) tariffJson = t;
+            string nameValue = null;
+            if (tariffJson.TryGetProperty("name", out var n)) nameValue = n.GetString();
+            if (tariffJson.TryGetProperty("tariffName", out var tn)) nameValue = tn.GetString();
+            nameValue.Should().Be(TestData.NewTariffs.NewTariff2Name);
         }
         catch (Exception)
         {
@@ -112,7 +118,8 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_DeleteTariff_Should_ReturnSuccessMessage_WhenTariffDeleted()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф с сообщением", 10m);
+        var msgName = TestData.NewTariffs.NewTariff1Name;
+        var tariff = await SeedTariffAsync(msgName, TestData.NewTariffs.NewTariff1Price);
 
         var response = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();

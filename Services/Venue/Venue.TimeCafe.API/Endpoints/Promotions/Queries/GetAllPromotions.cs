@@ -5,7 +5,7 @@ public class GetAllPromotions : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/promotions", async (
-            ISender sender) =>
+            [FromServices] ISender sender) =>
         {
             var query = new GetAllPromotionsQuery();
             var result = await sender.Send(query);

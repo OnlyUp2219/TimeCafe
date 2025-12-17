@@ -1,5 +1,8 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Queries;
 
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class GetActiveVisitsQueryTests : BaseCqrsHandlerTest
 {
     private readonly GetActiveVisitsQueryHandler _handler;
@@ -13,10 +16,10 @@ public class GetActiveVisitsQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenActiveVisitsFound()
     {
         var query = new GetActiveVisitsQuery();
-        var visits = new List<Visit>
+        var visits = new List<VisitWithTariffDto>
         {
-            new() { VisitId = 1, UserId = "user1", TariffId = 1, Status = VisitStatus.Active },
-            new() { VisitId = 2, UserId = "user2", TariffId = 1, Status = VisitStatus.Active }
+            new() { VisitId = Guid.NewGuid(), UserId = TestData.ExistingVisits.Visit1UserId, TariffId = Guid.NewGuid(), Status = VisitStatus.Active },
+            new() { VisitId = Guid.NewGuid(), UserId = TestData.ExistingVisits.Visit2UserId, TariffId = Guid.NewGuid(), Status = VisitStatus.Active }
         };
 
         VisitRepositoryMock.Setup(r => r.GetActiveVisitsAsync()).ReturnsAsync(visits);
@@ -32,7 +35,7 @@ public class GetActiveVisitsQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenNoActiveVisits()
     {
         var query = new GetActiveVisitsQuery();
-        var visits = new List<Visit>();
+        var visits = new List<VisitWithTariffDto>();
 
         VisitRepositoryMock.Setup(r => r.GetActiveVisitsAsync()).ReturnsAsync(visits);
 

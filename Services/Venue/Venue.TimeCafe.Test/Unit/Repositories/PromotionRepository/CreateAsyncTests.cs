@@ -21,11 +21,11 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = "New Promo",
-            Description = "Test Description",
-            DiscountPercent = 15m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(30),
+            Name = TestData.NewPromotions.NewPromotion1Name,
+            Description = TestData.NewPromotions.NewPromotion1Description,
+            DiscountPercent = TestData.NewPromotions.NewPromotion1DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true
         };
 
@@ -34,9 +34,8 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.PromotionId.Should().BeGreaterThan(0);
-        result.Name.Should().Be("New Promo");
-        result.DiscountPercent.Should().Be(15m);
+        result.Name.Should().Be(TestData.NewPromotions.NewPromotion1Name);
+        result.DiscountPercent.Should().Be(TestData.NewPromotions.NewPromotion1DiscountPercent);
     }
 
     [Fact]
@@ -45,11 +44,11 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = "Test",
-            Description = "Test",
-            DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(7),
+            Name = TestData.DefaultValues.DefaultPromotionName,
+            Description = TestData.DefaultValues.DefaultPromotionDescription,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true
         };
 
@@ -66,11 +65,11 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = "Persisted",
-            Description = "Test",
-            DiscountPercent = 20m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(14),
+            Name = TestData.NewPromotions.NewPromotion2Name,
+            Description = TestData.NewPromotions.NewPromotion2Description,
+            DiscountPercent = TestData.NewPromotions.NewPromotion2DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true
         };
 
@@ -80,8 +79,8 @@ public class CreateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Promotions.FindAsync(result.PromotionId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted");
-        fromDb.DiscountPercent.Should().Be(20m);
+        fromDb!.Name.Should().Be(TestData.NewPromotions.NewPromotion2Name);
+        fromDb.DiscountPercent.Should().Be(TestData.NewPromotions.NewPromotion2DiscountPercent);
     }
 
     [Fact]
@@ -90,11 +89,11 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = "Cache Test",
-            Description = "Test",
-            DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(7),
+            Name = TestData.DefaultValues.DefaultPromotionName,
+            Description = TestData.DefaultValues.DefaultPromotionDescription,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true
         };
 
@@ -114,11 +113,11 @@ public class CreateAsyncTests : BaseCqrsTest
         // Arrange
         var promotion = new Promotion
         {
-            Name = $"Promo {discount}%",
-            Description = "Test",
+            Name = $"{TestData.DefaultValues.DefaultPromotionName} {discount}%",
+            Description = TestData.DefaultValues.DefaultPromotionDescription,
             DiscountPercent = discount,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(7),
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true
         };
 

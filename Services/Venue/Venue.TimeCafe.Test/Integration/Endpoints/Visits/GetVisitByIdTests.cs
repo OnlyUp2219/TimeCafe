@@ -6,7 +6,8 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_GetVisitById_Should_Return200_WhenVisitExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1");
+        var userId = TestData.NewVisits.NewVisit1UserId;
+        var visit = await SeedVisitAsync(userId);
 
         var response = await Client.GetAsync($"/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -15,7 +16,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("visit", out var visitJson).Should().BeTrue();
-            visitJson.GetProperty("visitId").GetInt32().Should().Be(visit.VisitId);
+            visitJson.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
         }
         catch (Exception)
         {
@@ -29,7 +30,8 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync("/visits/9999");
+        var nonExistingId = TestData.NonExistingIds.NonExistingVisitId;
+        var response = await Client.GetAsync($"/visits/{nonExistingId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -43,10 +45,9 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-999)]
-    public async Task Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -67,7 +68,8 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_GetVisitById_Should_ReturnAllProperties_WhenVisitExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var visit = await SeedVisitAsync("user1");
+        var userId = TestData.NewVisits.NewVisit2UserId;
+        var visit = await SeedVisitAsync(userId);
 
         var response = await Client.GetAsync($"/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -76,8 +78,8 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var visitJson = json.GetProperty("visit");
-            visitJson.GetProperty("visitId").GetInt32().Should().Be(visit.VisitId);
-            visitJson.GetProperty("userId").GetString().Should().Be("user1");
+            visitJson.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
+            visitJson.GetProperty("userId").GetString().Should().Be(userId.ToString());
             visitJson.TryGetProperty("entryTime", out _).Should().BeTrue();
         }
         catch (Exception)

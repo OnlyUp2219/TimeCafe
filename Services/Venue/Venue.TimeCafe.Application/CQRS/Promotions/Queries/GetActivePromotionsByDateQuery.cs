@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
-public record GetActivePromotionsByDateQuery(DateTime Date) : IRequest<GetActivePromotionsByDateResult>;
+public record GetActivePromotionsByDateQuery(DateTimeOffset Date) : IRequest<GetActivePromotionsByDateResult>;
 
 public record GetActivePromotionsByDateResult(
     bool Success,

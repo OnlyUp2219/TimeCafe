@@ -5,10 +5,10 @@ public class DeletePromotion : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapDelete("/promotions/{promotionId}", async (
-            ISender sender,
-            int promotionId) =>
+            [FromServices] ISender sender,
+            [AsParameters] DeletePromotionDto dto) =>
         {
-            var command = new DeletePromotionCommand(promotionId);
+            var command = new DeletePromotionCommand(dto.PromotionId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

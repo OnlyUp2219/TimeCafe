@@ -42,26 +42,26 @@ public class GetPagedAsyncTests : BaseCqrsTest
     public async Task Repository_GetPagedAsync_Should_OrderByCreatedAtDescending()
     {
         // Arrange
-        var tariff1 = await SeedTariffAsync("First", 100m);
+        var tariff1 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
         await Task.Delay(10);
-        var tariff2 = await SeedTariffAsync("Second", 200m);
+        var tariff2 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
         await Task.Delay(10);
-        var tariff3 = await SeedTariffAsync("Third", 300m);
+        var tariff3 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         // Act
         var result = (await TariffRepository.GetPagedAsync(1, 10)).ToList();
 
         // Assert
-        result[0].Name.Should().Be("Third");
-        result[1].Name.Should().Be("Second");
-        result[2].Name.Should().Be("First");
+        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
     public async Task Repository_GetPagedAsync_Should_ReturnEmptyList_WhenPageExceedsTotalPages()
     {
         // Arrange
-        await SeedTariffAsync("Only One", 100m);
+        await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
 
         // Act
         var result = await TariffRepository.GetPagedAsync(10, 5);
@@ -94,15 +94,15 @@ public class GetPagedAsyncTests : BaseCqrsTest
     public async Task Repository_GetPagedAsync_Should_IncludeThemes()
     {
         // Arrange
-        var theme = await SeedThemeAsync("Test Theme");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
         var tariff = new Tariff
         {
-            Name = "With Theme",
-            PricePerMinute = 100m,
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
             BillingType = BillingType.PerMinute,
             ThemeId = theme.ThemeId,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();
@@ -112,6 +112,6 @@ public class GetPagedAsyncTests : BaseCqrsTest
 
         // Assert
         var tariffWithTheme = result.First();
-        tariffWithTheme.Theme.Should().NotBeNull();
+        tariffWithTheme.ThemeId.Should().Be(theme.ThemeId);
     }
 }

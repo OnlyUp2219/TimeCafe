@@ -12,11 +12,11 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenThemeDeleted()
     {
-        var command = new DeleteThemeCommand(1);
-        var theme = new Theme { ThemeId = 1, Name = "Test Theme" };
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
+        var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.DeleteAsync(1)).ReturnsAsync(true);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.DeleteAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -26,9 +26,9 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenThemeDoesNotExist()
     {
-        var command = new DeleteThemeCommand(999);
+        var command = new DeleteThemeCommand(TestData.NonExistingIds.NonExistingThemeId.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId))).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -40,11 +40,11 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
-        var command = new DeleteThemeCommand(1);
-        var theme = new Theme { ThemeId = 1, Name = "Test Theme" };
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
+        var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.DeleteAsync(1)).ReturnsAsync(false);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.DeleteAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -56,9 +56,9 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new DeleteThemeCommand(1);
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -68,11 +68,11 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID темы обязателен")]
-    [InlineData(-1, false, "ID темы обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int themeId, bool isValid, string? expectedError)
+    [InlineData("", false, "Тема не найдена")]
+    [InlineData("invalid-guid", false, "Тема не найдена")]
+    [InlineData("00000000-0000-0000-0000-000000000000", false, "Тема не найдена")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", true, null)]
+    public async Task Validator_Should_ValidateCorrectly(string themeId, bool isValid, string? expectedError)
     {
         var command = new DeleteThemeCommand(themeId);
         var validator = new DeleteThemeCommandValidator();

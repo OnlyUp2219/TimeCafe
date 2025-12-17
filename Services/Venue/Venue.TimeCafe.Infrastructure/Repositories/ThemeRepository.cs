@@ -9,7 +9,7 @@ public class ThemeRepository(
     private readonly IDistributedCache _cache = cache;
     private readonly ILogger _cacheLogger = cacheLogger;
 
-    public async Task<Theme?> GetByIdAsync(int themeId)
+    public async Task<Theme?> GetByIdAsync(Guid themeId)
     {
         var cached = await CacheHelper.GetAsync<Theme>(
             _cache,
@@ -93,7 +93,7 @@ public class ThemeRepository(
         return theme;
     }
 
-    public async Task<bool> DeleteAsync(int themeId)
+    public async Task<bool> DeleteAsync(Guid themeId)
     {
         var theme = await _context.Themes.FindAsync(themeId);
         if (theme == null)

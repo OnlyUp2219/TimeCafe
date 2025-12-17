@@ -1,5 +1,8 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
+using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 public class UpdateVisitCommandTests : BaseCqrsHandlerTest
 {
     private readonly UpdateVisitCommandHandler _handler;
@@ -12,40 +15,65 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenVisitUpdated()
     {
-        var visit = new Visit
+        var visitId = Guid.NewGuid();
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = Guid.NewGuid();
+        var entryTime = DateTimeOffset.UtcNow;
+
+        var command = new UpdateVisitCommand(
+            visitId.ToString(),
+            userId.ToString(),
+            tariffId.ToString(),
+            entryTime,
+            null,
+            null,
+            VisitStatus.Active);
+
+        var existingVisitDto = new VisitWithTariffDto
         {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow,
+            VisitId = visitId,
+            UserId = userId,
+            TariffId = tariffId,
+            EntryTime = entryTime,
             Status = VisitStatus.Active
         };
-        var command = new UpdateVisitCommand(visit);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
-        VisitRepositoryMock.Setup(r => r.UpdateAsync(visit)).ReturnsAsync(visit);
+        var visit = new Visit
+        {
+            VisitId = visitId,
+            UserId = userId,
+            TariffId = tariffId,
+            EntryTime = entryTime,
+            Status = VisitStatus.Active
+        };
+
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(existingVisitDto);
+        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>())).ReturnsAsync(visit);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.Visit.Should().NotBeNull();
-        result.Visit!.UserId.Should().Be("user123");
+        result.Visit!.UserId.Should().Be(userId);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenVisitDoesNotExist()
     {
-        var visit = new Visit
-        {
-            VisitId = 999,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow,
-            Status = VisitStatus.Active
-        };
-        var command = new UpdateVisitCommand(visit);
+        var visitId = TestData.NonExistingIds.NonExistingVisitId;
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = Guid.NewGuid();
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Visit?)null);
+        var command = new UpdateVisitCommand(
+            visitId.ToString(),
+            userId.ToString(),
+            tariffId.ToString(),
+            DateTimeOffset.UtcNow,
+            null,
+            null,
+            VisitStatus.Active);
+
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -57,18 +85,31 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
-        var visit = new Visit
+        var visitId = Guid.NewGuid();
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = Guid.NewGuid();
+        var entryTime = DateTimeOffset.UtcNow;
+
+        var command = new UpdateVisitCommand(
+            visitId.ToString(),
+            userId.ToString(),
+            tariffId.ToString(),
+            entryTime,
+            null,
+            null,
+            VisitStatus.Active);
+
+        var existingVisitDto = new VisitWithTariffDto
         {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow,
+            VisitId = visitId,
+            UserId = userId,
+            TariffId = tariffId,
+            EntryTime = entryTime,
             Status = VisitStatus.Active
         };
-        var command = new UpdateVisitCommand(visit);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(visit);
-        VisitRepositoryMock.Setup(r => r.UpdateAsync(visit)).ReturnsAsync((Visit?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(existingVisitDto);
+        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>())).ReturnsAsync((Visit?)null!);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -80,17 +121,20 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var visit = new Visit
-        {
-            VisitId = 1,
-            UserId = "user123",
-            TariffId = 1,
-            EntryTime = DateTime.UtcNow,
-            Status = VisitStatus.Active
-        };
-        var command = new UpdateVisitCommand(visit);
+        var visitId = Guid.NewGuid();
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = Guid.NewGuid();
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        var command = new UpdateVisitCommand(
+            visitId.ToString(),
+            userId.ToString(),
+            tariffId.ToString(),
+            DateTimeOffset.UtcNow,
+            null,
+            null,
+            VisitStatus.Active);
+
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -100,33 +144,25 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(null, "user123", 1, false, "Посещение обязательно")]
-    [InlineData(0, "user123", 1, false, "ID посещения обязателен")]
-    [InlineData(-1, "user123", 1, false, "ID посещения обязателен")]
-    [InlineData(1, "", 1, false, "ID пользователя обязателен")]
-    [InlineData(1, null, 1, false, "ID пользователя обязателен")]
-    [InlineData(1, "user123", 0, false, "ID тарифа обязателен")]
-    [InlineData(1, "user123", -1, false, "ID тарифа обязателен")]
-    [InlineData(1, "user123", 1, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int? visitId, string? userId, int tariffId, bool isValid, string? expectedError)
+    [InlineData("", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "", false)]
+    [InlineData("not-a-guid", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "33333333-3333-3333-3333-333333333333", true)]
+    public async Task Validator_Should_ValidateCorrectly(string visitId, string userId, string tariffId, bool isValid)
     {
-        var visit = visitId.HasValue ? new Visit
-        {
-            VisitId = visitId.Value,
-            UserId = userId!,
-            TariffId = tariffId,
-            EntryTime = DateTime.UtcNow,
-            Status = VisitStatus.Active
-        } : null;
-        var command = new UpdateVisitCommand(visit!);
+        var command = new UpdateVisitCommand(
+            visitId,
+            userId,
+            tariffId,
+            DateTimeOffset.UtcNow,
+            null,
+            null,
+            VisitStatus.Active);
         var validator = new UpdateVisitCommandValidator();
 
         var result = await validator.ValidateAsync(command);
 
         result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
     }
 }

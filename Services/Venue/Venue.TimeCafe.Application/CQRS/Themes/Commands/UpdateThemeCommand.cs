@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record UpdateThemeCommand(Theme Theme) : IRequest<UpdateThemeResult>;
+public record UpdateThemeCommand(string ThemeId, string Name, string? Emoji, string? Colors) : IRequest<UpdateThemeResult>;
 
 public record UpdateThemeResult(
     bool Success,
@@ -24,22 +24,38 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
 {
     public UpdateThemeCommandValidator()
     {
-        RuleFor(x => x.Theme)
-            .NotNull().WithMessage("Тема обязательна");
+        // TODO : finish up validators
+        RuleFor(x => x.ThemeId)
+            .NotEmpty().WithMessage("Тема не найдена")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тема не найдена")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тема не найдена");
 
-        When(x => x.Theme != null, () =>
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Название темы обязательно")
+            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+
+        RuleFor(x => x.Emoji)
+            .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
+            .When(x => !string.IsNullOrEmpty(x.Emoji));
+
+        RuleFor(x => x.Colors)
+            .MaximumLength(2000).WithMessage("Colors слишком длинный")
+            .Must(colors => string.IsNullOrEmpty(colors) || IsValidJson(colors)).WithMessage("Colors должен быть корректным JSON")
+            .When(x => x.Colors != null);
+
+        static bool IsValidJson(string json)
         {
-            RuleFor(x => x.Theme.ThemeId)
-                .GreaterThan(0).WithMessage("ID темы обязателен");
+            try
+            {
+                System.Text.Json.JsonDocument.Parse(json);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
-            RuleFor(x => x.Theme.Name)
-                .NotEmpty().WithMessage("Название темы обязательно")
-                .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
-
-            RuleFor(x => x.Theme.Emoji)
-                .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
-                .When(x => !string.IsNullOrEmpty(x.Theme.Emoji));
-        });
     }
 }
 
@@ -51,11 +67,21 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.Theme.ThemeId);
+            var themeId = Guid.Parse(request.ThemeId);
+
+            var existing = await _repository.GetByIdAsync(themeId);
             if (existing == null)
                 return UpdateThemeResult.ThemeNotFound();
 
-            var updated = await _repository.UpdateAsync(request.Theme);
+            // TODO : automapper
+            var theme = new Theme(themeId)
+            {
+                Name = request.Name,
+                Emoji = request.Emoji,
+                Colors = request.Colors
+            };
+
+            var updated = await _repository.UpdateAsync(theme);
 
             if (updated == null)
                 return UpdateThemeResult.UpdateFailed();

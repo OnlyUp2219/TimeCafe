@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record DeleteThemeCommand(int ThemeId) : IRequest<DeleteThemeResult>;
+public record DeleteThemeCommand(string ThemeId) : IRequest<DeleteThemeResult>;
 
 public record DeleteThemeResult(
     bool Success,
@@ -24,7 +24,9 @@ public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
     public DeleteThemeCommandValidator()
     {
         RuleFor(x => x.ThemeId)
-            .GreaterThan(0).WithMessage("ID темы обязателен");
+            .NotEmpty().WithMessage("Тема не найдена")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тема не найдена")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тема не найдена");
     }
 }
 
@@ -36,11 +38,13 @@ public class DeleteThemeCommandHandler(IThemeRepository repository) : IRequestHa
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.ThemeId);
+            var themeId = Guid.Parse(request.ThemeId);
+
+            var existing = await _repository.GetByIdAsync(themeId);
             if (existing == null)
                 return DeleteThemeResult.ThemeNotFound();
 
-            var result = await _repository.DeleteAsync(request.ThemeId);
+            var result = await _repository.DeleteAsync(themeId);
 
             if (!result)
                 return DeleteThemeResult.DeleteFailed();

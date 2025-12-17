@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Test.Integration.Helpers;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Commands;
 
 public class CreateTariffCommandTests : BaseCqrsHandlerTest
@@ -12,14 +14,21 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenTariffCreated()
     {
-        var command = new CreateTariffCommand("Test Tariff", "Description", 10.5m, BillingType.PerMinute, null, true);
+        var tariffId = Guid.NewGuid();
+        var command = new CreateTariffCommand(
+            TestData.NewTariffs.NewTariff1Name,
+            "Description",
+            TestData.NewTariffs.NewTariff1Price,
+            TestData.NewTariffs.NewTariff1BillingType,
+            null,
+            true);
         var tariff = new Tariff
         {
-            TariffId = 1,
-            Name = "Test Tariff",
+            TariffId = tariffId,
+            Name = TestData.NewTariffs.NewTariff1Name,
             Description = "Description",
-            PricePerMinute = 10.5m,
-            BillingType = BillingType.PerMinute,
+            PricePerMinute = TestData.NewTariffs.NewTariff1Price,
+            BillingType = TestData.NewTariffs.NewTariff1BillingType,
             IsActive = true
         };
 
@@ -29,14 +38,20 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         result.Success.Should().BeTrue();
         result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be("Test Tariff");
+        result.Tariff!.Name.Should().Be(TestData.NewTariffs.NewTariff1Name);
         result.StatusCode.Should().Be(201);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryFails()
     {
-        var command = new CreateTariffCommand("Test Tariff", "Description", 10.5m, BillingType.PerMinute, null, true);
+        var command = new CreateTariffCommand(
+            TestData.NewTariffs.NewTariff1Name,
+            "Description",
+            TestData.NewTariffs.NewTariff1Price,
+            TestData.NewTariffs.NewTariff1BillingType,
+            null,
+            true);
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new InvalidOperationException("Database error"));
 
@@ -50,7 +65,13 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new CreateTariffCommand("Test Tariff", "Description", 10.5m, BillingType.PerMinute, null, true);
+        var command = new CreateTariffCommand(
+            TestData.NewTariffs.NewTariff1Name,
+            "Description",
+            TestData.NewTariffs.NewTariff1Price,
+            TestData.NewTariffs.NewTariff1BillingType,
+            null,
+            true);
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new Exception());
 

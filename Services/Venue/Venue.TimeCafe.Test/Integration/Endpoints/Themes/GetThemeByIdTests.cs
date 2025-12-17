@@ -14,7 +14,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("theme", out var returnedTheme).Should().BeTrue();
-            returnedTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             returnedTheme.GetProperty("name").GetString().Should().Be("Тестовая тема");
         }
         catch (Exception)
@@ -27,7 +27,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Fact]
     public async Task Endpoint_GetThemeById_Should_Return404_WhenThemeNotFound()
     {
-        var response = await Client.GetAsync("/themes/99999");
+        var response = await Client.GetAsync($"/themes/{TestData.NonExistingIds.NonExistingThemeId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -46,10 +46,9 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-999)]
-    public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsInvalid(int invalidId)
+    [InlineData("invalid-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
     {
         var response = await Client.GetAsync($"/themes/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -68,6 +67,24 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Fact]
+    public async Task Endpoint_GetThemeById_Should_Return200_WhenThemeIdIsEmpty()
+    {
+        var response = await Client.GetAsync($"/themes/");
+        var jsonString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            json.TryGetProperty("themes", out var themes).Should().BeTrue();
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_GetThemeById_Should_Return200_WhenThemeIdIsEmpty] Response: {jsonString}");
+            throw;
+        }
+    }
+
+    [Fact]
     public async Task Endpoint_GetThemeById_Should_ReturnAllProperties_WhenThemeExists()
     {
         await ClearDatabaseAndCacheAsync();
@@ -81,7 +98,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             var returnedTheme = json.GetProperty("theme");
 
-            returnedTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             returnedTheme.GetProperty("name").GetString().Should().Be("Полная тема");
         }
         catch (Exception)

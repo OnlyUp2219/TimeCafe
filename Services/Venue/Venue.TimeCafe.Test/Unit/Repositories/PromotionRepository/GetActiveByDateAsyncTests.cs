@@ -9,11 +9,11 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
         var targetDate = DateTime.UtcNow.AddDays(5);
         var promotion = new Promotion
         {
-            Name = "Valid Promo",
-            Description = "Test",
-            DiscountPercent = 15m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(10),
+            Name = TestData.ExistingPromotions.Promotion1Name,
+            Description = TestData.ExistingPromotions.Promotion1Description,
+            DiscountPercent = TestData.ExistingPromotions.Promotion1DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -25,7 +25,7 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(1);
-        result.First().Name.Should().Be("Valid Promo");
+        result.First().Name.Should().Be(TestData.ExistingPromotions.Promotion1Name);
     }
 
     [Fact]
@@ -35,10 +35,10 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
         var targetDate = DateTime.UtcNow;
         var expired = new Promotion
         {
-            Name = "Expired",
-            Description = "Test",
-            DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow.AddDays(-10),
+            Name = TestData.ExistingPromotions.Promotion2Name,
+            Description = TestData.ExistingPromotions.Promotion2Description,
+            DiscountPercent = TestData.ExistingPromotions.Promotion2DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetPastDate(),
             ValidTo = DateTime.UtcNow.AddDays(-1),
             IsActive = true
         };
@@ -59,11 +59,11 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
         var targetDate = DateTime.UtcNow;
         var future = new Promotion
         {
-            Name = "Future",
-            Description = "Test",
-            DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow.AddDays(5),
-            ValidTo = DateTime.UtcNow.AddDays(10),
+            Name = TestData.ExistingPromotions.Promotion3Name,
+            Description = TestData.ExistingPromotions.Promotion3Description,
+            DiscountPercent = TestData.ExistingPromotions.Promotion3DiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetFutureDate(),
+            ValidTo = TestData.DateTimeData.GetFutureDate().AddDays(30),
             IsActive = true
         };
         Context.Promotions.Add(future);

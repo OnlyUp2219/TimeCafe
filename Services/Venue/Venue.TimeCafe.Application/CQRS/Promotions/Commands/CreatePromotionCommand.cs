@@ -4,8 +4,8 @@ public record CreatePromotionCommand(
     string Name,
     string Description,
     decimal? DiscountPercent,
-    DateTime ValidFrom,
-    DateTime ValidTo,
+    DateTimeOffset ValidFrom,
+    DateTimeOffset ValidTo,
     bool IsActive = true) : IRequest<CreatePromotionResult>;
 
 public record CreatePromotionResult(

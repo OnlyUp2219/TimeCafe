@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffsByBillingTypeQuery(BillingType BillingType) : IRequest<GetTariffsByBillingTypeResult>;
@@ -8,12 +10,12 @@ public record GetTariffsByBillingTypeResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Tariff>? Tariffs = null) : ICqrsResultV2
+    IEnumerable<TariffWithThemeDto>? Tariffs = null) : ICqrsResultV2
 {
     public static GetTariffsByBillingTypeResult GetFailed() =>
         new(false, Code: "GetTariffsByBillingTypeFailed", Message: "Не удалось получить тарифы по типу биллинга", StatusCode: 500);
 
-    public static GetTariffsByBillingTypeResult GetSuccess(IEnumerable<Tariff> tariffs) =>
+    public static GetTariffsByBillingTypeResult GetSuccess(IEnumerable<TariffWithThemeDto> tariffs) =>
         new(true, Tariffs: tariffs);
 }
 

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record UpdateVisitCommand(Visit Visit) : IRequest<UpdateVisitResult>;
+public record UpdateVisitCommand(string VisitId, string UserId, string TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : IRequest<UpdateVisitResult>;
 
 public record UpdateVisitResult(
     bool Success,
@@ -24,21 +24,35 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
 {
     public UpdateVisitCommandValidator()
     {
-        RuleFor(x => x.Visit)
-            .NotNull().WithMessage("Посещение обязательно");
+        RuleFor(x => x.VisitId)
+            .NotEmpty().WithMessage("Посещение не найдено")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Посещение не найдено")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
 
-        When(x => x.Visit != null, () =>
-        {
-            RuleFor(x => x.Visit.VisitId)
-                .GreaterThan(0).WithMessage("ID посещения обязателен");
 
-            RuleFor(x => x.Visit.UserId)
-                .NotEmpty().WithMessage("ID пользователя обязателен")
-                .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+        RuleFor(x => x.TariffId)
+            .NotEmpty().WithMessage("Тариф не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
 
-            RuleFor(x => x.Visit.TariffId)
-                .GreaterThan(0).WithMessage("ID тарифа обязателен");
-        });
+        RuleFor(x => x.UserId)
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+
+        RuleFor(x => x.EntryTime)
+            .NotEmpty().WithMessage("Время входа обязательно")
+            .Must(t => t != default).WithMessage("Время входа некорректно");
+
+        RuleFor(x => x.ExitTime)
+            .Must((cmd, exit) => exit == null || exit.Value != default).WithMessage("Время выхода некорректно")
+            .Must((cmd, exit) => exit == null || exit.Value >= cmd.EntryTime).WithMessage("Время выхода не может быть раньше времени входа");
+
+        RuleFor(x => x.CalculatedCost)
+            .Must(cost => cost == null || cost >= 0).WithMessage("Стоимость не может быть отрицательной");
+
+        RuleFor(x => x.Status)
+            .IsInEnum().WithMessage("Статус посещения некорректен");
     }
 }
 
@@ -50,11 +64,25 @@ public class UpdateVisitCommandHandler(IVisitRepository repository) : IRequestHa
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.Visit.VisitId);
+            var visitId = Guid.Parse(request.VisitId);
+
+            var existing = await _repository.GetByIdAsync(visitId);
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
-            var updated = await _repository.UpdateAsync(request.Visit);
+            //TODO : AutoMapper
+            var visit = new Visit
+            {
+                UserId = Guid.Parse(request.UserId),
+                TariffId = Guid.Parse(request.TariffId),
+                VisitId = visitId,
+                EntryTime = request.EntryTime,
+                ExitTime = request.ExitTime,
+                CalculatedCost = request.CalculatedCost,
+                Status = request.Status
+            };
+
+            var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
                 return UpdateVisitResult.UpdateFailed();

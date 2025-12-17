@@ -19,19 +19,19 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_UpdatePromotion_WhenExists()
     {
         // Arrange
-        var existing = await SeedPromotionAsync("Original", 10m);
-        existing.Name = "Updated";
-        existing.DiscountPercent = 25m;
-        existing.Description = "Updated Description";
+        var existing = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
+        existing.Name = TestData.UpdateData.UpdatedPromotionName;
+        existing.DiscountPercent = TestData.UpdateData.UpdatedDiscountPercent;
+        existing.Description = TestData.UpdateData.UpdatedPromotionDescription;
 
         // Act
         var result = await PromotionRepository.UpdateAsync(existing);
 
         // Assert
         result.Should().NotBeNull();
-        result.Name.Should().Be("Updated");
-        result.DiscountPercent.Should().Be(25m);
-        result.Description.Should().Be("Updated Description");
+        result.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
+        result.DiscountPercent.Should().Be(TestData.UpdateData.UpdatedDiscountPercent);
+        result.Description.Should().Be(TestData.UpdateData.UpdatedPromotionDescription);
     }
 
     [Fact]
@@ -40,12 +40,12 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Arrange
         var nonExistent = new Promotion
         {
-            PromotionId = 99999,
-            Name = "Non-existent",
-            Description = "Test",
-            DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(7)
+            PromotionId = TestData.NonExistingIds.NonExistingPromotionId,
+            Name = TestData.ExistingPromotions.Promotion1Name,
+            Description = TestData.DefaultValues.DefaultPromotionDescription,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
+            ValidTo = TestData.DateTimeData.GetValidToDate()
         };
 
         // Act
@@ -59,8 +59,8 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var existing = await SeedPromotionAsync("Original", 10m);
-        existing.Name = "Updated";
+        var existing = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
+        existing.Name = TestData.UpdateData.UpdatedPromotionName;
 
         // Act
         await PromotionRepository.UpdateAsync(existing);
@@ -73,9 +73,9 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
-        var existing = await SeedPromotionAsync("Original", 10m);
-        existing.Name = "Persisted Update";
-        existing.DiscountPercent = 30m;
+        var existing = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, TestData.ExistingPromotions.Promotion2DiscountPercent);
+        existing.Name = TestData.UpdateData.UpdatedPromotionName;
+        existing.DiscountPercent = TestData.UpdateData.UpdatedDiscountPercent;
 
         // Act
         await PromotionRepository.UpdateAsync(existing);
@@ -83,17 +83,17 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Promotions.FindAsync(existing.PromotionId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted Update");
-        fromDb.DiscountPercent.Should().Be(30m);
+        fromDb!.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
+        fromDb.DiscountPercent.Should().Be(TestData.UpdateData.UpdatedDiscountPercent);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdateDateRange()
     {
         // Arrange
-        var existing = await SeedPromotionAsync("Original", 10m);
-        var newValidFrom = DateTime.UtcNow.AddDays(5);
-        var newValidTo = DateTime.UtcNow.AddDays(15);
+        var existing = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent);
+        var newValidFrom = TestData.DateTimeData.GetFutureDate();
+        var newValidTo = TestData.DateTimeData.GetFutureDate().AddDays(30);
         existing.ValidFrom = newValidFrom;
         existing.ValidTo = newValidTo;
 

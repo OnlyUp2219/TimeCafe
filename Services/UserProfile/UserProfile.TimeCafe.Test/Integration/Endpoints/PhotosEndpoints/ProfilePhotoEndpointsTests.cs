@@ -5,7 +5,7 @@ using Microsoft.Extensions.Options;
 using UserProfile.TimeCafe.Domain.DTOs;
 using UserProfile.TimeCafe.Test.Integration.Helpers;
 
-namespace UserProfile.TimeCafe.Test.Integration.Endpoints;
+namespace UserProfile.TimeCafe.Test.Integration.Endpoints.PhotosEndpoints;
 
 public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {

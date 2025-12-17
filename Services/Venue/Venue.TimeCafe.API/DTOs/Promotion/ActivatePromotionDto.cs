@@ -1,9 +1,9 @@
 namespace Venue.TimeCafe.API.DTOs.Promotion;
 
-public record ActivatePromotionDto(int PromotionId);
+public record ActivatePromotionDto(string PromotionId);
 
 public class ActivatePromotionDtoExample : IExamplesProvider<ActivatePromotionDto>
 {
     public ActivatePromotionDto GetExamples() =>
-        new(PromotionId: 1);
+        new(PromotionId: "a1111111-1111-1111-1111-111111111111");
 }
