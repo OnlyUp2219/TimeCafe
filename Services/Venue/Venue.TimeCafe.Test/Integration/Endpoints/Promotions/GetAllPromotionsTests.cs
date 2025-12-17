@@ -6,9 +6,9 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
     public async Task Endpoint_GetAllPromotions_Should_Return200_WhenPromotionsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedPromotionAsync("Акция 1", 10);
-        await SeedPromotionAsync("Акция 2", 20);
-        await SeedPromotionAsync("Акция 3", 30);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent);
 
         var response = await Client.GetAsync("/promotions");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -53,7 +53,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
     public async Task Endpoint_GetAllPromotions_Should_ReturnAllProperties_WhenPromotionsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Специальная акция", 50);
+        var promotion = await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, (int)TestData.NewPromotions.NewPromotion1DiscountPercent);
 
         var response = await Client.GetAsync("/promotions");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -62,12 +62,12 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var promotions = json.GetProperty("promotions");
-            var foundPromotion = promotions.EnumerateArray().FirstOrDefault(p => p.GetProperty("name").GetString() == "Специальная акция");
+            var foundPromotion = promotions.EnumerateArray().FirstOrDefault(p => p.GetProperty("name").GetString() == TestData.NewPromotions.NewPromotion1Name);
 
             foundPromotion.ValueKind.Should().NotBe(JsonValueKind.Undefined);
-            foundPromotion.GetProperty("promotionId").GetInt32().Should().Be(promotion.PromotionId);
-            foundPromotion.GetProperty("name").GetString().Should().Be("Специальная акция");
-            foundPromotion.GetProperty("discountPercent").GetDecimal().Should().Be(50);
+            foundPromotion.GetProperty("promotionId").GetGuid().Should().Be(promotion.PromotionId);
+            foundPromotion.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion1Name);
+            foundPromotion.GetProperty("discountPercent").GetDecimal().Should().Be(TestData.NewPromotions.NewPromotion1DiscountPercent);
         }
         catch (Exception)
         {

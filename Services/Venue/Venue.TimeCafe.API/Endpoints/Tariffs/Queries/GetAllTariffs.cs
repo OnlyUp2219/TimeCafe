@@ -4,7 +4,8 @@ public class GetAllTariffs : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tariffs", async (ISender sender) =>
+        app.MapGet("/tariffs", async (
+            [FromServices] ISender sender) =>
         {
             var query = new GetAllTariffsQuery();
             var result = await sender.Send(query);

@@ -19,18 +19,18 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_UpdateTariff_WhenExists()
     {
         // Arrange
-        var existing = await SeedTariffAsync("Original", 100m);
-        existing.Name = "Updated";
-        existing.PricePerMinute = 200m;
+        var existing = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        existing.Name = TestData.ExistingTariffs.Tariff2Name;
+        existing.PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute;
 
         // Act
         var result = await TariffRepository.UpdateAsync(existing);
 
         // Assert
         result.Should().NotBeNull();
-        result.Name.Should().Be("Updated");
-        result.PricePerMinute.Should().Be(200m);
-        result.LastModified.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result.PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff2PricePerMinute);
+        result.LastModified.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -39,10 +39,10 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Arrange
         var nonExistent = new Tariff
         {
-            TariffId = 99999,
-            Name = "Non-existent",
-            PricePerMinute = 100m,
-            BillingType = BillingType.PerMinute
+            TariffId = TestData.NonExistingIds.NonExistingTariffId,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+            BillingType = TestData.DefaultValues.DefaultBillingType
         };
 
         // Act
@@ -56,11 +56,11 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_UpdateLastModified()
     {
         // Arrange
-        var existing = await SeedTariffAsync("Test", 100m);
+        var existing = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var originalModified = existing.LastModified;
         await Task.Delay(100);
 
-        existing.Name = "Modified";
+        existing.Name = TestData.ExistingTariffs.Tariff1Name;
 
         // Act
         var result = await TariffRepository.UpdateAsync(existing);
@@ -73,8 +73,8 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_InvalidateCache()
     {
         // Arrange
-        var existing = await SeedTariffAsync("Original", 100m);
-        existing.Name = "Updated";
+        var existing = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        existing.Name = TestData.ExistingTariffs.Tariff2Name;
 
         // Act
         await TariffRepository.UpdateAsync(existing);
@@ -87,9 +87,9 @@ public class UpdateAsyncTests : BaseCqrsTest
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
-        var existing = await SeedTariffAsync("Original", 100m);
-        existing.Name = "Persisted Update";
-        existing.PricePerMinute = 250m;
+        var existing = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        existing.Name = TestData.ExistingTariffs.Tariff3Name;
+        existing.PricePerMinute = TestData.ExistingTariffs.Tariff3PricePerMinute;
 
         // Act
         await TariffRepository.UpdateAsync(existing);
@@ -97,7 +97,7 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Assert
         var fromDb = await Context.Tariffs.FindAsync(existing.TariffId);
         fromDb.Should().NotBeNull();
-        fromDb!.Name.Should().Be("Persisted Update");
-        fromDb.PricePerMinute.Should().Be(250m);
+        fromDb!.Name.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        fromDb.PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
     }
 }

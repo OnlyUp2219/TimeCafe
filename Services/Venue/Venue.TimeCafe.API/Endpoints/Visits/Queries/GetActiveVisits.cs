@@ -4,7 +4,8 @@ public class GetActiveVisits : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/visits/active", async (ISender sender) =>
+        app.MapGet("/visits/active", async (
+            [FromServices] ISender sender) =>
         {
             var query = new GetActiveVisitsQuery();
             var result = await sender.Send(query);

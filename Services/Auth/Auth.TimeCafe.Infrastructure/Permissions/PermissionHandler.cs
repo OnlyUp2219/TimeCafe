@@ -1,5 +1,3 @@
-using System.Security.Claims;
-
 namespace Auth.TimeCafe.Infrastructure.Permissions;
 
 public class PermissionHandler(IPermissionService permissionService) : AuthorizationHandler<PermissionRequirement>

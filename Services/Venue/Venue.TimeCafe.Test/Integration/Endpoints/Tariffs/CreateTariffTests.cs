@@ -6,13 +6,13 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_CreateTariff_Should_Return201_WhenValid()
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема для тарифа");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var payload = new
         {
-            name = "Новый тариф",
-            description = "Описание тарифа",
+            name = TestData.NewTariffs.NewTariff1Name,
+            description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = 10m,
-            billingType = 2,
+            billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = true
         };
@@ -25,7 +25,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out _).Should().BeTrue();
             json.TryGetProperty("tariff", out var tariff).Should().BeTrue();
-            tariff.GetProperty("name").GetString().Should().Be("Новый тариф");
+            tariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff1Name);
         }
         catch (Exception)
         {
@@ -40,11 +40,11 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_CreateTariff_Should_Return422_WhenNameIsInvalid(string invalidName)
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var payload = new
         {
             name = invalidName,
-            description = "Описание",
+            description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = 10m,
             billingType = 2,
             themeId = theme.ThemeId,
@@ -68,12 +68,12 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_CreateTariff_Should_Return422_WhenNameExceedsMaxLength()
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var longName = new string('A', 101);
         var payload = new
         {
             name = longName,
-            description = "Описание",
+            description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = 10m,
             billingType = 2,
             themeId = theme.ThemeId,
@@ -100,13 +100,13 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_CreateTariff_Should_Return422_WhenPriceIsInvalid(decimal invalidPrice)
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var payload = new
         {
-            name = "Тариф",
-            description = "Описание",
+            name = TestData.DefaultValues.DefaultTariffName,
+            description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = invalidPrice,
-            billingType = 2,
+            billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = true
         };
@@ -128,13 +128,13 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_CreateTariff_Should_ReturnTariffWithId_WhenCreated()
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема");
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
         var payload = new
         {
-            name = "Тариф с ID",
-            description = "Описание",
-            pricePerMinute = 15m,
-            billingType = 2,
+            name = TestData.NewTariffs.NewTariff2Name,
+            description = TestData.DefaultValues.DefaultTariffName,
+            pricePerMinute = TestData.NewTariffs.NewTariff2Price,
+            billingType = (int)TestData.NewTariffs.NewTariff2BillingType,
             themeId = theme.ThemeId,
             isActive = true
         };
@@ -146,8 +146,8 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var tariff = json.GetProperty("tariff");
-            tariff.GetProperty("tariffId").GetInt32().Should().BeGreaterThan(0);
-            tariff.GetProperty("name").GetString().Should().Be("Тариф с ID");
+            tariff.GetProperty("tariffId").GetString().Should().NotBeNullOrWhiteSpace();
+            tariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
         }
         catch (Exception)
         {

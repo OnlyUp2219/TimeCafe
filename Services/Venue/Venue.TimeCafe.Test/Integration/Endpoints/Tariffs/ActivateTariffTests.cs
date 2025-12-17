@@ -6,7 +6,9 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_ActivateTariff_Should_Return200_WhenTariffExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Неактивный тариф", 10m, isActive: false);
+        var name = TestData.NewTariffs.NewTariff1Name;
+        var price = TestData.NewTariffs.NewTariff1Price;
+        var tariff = await SeedTariffAsync(name, price, isActive: false);
 
         var response = await Client.PostAsync($"/tariffs/{tariff.TariffId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -28,7 +30,7 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync("/tariffs/9999/activate", null);
+        var response = await Client.PostAsync($"/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -42,10 +44,9 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_ActivateTariff_Should_Return422_WhenTariffIdIsInvalid(int invalidId)
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_ActivateTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -66,7 +67,9 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_ActivateTariff_Should_ActuallyActivateTariff_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Тариф для активации", 10m, isActive: false);
+        var name2 = TestData.NewTariffs.NewTariff2Name;
+        var price2 = TestData.NewTariffs.NewTariff2Price;
+        var tariff = await SeedTariffAsync(name2, price2, isActive: false);
 
         await Client.PostAsync($"/tariffs/{tariff.TariffId}/activate", null);
 
@@ -76,7 +79,12 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.GetProperty("tariff").GetProperty("isActive").GetBoolean().Should().BeTrue();
+            var tariffJson = json;
+            if (json.TryGetProperty("tariff", out var t)) tariffJson = t;
+            bool isActive = false;
+            if (tariffJson.TryGetProperty("isActive", out var a)) isActive = a.GetBoolean();
+            else if (tariffJson.TryGetProperty("tariffIsActive", out var ai)) isActive = ai.GetBoolean();
+            isActive.Should().BeTrue();
         }
         catch (Exception)
         {

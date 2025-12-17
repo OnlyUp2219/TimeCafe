@@ -27,12 +27,12 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
         RuleFor(x => x.InfoId)
             .NotEmpty().WithMessage("Информации отсутствует")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Информации отсутствует")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Информации отсутствует");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Информации отсутствует");
 
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.InfoText)
             .NotEmpty().WithMessage("Текст информации обязателен")
@@ -65,7 +65,7 @@ public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
                 UserId = userId,
                 InfoText = request.InfoText,
                 CreatedAt = existing.CreatedAt,
-                CreatedBy =  request.CreatedBy,
+                CreatedBy = request.CreatedBy,
             };
 
             var updated = await _repository.UpdateAdditionalInfoAsync(additionalInfo, cancellationToken);

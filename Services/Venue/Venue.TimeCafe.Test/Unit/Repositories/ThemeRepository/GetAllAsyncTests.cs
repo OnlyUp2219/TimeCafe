@@ -6,9 +6,9 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnAllThemes()
     {
         // Arrange
-        await SeedThemeAsync("Theme 1");
-        await SeedThemeAsync("Theme 2");
-        await SeedThemeAsync("Theme 3");
+        await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme3Name);
 
         // Act
         var result = await ThemeRepository.GetAllAsync();
@@ -33,26 +33,26 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnOrderedByName()
     {
         // Arrange
-        await SeedThemeAsync("Zebra");
-        await SeedThemeAsync("Alpha");
-        await SeedThemeAsync("Beta");
+        await SeedThemeAsync(TestData.ExistingThemes.Theme3Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
 
         // Act
         var result = (await ThemeRepository.GetAllAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].Name.Should().Be("Alpha");
-        result[1].Name.Should().Be("Beta");
-        result[2].Name.Should().Be("Zebra");
+        result[0].Name.Should().Be(TestData.ExistingThemes.Theme2Name);
+        result[1].Name.Should().Be(TestData.ExistingThemes.Theme3Name);
+        result[2].Name.Should().Be(TestData.ExistingThemes.Theme1Name);
     }
 
     [Fact]
     public async Task Repository_GetAllAsync_Should_RequestCache_OnMultipleCalls()
     {
         // Arrange
-        await SeedThemeAsync("Theme1");
-        await SeedThemeAsync("Theme2");
+        await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
+        await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
         await ThemeRepository.GetAllAsync();
         await ThemeRepository.GetAllAsync();
 
@@ -66,9 +66,9 @@ public class GetAllAsyncTests : BaseCqrsTest
         // Arrange
         var theme = new Theme
         {
-            Name = "Rich Theme",
-            Emoji = "🌟",
-            Colors = "#FFFFFF,#000000"
+            Name = TestData.ExistingThemes.Theme1Name,
+            Emoji = TestData.ExistingThemes.Theme1Emoji,
+            Colors = TestData.ExistingThemes.Theme1Colors
         };
         Context.Themes.Add(theme);
         await Context.SaveChangesAsync();
@@ -78,8 +78,8 @@ public class GetAllAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result.Name.Should().Be("Rich Theme");
-        result.Emoji.Should().Be("🌟");
-        result.Colors.Should().Be("#FFFFFF,#000000");
+        result.Name.Should().Be(TestData.ExistingThemes.Theme1Name);
+        result.Emoji.Should().Be(TestData.ExistingThemes.Theme1Emoji);
+        result.Colors.Should().Be(TestData.ExistingThemes.Theme1Colors);
     }
 }

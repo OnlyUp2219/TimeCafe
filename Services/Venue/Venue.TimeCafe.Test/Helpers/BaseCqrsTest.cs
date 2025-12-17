@@ -98,7 +98,7 @@ public abstract class BaseCqrsTest : IDisposable
         return theme;
     }
 
-    protected async Task<Visit> SeedVisitAsync(string userId = "user123", int? tariffId = null)
+    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null)
     {
         var tariff = tariffId.HasValue
             ? await Context.Tariffs.FindAsync(tariffId.Value)
@@ -106,7 +106,7 @@ public abstract class BaseCqrsTest : IDisposable
 
         var visit = new Visit
         {
-            UserId = userId,
+            UserId = userId ?? Guid.Parse("12345678-1234-1234-1234-123456789012"),
             TariffId = tariff!.TariffId,
             EntryTime = DateTime.UtcNow,
             Status = VisitStatus.Active

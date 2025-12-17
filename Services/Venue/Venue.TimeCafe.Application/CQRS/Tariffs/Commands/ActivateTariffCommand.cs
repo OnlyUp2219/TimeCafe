@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record ActivateTariffCommand(int TariffId) : IRequest<ActivateTariffResult>;
+public record ActivateTariffCommand(string TariffId) : IRequest<ActivateTariffResult>;
 
 public record ActivateTariffResult(
     bool Success,
@@ -24,7 +24,9 @@ public class ActivateTariffCommandValidator : AbstractValidator<ActivateTariffCo
     public ActivateTariffCommandValidator()
     {
         RuleFor(x => x.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+            .NotEmpty().WithMessage("Тариф не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
 
@@ -36,11 +38,13 @@ public class ActivateTariffCommandHandler(ITariffRepository repository) : IReque
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.TariffId);
+            var tariffId = Guid.Parse(request.TariffId);
+
+            var existing = await _repository.GetByIdAsync(tariffId);
             if (existing == null)
                 return ActivateTariffResult.TariffNotFound();
 
-            var result = await _repository.ActivateAsync(request.TariffId);
+            var result = await _repository.ActivateAsync(tariffId);
 
             if (!result)
                 return ActivateTariffResult.ActivateFailed();

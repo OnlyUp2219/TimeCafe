@@ -6,9 +6,9 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_ReturnAllTariffs_WhenExist()
     {
         // Arrange
-        await SeedTariffAsync("Tariff 1", 100m);
-        await SeedTariffAsync("Tariff 2", 200m);
-        await SeedTariffAsync("Tariff 3", 300m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         // Act
         var result = await TariffRepository.GetAllAsync();
@@ -33,27 +33,27 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_OrderByCreatedAtDescending()
     {
         // Arrange
-        var tariff1 = await SeedTariffAsync("First", 100m);
+        var tariff1 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
         await Task.Delay(10);
-        var tariff2 = await SeedTariffAsync("Second", 200m);
+        var tariff2 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
         await Task.Delay(10);
-        var tariff3 = await SeedTariffAsync("Third", 300m);
+        var tariff3 = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         // Act
         var result = (await TariffRepository.GetAllAsync()).ToList();
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].Name.Should().Be("Third");
-        result[1].Name.Should().Be("Second");
-        result[2].Name.Should().Be("First");
+        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
     public async Task Repository_GetAllAsync_Should_ReturnFromCache_WhenCached()
     {
         // Arrange
-        await SeedTariffAsync("Tariff 1", 100m);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         // First call - should cache
         var firstResult = await TariffRepository.GetAllAsync();
@@ -71,15 +71,15 @@ public class GetAllAsyncTests : BaseCqrsTest
     public async Task Repository_GetAllAsync_Should_IncludeThemes_WhenExist()
     {
         // Arrange
-        var theme = await SeedThemeAsync("Test Theme");
+        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
         var tariff = new Tariff
         {
-            Name = "Tariff with Theme",
-            PricePerMinute = 200m,
+            Name = TestData.ExistingTariffs.Tariff2Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.PerMinute,
             ThemeId = theme.ThemeId,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();
@@ -89,22 +89,21 @@ public class GetAllAsyncTests : BaseCqrsTest
 
         // Assert
         var tariffWithTheme = result.First();
-        tariffWithTheme.Theme.Should().NotBeNull();
-        tariffWithTheme.Theme!.ThemeId.Should().Be(theme.ThemeId);
+        tariffWithTheme.ThemeId.Should().Be(theme.ThemeId);
     }
 
     [Fact]
     public async Task Repository_GetAllAsync_Should_ReturnBothActiveAndInactive()
     {
         // Arrange
-        var activeTariff = await SeedTariffAsync("Active", 100m);
+        var activeTariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
         var inactiveTariff = new Tariff
         {
-            Name = "Inactive",
-            PricePerMinute = 200m,
+            Name = TestData.ExistingTariffs.Tariff3Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff3PricePerMinute,
             BillingType = BillingType.PerMinute,
             IsActive = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(inactiveTariff);
         await Context.SaveChangesAsync();
@@ -114,7 +113,7 @@ public class GetAllAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().Contain(t => t.IsActive);
-        result.Should().Contain(t => !t.IsActive);
+        result.Should().Contain(t => t.TariffIsActive);
+        result.Should().Contain(t => !t.TariffIsActive);
     }
 }

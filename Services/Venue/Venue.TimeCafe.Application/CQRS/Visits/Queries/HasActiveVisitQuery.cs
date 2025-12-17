@@ -35,7 +35,9 @@ public class HasActiveVisitQueryHandler(IVisitRepository repository) : IRequestH
     {
         try
         {
-            var hasActiveVisit = await _repository.HasActiveVisitAsync(request.UserId);
+            Guid userId = Guid.Parse(request.UserId);
+
+            var hasActiveVisit = await _repository.HasActiveVisitAsync(userId);
             return HasActiveVisitResult.CheckSuccess(hasActiveVisit);
         }
         catch (Exception)

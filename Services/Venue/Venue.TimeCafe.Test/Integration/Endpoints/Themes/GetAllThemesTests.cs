@@ -1,6 +1,5 @@
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Themes;
 
-[Collection("ThemesSequential")]
 public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
@@ -73,7 +72,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
             var foundTheme = themes.EnumerateArray().FirstOrDefault(t => t.GetProperty("name").GetString() == "Специальная тема");
 
             foundTheme.ValueKind.Should().NotBe(JsonValueKind.Undefined);
-            foundTheme.GetProperty("themeId").GetInt32().Should().Be(theme.ThemeId);
+            foundTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
             foundTheme.GetProperty("name").GetString().Should().Be("Специальная тема");
         }
         catch (Exception)

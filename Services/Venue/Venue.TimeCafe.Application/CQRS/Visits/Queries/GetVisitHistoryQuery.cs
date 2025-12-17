@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetVisitHistoryQuery(string UserId, int PageNumber, int PageSize) : IRequest<GetVisitHistoryResult>;
@@ -8,12 +10,12 @@ public record GetVisitHistoryResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Visit>? Visits = null) : ICqrsResultV2
+    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResultV2
 {
     public static GetVisitHistoryResult GetFailed() =>
         new(false, Code: "GetVisitHistoryFailed", Message: "Не удалось получить историю посещений", StatusCode: 500);
 
-    public static GetVisitHistoryResult GetSuccess(IEnumerable<Visit> visits) =>
+    public static GetVisitHistoryResult GetSuccess(IEnumerable<VisitWithTariffDto> visits) =>
         new(true, Visits: visits);
 }
 
@@ -22,8 +24,9 @@ public class GetVisitHistoryQueryValidator : AbstractValidator<GetVisitHistoryQu
     public GetVisitHistoryQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("ID пользователя обязателен")
-            .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.PageNumber)
             .GreaterThan(0).WithMessage("Номер страницы должен быть больше 0");
@@ -42,7 +45,9 @@ public class GetVisitHistoryQueryHandler(IVisitRepository repository) : IRequest
     {
         try
         {
-            var visits = await _repository.GetVisitHistoryByUserAsync(request.UserId, request.PageNumber, request.PageSize);
+            Guid userId = Guid.Parse(request.UserId);
+
+            var visits = await _repository.GetVisitHistoryByUserAsync(userId, request.PageNumber, request.PageSize);
             return GetVisitHistoryResult.GetSuccess(visits);
         }
         catch (Exception)

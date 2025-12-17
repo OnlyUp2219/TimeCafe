@@ -26,7 +26,7 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .IsRequired()
             .HasDefaultValue(VisitStatus.Active);
 
-        builder.HasOne(v => v.Tariff)
+        builder.HasOne<Tariff>()
             .WithMany(t => t.Visits)
             .HasForeignKey(v => v.TariffId)
             .OnDelete(DeleteBehavior.Restrict);

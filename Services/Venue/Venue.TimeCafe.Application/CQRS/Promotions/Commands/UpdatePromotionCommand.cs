@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record UpdatePromotionCommand(Promotion Promotion) : IRequest<UpdatePromotionResult>;
+public record UpdatePromotionCommand(string PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive) : IRequest<UpdatePromotionResult>;
 
 public record UpdatePromotionResult(
     bool Success,
@@ -24,30 +24,25 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
 {
     public UpdatePromotionCommandValidator()
     {
-        RuleFor(x => x.Promotion)
-            .NotNull().WithMessage("Акция обязательна");
+        RuleFor(x => x.PromotionId)
+           .NotEmpty().WithMessage("Акция не найдена")
+           .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Акция не найдена")
+           .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Акция не найдена");
 
-        When(x => x.Promotion != null, () =>
-        {
-            RuleFor(x => x.Promotion.PromotionId)
-                .GreaterThan(0).WithMessage("ID акции обязателен");
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Название акции обязательно")
+            .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
 
-            RuleFor(x => x.Promotion.Name)
-                .NotEmpty().WithMessage("Название акции обязательно")
-                .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
+        RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("Описание акции обязательно")
+            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
 
-            RuleFor(x => x.Promotion.Description)
-                .NotEmpty().WithMessage("Описание акции обязательно")
-                .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
+        RuleFor(x => x.DiscountPercent)
+            .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
+            .LessThanOrEqualTo(100).WithMessage("Процент скидки не может превышать 100");
 
-            RuleFor(x => x.Promotion.DiscountPercent)
-                .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
-                .LessThanOrEqualTo(100).WithMessage("Процент скидки не может превышать 100")
-                .When(x => x.Promotion.DiscountPercent.HasValue);
-
-            RuleFor(x => x.Promotion.ValidFrom)
-                .LessThan(x => x.Promotion.ValidTo).WithMessage("Дата начала должна быть раньше даты окончания");
-        });
+        RuleFor(x => x.ValidFrom)
+            .LessThan(x => x.ValidTo).WithMessage("Дата начала должна быть раньше даты окончания");
     }
 }
 
@@ -59,11 +54,24 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IR
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.Promotion.PromotionId);
+            var promotionId = Guid.Parse(request.PromotionId);
+
+            var existing = await _repository.GetByIdAsync(promotionId);
             if (existing == null)
                 return UpdatePromotionResult.PromotionNotFound();
 
-            var updated = await _repository.UpdateAsync(request.Promotion);
+            // TODO : AutoMapper
+            var promotion = new Promotion(promotionId)
+            {
+                Name = request.Name,
+                Description = request.Description,
+                DiscountPercent = request.DiscountPercent,
+                ValidFrom = request.ValidFrom,
+                ValidTo = request.ValidTo,
+                IsActive = request.IsActive
+            };
+
+            var updated = await _repository.UpdateAsync(promotion);
 
             if (updated == null)
                 return UpdatePromotionResult.UpdateFailed();

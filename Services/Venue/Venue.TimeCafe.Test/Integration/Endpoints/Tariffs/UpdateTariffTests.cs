@@ -6,15 +6,16 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_UpdateTariff_Should_Return200_WhenTariffExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var theme = await SeedThemeAsync("Тема");
-        var tariff = await SeedTariffAsync("Старое название", 10m);
+        var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        var updatedName = TestData.NewTariffs.NewTariff1Name + " - updated";
         var payload = new
         {
             tariffId = tariff.TariffId,
-            name = "Новое название",
+            name = updatedName,
             description = tariff.Description,
             pricePerMinute = tariff.PricePerMinute,
-            billingType = 2,
+            billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = tariff.IsActive,
             lastModified = DateTime.UtcNow
@@ -28,7 +29,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out _).Should().BeTrue();
             json.TryGetProperty("tariff", out var tariffJson).Should().BeTrue();
-            tariffJson.GetProperty("name").GetString().Should().Be("Новое название");
+            tariffJson.GetProperty("name").GetString().Should().Be(updatedName);
         }
         catch (Exception)
         {
@@ -44,7 +45,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var theme = await SeedThemeAsync("Тема");
         var payload = new
         {
-            tariffId = 9999,
+            tariffId = TestData.NonExistingIds.NonExistingTariffIdString,
             name = "Несуществующий",
             description = "Описание",
             pricePerMinute = 10m,
@@ -72,14 +73,14 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Тема");
-        var tariff = await SeedTariffAsync("Название до обновления", 10m);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var payload = new
         {
             tariffId = tariff.TariffId,
-            name = "Название после обновления",
+            name = TestData.NewTariffs.NewTariff1Name + " - updated",
             description = tariff.Description,
             pricePerMinute = tariff.PricePerMinute,
-            billingType = 2,
+            billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = tariff.IsActive,
             lastModified = DateTime.UtcNow
@@ -92,8 +93,8 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var updatedTariff = json.GetProperty("tariff");
-            updatedTariff.GetProperty("name").GetString().Should().Be("Название после обновления");
-            updatedTariff.GetProperty("pricePerMinute").GetDecimal().Should().Be(10m);
+            updatedTariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff1Name + " - updated");
+            updatedTariff.GetProperty("pricePerMinute").GetDecimal().Should().Be(tariff.PricePerMinute);
         }
         catch (Exception)
         {
@@ -109,7 +110,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Тема");
-        var tariff = await SeedTariffAsync("Тариф", 10m);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var payload = new
         {
             tariffId = tariff.TariffId,
@@ -136,20 +137,20 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsInvalid(int invalidId)
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("00000000-0000-0000-0000-000000000000")]
+    public async Task Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Тема");
         var payload = new
         {
             tariffId = invalidId,
-            name = "Тариф",
-            description = "Описание",
+            name = TestData.DefaultValues.DefaultTariffName,
+            description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = 10m,
-            billingType = 2,
+            billingType = (int)TestData.DefaultValues.DefaultBillingType,
             themeId = theme.ThemeId,
             isActive = true,
             lastModified = DateTime.UtcNow

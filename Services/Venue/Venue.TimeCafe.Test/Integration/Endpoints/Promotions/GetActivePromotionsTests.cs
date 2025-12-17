@@ -6,9 +6,9 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
     public async Task Endpoint_GetActivePromotions_Should_Return200_WhenActivePromotionsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedPromotionAsync("Активная 1", 10, isActive: true);
-        await SeedPromotionAsync("Неактивная", 20, isActive: false);
-        await SeedPromotionAsync("Активная 2", 30, isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent, isActive: true);
 
         var response = await Client.GetAsync("/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -32,8 +32,8 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
     public async Task Endpoint_GetActivePromotions_Should_Return200_WhenNoActivePromotionsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedPromotionAsync("Неактивная 1", 10, isActive: false);
-        await SeedPromotionAsync("Неактивная 2", 20, isActive: false);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, (int)TestData.NewPromotions.NewPromotion1DiscountPercent, isActive: false);
+        await SeedPromotionAsync(TestData.NewPromotions.NewPromotion2Name, (int)TestData.NewPromotions.NewPromotion2DiscountPercent, isActive: false);
 
         var response = await Client.GetAsync("/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -56,8 +56,8 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
     public async Task Endpoint_GetActivePromotions_Should_OnlyReturnActivePromotions_WhenBothExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedPromotionAsync("Активная", 10, isActive: true);
-        await SeedPromotionAsync("Неактивная", 20, isActive: false);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
 
         var response = await Client.GetAsync("/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();

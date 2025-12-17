@@ -6,7 +6,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_ReturnTrue_WhenTariffExists()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("To Delete", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
 
         // Act
         var result = await TariffRepository.DeleteAsync(tariff.TariffId);
@@ -19,7 +19,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_ReturnFalse_WhenTariffNotExists()
     {
         // Arrange
-        var nonExistentId = 99999;
+        var nonExistentId = TestData.NonExistingIds.NonExistingTariffId;
 
         // Act
         var result = await TariffRepository.DeleteAsync(nonExistentId);
@@ -32,7 +32,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_RemoveFromDatabase()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("To Remove", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff2Name, TestData.ExistingTariffs.Tariff2PricePerMinute);
         var tariffId = tariff.TariffId;
 
         // Act
@@ -47,7 +47,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_InvalidateCache()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("Cache Test", 100m);
+        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
 
         // Act
         await TariffRepository.DeleteAsync(tariff.TariffId);
@@ -60,7 +60,7 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_HandleAlreadyDeleted()
     {
         // Arrange
-        var tariff = await SeedTariffAsync("To Delete Twice", 100m);
+        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
         var tariffId = tariff.TariffId;
 
         // Act

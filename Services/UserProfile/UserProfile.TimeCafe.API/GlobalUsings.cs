@@ -13,6 +13,8 @@ global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Options;
 
+global using Scalar.AspNetCore;
+
 global using Swashbuckle.AspNetCore.Filters;
 
 global using UserProfile.TimeCafe.API.DTOs;
@@ -28,7 +30,4 @@ global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.Models;
 global using UserProfile.TimeCafe.Infrastructure;
 global using UserProfile.TimeCafe.Infrastructure.Data;
-global using UserProfile.TimeCafe.Infrastructure.Repositories;
 global using UserProfile.TimeCafe.Infrastructure.Services;
-
-global using Scalar.AspNetCore;

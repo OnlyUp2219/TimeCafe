@@ -6,11 +6,11 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_UpdatePromotion_Should_Return200_WhenPromotionExists()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Старое название", 10);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
             promotionId = promotion.PromotionId,
-            name = "Новое название",
+            name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
             discountPercent = promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
@@ -26,7 +26,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("message", out _).Should().BeTrue();
             json.TryGetProperty("promotion", out var promotionJson).Should().BeTrue();
-            promotionJson.GetProperty("name").GetString().Should().Be("Новое название");
+            promotionJson.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
         }
         catch (Exception)
         {
@@ -41,12 +41,12 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            promotionId = 9999,
-            name = "Несуществующая",
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            promotionId = TestData.NonExistingIds.NonExistingPromotionId,
+            name = TestData.ExistingPromotions.Promotion1Name,
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -67,11 +67,11 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_UpdatePromotion_Should_UpdateOnlyChangedFields_WhenPartialUpdateProvided()
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Название до обновления", 10);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
             promotionId = promotion.PromotionId,
-            name = "Название после обновления",
+            name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
             discountPercent = promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
@@ -86,8 +86,8 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var updatedPromotion = json.GetProperty("promotion");
-            updatedPromotion.GetProperty("name").GetString().Should().Be("Название после обновления");
-            updatedPromotion.GetProperty("discountPercent").GetDecimal().Should().Be(10m);
+            updatedPromotion.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
+            updatedPromotion.GetProperty("discountPercent").GetDecimal().Should().Be(promotion.DiscountPercent);
         }
         catch (Exception)
         {
@@ -102,15 +102,15 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_UpdatePromotion_Should_Return422_WhenNameIsInvalid(string invalidName)
     {
         await ClearDatabaseAndCacheAsync();
-        var promotion = await SeedPromotionAsync("Акция", 10);
+        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
             promotionId = promotion.PromotionId,
             name = invalidName,
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 
@@ -128,20 +128,20 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     }
 
     [Theory]
-    [InlineData(0)]
-    [InlineData(-1)]
-    [InlineData(-100)]
-    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsInvalid(int invalidId)
+    [InlineData("")]
+    [InlineData("not-a-guid")]
+    [InlineData("123-invalid")]
+    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
             promotionId = invalidId,
-            name = "Акция",
-            description = "Описание",
-            discountPercent = 10m,
-            validFrom = DateTime.UtcNow,
-            validTo = DateTime.UtcNow.AddDays(7),
+            name = TestData.ExistingPromotions.Promotion1Name,
+            description = TestData.DefaultValues.DefaultPromotionDescription,
+            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            validFrom = TestData.DateTimeData.GetValidFromDate(),
+            validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
         };
 

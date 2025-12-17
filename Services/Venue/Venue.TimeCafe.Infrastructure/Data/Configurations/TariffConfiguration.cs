@@ -32,13 +32,13 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
         builder.Property(t => t.LastModified)
             .IsRequired();
 
-        builder.HasOne(t => t.Theme)
+        builder.HasOne<Theme>()
             .WithMany(th => th.Tariffs)
             .HasForeignKey(t => t.ThemeId)
             .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasMany(t => t.Visits)
-            .WithOne(v => v.Tariff)
+            .WithOne()
             .HasForeignKey(v => v.TariffId)
             .OnDelete(DeleteBehavior.Restrict);
 

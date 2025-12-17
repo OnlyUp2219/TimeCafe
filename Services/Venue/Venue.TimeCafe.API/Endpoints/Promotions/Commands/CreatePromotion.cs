@@ -5,7 +5,7 @@ public class CreatePromotion : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/promotions", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreatePromotionDto dto) =>
         {
             var command = new CreatePromotionCommand(dto.Name, dto.Description, dto.DiscountPercent, dto.ValidFrom, dto.ValidTo, dto.IsActive);

@@ -1,6 +1,5 @@
 using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 using UserProfile.TimeCafe.Domain.DTOs;
-using static UserProfile.TimeCafe.Test.Integration.Helpers.TestData;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Queries;
 

@@ -1,6 +1,8 @@
+using Venue.TimeCafe.Domain.DTOs;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetVisitByIdQuery(int VisitId) : IRequest<GetVisitByIdResult>;
+public record GetVisitByIdQuery(string VisitId) : IRequest<GetVisitByIdResult>;
 
 public record GetVisitByIdResult(
     bool Success,
@@ -8,7 +10,7 @@ public record GetVisitByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResultV2
+    VisitWithTariffDto? Visit = null) : ICqrsResultV2
 {
     public static GetVisitByIdResult VisitNotFound() =>
         new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
@@ -16,7 +18,7 @@ public record GetVisitByIdResult(
     public static GetVisitByIdResult GetFailed() =>
         new(false, Code: "GetVisitFailed", Message: "Не удалось получить посещение", StatusCode: 500);
 
-    public static GetVisitByIdResult GetSuccess(Visit visit) =>
+    public static GetVisitByIdResult GetSuccess(VisitWithTariffDto visit) =>
         new(true, Visit: visit);
 }
 
@@ -25,7 +27,9 @@ public class GetVisitByIdQueryValidator : AbstractValidator<GetVisitByIdQuery>
     public GetVisitByIdQueryValidator()
     {
         RuleFor(x => x.VisitId)
-            .GreaterThan(0).WithMessage("ID посещения обязателен");
+            .NotEmpty().WithMessage("Посещение не найдено")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Посещение не найдено")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
     }
 }
 
@@ -37,7 +41,9 @@ public class GetVisitByIdQueryHandler(IVisitRepository repository) : IRequestHan
     {
         try
         {
-            var visit = await _repository.GetByIdAsync(request.VisitId);
+            var visitId = Guid.Parse(request.VisitId);
+
+            var visit = await _repository.GetByIdAsync(visitId);
 
             if (visit == null)
                 return GetVisitByIdResult.VisitNotFound();

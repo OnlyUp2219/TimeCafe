@@ -15,12 +15,12 @@ public record UploadProfilePhotoResult(
     long? Size = null,
     string? ContentType = null) : ICqrsResultV2
 {
-    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) => 
-        new(true, Key: key, Url: url, Size: size, ContentType: contentType, 
+    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) =>
+        new(true, Key: key, Url: url, Size: size, ContentType: contentType,
             StatusCode: 201, Message: "Фото загружено");
-    public static UploadProfilePhotoResult Failed() => 
+    public static UploadProfilePhotoResult Failed() =>
         new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
-    public static UploadProfilePhotoResult ProfileNotFound() => 
+    public static UploadProfilePhotoResult ProfileNotFound() =>
         new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
 }
 
@@ -32,7 +32,7 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
             .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Такого пользователя не существует");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))

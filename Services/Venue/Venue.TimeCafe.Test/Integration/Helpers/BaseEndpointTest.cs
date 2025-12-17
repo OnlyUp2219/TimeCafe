@@ -99,7 +99,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return theme;
     }
 
-    protected async Task<Visit> SeedVisitAsync(string userId = "user123", int? tariffId = null, bool isActive = true)
+    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null, bool isActive = true)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -117,11 +117,11 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
         var visit = new Visit
         {
-            UserId = userId,
+            UserId = userId ?? Guid.NewGuid(),
             TariffId = tariff.TariffId,
-            EntryTime = DateTime.UtcNow,
+            EntryTime = DateTimeOffset.UtcNow,
             Status = isActive ? VisitStatus.Active : VisitStatus.Completed,
-            ExitTime = isActive ? null : DateTime.UtcNow.AddMinutes(30),
+            ExitTime = isActive ? null : DateTimeOffset.UtcNow.AddMinutes(30),
             CalculatedCost = isActive ? null : 100m
         };
 

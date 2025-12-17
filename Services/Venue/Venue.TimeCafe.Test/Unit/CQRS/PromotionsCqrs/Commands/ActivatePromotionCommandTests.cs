@@ -12,11 +12,12 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenPromotionActivated()
     {
-        var command = new ActivatePromotionCommand(1);
-        var promotion = new Promotion { PromotionId = 1, Name = "Test", Description = "Desc", IsActive = false, ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddDays(30) };
+        var promotionId = TestData.ExistingPromotions.Promotion1Id;
+        var command = new ActivatePromotionCommand(promotionId.ToString());
+        var promotion = new Promotion(promotionId) { Name = TestData.DefaultValues.DefaultPromotionName, Description = TestData.DefaultValues.DefaultPromotionDescription, IsActive = false, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.ActivateAsync(1)).ReturnsAsync(true);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.ActivateAsync(promotionId)).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -27,9 +28,9 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenPromotionDoesNotExist()
     {
-        var command = new ActivatePromotionCommand(999);
+        var command = new ActivatePromotionCommand(TestData.NonExistingIds.NonExistingPromotionIdString);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Promotion?)null);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId)).ReturnsAsync((Promotion?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -41,11 +42,12 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
-        var command = new ActivatePromotionCommand(1);
-        var promotion = new Promotion { PromotionId = 1, Name = "Test", Description = "Desc", IsActive = false, ValidFrom = DateTime.UtcNow, ValidTo = DateTime.UtcNow.AddDays(30) };
+        var promotionId = TestData.ExistingPromotions.Promotion1Id;
+        var command = new ActivatePromotionCommand(promotionId.ToString());
+        var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, IsActive = false, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.ActivateAsync(1)).ReturnsAsync(false);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.ActivateAsync(promotionId)).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -57,9 +59,10 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var command = new ActivatePromotionCommand(1);
+        var promotionId = TestData.ExistingPromotions.Promotion1Id;
+        var command = new ActivatePromotionCommand(promotionId.ToString());
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(1)).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -69,11 +72,11 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, false, "ID акции обязателен")]
-    [InlineData(-1, false, "ID акции обязателен")]
-    [InlineData(1, true, null)]
-    [InlineData(999, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int promotionId, bool isValid, string? expectedError)
+    [InlineData("", false, "Акция не найдена")]
+    [InlineData("not-a-guid", false, "Акция не найдена")]
+    [InlineData("00000000-0000-0000-0000-000000000000", false, "Акция не найдена")]
+    [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
+    public async Task Validator_Should_ValidateCorrectly(string promotionId, bool isValid, string? expectedError)
     {
         var command = new ActivatePromotionCommand(promotionId);
         var validator = new ActivatePromotionCommandValidator();

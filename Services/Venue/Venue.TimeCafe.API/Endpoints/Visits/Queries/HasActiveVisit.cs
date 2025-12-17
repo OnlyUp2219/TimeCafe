@@ -5,10 +5,10 @@ public class HasActiveVisit : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/visits/has-active/{userId}", async (
-            ISender sender,
-            string userId) =>
+            [FromServices] ISender sender,
+            [AsParameters] HasActiveVisitDto userId) =>
         {
-            var query = new HasActiveVisitQuery(userId);
+            var query = new HasActiveVisitQuery(userId.UserId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { hasActiveVisit = r.HasActiveVisit }));
         })

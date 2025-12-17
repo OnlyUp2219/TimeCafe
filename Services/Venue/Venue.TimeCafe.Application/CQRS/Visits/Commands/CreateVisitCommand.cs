@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record CreateVisitCommand(string UserId, int TariffId) : IRequest<CreateVisitResult>;
+public record CreateVisitCommand(string UserId, string TariffId) : IRequest<CreateVisitResult>;
 
 public record CreateVisitResult(
     bool Success,
@@ -22,11 +22,14 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
     public CreateVisitCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("ID пользователя обязателен")
-            .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+            .NotEmpty().WithMessage("Пользователь не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.TariffId)
-            .GreaterThan(0).WithMessage("ID тарифа обязателен");
+            .NotEmpty().WithMessage("Тариф не найден")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
 
@@ -40,9 +43,9 @@ public class CreateVisitCommandHandler(IVisitRepository repository) : IRequestHa
         {
             var visit = new Visit
             {
-                UserId = request.UserId,
-                TariffId = request.TariffId,
-                EntryTime = DateTime.UtcNow,
+                UserId = Guid.Parse(request.UserId),
+                TariffId = Guid.Parse(request.TariffId),
+                EntryTime = DateTimeOffset.UtcNow,
                 Status = VisitStatus.Active
             };
 

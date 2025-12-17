@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record DeleteVisitCommand(int VisitId) : IRequest<DeleteVisitResult>;
+public record DeleteVisitCommand(string VisitId) : IRequest<DeleteVisitResult>;
 
 public record DeleteVisitResult(
     bool Success,
@@ -24,7 +24,9 @@ public class DeleteVisitCommandValidator : AbstractValidator<DeleteVisitCommand>
     public DeleteVisitCommandValidator()
     {
         RuleFor(x => x.VisitId)
-            .GreaterThan(0).WithMessage("ID посещения обязателен");
+            .NotEmpty().WithMessage("Посещение не найдено")
+            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Посещение не найдено")
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
     }
 }
 
@@ -36,11 +38,13 @@ public class DeleteVisitCommandHandler(IVisitRepository repository) : IRequestHa
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.VisitId);
+            var visitId = Guid.Parse(request.VisitId);
+
+            var existing = await _repository.GetByIdAsync(visitId);
             if (existing == null)
                 return DeleteVisitResult.VisitNotFound();
 
-            var result = await _repository.DeleteAsync(request.VisitId);
+            var result = await _repository.DeleteAsync(visitId);
 
             if (!result)
                 return DeleteVisitResult.DeleteFailed();
