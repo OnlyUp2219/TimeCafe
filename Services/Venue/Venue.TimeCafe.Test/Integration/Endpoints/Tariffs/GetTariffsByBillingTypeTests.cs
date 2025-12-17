@@ -6,9 +6,9 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
     public async Task Endpoint_GetTariffsByBillingType_Should_Return200_WhenTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Поминутный 1", 10m, BillingType.PerMinute);
-        await SeedTariffAsync("Почасовой", 60m, BillingType.Hourly);
-        await SeedTariffAsync("Поминутный 2", 15m, BillingType.PerMinute);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, BillingType.PerMinute);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, BillingType.Hourly);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute, BillingType.PerMinute);
 
         var response = await Client.GetAsync("/tariffs/billing-type/2");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -31,7 +31,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
     public async Task Endpoint_GetTariffsByBillingType_Should_Return200_WhenNoTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Поминутный", 10m, BillingType.PerMinute);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, BillingType.PerMinute);
 
         var response = await Client.GetAsync("/tariffs/billing-type/1");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -54,8 +54,8 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
     public async Task Endpoint_GetTariffsByBillingType_Should_OnlyReturnMatchingBillingType_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Поминутный", 10m, BillingType.PerMinute);
-        await SeedTariffAsync("Почасовой", 60m, BillingType.Hourly);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, BillingType.PerMinute);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, BillingType.Hourly);
 
         var response = await Client.GetAsync("/tariffs/billing-type/2");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -63,10 +63,13 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffs = json.GetProperty("tariffs");
+            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             foreach (var tariff in tariffs.EnumerateArray())
             {
-                tariff.GetProperty("billingType").GetInt32().Should().Be(2);
+                int billing = -1;
+                if (tariff.TryGetProperty("billingType", out var b)) billing = b.GetInt32();
+                if (tariff.TryGetProperty("tariffBillingType", out var tb)) billing = tb.GetInt32();
+                billing.Should().Be(2);
             }
         }
         catch (Exception)

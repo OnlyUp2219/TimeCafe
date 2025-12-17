@@ -6,9 +6,9 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_GetTariffsPage_Should_Return200_WhenTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Тариф 1", 10m);
-        await SeedTariffAsync("Тариф 2", 20m);
-        await SeedTariffAsync("Тариф 3", 30m);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=10");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -58,7 +58,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         await ClearDatabaseAndCacheAsync();
         for (int i = 1; i <= 5; i++)
         {
-            await SeedTariffAsync($"Тариф {i}", i * 10m);
+            await SeedTariffAsync($"{TestData.NewTariffs.NewTariff1Name} {i}", i * 10m);
         }
 
         var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=2");
@@ -67,7 +67,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffs = json.GetProperty("tariffs");
+            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             tariffs.GetArrayLength().Should().BeLessThanOrEqualTo(2);
         }
         catch (Exception)
@@ -81,9 +81,9 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_GetTariffsPage_Should_ReturnCorrectTotalCount_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Тариф 1", 10m);
-        await SeedTariffAsync("Тариф 2", 20m);
-        await SeedTariffAsync("Тариф 3", 30m);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=2");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -91,8 +91,8 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var totalCount = json.GetProperty("totalCount").GetInt32();
-            totalCount.Should().BeGreaterThanOrEqualTo(3);
+            json.TryGetProperty("totalCount", out var totalCount).Should().BeTrue();
+            totalCount.GetInt32().Should().BeGreaterThanOrEqualTo(3);
         }
         catch (Exception)
         {

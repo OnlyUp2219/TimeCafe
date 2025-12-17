@@ -3,6 +3,7 @@ global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Permissions;
+global using System.Security.Claims;
 
 global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Extensions;
