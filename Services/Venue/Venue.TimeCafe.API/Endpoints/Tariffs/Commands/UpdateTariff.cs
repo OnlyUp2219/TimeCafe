@@ -8,15 +8,11 @@ public class UpdateTariff : ICarterModule
             [FromServices] ISender sender,
             [FromBody] UpdateTariffDto dto) =>
         {
-            var tariff = new Tariff
-            {
-
-            };
             var command = new UpdateTariffCommand
             (
                 TariffId: dto.TariffId.ToString(),
                 Name: dto.Name,
-                Description: dto.Description,
+                Description: dto.Description!,
                 PricePerMinute: dto.PricePerMinute,
                 BillingType: (BillingType)dto.BillingType,
                 ThemeId: dto.ThemeId.ToString(),

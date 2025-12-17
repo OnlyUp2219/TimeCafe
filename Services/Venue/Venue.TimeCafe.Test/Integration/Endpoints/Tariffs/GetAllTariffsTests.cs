@@ -6,9 +6,9 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_GetAllTariffs_Should_Return200_WhenTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        await SeedTariffAsync("Тариф 1", 10m);
-        await SeedTariffAsync("Тариф 2", 20m);
-        await SeedTariffAsync("Тариф 3", 30m);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
+        await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
         var response = await Client.GetAsync("/tariffs");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -52,7 +52,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_GetAllTariffs_Should_ReturnAllProperties_WhenTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        var tariff = await SeedTariffAsync("Специальный тариф", 50m);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
         var response = await Client.GetAsync("/tariffs");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -61,12 +61,12 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var tariffs = json.GetProperty("tariffs");
-            var foundTariff = tariffs.EnumerateArray().FirstOrDefault(t => t.GetProperty("name").GetString() == "Специальный тариф");
+            var foundTariff = tariffs.EnumerateArray().FirstOrDefault(t => t.GetProperty("tariffName").GetString() == TestData.NewTariffs.NewTariff2Name);
 
             foundTariff.ValueKind.Should().NotBe(JsonValueKind.Undefined);
-            foundTariff.GetProperty("tariffId").GetInt32().Should().Be(tariff.TariffId);
-            foundTariff.GetProperty("name").GetString().Should().Be("Специальный тариф");
-            foundTariff.GetProperty("pricePerMinute").GetDecimal().Should().Be(50m);
+            foundTariff.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
+            foundTariff.GetProperty("tariffName").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
+            foundTariff.GetProperty("tariffPricePerMinute").GetDecimal().Should().Be(TestData.NewTariffs.NewTariff2Price);
         }
         catch (Exception)
         {

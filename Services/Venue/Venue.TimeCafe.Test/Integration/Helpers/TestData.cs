@@ -84,14 +84,18 @@ public static class TestData
     /// </summary>
     public static class ExistingTariffs
     {
+        public static readonly Guid Tariff1Id = Guid.Parse("11111111-aaaa-1111-1111-111111111111");
         public static readonly string Tariff1Name = "Эконом";
         public static readonly decimal Tariff1PricePerMinute = 1.0m;
         public static readonly BillingType Tariff1BillingType = BillingType.PerMinute;
 
+        public static readonly Guid Tariff2Id = Guid.Parse("22222222-bbbb-2222-2222-222222222222");
         public static readonly string Tariff2Name = "Стандарт";
         public static readonly decimal Tariff2PricePerMinute = 2.0m;
         public static readonly BillingType Tariff2BillingType = BillingType.PerMinute;
 
+        public static readonly Guid Tariff3Id = Guid.Parse("33333333-cccc-3333-3333-333333333333");
+        public static readonly string Tariff3IdString = "33333333-cccc-3333-3333-333333333333";
         public static readonly string Tariff3Name = "Премиум";
         public static readonly decimal Tariff3PricePerMinute = 3.0m;
         public static readonly BillingType Tariff3BillingType = BillingType.PerMinute;
@@ -102,10 +106,14 @@ public static class TestData
     /// </summary>
     public static class NewTariffs
     {
+        public static readonly Guid NewTariff1Id = Guid.Parse("44444444-aaaa-4444-4444-444444444444");
+        public static readonly string NewTariff1IdString = "44444444-aaaa-4444-4444-444444444444";
         public static readonly string NewTariff1Name = "Новый тариф";
         public static readonly decimal NewTariff1Price = 2.5m;
         public static readonly BillingType NewTariff1BillingType = BillingType.PerMinute;
 
+        public static readonly Guid NewTariff2Id = Guid.Parse("55555555-bbbb-5555-5555-555555555555");
+        public static readonly string NewTariff2IdString = "55555555-bbbb-5555-5555-555555555555";
         public static readonly string NewTariff2Name = "Специальный тариф";
         public static readonly decimal NewTariff2Price = 1.5m;
         public static readonly BillingType NewTariff2BillingType = BillingType.Hourly;
@@ -185,6 +193,8 @@ public static class TestData
         public static readonly string DefaultTariffName = "Test Tariff";
         public static readonly decimal DefaultTariffPrice = 100m;
         public static readonly BillingType DefaultBillingType = BillingType.PerMinute;
+        public static readonly Guid DefaultTariffId = Guid.Parse("66666666-6666-6666-6666-666666666666");
+        public static readonly string DefaultTariffIdString = "66666666-6666-6666-6666-666666666666";
 
         public static readonly string DefaultThemeName = "Test Theme";
         public static readonly string DefaultThemeEmoji = "🎨";
