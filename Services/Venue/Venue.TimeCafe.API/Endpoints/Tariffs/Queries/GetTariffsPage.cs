@@ -6,7 +6,7 @@ public class GetTariffsPage : ICarterModule
     {
         app.MapGet("/tariffs/page", async (
             [FromServices] ISender sender,
-            [FromBody] GetTariffsPageDto dto) =>
+            [AsParameters] GetTariffsPageDto dto) =>
         {
             // TODO : DTO
             var query = new GetTariffsPageQuery(dto.PageNumber, dto.PageSize);
