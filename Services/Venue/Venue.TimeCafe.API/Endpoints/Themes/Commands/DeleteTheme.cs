@@ -6,10 +6,9 @@ public class DeleteTheme : ICarterModule
     {
         app.MapDelete("/themes/{themeId}", async (
             [FromServices] ISender sender,
-            [FromRoute] string themeId) =>
+            [AsParameters] DeleteThemeDto dto) =>
         {
-            // TODO : DTO
-            var command = new DeleteThemeCommand(themeId);
+            var command = new DeleteThemeCommand(dto.ThemeId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

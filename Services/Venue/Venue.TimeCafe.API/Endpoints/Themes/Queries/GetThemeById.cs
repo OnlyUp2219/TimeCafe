@@ -6,10 +6,9 @@ public class GetThemeById : ICarterModule
     {
         app.MapGet("/themes/{themeId}", async (
             [FromServices] ISender sender,
-            [FromRoute] string themeId) =>
+            [AsParameters] GetThemeByIdDto dto) =>
         {
-            // TODO : DTO
-            var query = new GetThemeByIdQuery(themeId);
+            var query = new GetThemeByIdQuery(dto.ThemeId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { theme = r.Theme }));
         })
