@@ -10,12 +10,12 @@ public class UpdateTariff : ICarterModule
         {
             var command = new UpdateTariffCommand
             (
-                TariffId: dto.TariffId.ToString(),
+                TariffId: dto.TariffId,
                 Name: dto.Name,
                 Description: dto.Description!,
                 PricePerMinute: dto.PricePerMinute,
                 BillingType: (BillingType)dto.BillingType,
-                ThemeId: dto.ThemeId.ToString(),
+                ThemeId: dto.ThemeId,
                 IsActive: dto.IsActive
             );
 

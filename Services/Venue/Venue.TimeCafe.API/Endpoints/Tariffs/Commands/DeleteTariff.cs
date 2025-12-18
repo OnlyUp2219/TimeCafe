@@ -6,10 +6,9 @@ public class DeleteTariff : ICarterModule
     {
         app.MapDelete("/tariffs/{tariffId}", async (
             [FromServices] ISender sender,
-            [FromRoute] string tariffId) =>
+            [AsParameters] DeleteTariffDto dto) =>
         {
-            // TODO : DTO
-            var command = new DeleteTariffCommand(tariffId);
+            var command = new DeleteTariffCommand(dto.TariffId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
@@ -19,3 +18,4 @@ public class DeleteTariff : ICarterModule
         .WithDescription("Удаляет тариф по идентификатору.");
     }
 }
+
