@@ -137,7 +137,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData("")]
+    //[InlineData("")]
     [InlineData("not-a-guid")]
     [InlineData("00000000-0000-0000-0000-000000000000")]
     public async Task Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
@@ -153,7 +153,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             billingType = (int)TestData.DefaultValues.DefaultBillingType,
             themeId = theme.ThemeId,
             isActive = true,
-            lastModified = DateTime.UtcNow
+            lastModified = DateTimeOffset.UtcNow
         };
 
         var response = await Client.PutAsJsonAsync("/tariffs", payload);

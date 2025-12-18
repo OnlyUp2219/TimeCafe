@@ -6,10 +6,9 @@ public class DeactivateTariff : ICarterModule
     {
         app.MapPost("/tariffs/{tariffId}/deactivate", async (
             [FromServices] ISender sender,
-            [FromRoute] string tariffId) =>
+            [AsParameters] DeactivateTariffDto dto) =>
         {
-            // TODO : DTO
-            var command = new DeactivateTariffCommand(tariffId);
+            var command = new DeactivateTariffCommand(dto.TariffId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
@@ -19,3 +18,4 @@ public class DeactivateTariff : ICarterModule
         .WithDescription("Деактивирует тариф по идентификатору.");
     }
 }
+

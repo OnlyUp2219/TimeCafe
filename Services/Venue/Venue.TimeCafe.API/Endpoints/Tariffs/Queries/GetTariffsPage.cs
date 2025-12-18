@@ -6,11 +6,10 @@ public class GetTariffsPage : ICarterModule
     {
         app.MapGet("/tariffs/page", async (
             [FromServices] ISender sender,
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10) =>
+            [FromBody] GetTariffsPageDto dto) =>
         {
             // TODO : DTO
-            var query = new GetTariffsPageQuery(pageNumber, pageSize);
+            var query = new GetTariffsPageQuery(dto.PageNumber, dto.PageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs, totalCount = r.TotalCount }));
         })

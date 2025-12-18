@@ -6,10 +6,9 @@ public class ActivateTariff : ICarterModule
     {
         app.MapPost("/tariffs/{tariffId}/activate", async (
             [FromServices] ISender sender,
-            [FromRoute] string tariffId) =>
+            [AsParameters] ActivateTariffDto dto) =>
         {
-            // TODO : DTO
-            var command = new ActivateTariffCommand(tariffId);
+            var command = new ActivateTariffCommand(dto.TariffId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
@@ -19,3 +18,4 @@ public class ActivateTariff : ICarterModule
         .WithDescription("Активирует тариф по идентификатору.");
     }
 }
+

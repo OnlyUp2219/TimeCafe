@@ -4,12 +4,11 @@ public class GetTariffsByBillingType : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tariffs/billing-type/{billingType:int}", async (
+        app.MapGet("/tariffs/billing-type/{billingType}", async (
             [FromServices] ISender sender,
-            [FromRoute] int billingType) =>
+            [AsParameters] GetTariffsByBillingTypeDto dto) =>
         {
-            // TODO : DTO
-            var query = new GetTariffsByBillingTypeQuery((BillingType)billingType);
+            var query = new GetTariffsByBillingTypeQuery(dto.BillingType);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
         })

@@ -6,10 +6,9 @@ public class GetTariffById : ICarterModule
     {
         app.MapGet("/tariffs/{tariffId}", async (
             [FromServices] ISender sender,
-            [FromRoute] string tariffId) =>
+            [AsParameters] GetTariffByIdDto dto) =>
         {
-            // TODO : DTO
-            var query = new GetTariffByIdQuery(tariffId);
+            var query = new GetTariffByIdQuery(dto.TariffId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariff = r.Tariff }));
         })
@@ -19,3 +18,4 @@ public class GetTariffById : ICarterModule
         .WithDescription("Возвращает тариф по идентификатору.");
     }
 }
+
