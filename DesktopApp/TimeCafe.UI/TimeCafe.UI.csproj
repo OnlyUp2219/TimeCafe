@@ -142,6 +142,7 @@
 	<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
 	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
 	<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
+	<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
 	<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 	<PackageReference Include="WinUIEx" Version="2.9.0" />
