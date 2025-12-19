@@ -18,8 +18,8 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
         var query = new GetTariffsPageQuery(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize);
         var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = Guid.NewGuid(), TariffName = TestData.ExistingTariffs.Tariff1Name, TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute },
-            new() { TariffId = Guid.NewGuid(), TariffName = TestData.ExistingTariffs.Tariff2Name, TariffPricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute }
+            new() { TariffId = Guid.NewGuid(), Name = TestData.ExistingTariffs.Tariff1Name, PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute },
+            new() { TariffId = Guid.NewGuid(), Name = TestData.ExistingTariffs.Tariff2Name, PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute }
         };
 
         TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize)).ReturnsAsync(tariffs);

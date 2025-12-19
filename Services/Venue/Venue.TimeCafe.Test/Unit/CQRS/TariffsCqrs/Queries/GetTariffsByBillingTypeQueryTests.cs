@@ -16,8 +16,8 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
         var query = new GetTariffsByBillingTypeQuery(BillingType.PerMinute);
         var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 1", TariffPricePerMinute = 10m, TariffBillingType = BillingType.PerMinute },
-            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 2", TariffPricePerMinute = 20m, TariffBillingType = BillingType.PerMinute }
+            new() { TariffId = Guid.NewGuid(), Name = "Tariff 1", PricePerMinute = 10m, BillingType = BillingType.PerMinute },
+            new() { TariffId = Guid.NewGuid(), Name = "Tariff 2", PricePerMinute = 20m, BillingType = BillingType.PerMinute }
         };
 
         TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute)).ReturnsAsync(tariffs);

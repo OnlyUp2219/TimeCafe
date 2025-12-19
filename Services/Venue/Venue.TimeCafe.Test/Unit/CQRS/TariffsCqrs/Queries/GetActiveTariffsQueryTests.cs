@@ -16,8 +16,8 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
         var query = new GetActiveTariffsQuery();
         var tariffs = new List<TariffWithThemeDto>
         {
-            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 1", TariffPricePerMinute = 10m, TariffIsActive = true },
-            new() { TariffId = Guid.NewGuid(), TariffName = "Tariff 2", TariffPricePerMinute = 20m, TariffIsActive = true }
+            new() { TariffId = Guid.NewGuid(), Name = "Tariff 1", PricePerMinute = 10m, IsActive = true },
+            new() { TariffId = Guid.NewGuid(), Name = "Tariff 2", PricePerMinute = 20m, IsActive = true }
         };
 
         TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(tariffs);

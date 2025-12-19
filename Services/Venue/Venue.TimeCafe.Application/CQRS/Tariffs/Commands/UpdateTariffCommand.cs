@@ -53,9 +53,10 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 
 
 // Todo : Patch commands
-public class UpdateTariffCommandHandler(ITariffRepository repository) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
+public class UpdateTariffCommandHandler(ITariffRepository repository, IMapper mapper) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
 {
     private readonly ITariffRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<UpdateTariffResult> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
     {
@@ -67,16 +68,8 @@ public class UpdateTariffCommandHandler(ITariffRepository repository) : IRequest
             if (existing == null)
                 return UpdateTariffResult.TariffNotFound();
 
-            // TODO: AutoMapper 
-            Tariff tariff = new Tariff(tariffId)
-            {
-                Name = request.Name,
-                Description = request.Description,
-                PricePerMinute = request.PricePerMinute,
-                BillingType = request.BillingType,
-                ThemeId = string.IsNullOrWhiteSpace(request.ThemeId) ? null : Guid.Parse(request.ThemeId),
-                IsActive = request.IsActive
-            };
+            var tariff = _mapper.Map<Tariff>(existing);
+            _mapper.Map(request, tariff);
 
             var updated = await _repository.UpdateAsync(tariff);
 
