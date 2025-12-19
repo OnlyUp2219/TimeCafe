@@ -36,3 +36,10 @@ public class GetAllPromotionsQueryHandler(IPromotionRepository repository) : IRe
         }
     }
 }
+
+public class GetAllPromotionsQueryValidator : AbstractValidator<GetAllPromotionsQuery>
+{
+    public GetAllPromotionsQueryValidator()
+    {
+    }
+}

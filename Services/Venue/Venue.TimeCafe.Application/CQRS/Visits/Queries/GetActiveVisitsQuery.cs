@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetActiveVisitsQuery() : IRequest<GetActiveVisitsResult>;
@@ -18,6 +16,14 @@ public record GetActiveVisitsResult(
     public static GetActiveVisitsResult GetSuccess(IEnumerable<VisitWithTariffDto> visits) =>
         new(true, Visits: visits);
 }
+
+public class GetActiveVisitsQueryValidator : AbstractValidator<GetActiveVisitsQuery>
+{
+    public GetActiveVisitsQueryValidator()
+    {
+    }
+}
+
 
 public class GetActiveVisitsQueryHandler(IVisitRepository repository) : IRequestHandler<GetActiveVisitsQuery, GetActiveVisitsResult>
 {

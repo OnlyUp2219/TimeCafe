@@ -19,6 +19,13 @@ public record GetAllThemesResult(
         new(true, Themes: themes);
 }
 
+public class GetAllThemesQueryValidator : AbstractValidator<GetAllThemesQuery>
+{
+    public GetAllThemesQueryValidator()
+    {
+    }
+}
+
 public class GetAllThemesQueryHandler(IThemeRepository repository) : IRequestHandler<GetAllThemesQuery, GetAllThemesResult>
 {
     private readonly IThemeRepository _repository = repository;

@@ -66,19 +66,32 @@ public class ArchitectureRulesTests
 
         var validators = types.Where(t => t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(AbstractValidator<>)).ToList();
 
+        var errors = new List<string>();
+
+        var handlers = types.Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>))).ToList();
+
         foreach (var req in requestTypes)
         {
-            (req.Name.EndsWith("Command") || req.Name.EndsWith("Query")).Should().BeTrue($"{req.Name} должен заканчиваться на Command или Query");
+            if (!(req.Name.EndsWith("Command") || req.Name.EndsWith("Query")))
+            {
+                errors.Add($"{req.Name} должен заканчиваться на Command или Query");
+            }
 
             var hasValidator = validators.Any(v => v.BaseType!.GetGenericArguments()[0] == req);
-            hasValidator.Should().BeTrue($"Должен существовать валидатор для {req.Name}");
-            var handlers = types.Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>))).ToList();
+            if (!hasValidator)
+            {
+                errors.Add($"Должен существовать валидатор для {req.Name}");
+            }
 
             var hasHandler = handlers.Any(h => h.Name.EndsWith(req.Name + "Handler") || h.GetInterfaces().Any(i =>
                 i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>) && i.GetGenericArguments()[0] == req));
-
-            hasHandler.Should().BeTrue($"Должен существовать handler для {req.Name} (название должно заканчиваться на {req.Name}Handler или реализовывать IRequestHandler<,>)");
+            if (!hasHandler)
+            {
+                errors.Add($"Должен существовать handler для {req.Name} (название должно заканчиваться на {req.Name}Handler или реализовывать IRequestHandler<,>)");
+            }
         }
+
+        errors.Should().BeEmpty("Архитектурные проблемы:\n" + string.Join("\n", errors));
     }
 
     [Fact]

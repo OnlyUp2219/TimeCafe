@@ -36,3 +36,10 @@ public class GetActivePromotionsQueryHandler(IPromotionRepository repository) : 
         }
     }
 }
+
+public class GetActivePromotionsQueryValidator : AbstractValidator<GetActivePromotionsQuery>
+{
+    public GetActivePromotionsQueryValidator()
+    {
+    }
+}

@@ -19,6 +19,14 @@ public record GetActiveTariffsResult(
         new(true, Tariffs: tariffs);
 }
 
+public class GetActiveTariffsQueryValidator : AbstractValidator<GetActiveTariffsQuery>
+{
+    public GetActiveTariffsQueryValidator()
+    {
+
+    }
+}
+
 public class GetActiveTariffsQueryHandler(ITariffRepository repository) : IRequestHandler<GetActiveTariffsQuery, GetActiveTariffsResult>
 {
     private readonly ITariffRepository _repository = repository;
