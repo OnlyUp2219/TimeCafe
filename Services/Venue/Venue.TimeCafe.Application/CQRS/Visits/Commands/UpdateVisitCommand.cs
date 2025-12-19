@@ -56,9 +56,10 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
     }
 }
 
-public class UpdateVisitCommandHandler(IVisitRepository repository) : IRequestHandler<UpdateVisitCommand, UpdateVisitResult>
+public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapper) : IRequestHandler<UpdateVisitCommand, UpdateVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<UpdateVisitResult> Handle(UpdateVisitCommand request, CancellationToken cancellationToken)
     {
@@ -70,17 +71,11 @@ public class UpdateVisitCommandHandler(IVisitRepository repository) : IRequestHa
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
-            //TODO : AutoMapper
-            var visit = new Visit
-            {
-                UserId = Guid.Parse(request.UserId),
-                TariffId = Guid.Parse(request.TariffId),
-                VisitId = visitId,
-                EntryTime = request.EntryTime,
-                ExitTime = request.ExitTime,
-                CalculatedCost = request.CalculatedCost,
-                Status = request.Status
-            };
+            // Обновляем существующий DTO значениями из команды, чтобы не потерять поля тарифа
+            _mapper.Map(request, existing);
+
+            // Преобразуем обновлённый DTO в модель для сохранения
+            var visit = _mapper.Map<Visit>(existing);
 
             var updated = await _repository.UpdateAsync(visit);
 

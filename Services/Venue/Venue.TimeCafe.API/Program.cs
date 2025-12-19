@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // CORS
@@ -13,6 +15,9 @@ builder.Services.AddRedis(builder.Configuration);
 
 // DbContext
 builder.Services.AddVenueDatabase(builder.Configuration);
+
+// AutoMapper
+builder.Services.AddVenueAutoMapper();
 
 // Repositories
 builder.Services.AddVenuePersistence();

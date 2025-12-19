@@ -1,7 +1,6 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
-using Venue.TimeCafe.Domain.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
+
 
 public class UpdateVisitCommandTests : BaseCqrsHandlerTest
 {
@@ -9,7 +8,29 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
 
     public UpdateVisitCommandTests()
     {
-        _handler = new UpdateVisitCommandHandler(VisitRepositoryMock.Object);
+        _handler = new UpdateVisitCommandHandler(VisitRepositoryMock.Object, MapperMock.Object);
+
+        MapperMock.Setup(m => m.Map(It.IsAny<UpdateVisitCommand>(), It.IsAny<VisitWithTariffDto>()))
+            .Callback((UpdateVisitCommand cmd, VisitWithTariffDto dto) =>
+            {
+                dto.UserId = Guid.Parse(cmd.UserId);
+                dto.TariffId = Guid.Parse(cmd.TariffId);
+                dto.EntryTime = cmd.EntryTime;
+                dto.ExitTime = cmd.ExitTime;
+                dto.CalculatedCost = cmd.CalculatedCost;
+                dto.Status = cmd.Status;
+            });
+
+        MapperMock.Setup(m => m.Map<Visit>(It.IsAny<VisitWithTariffDto>()))
+            .Returns((VisitWithTariffDto dto) => new Visit(dto.VisitId)
+            {
+                UserId = dto.UserId,
+                TariffId = dto.TariffId,
+                EntryTime = dto.EntryTime,
+                ExitTime = dto.ExitTime,
+                CalculatedCost = dto.CalculatedCost,
+                Status = dto.Status
+            });
     }
 
     [Fact]
