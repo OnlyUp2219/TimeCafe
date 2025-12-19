@@ -71,13 +71,10 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapp
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
-            // Обновляем существующий DTO значениями из команды, чтобы не потерять поля тарифа
+            //TODO : AutoMapper
             _mapper.Map(request, existing);
 
-            // Преобразуем обновлённый DTO в модель для сохранения
-            var visit = _mapper.Map<Visit>(existing);
-
-            var updated = await _repository.UpdateAsync(visit);
+            var updated = await _repository.UpdateAsync(existing);
 
             if (updated == null)
                 return UpdateVisitResult.UpdateFailed();

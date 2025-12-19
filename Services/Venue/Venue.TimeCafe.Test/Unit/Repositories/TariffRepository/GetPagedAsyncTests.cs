@@ -52,9 +52,9 @@ public class GetPagedAsyncTests : BaseCqrsTest
         var result = (await TariffRepository.GetPagedAsync(1, 10)).ToList();
 
         // Assert
-        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
-        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
-        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result[0].Name.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        result[1].Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result[2].Name.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]

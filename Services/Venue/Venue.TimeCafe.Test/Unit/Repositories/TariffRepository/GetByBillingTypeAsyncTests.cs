@@ -25,7 +25,7 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(t => t.TariffBillingType == BillingType.PerMinute);
+        result.Should().OnlyContain(t => t.BillingType == BillingType.PerMinute);
     }
 
     [Fact]
@@ -63,7 +63,7 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(1);
-        result.Should().OnlyContain(t => t.TariffIsActive);
+        result.Should().OnlyContain(t => t.IsActive);
     }
 
     [Fact]
@@ -79,8 +79,8 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff1PricePerMinute);
-        result[1].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff2PricePerMinute);
-        result[2].TariffPricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
+        result[0].PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff1PricePerMinute);
+        result[1].PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff2PricePerMinute);
+        result[2].PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
     }
 }

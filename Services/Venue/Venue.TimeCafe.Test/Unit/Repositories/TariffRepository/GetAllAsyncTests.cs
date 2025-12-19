@@ -44,9 +44,9 @@ public class GetAllAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(3);
-        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
-        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name);
-        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result[0].Name.Should().Be(TestData.ExistingTariffs.Tariff3Name);
+        result[1].Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result[2].Name.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class GetAllAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().Contain(t => t.TariffIsActive);
-        result.Should().Contain(t => !t.TariffIsActive);
+        result.Should().Contain(t => t.IsActive);
+        result.Should().Contain(t => !t.IsActive);
     }
 }

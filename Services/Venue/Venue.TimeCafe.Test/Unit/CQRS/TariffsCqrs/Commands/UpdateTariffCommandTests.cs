@@ -1,3 +1,5 @@
+using AutoMapper;
+using Moq;
 using Venue.TimeCafe.Domain.DTOs;
 using Venue.TimeCafe.Test.Integration.Helpers;
 
@@ -6,10 +8,34 @@ namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Commands;
 public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 {
     private readonly UpdateTariffCommandHandler _handler;
+    private readonly Mock<IMapper> MapperMock = new Mock<IMapper>();
 
     public UpdateTariffCommandTests()
     {
-        _handler = new UpdateTariffCommandHandler(TariffRepositoryMock.Object);
+        // Setup MapperMock: map TariffWithThemeDto -> Tariff
+        MapperMock.Setup(m => m.Map<Tariff>(It.IsAny<TariffWithThemeDto>()))
+            .Returns((TariffWithThemeDto src) => new Tariff
+            {
+                TariffId = src.TariffId,
+                Name = src.Name,
+                Description = src.Description,
+                PricePerMinute = src.PricePerMinute,
+                BillingType = src.BillingType,
+                IsActive = src.IsActive
+            });
+
+        // Setup MapperMock: map UpdateTariffCommand -> Tariff (apply values to existing Tariff)
+        MapperMock.Setup(m => m.Map(It.IsAny<UpdateTariffCommand>(), It.IsAny<Tariff>()))
+            .Callback((UpdateTariffCommand src, Tariff dest) =>
+            {
+                if (!string.IsNullOrWhiteSpace(src.Name)) dest.Name = src.Name;
+                if (!string.IsNullOrWhiteSpace(src.Description)) dest.Description = src.Description;
+                dest.PricePerMinute = src.PricePerMinute;
+                dest.BillingType = src.BillingType;
+                dest.IsActive = src.IsActive;
+            });
+
+        _handler = new UpdateTariffCommandHandler(TariffRepositoryMock.Object, MapperMock.Object);
     }
 
     [Fact]
@@ -19,11 +45,11 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         var tariffDto = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            TariffName = "Updated Tariff",
-            TariffDescription = "Updated",
-            TariffPricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
-            TariffBillingType = BillingType.Hourly,
-            TariffIsActive = true
+            Name = "Updated Tariff",
+            Description = "Updated",
+            PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
+            BillingType = BillingType.Hourly,
+            IsActive = true
         };
         var tariff = new Tariff
         {
@@ -82,9 +108,9 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         var tariffDto = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            TariffName = TestData.ExistingTariffs.Tariff1Name,
-            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            TariffBillingType = BillingType.PerMinute
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = BillingType.PerMinute
         };
         var command = new UpdateTariffCommand(
             tariffId.ToString(),

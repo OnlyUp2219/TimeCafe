@@ -14,8 +14,8 @@ public class GetByIdAsyncTests : BaseCqrsTest
         // Assert
         result.Should().NotBeNull();
         result!.TariffId.Should().Be(seededTariff.TariffId);
-        result.TariffName.Should().Be(TestData.DefaultValues.DefaultTariffName);
-        result.TariffPricePerMinute.Should().Be(TestData.DefaultValues.DefaultTariffPrice);
+        result.Name.Should().Be(TestData.DefaultValues.DefaultTariffName);
+        result.PricePerMinute.Should().Be(TestData.DefaultValues.DefaultTariffPrice);
     }
 
     [Fact]

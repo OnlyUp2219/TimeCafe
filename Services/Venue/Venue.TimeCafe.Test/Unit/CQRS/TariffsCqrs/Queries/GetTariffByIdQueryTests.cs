@@ -20,9 +20,9 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            TariffName = TestData.ExistingTariffs.Tariff1Name,
-            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);
@@ -31,7 +31,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
 
         result.Success.Should().BeTrue();
         result.Tariff.Should().NotBeNull();
-        result.Tariff!.TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result.Tariff!.Name.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]

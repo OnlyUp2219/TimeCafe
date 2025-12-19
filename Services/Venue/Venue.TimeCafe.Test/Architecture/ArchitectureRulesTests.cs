@@ -1,14 +1,14 @@
+using FluentValidation;
+
 using System.Reflection;
 using System.Text.RegularExpressions;
-using FluentValidation;
 
 namespace Venue.TimeCafe.Test.Architecture;
 
 public class ArchitectureRulesTests
 {
-    private readonly Assembly _api = typeof(Venue.TimeCafe.API.Endpoints.Themes.Queries.GetThemeById).Assembly;
-    private readonly Assembly _application = typeof(Venue.TimeCafe.Application.CQRS.Tariffs.Queries.GetTariffsPageQuery).Assembly;
-    private readonly Assembly _infrastructure = typeof(Venue.TimeCafe.Infrastructure.Repositories.TariffRepository).Assembly;
+    private readonly Assembly _application = typeof(GetTariffsPageQuery).Assembly;
+    private readonly Assembly _infrastructure = typeof(TariffRepository).Assembly;
 
     [Fact]
     public void Api_Endpoints_Should_Have_WithDescription_Summary_Name_Tags_And_BeAsync()
@@ -56,7 +56,7 @@ public class ArchitectureRulesTests
     {
         var types = _application.GetTypes().ToList();
 
-        
+
         var requestTypes = types.Where(t => t.IsValueType || t.IsClass)
             .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequest<>))
                         || (t.IsValueType && (t.Name.EndsWith("Query") || t.Name.EndsWith("Command"))))
@@ -64,18 +64,14 @@ public class ArchitectureRulesTests
 
         requestTypes.Should().NotBeEmpty("Application layer должен содержать команды и запросы");
 
-        // Соберём все валидаторы в сборке
         var validators = types.Where(t => t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(AbstractValidator<>)).ToList();
 
         foreach (var req in requestTypes)
         {
             (req.Name.EndsWith("Command") || req.Name.EndsWith("Query")).Should().BeTrue($"{req.Name} должен заканчиваться на Command или Query");
 
-            // Ищем валидатор с generic аргументом равным запросу
             var hasValidator = validators.Any(v => v.BaseType!.GetGenericArguments()[0] == req);
             hasValidator.Should().BeTrue($"Должен существовать валидатор для {req.Name}");
-
-            // Ищем обработчик
             var handlers = types.Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>))).ToList();
 
             var hasHandler = handlers.Any(h => h.Name.EndsWith(req.Name + "Handler") || h.GetInterfaces().Any(i =>

@@ -20,9 +20,9 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            TariffName = TestData.ExistingTariffs.Tariff1Name,
-            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);
@@ -56,9 +56,9 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            TariffName = TestData.ExistingTariffs.Tariff1Name,
-            TariffPricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            TariffBillingType = TestData.ExistingTariffs.Tariff1BillingType
+            Name = TestData.ExistingTariffs.Tariff1Name,
+            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
+            BillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);

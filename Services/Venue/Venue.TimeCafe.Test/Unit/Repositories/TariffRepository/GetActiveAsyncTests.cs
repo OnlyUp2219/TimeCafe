@@ -25,7 +25,7 @@ public class GetActiveAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().HaveCount(2);
-        result.Should().OnlyContain(t => t.TariffIsActive);
+        result.Should().OnlyContain(t => t.IsActive);
     }
 
     [Fact]
@@ -63,9 +63,9 @@ public class GetActiveAsyncTests : BaseCqrsTest
 
         // Assert - alphabetical order: Премиум < Стандарт < Эконом (П < С < Э in Cyrillic)
         result.Should().HaveCount(3);
-        result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name); // Премиум
-        result[1].TariffName.Should().Be(TestData.ExistingTariffs.Tariff2Name); // Стандарт
-        result[2].TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name); // Эконом
+        result[0].Name.Should().Be(TestData.ExistingTariffs.Tariff3Name); // Премиум
+        result[1].Name.Should().Be(TestData.ExistingTariffs.Tariff2Name); // Стандарт
+        result[2].Name.Should().Be(TestData.ExistingTariffs.Tariff1Name); // Эконом
     }
 
     [Fact]
