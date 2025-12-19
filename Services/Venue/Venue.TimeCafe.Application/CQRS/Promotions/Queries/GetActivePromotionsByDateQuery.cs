@@ -36,3 +36,10 @@ public class GetActivePromotionsByDateQueryHandler(IPromotionRepository reposito
         }
     }
 }
+
+public class GetActivePromotionsByDateQueryValidator : AbstractValidator<GetActivePromotionsByDateQuery>
+{
+    public GetActivePromotionsByDateQueryValidator()
+    {
+    }
+}

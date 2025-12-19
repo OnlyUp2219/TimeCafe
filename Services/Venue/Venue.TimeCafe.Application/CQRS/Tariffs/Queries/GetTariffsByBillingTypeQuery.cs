@@ -36,3 +36,10 @@ public class GetTariffsByBillingTypeQueryHandler(ITariffRepository repository) :
         }
     }
 }
+
+public class GetTariffsByBillingTypeQueryValidator : AbstractValidator<GetTariffsByBillingTypeQuery>
+{
+    public GetTariffsByBillingTypeQueryValidator()
+    {
+    }
+}
