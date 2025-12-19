@@ -115,7 +115,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="AutoMapper" Version="15.0.1" />
+	<PackageReference Include="AutoMapper" Version="16.0.0" />
 	<PackageReference Include="Bogus" Version="35.6.4" />
 	<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.250618-build.2154" />
 	<PackageReference Include="CommunityToolkit.Labs.WinUI.OpacityMaskView" Version="0.1.250618-build.2154" />

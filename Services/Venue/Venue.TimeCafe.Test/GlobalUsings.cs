@@ -5,6 +5,8 @@ global using Microsoft.Extensions.Caching.Distributed;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 
+global using AutoMapper;
+
 global using Moq;
 
 global using System.Net;
@@ -25,5 +27,6 @@ global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.Repositories;
 global using Venue.TimeCafe.Test.Helpers;
 global using Venue.TimeCafe.Test.Integration.Helpers;
+global using Venue.TimeCafe.Domain.DTOs;
 
 global using Xunit;

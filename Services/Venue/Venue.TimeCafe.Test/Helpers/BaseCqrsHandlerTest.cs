@@ -1,3 +1,5 @@
+
+
 namespace Venue.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsHandlerTest
@@ -6,6 +8,7 @@ public abstract class BaseCqrsHandlerTest
     protected readonly Mock<IPromotionRepository> PromotionRepositoryMock;
     protected readonly Mock<IThemeRepository> ThemeRepositoryMock;
     protected readonly Mock<IVisitRepository> VisitRepositoryMock;
+    protected readonly Mock<IMapper> MapperMock;
 
     protected BaseCqrsHandlerTest()
     {
@@ -13,5 +16,6 @@ public abstract class BaseCqrsHandlerTest
         PromotionRepositoryMock = new Mock<IPromotionRepository>();
         ThemeRepositoryMock = new Mock<IThemeRepository>();
         VisitRepositoryMock = new Mock<IVisitRepository>();
+        MapperMock = new Mock<IMapper>();
     }
 }

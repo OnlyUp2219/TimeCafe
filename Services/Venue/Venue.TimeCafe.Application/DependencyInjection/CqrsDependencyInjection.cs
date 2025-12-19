@@ -1,4 +1,4 @@
-namespace Venue.TimeCafe.Application;
+namespace Venue.TimeCafe.Application.DependencyInjection;
 
 public static class CqrsDependencyInjection
 {
