@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
 public record CreateThemeCommand(string Name, string? Emoji, string? Colors) : IRequest<CreateThemeResult>;

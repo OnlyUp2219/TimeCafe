@@ -1,7 +1,5 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Queries;
 
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
 {
     private readonly HasActiveVisitQueryHandler _handler;

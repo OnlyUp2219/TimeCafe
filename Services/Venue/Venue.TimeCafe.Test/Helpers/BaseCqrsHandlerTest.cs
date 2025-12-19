@@ -1,5 +1,3 @@
-
-
 namespace Venue.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsHandlerTest

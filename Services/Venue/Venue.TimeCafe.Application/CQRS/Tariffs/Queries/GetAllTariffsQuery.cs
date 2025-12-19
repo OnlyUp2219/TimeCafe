@@ -1,4 +1,4 @@
-using Venue.TimeCafe.Domain.DTOs;
+using Venue.TimeCafe.Application.Contracts.Repositories;
 
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 

@@ -22,7 +22,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetAllTariffs_Should_Return200_WhenTariffsExist] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -43,7 +43,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetAllTariffs_Should_Return200_WhenNoTariffsExist] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -61,16 +61,16 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var tariffs = json.GetProperty("tariffs");
-            var foundTariff = tariffs.EnumerateArray().FirstOrDefault(t => t.GetProperty("tariffName").GetString() == TestData.NewTariffs.NewTariff2Name);
+            var foundTariff = tariffs.EnumerateArray().FirstOrDefault(t => t.GetProperty("name").GetString() == TestData.NewTariffs.NewTariff2Name);
 
             foundTariff.ValueKind.Should().NotBe(JsonValueKind.Undefined);
             foundTariff.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
-            foundTariff.GetProperty("tariffName").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
-            foundTariff.GetProperty("tariffPricePerMinute").GetDecimal().Should().Be(TestData.NewTariffs.NewTariff2Price);
+            foundTariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
+            foundTariff.GetProperty("pricePerMinute").GetDecimal().Should().Be(TestData.NewTariffs.NewTariff2Price);
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetAllTariffs_Should_ReturnAllProperties_WhenTariffsExist] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }

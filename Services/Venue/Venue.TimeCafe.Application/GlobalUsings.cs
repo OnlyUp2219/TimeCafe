@@ -11,9 +11,8 @@ global using Microsoft.Extensions.DependencyInjection;
 
 global using System.Reflection;
 
-global using Venue.TimeCafe.Domain.Contracts.Repositories;
-global using Venue.TimeCafe.Domain.Models;
-global using Venue.TimeCafe.Application.Mapping;
-
-global using Venue.TimeCafe.Domain.DTOs;
+global using Venue.TimeCafe.Application.Contracts.Repositories;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
+global using Venue.TimeCafe.Application.DTOs;
+global using Venue.TimeCafe.Application.Mapping;
+global using Venue.TimeCafe.Domain.Models;

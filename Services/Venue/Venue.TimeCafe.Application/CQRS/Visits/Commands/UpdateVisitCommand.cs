@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
 public record UpdateVisitCommand(string VisitId, string UserId, string TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : IRequest<UpdateVisitResult>;
@@ -71,10 +73,12 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapp
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
-            //TODO : AutoMapper
-            _mapper.Map(request, existing);
 
-            var updated = await _repository.UpdateAsync(existing);
+
+            var visit = _mapper.Map<Visit>(existing);
+            _mapper.Map(request, visit);
+
+            var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
                 return UpdateVisitResult.UpdateFailed();

@@ -1,7 +1,5 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 public class CreateVisitCommandTests : BaseCqrsHandlerTest
 {
     private readonly CreateVisitCommandHandler _handler;

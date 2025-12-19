@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
 public record EndVisitCommand(string VisitId) : IRequest<EndVisitResult>;

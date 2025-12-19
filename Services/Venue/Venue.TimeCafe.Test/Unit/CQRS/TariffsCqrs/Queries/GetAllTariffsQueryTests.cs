@@ -1,4 +1,3 @@
-using Venue.TimeCafe.Domain.DTOs;
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetAllTariffsQueryTests : BaseCqrsHandlerTest

@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
 public record DeactivateTariffCommand(string TariffId) : IRequest<DeactivateTariffResult>;

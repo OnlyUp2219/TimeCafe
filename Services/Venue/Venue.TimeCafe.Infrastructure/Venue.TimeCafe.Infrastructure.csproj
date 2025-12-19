@@ -25,6 +25,7 @@
 </ItemGroup>
 
 <ItemGroup>
+	<ProjectReference Include="..\Venue.TimeCafe.Application\Venue.TimeCafe.Application.csproj" />
 	<ProjectReference Include="..\Venue.TimeCafe.Domain\Venue.TimeCafe.Domain.csproj" />
 	<ProjectReference Include="..\..\..\BuildingBlocks\BuildingBlocks.csproj" />
 </ItemGroup>
