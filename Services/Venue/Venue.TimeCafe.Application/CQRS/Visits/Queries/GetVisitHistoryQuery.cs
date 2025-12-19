@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetVisitHistoryQuery(string UserId, int PageNumber, int PageSize) : IRequest<GetVisitHistoryResult>;

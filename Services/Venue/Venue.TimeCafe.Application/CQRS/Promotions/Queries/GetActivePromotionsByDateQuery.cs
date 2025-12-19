@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
 public record GetActivePromotionsByDateQuery(DateTimeOffset Date) : IRequest<GetActivePromotionsByDateResult>;

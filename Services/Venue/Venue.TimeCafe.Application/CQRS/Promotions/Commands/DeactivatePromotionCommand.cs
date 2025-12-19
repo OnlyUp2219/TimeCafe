@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
 public record DeactivatePromotionCommand(string PromotionId) : IRequest<DeactivatePromotionResult>;

@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetVisitByIdQuery(string VisitId) : IRequest<GetVisitByIdResult>;

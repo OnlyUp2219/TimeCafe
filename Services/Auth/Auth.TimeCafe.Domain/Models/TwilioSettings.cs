@@ -1,9 +1,8 @@
-namespace Auth.TimeCafe.Domain.Models
+namespace Auth.TimeCafe.Domain.Models;
+
+public class TwilioSettings
 {
-    public class TwilioSettings
-    {
-        public string? AccountSid { get; set; }
-        public string? AuthToken { get; set; }
-        public string? VerificationServiceSid { get; set; }
-    }
+    public string? AccountSid { get; set; }
+    public string? AuthToken { get; set; }
+    public string? VerificationServiceSid { get; set; }
 }

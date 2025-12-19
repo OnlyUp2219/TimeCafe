@@ -22,11 +22,11 @@ global using Venue.TimeCafe.Application.CQRS.Themes.Commands;
 global using Venue.TimeCafe.Application.CQRS.Themes.Queries;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
 global using Venue.TimeCafe.Application.CQRS.Visits.Queries;
+global using Venue.TimeCafe.Application.DTOs;
 global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.Repositories;
 global using Venue.TimeCafe.Test.Helpers;
 global using Venue.TimeCafe.Test.Integration.Helpers;
-global using Venue.TimeCafe.Application.DTOs;
 
 global using Xunit;

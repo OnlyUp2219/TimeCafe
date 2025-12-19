@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffsPageQuery(int PageNumber, int PageSize) : IRequest<GetTariffsPageResult>;

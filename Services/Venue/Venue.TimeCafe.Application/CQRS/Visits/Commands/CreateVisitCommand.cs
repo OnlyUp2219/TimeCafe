@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
 public record CreateVisitCommand(string UserId, string TariffId) : IRequest<CreateVisitResult>;

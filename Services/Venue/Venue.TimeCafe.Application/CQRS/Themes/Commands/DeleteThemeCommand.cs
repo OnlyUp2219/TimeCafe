@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
 public record DeleteThemeCommand(string ThemeId) : IRequest<DeleteThemeResult>;

@@ -1,22 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Auth.TimeCafe.Infrastructure.Migrations
+namespace Auth.TimeCafe.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class MoveRefreshTokenConfigurationAndRemoveNav : Migration
 {
     /// <inheritdoc />
-    public partial class MoveRefreshTokenConfigurationAndRemoveNav : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }
