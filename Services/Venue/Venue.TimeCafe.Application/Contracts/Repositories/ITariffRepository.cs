@@ -1,6 +1,4 @@
-using Venue.TimeCafe.Domain.DTOs;
-
-namespace Venue.TimeCafe.Domain.Contracts.Repositories;
+namespace Venue.TimeCafe.Application.Contracts.Repositories;
 
 public interface ITariffRepository
 {

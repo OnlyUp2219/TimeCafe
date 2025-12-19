@@ -1,8 +1,3 @@
-using AutoMapper;
-using Moq;
-using Venue.TimeCafe.Domain.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Commands;
 
 public class UpdateTariffCommandTests : BaseCqrsHandlerTest

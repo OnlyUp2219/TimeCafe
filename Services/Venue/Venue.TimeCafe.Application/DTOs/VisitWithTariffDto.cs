@@ -1,4 +1,4 @@
-namespace Venue.TimeCafe.Domain.DTOs;
+namespace Venue.TimeCafe.Application.DTOs;
 
 public class VisitWithTariffDto
 {

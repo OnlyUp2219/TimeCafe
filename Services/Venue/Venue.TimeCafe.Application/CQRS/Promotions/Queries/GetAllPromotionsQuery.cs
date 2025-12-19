@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
 public record GetAllPromotionsQuery() : IRequest<GetAllPromotionsResult>;

@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Domain.DTOs;
-
 namespace Venue.TimeCafe.Infrastructure.Repositories;
 
 public class TariffRepository(

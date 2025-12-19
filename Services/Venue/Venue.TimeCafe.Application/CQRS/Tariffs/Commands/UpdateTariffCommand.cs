@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
 public record UpdateTariffCommand(string TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, string? ThemeId, bool IsActive) : IRequest<UpdateTariffResult>;

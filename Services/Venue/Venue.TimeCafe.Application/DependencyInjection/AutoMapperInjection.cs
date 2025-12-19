@@ -4,7 +4,7 @@ public static class AutoMapperInjection
 {
     public static IServiceCollection AddVenueAutoMapper(this IServiceCollection services)
     {
-        services.AddAutoMapper(cfg => cfg.AddProfile<VisitProfile>());
+        services.AddAutoMapper(cfg => { }, typeof(VisitProfile));
 
         return services;
     }

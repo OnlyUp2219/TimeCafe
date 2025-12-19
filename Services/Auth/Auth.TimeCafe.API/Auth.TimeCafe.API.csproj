@@ -6,7 +6,7 @@
 	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-	<PackageReference Include="AutoMapper" Version="16.0.0" />
+	<PackageReference Include="AutoMapper" Version="15.1.0" />
 	<PackageReference Include="Carter" Version="9.0.0" />
 	  
 	<PackageReference Include="MassTransit" Version="8.5.5" />
@@ -26,8 +26,6 @@
 	<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.10" />
 	  
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
-	  
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.6" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="9.0.1" />

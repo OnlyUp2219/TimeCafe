@@ -33,7 +33,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTariff_Should_Return200_WhenTariffExists] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -63,7 +63,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTariff_Should_Return404_WhenTariffNotFound] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -83,7 +83,6 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = tariff.IsActive,
-            lastModified = DateTime.UtcNow
         };
 
         var response = await Client.PutAsJsonAsync("/tariffs", payload);
@@ -98,7 +97,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTariff_Should_UpdateOnlyChangedFields_WhenPartialUpdateProvided] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -131,7 +130,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTariff_Should_Return422_WhenNameIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }
@@ -164,7 +163,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"Response: {jsonString} ({invalidId})");
             throw;
         }
     }

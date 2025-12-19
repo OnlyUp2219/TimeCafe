@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Application.Contracts.Repositories;
+
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
 public record UpdatePromotionCommand(string PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive) : IRequest<UpdatePromotionResult>;

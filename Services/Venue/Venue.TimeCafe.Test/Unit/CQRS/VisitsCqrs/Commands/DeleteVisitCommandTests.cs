@@ -1,8 +1,5 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
-using Venue.TimeCafe.Domain.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 public class DeleteVisitCommandTests : BaseCqrsHandlerTest
 {
     private readonly DeleteVisitCommandHandler _handler;

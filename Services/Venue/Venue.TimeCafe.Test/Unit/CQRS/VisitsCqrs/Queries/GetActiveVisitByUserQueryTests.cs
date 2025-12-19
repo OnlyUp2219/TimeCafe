@@ -1,8 +1,5 @@
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Queries;
 
-using Venue.TimeCafe.Domain.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
 {
     private readonly GetActiveVisitByUserQueryHandler _handler;

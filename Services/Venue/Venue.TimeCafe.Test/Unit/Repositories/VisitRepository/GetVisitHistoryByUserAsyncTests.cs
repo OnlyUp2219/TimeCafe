@@ -1,7 +1,5 @@
 namespace Venue.TimeCafe.Test.Unit.Repositories.VisitRepository;
 
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
 {
     [Fact]
