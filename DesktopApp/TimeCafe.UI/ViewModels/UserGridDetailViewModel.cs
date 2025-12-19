@@ -121,7 +121,7 @@ public partial class UserGridDetailViewModel(IMediator mediator, INavigationServ
 
         if (result == ContentDialogResult.Primary)
         {
-            var editClient = (EditClientContentDialog)((ContentDialog)dialog).Content;
+            var editClient = (EditClientContentDialog)dialog.Content;
             var updatedClient = editClient.ViewModel.GetUpdatedClient();
             await _mediator.Send(new UpdateClientCommand(updatedClient));
 

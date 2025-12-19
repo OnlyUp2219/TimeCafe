@@ -17,7 +17,6 @@ global using Venue.TimeCafe.API.DTOs.Tariff;
 global using Venue.TimeCafe.API.DTOs.Theme;
 global using Venue.TimeCafe.API.DTOs.Visit;
 global using Venue.TimeCafe.API.Extensions;
-global using Venue.TimeCafe.Application;
 global using Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 global using Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 global using Venue.TimeCafe.Application.CQRS.Tariffs.Commands;

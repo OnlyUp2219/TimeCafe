@@ -1,5 +1,3 @@
-using Venue.TimeCafe.Application.Contracts.Repositories;
-
 namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
 public record GetThemeByIdQuery(string ThemeId) : IRequest<GetThemeByIdResult>;

@@ -6,6 +6,4 @@ global using Main.TimeCafe.Domain.Models;
 
 global using MediatR;
 
-global using Newtonsoft.Json;
-
 global using System.Text;

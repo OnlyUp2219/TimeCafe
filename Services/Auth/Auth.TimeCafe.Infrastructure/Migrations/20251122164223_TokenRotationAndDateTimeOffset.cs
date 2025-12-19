@@ -1,28 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Auth.TimeCafe.Infrastructure.Migrations
+namespace Auth.TimeCafe.Infrastructure.Migrations;
+
+/// <inheritdoc />
+public partial class TokenRotationAndDateTimeOffset : Migration
 {
     /// <inheritdoc />
-    public partial class TokenRotationAndDateTimeOffset : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<string>(
-                name: "ReplacedByToken",
-                table: "RefreshTokens",
-                type: "text",
-                nullable: true);
-        }
+        migrationBuilder.AddColumn<string>(
+            name: "ReplacedByToken",
+            table: "RefreshTokens",
+            type: "text",
+            nullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "ReplacedByToken",
-                table: "RefreshTokens");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "ReplacedByToken",
+            table: "RefreshTokens");
     }
 }
