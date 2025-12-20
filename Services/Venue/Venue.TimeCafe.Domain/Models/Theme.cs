@@ -18,4 +18,16 @@ public class Theme
     public string? Colors { get; set; }
 
     public virtual ICollection<Tariff> Tariffs { get; set; } = [];
+
+
+    public static Theme Create(Guid? themeId, string name, string? emoji = null, string? colors = null)
+    {
+        return new Theme
+        {
+            ThemeId = themeId ?? Guid.NewGuid(),
+            Name = name,
+            Emoji = emoji,
+            Colors = colors
+        };
+    }
 }

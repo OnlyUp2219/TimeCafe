@@ -74,12 +74,13 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
                 return UpdateThemeResult.ThemeNotFound();
 
             // TODO : automapper
-            var theme = new Theme(themeId)
-            {
-                Name = request.Name,
-                Emoji = request.Emoji,
-                Colors = request.Colors
-            };
+
+            var theme = Theme.Create(
+                themeId: themeId,
+                name: request.Name,
+                emoji: request.Emoji,
+                colors: request.Colors);
+
 
             var updated = await _repository.UpdateAsync(theme);
 
