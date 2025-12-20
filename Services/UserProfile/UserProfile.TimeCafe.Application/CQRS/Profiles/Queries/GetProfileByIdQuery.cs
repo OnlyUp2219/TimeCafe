@@ -26,7 +26,7 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+           .NotNull().WithMessage("Такого пользователя не существует")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
     }
 }

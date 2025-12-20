@@ -31,7 +31,6 @@ public class GetProfilesPageQueryValidator : AbstractValidator<GetProfilesPageQu
         RuleFor(x => x.PageSize)
             .GreaterThan(0).WithMessage("Размер страницы должен быть больше 0")
             .LessThanOrEqualTo(100).WithMessage("Размер страницы не может превышать 100");
-        // TODO : добавить ограничение по максимальному размеру страницы в конфигурацию
     }
 }
 

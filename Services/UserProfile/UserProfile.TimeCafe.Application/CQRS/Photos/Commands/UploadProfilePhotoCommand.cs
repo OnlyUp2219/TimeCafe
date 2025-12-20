@@ -31,7 +31,7 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
         var opts = photoOptions.Value;
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Такого пользователя не существует")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Такого пользователя не существует")
+           .NotNull().WithMessage("Такого пользователя не существует")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.ContentType)

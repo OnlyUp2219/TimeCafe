@@ -25,7 +25,7 @@ public class ActivatePromotionCommandValidator : AbstractValidator<ActivatePromo
     {
         RuleFor(x => x.PromotionId)
             .NotEmpty().WithMessage("Акция не найдена")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Акция не найдена")
+           .NotNull().WithMessage("Акция не найдена")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Акция не найдена");
     }
 }

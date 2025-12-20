@@ -23,7 +23,7 @@ public class GetVisitHistoryQueryValidator : AbstractValidator<GetVisitHistoryQu
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+           .NotNull().WithMessage("Пользователь не найден")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.PageNumber)

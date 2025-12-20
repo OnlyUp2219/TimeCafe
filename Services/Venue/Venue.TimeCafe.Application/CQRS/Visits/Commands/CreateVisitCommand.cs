@@ -23,12 +23,12 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Пользователь не найден")
+           .NotNull().WithMessage("Пользователь не найден")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.TariffId)
             .NotEmpty().WithMessage("Тариф не найден")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Тариф не найден")
+           .NotNull().WithMessage("Тариф не найден")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
     }
 }
