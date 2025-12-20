@@ -60,16 +60,15 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IR
             if (existing == null)
                 return UpdatePromotionResult.PromotionNotFound();
 
-            // TODO : AutoMapper
-            var promotion = new Promotion(promotionId)
-            {
-                Name = request.Name,
-                Description = request.Description,
-                DiscountPercent = request.DiscountPercent,
-                ValidFrom = request.ValidFrom,
-                ValidTo = request.ValidTo,
-                IsActive = request.IsActive
-            };
+            var promotion = Promotion.Update(
+                existingPromotion: existing,
+                name: request.Name,
+                description: request.Description,
+                discountPercent: request.DiscountPercent,
+                validFrom: request.ValidFrom,
+                validTo: request.ValidTo,
+                isActive: request.IsActive
+                );
 
             var updated = await _repository.UpdateAsync(promotion);
 
