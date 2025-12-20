@@ -47,28 +47,23 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper)
             if (existing == null)
                 return EndVisitResult.VisitNotFound();
 
-            existing.ExitTime = DateTimeOffset.UtcNow;
-            existing.Status = VisitStatus.Completed;
-
-            var duration = (existing.ExitTime.Value - existing.EntryTime).TotalMinutes;
-
-            //TODO: Calculate cost take out
-            if (existing.TariffId != null)
-            {
-                existing.CalculatedCost = existing.TariffBillingType == BillingType.Hourly
-                    ? (decimal)Math.Ceiling(duration / 60) * (existing.TariffPricePerMinute * 60)
-                    : (decimal)Math.Ceiling(duration) * existing.TariffPricePerMinute;
-            }
-
-            var visit = _mapper.Map<Visit>(existing);
-            _mapper.Map(request, visit);
+            var exitTime = DateTimeOffset.UtcNow;
+            var visit = Visit.Update(
+                existingVisit: _mapper.Map<Visit>(existing),
+                exitTime: exitTime,
+                calculatedCost: Visit.CalculateCost(
+                    tariffBillingType: existing.TariffBillingType,
+                    tariffPricePerMinute: existing.TariffPricePerMinute,
+                    exitTime: exitTime,
+                    entryTime: existing.EntryTime),
+                status: VisitStatus.Completed);
 
             var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
                 return EndVisitResult.EndFailed();
 
-            return EndVisitResult.EndSuccess(updated, existing.CalculatedCost ?? 0);
+            return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
         }
         catch (Exception)
         {
