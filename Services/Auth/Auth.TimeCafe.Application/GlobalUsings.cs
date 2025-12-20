@@ -19,4 +19,5 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 
 global using System.Reflection;
+global using System.Security.Claims;
 global using System.Text;

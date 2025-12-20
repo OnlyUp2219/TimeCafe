@@ -20,7 +20,7 @@ public class Visit
     public decimal? CalculatedCost { get; set; }
     public VisitStatus Status { get; set; } = VisitStatus.Active;
 
-    public static Visit Create(Guid? visitId, Guid userId, Guid tariffId, DateTimeOffset entryTime, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, VisitStatus status)
+    public static Visit Create(Guid? visitId, Guid userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, DateTimeOffset? exitTime = null, decimal? calculatedCost = null)
     {
         return new Visit
         {

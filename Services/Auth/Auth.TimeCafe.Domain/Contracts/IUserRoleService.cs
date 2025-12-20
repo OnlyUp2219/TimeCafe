@@ -1,3 +1,4 @@
+
 namespace Auth.TimeCafe.Domain.Contracts;
 
 public interface IUserRoleService

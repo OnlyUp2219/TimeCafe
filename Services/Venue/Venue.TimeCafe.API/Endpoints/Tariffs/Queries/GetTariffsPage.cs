@@ -8,7 +8,6 @@ public class GetTariffsPage : ICarterModule
             [FromServices] ISender sender,
             [AsParameters] GetTariffsPageDto dto) =>
         {
-            // TODO : DTO
             var query = new GetTariffsPageQuery(dto.PageNumber, dto.PageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs, totalCount = r.TotalCount }));

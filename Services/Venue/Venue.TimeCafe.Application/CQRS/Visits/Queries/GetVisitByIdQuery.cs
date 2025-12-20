@@ -26,7 +26,7 @@ public class GetVisitByIdQueryValidator : AbstractValidator<GetVisitByIdQuery>
     {
         RuleFor(x => x.VisitId)
             .NotEmpty().WithMessage("Посещение не найдено")
-            .Must(x => !string.IsNullOrWhiteSpace(x)).WithMessage("Посещение не найдено")
+           .NotNull().WithMessage("Посещение не найдено")
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
     }
 }
