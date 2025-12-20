@@ -32,9 +32,10 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
     }
 }
 
-public class EndVisitCommandHandler(IVisitRepository repository) : IRequestHandler<EndVisitCommand, EndVisitResult>
+public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper) : IRequestHandler<EndVisitCommand, EndVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
+    private readonly IMapper _mapper = mapper;
 
     public async Task<EndVisitResult> Handle(EndVisitCommand request, CancellationToken cancellationToken)
     {
@@ -42,39 +43,32 @@ public class EndVisitCommandHandler(IVisitRepository repository) : IRequestHandl
         {
             var visitId = Guid.Parse(request.VisitId);
 
-            var visitDto = await _repository.GetByIdAsync(visitId);
-            if (visitDto == null)
+            var existing = await _repository.GetByIdAsync(visitId);
+            if (existing == null)
                 return EndVisitResult.VisitNotFound();
 
-            visitDto.ExitTime = DateTimeOffset.UtcNow;
-            visitDto.Status = VisitStatus.Completed;
+            existing.ExitTime = DateTimeOffset.UtcNow;
+            existing.Status = VisitStatus.Completed;
 
-            var duration = (visitDto.ExitTime.Value - visitDto.EntryTime).TotalMinutes;
+            var duration = (existing.ExitTime.Value - existing.EntryTime).TotalMinutes;
 
-            if (visitDto.TariffId != null)
+            //TODO: Calculate cost take out
+            if (existing.TariffId != null)
             {
-                visitDto.CalculatedCost = visitDto.TariffBillingType == BillingType.Hourly
-                    ? (decimal)Math.Ceiling(duration / 60) * (visitDto.TariffPricePerMinute * 60)
-                    : (decimal)Math.Ceiling(duration) * visitDto.TariffPricePerMinute;
+                existing.CalculatedCost = existing.TariffBillingType == BillingType.Hourly
+                    ? (decimal)Math.Ceiling(duration / 60) * (existing.TariffPricePerMinute * 60)
+                    : (decimal)Math.Ceiling(duration) * existing.TariffPricePerMinute;
             }
 
-            //TODO : AutoMapper
-            var visit = new Visit(visitDto.VisitId)
-            {
-                UserId = visitDto.UserId,
-                TariffId = visitDto.TariffId,
-                EntryTime = visitDto.EntryTime,
-                ExitTime = visitDto.ExitTime,
-                CalculatedCost = visitDto.CalculatedCost,
-                Status = visitDto.Status
-            };
+            var visit = _mapper.Map<Visit>(existing);
+            _mapper.Map(request, visit);
 
             var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
                 return EndVisitResult.EndFailed();
 
-            return EndVisitResult.EndSuccess(updated, visitDto.CalculatedCost ?? 0);
+            return EndVisitResult.EndSuccess(updated, existing.CalculatedCost ?? 0);
         }
         catch (Exception)
         {
