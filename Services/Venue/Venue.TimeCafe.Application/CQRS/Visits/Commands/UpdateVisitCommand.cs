@@ -71,8 +71,6 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapp
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
-
-
             var visit = _mapper.Map<Visit>(existing);
             _mapper.Map(request, visit);
 
