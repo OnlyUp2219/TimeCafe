@@ -30,4 +30,14 @@ public class Theme
             Colors = colors
         };
     }
+
+    public static Theme Update(Theme existingTheme, string? name = null, string? emoji = null, string? colors = null)
+    {
+        return new Theme(existingTheme.ThemeId)
+        {
+            Name = name ?? existingTheme.Name,
+            Emoji = emoji ?? existingTheme.Emoji,
+            Colors = colors ?? existingTheme.Colors
+        };
+    }
 }

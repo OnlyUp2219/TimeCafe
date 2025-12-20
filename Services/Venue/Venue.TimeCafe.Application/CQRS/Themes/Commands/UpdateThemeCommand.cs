@@ -73,14 +73,11 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
             if (existing == null)
                 return UpdateThemeResult.ThemeNotFound();
 
-            // TODO : automapper
-
-            var theme = Theme.Create(
-                themeId: themeId,
+            var theme = Theme.Update(
+                existingTheme: existing,
                 name: request.Name,
                 emoji: request.Emoji,
                 colors: request.Colors);
-
 
             var updated = await _repository.UpdateAsync(theme);
 
