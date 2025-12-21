@@ -38,6 +38,8 @@ global using Microsoft.IdentityModel.Tokens;
 
 global using Scalar.AspNetCore;
 
+global using Serilog;
+
 global using Swashbuckle.AspNetCore.Filters;
 
 global using System.Security.Claims;

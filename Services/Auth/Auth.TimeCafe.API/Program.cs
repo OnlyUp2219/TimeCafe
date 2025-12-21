@@ -1,4 +1,10 @@
+
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog
+builder.Services.AddSerilogConfiguration(builder.Configuration);
+builder.Host.UseSerilog();
 
 // DbContext
 builder.Services.AddDatabase(builder.Configuration);
@@ -61,10 +67,9 @@ app.UseAuthorization();
 
 app.MapCarter();
 
-//app.MapIdentityApi<ApplicationUser>();
-
 app.MapControllers();
 
 await app.RunAsync();
 
 public partial class Program { }
+

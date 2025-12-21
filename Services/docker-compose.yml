@@ -54,6 +54,47 @@ services:
       timeout: 5s
       retries: 5
 
+  # ELK Stack for logging and monitoring
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.2.3
+    container_name: timecafe-kibana
+    environment:
+        - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+        - "5601:5601"
+    depends_on:
+        elasticsearch:
+            condition: service_healthy
+    networks:
+        - timecafe-network
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+  
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
+    container_name: timecafe-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - timecafe-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+
   # Microservices
   auth-service:
     build:
@@ -89,12 +130,15 @@ services:
     ports:
       - "8001:8001"
     depends_on:
+      elasticsearch:
+        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+
     networks:
       - timecafe-network
     restart: unless-stopped
@@ -186,3 +230,4 @@ volumes:
   postgres-data:
   redis-data:
   rabbitmq-data:
+  elasticsearch-data:
