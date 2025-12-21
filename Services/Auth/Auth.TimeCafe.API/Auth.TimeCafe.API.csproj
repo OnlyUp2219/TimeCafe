@@ -26,6 +26,16 @@
 	<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="9.0.10" />
 	  
 	<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+	  
+	<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+	  
+	<PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
+	  
+	<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+	  
+	<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
+	  
+	<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.0" />
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.6" />
 	<PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="9.0.1" />
