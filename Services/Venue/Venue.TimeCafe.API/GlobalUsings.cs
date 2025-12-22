@@ -10,6 +10,8 @@ global using Microsoft.EntityFrameworkCore;
 
 global using Scalar.AspNetCore;
 
+global using Serilog;
+
 global using Swashbuckle.AspNetCore.Filters;
 
 global using Venue.TimeCafe.API.DTOs.Promotion;

@@ -1,5 +1,9 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// Serilog
+builder.Services.AddSerilogConfiguration(builder.Configuration);
+builder.Host.UseSerilog();
+
 // CORS
 var corsPolicyName = builder.Configuration["CORS:PolicyName"]
     ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
