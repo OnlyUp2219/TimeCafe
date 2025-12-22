@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Extensions;
+namespace BuildingBlocks.Extensions;
 
 public static class LoggingExtensions
 {
