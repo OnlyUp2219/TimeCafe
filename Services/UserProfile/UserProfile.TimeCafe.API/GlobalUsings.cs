@@ -15,6 +15,8 @@ global using Microsoft.Extensions.Options;
 
 global using Scalar.AspNetCore;
 
+global using Serilog;
+
 global using Swashbuckle.AspNetCore.Filters;
 
 global using UserProfile.TimeCafe.API.DTOs;
