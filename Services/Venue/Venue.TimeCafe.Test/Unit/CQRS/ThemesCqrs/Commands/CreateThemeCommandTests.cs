@@ -30,7 +30,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
-        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>()))!.ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

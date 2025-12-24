@@ -41,7 +41,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_When_Info_Null()
     {
         var validator = new UpdateAdditionalInfoCommandValidator();
-        var cmd = new UpdateAdditionalInfoCommand(null, null, null, null);
+        var cmd = new UpdateAdditionalInfoCommand(null!, null!, null!, null);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
