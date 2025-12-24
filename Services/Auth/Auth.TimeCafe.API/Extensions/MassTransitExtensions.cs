@@ -1,3 +1,5 @@
+using BuildingBlocks.Events;
+
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class MassTransitExtensions
@@ -10,11 +12,18 @@ public static class MassTransitExtensions
 
         var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
+
         services.AddMassTransit(x =>
         {
+
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(host);
+                cfg.Host(rabbitMqSection["Host"]!, h =>
+                {
+                    h.Username(rabbitMqSection["Username"]!);
+                    h.Password(rabbitMqSection["Password"]!);
+                });
+
                 cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
             });
         });

@@ -8,7 +8,6 @@ global using Auth.TimeCafe.Application.CQRS.Account.Commands;
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Application.Permissions;
 global using Auth.TimeCafe.Domain.Contracts;
-global using Auth.TimeCafe.Domain.Events;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Permissions;
 global using Auth.TimeCafe.Infrastructure.Data;
@@ -16,7 +15,7 @@ global using Auth.TimeCafe.Infrastructure.Permissions;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Infrastructure.Services.Email;
 global using Auth.TimeCafe.Infrastructure.Services.Phone;
-
+global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 

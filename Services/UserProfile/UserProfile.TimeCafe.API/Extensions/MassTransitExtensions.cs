@@ -16,10 +16,16 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(host);
-
-                cfg.ReceiveEndpoint("user-register-queue", e =>
+                cfg.Host(rabbitMqSection["Host"]!, h =>
                 {
+                    h.Username(rabbitMqSection["Username"]!);
+                    h.Password(rabbitMqSection["Password"]!);
+                });
+
+                cfg.ReceiveEndpoint("user-profile.user-registered", e =>
+                {
+                    e.Durable = true;
+                    e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureConsumer<UserRegisteredConsumer>(context);
                 });
             });

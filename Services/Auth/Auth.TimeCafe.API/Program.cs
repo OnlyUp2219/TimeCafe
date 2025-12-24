@@ -43,8 +43,8 @@ builder.Services.AddCorsConfiguration(corsPolicyName);
 // Carter
 builder.Services.AddCarter();
 
-// MassTransit (отключён для разработки без RabbitMQ)
-// builder.Services.AddRabbitMqMessaging(builder.Configuration);
+// MassTransit with RabbitMQ
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 var app = builder.Build();
 
@@ -66,6 +66,17 @@ app.UseAuthorization();
 app.MapCarter();
 
 app.MapControllers();
+
+app.MapGet("/test-publish", async (IPublishEndpoint pub) =>
+{
+    await pub.Publish(new UserRegisteredEvent
+    {
+        UserId = Guid.NewGuid(),
+        Email = "test@example.com"
+    });
+
+    return Results.Ok("Событие отправлено!");
+});
 
 await app.RunAsync();
 
