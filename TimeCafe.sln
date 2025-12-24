@@ -18,10 +18,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Main.TimeCafe.Application",
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{F93731A0-5DE5-4B83-BF52-69C2151283DE}"
-	ProjectSection(SolutionItems) = preProject
-		Services\.env = Services\.env
-		Services\docker-compose.yml = Services\docker-compose.yml
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DesktopApp", "DesktopApp", "{0F4CE3E7-AEC0-42DD-9A0E-FE91638D73D1}"
 EndProject
@@ -87,6 +83,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venue.TimeCafe.Infrastructu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Venue.TimeCafe.Test", "Services\Venue\Venue.TimeCafe.Test\Venue.TimeCafe.Test.csproj", "{5C6C505D-9FA1-479C-B281-366870983674}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решения", "Элементы решения", "{0DE604F7-5314-4E89-866B-EE3FA017A7D3}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.env = .env
+		docker-compose.override.yml = docker-compose.override.yml
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{E3690F47-09C4-4693-8F6E-2EAF52B130FE}") = "docker-compose", "docker-compose.dcproj", "{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +105,30 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|arm64.Build.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|arm64.Deploy.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x64.Build.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x86.Build.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|arm64.ActiveCfg = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|arm64.Build.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|arm64.Deploy.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x64.ActiveCfg = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x64.Build.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x64.Deploy.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x86.ActiveCfg = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x86.Build.0 = Release|Any CPU
+		{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}.Release|x86.Deploy.0 = Release|Any CPU
 		{C1F8F578-E45F-02DE-DBA0-43ABEE89E447}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C1F8F578-E45F-02DE-DBA0-43ABEE89E447}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1F8F578-E45F-02DE-DBA0-43ABEE89E447}.Debug|arm64.ActiveCfg = Debug|arm64

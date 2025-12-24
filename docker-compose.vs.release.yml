@@ -1,0 +1,11 @@
+name: TimeCafe
+services:
+  auth-service:
+    labels:
+      - "com.microsoft.visualstudio.debuggee=false"
+  profile-service:
+    labels:
+      - "com.microsoft.visualstudio.debuggee=false"
+  venue-service:
+    labels:
+      - "com.microsoft.visualstudio.debuggee=false"
