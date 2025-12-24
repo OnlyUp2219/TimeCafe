@@ -3,6 +3,8 @@ global using BuildingBlocks.Middleware;
 
 global using Carter;
 
+global using MassTransit;
+
 global using MediatR;
 
 global using Microsoft.AspNetCore.Mvc;

@@ -24,7 +24,8 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.Property(v => v.Status)
             .HasConversion<int>()
             .IsRequired()
-            .HasDefaultValue(VisitStatus.Active);
+            .HasDefaultValue(VisitStatus.Active)
+            .HasSentinel(VisitStatus.Active);
 
         builder.HasOne<Tariff>()
             .WithMany(t => t.Visits)

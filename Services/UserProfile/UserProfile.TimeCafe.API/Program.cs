@@ -9,8 +9,8 @@ var corsPolicyName = builder.Configuration["CORS:PolicyName"]
     ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
 builder.Services.AddCorsConfiguration(corsPolicyName);
 
-// MassTransit (отключён для разработки без RabbitMQ)
-//builder.Services.AddRabbitMqMessaging(builder.Configuration);
+// MassTransit with RabbitMQ
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 // Redis
 builder.Services.AddRedis(builder.Configuration);
@@ -50,7 +50,6 @@ app.UseSwaggerDevelopment();
 app.MapCarter();
 
 await app.RunAsync();
-
 
 public partial class Program { }
 

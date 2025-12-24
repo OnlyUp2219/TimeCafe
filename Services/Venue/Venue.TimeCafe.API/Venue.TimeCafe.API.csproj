@@ -35,6 +35,9 @@
 		<PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0" />
 		<PackageReference Include="Serilog.Sinks.Elasticsearch" Version="9.0.0" />
 
+		<PackageReference Include="MassTransit" Version="8.5.5" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="8.5.5" />
+
 	</ItemGroup>
 
 	<ItemGroup>
