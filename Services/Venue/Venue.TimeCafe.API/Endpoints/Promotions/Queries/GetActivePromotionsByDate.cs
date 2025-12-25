@@ -6,9 +6,9 @@ public class GetActivePromotionsByDate : ICarterModule
     {
         app.MapGet("/promotions/active/{date}", async (
             [FromServices] ISender sender,
-            DateTimeOffset date) =>
+            [AsParameters] GetActivePromotionsByDateDto dto) =>
         {
-            var query = new GetActivePromotionsByDateQuery(date);
+            var query = new GetActivePromotionsByDateQuery(dto.Date);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
         })
