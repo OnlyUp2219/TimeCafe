@@ -5,8 +5,8 @@ public class LoginTests : BaseEndpointTest
     public LoginTests(IntegrationApiFactory factory) : base(factory)
     {
         // Arrange: подготовка тестовых пользователей
-        SeedUser("unconfirmed@example.com", "password123", false);
-        SeedUser("confirmed@example.com", "password123", true);
+        SeedUserAsync("unconfirmed@example.com", "password123", false).GetAwaiter().GetResult();
+        SeedUserAsync("confirmed@example.com", "password123", true).GetAwaiter().GetResult();
     }
 
     [Fact]

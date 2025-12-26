@@ -4,8 +4,8 @@ public class LoginV2Tests : BaseEndpointTest
 {
     public LoginV2Tests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("v2_unconfirmed@example.com", "password123", false);
-        SeedUser("v2_confirmed@example.com", "password123", true);
+        SeedUserAsync("v2_unconfirmed@example.com", "password123", false).GetAwaiter().GetResult();
+        SeedUserAsync("v2_confirmed@example.com", "password123", true).GetAwaiter().GetResult();
     }
 
     [Fact]

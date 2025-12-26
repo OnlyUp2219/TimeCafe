@@ -10,36 +10,36 @@ public class PermissionsAndRolesTests
     {
         var factory = new IntegrationTestFactory();
         _services = factory.Services;
-        SeedUsersAndRoles();
+        SeedUsersAndRolesAsync().GetAwaiter().GetResult();
     }
 
-    private void SeedUsersAndRoles()
+    private async Task SeedUsersAndRolesAsync()
     {
         var userManager = _services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = _services.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-        if (!roleManager.RoleExistsAsync("admin").Result)
-            roleManager.CreateAsync(new IdentityRole<Guid>("admin")).Wait();
-        if (!roleManager.RoleExistsAsync("client").Result)
-            roleManager.CreateAsync(new IdentityRole<Guid>("client")).Wait();
+        if (!await roleManager.RoleExistsAsync("admin"))
+            await roleManager.CreateAsync(new IdentityRole<Guid>("admin"));
+        if (!await roleManager.RoleExistsAsync("client"))
+            await roleManager.CreateAsync(new IdentityRole<Guid>("client"));
 
-        var admin = userManager.FindByEmailAsync("admin@timecafe.local").Result;
+        var admin = await userManager.FindByEmailAsync("admin@timecafe.local");
         if (admin == null)
         {
             admin = new ApplicationUser { UserName = "admin", Email = "admin@timecafe.local", EmailConfirmed = true };
-            userManager.CreateAsync(admin, "P@ssw0rd!").Wait();
+            await userManager.CreateAsync(admin, "P@ssw0rd!");
         }
-        if (!userManager.IsInRoleAsync(admin, "admin").Result)
-            userManager.AddToRoleAsync(admin, "admin").Wait();
+        if (!await userManager.IsInRoleAsync(admin, "admin"))
+            await userManager.AddToRoleAsync(admin, "admin");
 
-        var client = userManager.FindByEmailAsync("client@timecafe.local").Result;
+        var client = await userManager.FindByEmailAsync("client@timecafe.local");
         if (client == null)
         {
             client = new ApplicationUser { UserName = "client", Email = "client@timecafe.local", EmailConfirmed = true };
-            userManager.CreateAsync(client, "P@ssw0rd!").Wait();
+            await userManager.CreateAsync(client, "P@ssw0rd!");
         }
-        if (!userManager.IsInRoleAsync(client, "client").Result)
-            userManager.AddToRoleAsync(client, "client").Wait();
+        if (!await userManager.IsInRoleAsync(client, "client"))
+            await userManager.AddToRoleAsync(client, "client");
     }
 
     [Fact]

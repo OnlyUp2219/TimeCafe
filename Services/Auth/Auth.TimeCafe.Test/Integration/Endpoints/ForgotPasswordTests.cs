@@ -6,7 +6,7 @@ public class ForgotPasswordTests : BaseEndpointTest
 
     public ForgotPasswordTests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("exists@example.com", "P@ssw0rd!", true);
+        SeedUserAsync("exists@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
     }
 
     [Fact]

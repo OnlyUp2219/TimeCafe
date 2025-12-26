@@ -6,8 +6,8 @@ public class EmailResendTests : BaseEndpointTest
 
     public EmailResendTests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("unconfirmed@example.com", "P@ssw0rd!", false);
-        SeedUser("confirmed@example.com", "P@ssw0rd!", true);
+        SeedUserAsync("unconfirmed@example.com", "P@ssw0rd!", false).GetAwaiter().GetResult();
+        SeedUserAsync("confirmed@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
     }
 
     [Fact]
