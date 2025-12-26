@@ -109,7 +109,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
     [InlineData("99999999-9999-9999-9999-999999999999", "Name", "Desc", -999.0, true, true, null)]
     public async Task Validator_Should_ValidateCorrectly(string promotionId, string? name, string? description, double discountDouble, bool validDates, bool isValid, string? expectedError)
     {
-        var validFrom = DateTime.UtcNow;
+        var validFrom = DateTimeOffset.UtcNow;
         var validTo = validDates ? validFrom.AddDays(30) : validFrom.AddDays(-1);
         var discount = discountDouble == -999.0 ? null : (decimal?)discountDouble;
         var command = new UpdatePromotionCommand(promotionId, name!, description!, discount, validFrom, validTo, true);

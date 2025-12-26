@@ -55,7 +55,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
             ValidFrom = TestData.DateTimeData.GetValidFromDate(),
             ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Promotions.Add(promotion);
         await Context.SaveChangesAsync();

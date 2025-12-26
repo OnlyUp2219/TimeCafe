@@ -23,7 +23,7 @@ public class TestPhotoProfile : ICarterModule
                     LastName = "User",
                     Gender = Gender.NotSpecified,
                     ProfileStatus = ProfileStatus.Completed,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
                 await userRepo.CreateProfileAsync(profile, ct);
 

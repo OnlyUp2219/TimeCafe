@@ -70,7 +70,7 @@ public class AdditionalInfoRepository(
         AdditionalInfo info,
         CancellationToken? cancellationToken = null)
     {
-        info.CreatedAt = DateTime.UtcNow;
+        info.CreatedAt = DateTimeOffset.UtcNow;
         _context.AdditionalInfos.Add(info);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 

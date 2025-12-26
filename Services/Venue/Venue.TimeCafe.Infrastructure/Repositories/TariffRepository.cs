@@ -37,9 +37,9 @@ public class TariffRepository(
                                 ThemeEmoji = th != null ? th.Emoji : null,
                                 ThemeColors = th != null ? th.Colors : null
                             })
-                      .AsNoTracking().
-                      FirstOrDefaultAsync().
-                      ConfigureAwait(false);
+                      .AsNoTracking()
+                      .FirstOrDefaultAsync()
+                      .ConfigureAwait(false);
 
         if (entity != null)
         {

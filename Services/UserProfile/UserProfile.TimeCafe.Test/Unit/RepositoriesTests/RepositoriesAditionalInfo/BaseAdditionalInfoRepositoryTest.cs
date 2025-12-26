@@ -27,9 +27,9 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
 
         TestInfos = new List<AdditionalInfo>
         {
-            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "First info", CreatedAt = DateTime.UtcNow.AddMinutes(-10) },
-            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "Second info", CreatedAt = DateTime.UtcNow.AddMinutes(-5) },
-            new() { InfoId = Guid.NewGuid(), UserId = userId2, InfoText = "Another user info", CreatedAt = DateTime.UtcNow.AddMinutes(-2) }
+            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "First info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-10) },
+            new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "Second info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-5) },
+            new() { InfoId = Guid.NewGuid(), UserId = userId2, InfoText = "Another user info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-2) }
         };
     }
 

@@ -17,7 +17,9 @@ public class AdditionalInfo
     public string InfoText { get; set; } = string.Empty;
 
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    //TODO: migration db, change DateTimetype on DateTimeOffset
+
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     [MaxLength(450)]
     public string? CreatedBy { get; set; }

@@ -8,7 +8,7 @@ public class GetAdditionalInfoByIdQueryHandlerTests
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var userId = Guid.Parse(ExistingUsers.User1Id);
         var repoMock = new Mock<IAdditionalInfoRepository>();
-        var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.TestInfo, CreatedAt = DateTime.UtcNow };
+        var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.TestInfo, CreatedAt = DateTimeOffset.UtcNow };
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(info);
         var handler = new GetAdditionalInfoByIdQueryHandler(repoMock.Object);
 

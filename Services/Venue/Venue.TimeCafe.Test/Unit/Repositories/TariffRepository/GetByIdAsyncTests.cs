@@ -55,7 +55,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
             BillingType = BillingType.PerMinute,
             ThemeId = theme.ThemeId,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Tariffs.Add(tariff);
         await Context.SaveChangesAsync();

@@ -80,7 +80,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
     [InlineData("Name", "Desc", -999.0, true, true, null)]
     public async Task Validator_Should_ValidateCorrectly(string? name, string? description, double discountDouble, bool validDates, bool isValid, string? expectedError)
     {
-        var validFrom = DateTime.UtcNow;
+        var validFrom = DateTimeOffset.UtcNow;
         var validTo = validDates ? validFrom.AddDays(30) : validFrom.AddDays(-1);
         var discount = discountDouble == -999.0 ? null : (decimal?)discountDouble;
         var command = new CreatePromotionCommand(name!, description!, discount, validFrom, validTo);

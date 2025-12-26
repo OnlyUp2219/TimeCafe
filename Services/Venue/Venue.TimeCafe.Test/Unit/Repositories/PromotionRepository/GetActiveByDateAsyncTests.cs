@@ -6,7 +6,7 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_ReturnActivePromotionsForDate()
     {
         // Arrange
-        var targetDate = DateTime.UtcNow.AddDays(5);
+        var targetDate = DateTimeOffset.UtcNow.AddDays(5);
         var promotion = new Promotion
         {
             Name = TestData.ExistingPromotions.Promotion1Name,
@@ -15,7 +15,7 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
             ValidFrom = TestData.DateTimeData.GetValidFromDate(),
             ValidTo = TestData.DateTimeData.GetValidToDate(),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
         Context.Promotions.Add(promotion);
         await Context.SaveChangesAsync();
@@ -32,14 +32,14 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_ExcludeExpiredPromotions()
     {
         // Arrange
-        var targetDate = DateTime.UtcNow;
+        var targetDate = DateTimeOffset.UtcNow;
         var expired = new Promotion
         {
             Name = TestData.ExistingPromotions.Promotion2Name,
             Description = TestData.ExistingPromotions.Promotion2Description,
             DiscountPercent = TestData.ExistingPromotions.Promotion2DiscountPercent,
             ValidFrom = TestData.DateTimeData.GetPastDate(),
-            ValidTo = DateTime.UtcNow.AddDays(-1),
+            ValidTo = DateTimeOffset.UtcNow.AddDays(-1),
             IsActive = true
         };
         Context.Promotions.Add(expired);
@@ -56,7 +56,7 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_ExcludeFuturePromotions()
     {
         // Arrange
-        var targetDate = DateTime.UtcNow;
+        var targetDate = DateTimeOffset.UtcNow;
         var future = new Promotion
         {
             Name = TestData.ExistingPromotions.Promotion3Name,
@@ -80,14 +80,14 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_ExcludeInactivePromotions()
     {
         // Arrange
-        var targetDate = DateTime.UtcNow.AddDays(5);
+        var targetDate = DateTimeOffset.UtcNow.AddDays(5);
         var inactive = new Promotion
         {
             Name = "Inactive",
             Description = "Test",
             DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(10),
+            ValidFrom = DateTimeOffset.UtcNow,
+            ValidTo = DateTimeOffset.UtcNow.AddDays(10),
             IsActive = false
         };
         Context.Promotions.Add(inactive);
@@ -104,14 +104,14 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_ReturnOrderedByDiscountDesc()
     {
         // Arrange
-        var targetDate = DateTime.UtcNow.AddDays(5);
+        var targetDate = DateTimeOffset.UtcNow.AddDays(5);
         var promo1 = new Promotion
         {
             Name = "Low Discount",
             Description = "Test",
             DiscountPercent = 10m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(10),
+            ValidFrom = DateTimeOffset.UtcNow,
+            ValidTo = DateTimeOffset.UtcNow.AddDays(10),
             IsActive = true
         };
         var promo2 = new Promotion
@@ -119,8 +119,8 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
             Name = "High Discount",
             Description = "Test",
             DiscountPercent = 50m,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(10),
+            ValidFrom = DateTimeOffset.UtcNow,
+            ValidTo = DateTimeOffset.UtcNow.AddDays(10),
             IsActive = true
         };
         Context.Promotions.AddRange(promo1, promo2);
@@ -139,8 +139,8 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
     public async Task Repository_GetActiveByDateAsync_Should_IncludeBoundaryDates()
     {
         // Arrange
-        var validFrom = DateTime.UtcNow.Date;
-        var validTo = DateTime.UtcNow.Date.AddDays(10);
+        var validFrom = DateTimeOffset.UtcNow.Date;
+        var validTo = DateTimeOffset.UtcNow.Date.AddDays(10);
         var promotion = new Promotion
         {
             Name = "Boundary Test",

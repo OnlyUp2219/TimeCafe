@@ -60,7 +60,7 @@ public class CreateProfileCommandHandler(IUserRepositories repository) : IReques
                 LastName = request.LastName,
                 Gender = request.Gender,
                 ProfileStatus = ProfileStatus.Pending,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _repository.CreateProfileAsync(profile, cancellationToken);

@@ -91,7 +91,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
 
     public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
-        profile.CreatedAt = DateTime.UtcNow;
+        profile.CreatedAt = DateTimeOffset.UtcNow;
         _context.Profiles.Add(profile);
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 
@@ -168,7 +168,7 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
             LastName = "",
             Gender = Gender.NotSpecified,
             ProfileStatus = ProfileStatus.Pending,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = DateTimeOffset.UtcNow,
         });
 
         await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);

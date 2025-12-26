@@ -58,7 +58,7 @@ public abstract class BaseCqrsTest : IDisposable
             PricePerMinute = price,
             BillingType = BillingType.PerMinute,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         Context.Tariffs.Add(tariff);
@@ -73,10 +73,10 @@ public abstract class BaseCqrsTest : IDisposable
             Name = name,
             Description = "Test Description",
             DiscountPercent = discount,
-            ValidFrom = DateTime.UtcNow,
-            ValidTo = DateTime.UtcNow.AddDays(30),
+            ValidFrom = DateTimeOffset.UtcNow,
+            ValidTo = DateTimeOffset.UtcNow.AddDays(30),
             IsActive = isActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         Context.Promotions.Add(promotion);
@@ -108,7 +108,7 @@ public abstract class BaseCqrsTest : IDisposable
         {
             UserId = userId ?? Guid.Parse("12345678-1234-1234-1234-123456789012"),
             TariffId = tariff!.TariffId,
-            EntryTime = DateTime.UtcNow,
+            EntryTime = DateTimeOffset.UtcNow,
             Status = VisitStatus.Active
         };
 

@@ -59,7 +59,7 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
                 UserId = userId,
                 InfoText = request.InfoText,
                 CreatedBy = request.CreatedBy,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _repository.CreateAdditionalInfoAsync(info, cancellationToken);

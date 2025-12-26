@@ -21,7 +21,7 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Arrange
         var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         existing.Status = VisitStatus.Completed;
-        existing.ExitTime = DateTime.UtcNow;
+        existing.ExitTime = DateTimeOffset.UtcNow;
         existing.CalculatedCost = TestData.VisitUpdateData.UpdatedCalculatedCost;
 
         // Act
@@ -73,7 +73,7 @@ public class UpdateAsyncTests : BaseCqrsTest
         // Arrange
         var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
         existing.Status = VisitStatus.Completed;
-        existing.ExitTime = DateTime.UtcNow;
+        existing.ExitTime = DateTimeOffset.UtcNow;
         existing.CalculatedCost = TestData.VisitUpdateData.UpdatedCalculatedCost;
 
         // Act

@@ -50,7 +50,7 @@ public class CreateAsyncTests : BaseCqrsTest
         var result = await VisitRepository.CreateAsync(visit);
 
         // Assert
-        result.EntryTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.EntryTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]

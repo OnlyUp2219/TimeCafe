@@ -8,7 +8,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
         // Arrange
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var userId = Guid.Parse(ExistingUsers.User1Id);
-        var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.TestInfo, CreatedAt = DateTime.UtcNow, CreatedBy = "creator" };
+        var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.TestInfo, CreatedAt = DateTimeOffset.UtcNow, CreatedBy = "creator" };
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         repoMock.Setup(r => r.DeleteAdditionalInfoAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(true);

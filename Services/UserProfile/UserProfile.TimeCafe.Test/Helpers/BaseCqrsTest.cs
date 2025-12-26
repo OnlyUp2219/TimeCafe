@@ -46,7 +46,7 @@ public abstract class BaseCqrsTest : IDisposable
             LastName = lastName,
             Gender = Gender.NotSpecified,
             ProfileStatus = ProfileStatus.Pending,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         Context.Profiles.Add(profile);

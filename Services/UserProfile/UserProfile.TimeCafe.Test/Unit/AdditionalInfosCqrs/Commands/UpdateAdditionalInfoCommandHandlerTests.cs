@@ -8,7 +8,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         // Arrange
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var userId = Guid.Parse(ExistingUsers.User1Id);
-        var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.OriginalInfo, CreatedAt = DateTime.UtcNow, CreatedBy = "creator" };
+        var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.OriginalInfo, CreatedAt = DateTimeOffset.UtcNow, CreatedBy = "creator" };
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         repoMock.Setup(r => r.UpdateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
@@ -63,7 +63,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         var userId = Guid.Parse(NonExistingUsers.UserId2);
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
-        var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = DateTime.UtcNow };
+        var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = DateTimeOffset.UtcNow };
         var cmd = new UpdateAdditionalInfoCommand(info.InfoId.ToString(), info.UserId.ToString(), info.InfoText, info.CreatedBy);
         var handler = new UpdateAdditionalInfoCommandHandler(repoMock.Object);
 

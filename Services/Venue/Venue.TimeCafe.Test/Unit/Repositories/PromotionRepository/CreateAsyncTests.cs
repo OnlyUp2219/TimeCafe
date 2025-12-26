@@ -56,7 +56,7 @@ public class CreateAsyncTests : BaseCqrsTest
         var result = await PromotionRepository.CreateAsync(promotion);
 
         // Assert
-        result.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]

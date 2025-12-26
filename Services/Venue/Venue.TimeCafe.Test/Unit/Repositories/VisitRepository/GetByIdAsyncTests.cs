@@ -68,7 +68,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
         {
             UserId = TestData.NewVisits.NewVisit1UserId,
             TariffId = tariff.TariffId,
-            EntryTime = DateTime.UtcNow,
+            EntryTime = DateTimeOffset.UtcNow,
             Status = VisitStatus.Active
         };
         Context.Visits.Add(visit);
@@ -82,6 +82,6 @@ public class GetByIdAsyncTests : BaseCqrsTest
         result!.UserId.Should().Be(TestData.NewVisits.NewVisit1UserId);
         result.TariffId.Should().Be(tariff.TariffId);
         result.Status.Should().Be(VisitStatus.Active);
-        result.EntryTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+        result.EntryTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 }
