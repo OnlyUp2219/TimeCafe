@@ -1,3 +1,5 @@
+using Venue.TimeCafe.Domain.Constants;
+
 namespace Venue.TimeCafe.Test.Integration.Helpers;
 
 public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
@@ -18,6 +20,13 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
         try
         {
+            // Дополнительно очищаем кэш через IDistributedCache для надежности
+            var distCache = scope.ServiceProvider.GetService<IDistributedCache>();
+            if (distCache != null)
+            {
+                await distCache.RemoveAsync(CacheKeys.Theme_All);
+            }
+
             var connectionMultiplexer = scope.ServiceProvider.GetService<StackExchange.Redis.IConnectionMultiplexer>();
             if (connectionMultiplexer != null)
             {

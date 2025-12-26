@@ -13,6 +13,9 @@ public record UpdateTariffResult(
     public static UpdateTariffResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
 
+    public static UpdateTariffResult ThemeNotFound() =>
+        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
+
     public static UpdateTariffResult UpdateFailed() =>
         new(false, Code: "UpdateTariffFailed", Message: "Не удалось обновить тариф", StatusCode: 500);
 
@@ -53,9 +56,10 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 
 
 // Todo : Patch commands
-public class UpdateTariffCommandHandler(ITariffRepository repository, IMapper mapper) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
+public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository, IMapper mapper) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
 {
     private readonly ITariffRepository _repository = repository;
+    private readonly IThemeRepository _themeRepository = themeRepository;
     private readonly IMapper _mapper = mapper;
 
     public async Task<UpdateTariffResult> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
@@ -70,6 +74,14 @@ public class UpdateTariffCommandHandler(ITariffRepository repository, IMapper ma
 
             var tariff = _mapper.Map<Tariff>(existing);
             _mapper.Map(request, tariff);
+
+            if (!string.IsNullOrWhiteSpace(request.ThemeId))
+            {
+                var themeId = Guid.Parse(request.ThemeId);
+                var themeExists = await _themeRepository.GetByIdAsync(themeId);
+                if (themeExists == null)
+                    return UpdateTariffResult.ThemeNotFound();
+            }
 
             var updated = await _repository.UpdateAsync(tariff);
 

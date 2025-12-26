@@ -13,6 +13,9 @@ public record UpdateVisitResult(
     public static UpdateVisitResult VisitNotFound() =>
         new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
 
+    public static UpdateVisitResult TariffNotFound() =>
+        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
+
     public static UpdateVisitResult UpdateFailed() =>
         new(false, Code: "UpdateVisitFailed", Message: "Не удалось обновить посещение", StatusCode: 500);
 
@@ -56,9 +59,10 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
     }
 }
 
-public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapper) : IRequestHandler<UpdateVisitCommand, UpdateVisitResult>
+public class UpdateVisitCommandHandler(IVisitRepository repository, ITariffRepository tariffRepository, IMapper mapper) : IRequestHandler<UpdateVisitCommand, UpdateVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
+    private readonly ITariffRepository _tariffRepository = tariffRepository;
     private readonly IMapper _mapper = mapper;
 
     public async Task<UpdateVisitResult> Handle(UpdateVisitCommand request, CancellationToken cancellationToken)
@@ -73,6 +77,11 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, IMapper mapp
 
             var visit = _mapper.Map<Visit>(existing);
             _mapper.Map(request, visit);
+
+            var tariffId = Guid.Parse(request.TariffId);
+            var tariff = await _tariffRepository.GetByIdAsync(tariffId);
+            if (tariff == null)
+                return UpdateVisitResult.TariffNotFound();
 
             var updated = await _repository.UpdateAsync(visit);
 

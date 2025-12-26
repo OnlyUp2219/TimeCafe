@@ -6,7 +6,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
     public CreateTariffCommandTests()
     {
-        _handler = new CreateTariffCommandHandler(TariffRepositoryMock.Object);
+        _handler = new CreateTariffCommandHandler(TariffRepositoryMock.Object, ThemeRepositoryMock.Object);
     }
 
     [Fact]
