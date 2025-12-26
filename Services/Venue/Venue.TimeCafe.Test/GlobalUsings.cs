@@ -2,6 +2,8 @@ global using AutoMapper;
 
 global using FluentAssertions;
 
+global using MassTransit;
+
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Caching.Distributed;
 global using Microsoft.Extensions.DependencyInjection;

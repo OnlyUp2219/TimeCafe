@@ -3,12 +3,12 @@ using FluentValidation;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-namespace Venue.TimeCafe.Test.Architecture;
+namespace UserProfile.TimeCafe.Test.Architecture;
 
 public class ArchitectureRulesTests
 {
-    private readonly Assembly _application = typeof(GetTariffsPageQuery).Assembly;
-    private readonly Assembly _infrastructure = typeof(TariffRepository).Assembly;
+    private readonly Assembly _application = typeof(CreateProfileCommand).Assembly;
+    private readonly Assembly _infrastructure = typeof(UserRepositories).Assembly;
 
     [Fact]
     public void Api_Endpoints_Should_Have_WithDescription_Summary_Name_Tags_And_BeAsync()
@@ -16,7 +16,7 @@ public class ArchitectureRulesTests
         var repoRoot = FindRepoRoot();
         repoRoot.Should().NotBeNull("Не удалось найти корень репозитория (TimeCafe.sln)");
 
-        var endpointsPath = Path.Combine(repoRoot!, "Services", "Venue", "Venue.TimeCafe.API", "Endpoints");
+        var endpointsPath = Path.Combine(repoRoot!, "Services", "UserProfile", "UserProfile.TimeCafe.API", "Endpoints");
         Directory.Exists(endpointsPath).Should().BeTrue($"Папка эндпоинтов должна существовать: {endpointsPath}");
 
         var files = Directory.GetFiles(endpointsPath, "*.cs", SearchOption.AllDirectories);

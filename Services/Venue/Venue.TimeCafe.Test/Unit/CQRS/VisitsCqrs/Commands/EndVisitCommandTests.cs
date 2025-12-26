@@ -6,7 +6,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
 
     public EndVisitCommandTests()
     {
-        _handler = new EndVisitCommandHandler(VisitRepositoryMock.Object, MapperMock.Object);
+        _handler = new EndVisitCommandHandler(VisitRepositoryMock.Object, MapperMock.Object, PublishEndpointMock.Object);
 
         MapperMock.Setup(m => m.Map<Visit>(It.IsAny<VisitWithTariffDto>()))
             .Returns((VisitWithTariffDto dto) => new Visit(dto.VisitId)
