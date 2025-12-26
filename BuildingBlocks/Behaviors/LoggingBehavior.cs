@@ -17,7 +17,10 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
         {
             payload = JsonSerializer.Serialize(request, jsonOptions);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to serialize request payload for {RequestName}", requestName);
+        }
 
         _logger.LogInformation("Handling {RequestName} Payload={Payload}", requestName, payload);
         var response = await next();
@@ -26,7 +29,10 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
         {
             responseJson = JsonSerializer.Serialize(response, jsonOptions);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to serialize response for {RequestName}", requestName);
+        }
         _logger.LogInformation("Handled {RequestName} Response={Response}", requestName, responseJson);
         return response;
     }
