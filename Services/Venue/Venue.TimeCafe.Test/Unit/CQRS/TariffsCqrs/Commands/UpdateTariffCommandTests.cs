@@ -3,7 +3,6 @@ namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Commands;
 public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 {
     private readonly UpdateTariffCommandHandler _handler;
-    private readonly Mock<IMapper> MapperMock = new Mock<IMapper>();
 
     public UpdateTariffCommandTests()
     {
