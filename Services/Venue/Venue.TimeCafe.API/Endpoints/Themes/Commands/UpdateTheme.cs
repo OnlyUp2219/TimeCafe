@@ -15,6 +15,7 @@ public class UpdateTheme : ICarterModule
         .WithTags("Themes")
         .WithName("UpdateTheme")
         .WithSummary("Обновить тему")
-        .WithDescription("Обновляет существующую тему оформления.");
+        .WithDescription("Обновляет существующую тему оформления.")
+        .RequireAuthorization();
     }
 }

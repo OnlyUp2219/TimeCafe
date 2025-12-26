@@ -14,6 +14,7 @@ public class GetActiveTariffs : ICarterModule
         .WithTags("Tariffs")
         .WithName("GetActiveTariffs")
         .WithSummary("Получить активные тарифы")
-        .WithDescription("Возвращает список всех активных тарифов.");
+        .WithDescription("Возвращает список всех активных тарифов.")
+        .RequireAuthorization();
     }
 }

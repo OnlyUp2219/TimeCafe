@@ -15,6 +15,7 @@ public class GetVisitById : ICarterModule
         .WithTags("Visits")
         .WithName("GetVisitById")
         .WithSummary("Получить посещение по ID")
-        .WithDescription("Возвращает информацию о посещении по его ID.");
+        .WithDescription("Возвращает информацию о посещении по его ID.")
+        .RequireAuthorization();
     }
 }

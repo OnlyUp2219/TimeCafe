@@ -15,7 +15,8 @@ public class GetTariffById : ICarterModule
         .WithTags("Tariffs")
         .WithName("GetTariffById")
         .WithSummary("Получить тариф по ID")
-        .WithDescription("Возвращает тариф по идентификатору.");
+        .WithDescription("Возвращает тариф по идентификатору.")
+        .RequireAuthorization();
     }
 }
 

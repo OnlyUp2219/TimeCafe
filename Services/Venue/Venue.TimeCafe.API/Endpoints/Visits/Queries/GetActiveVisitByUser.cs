@@ -15,6 +15,7 @@ public class GetActiveVisitByUser : ICarterModule
         .WithTags("Visits")
         .WithName("GetActiveVisitByUser")
         .WithSummary("Получить активное посещение пользователя")
-        .WithDescription("Возвращает активное посещение для указанного пользователя.");
+        .WithDescription("Возвращает активное посещение для указанного пользователя.")
+        .RequireAuthorization();
     }
 }

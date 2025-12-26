@@ -15,6 +15,7 @@ public class ActivatePromotion : ICarterModule
         .WithTags("Promotions")
         .WithName("ActivatePromotion")
         .WithSummary("Активировать акцию")
-        .WithDescription("Активирует акцию по её идентификатору.");
+        .WithDescription("Активирует акцию по её идентификатору.")
+        .RequireAuthorization();
     }
 }

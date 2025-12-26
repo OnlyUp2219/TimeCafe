@@ -15,6 +15,7 @@ public class UpdatePromotion : ICarterModule
         .WithTags("Promotions")
         .WithName("UpdatePromotion")
         .WithSummary("Обновить акцию")
-        .WithDescription("Обновляет существующую акцию с новыми данными.");
+        .WithDescription("Обновляет существующую акцию с новыми данными.")
+        .RequireAuthorization();
     }
 }

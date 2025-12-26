@@ -14,6 +14,7 @@ public class GetAllPromotions : ICarterModule
         .WithTags("Promotions")
         .WithName("GetAllPromotions")
         .WithSummary("Получить все акции")
-        .WithDescription("Возвращает список всех акций в системе.");
+        .WithDescription("Возвращает список всех акций в системе.")
+        .RequireAuthorization();
     }
 }

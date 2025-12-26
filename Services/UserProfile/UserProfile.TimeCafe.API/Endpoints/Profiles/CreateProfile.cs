@@ -15,6 +15,7 @@ public class CreateProfile : ICarterModule
         .WithTags("Profiles")
         .WithName("CreateProfile")
         .WithSummary("Создать профиль")
-        .WithDescription("Создаёт новый профиль пользователя.");
+        .WithDescription("Создаёт новый профиль пользователя.")
+        .RequireAuthorization();
     }
 }

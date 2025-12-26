@@ -15,6 +15,7 @@ public class CreateTheme : ICarterModule
         .WithTags("Themes")
         .WithName("CreateTheme")
         .WithSummary("Создать тему")
-        .WithDescription("Создаёт новую тему оформления для таймкафе.");
+        .WithDescription("Создаёт новую тему оформления для таймкафе.")
+        .RequireAuthorization();
     }
 }

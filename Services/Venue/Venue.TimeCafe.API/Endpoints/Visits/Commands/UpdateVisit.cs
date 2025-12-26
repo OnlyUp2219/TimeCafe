@@ -17,6 +17,7 @@ public class UpdateVisit : ICarterModule
         .WithTags("Visits")
         .WithName("UpdateVisit")
         .WithSummary("Обновить посещение")
-        .WithDescription("Обновляет существующее посещение с новыми данными.");
+        .WithDescription("Обновляет существующее посещение с новыми данными.")
+        .RequireAuthorization();
     }
 }
