@@ -1,3 +1,5 @@
+using BuildingBlocks.Events;
+
 namespace UserProfile.TimeCafe.API.Extensions;
 
 public static class MassTransitExtensions
@@ -22,13 +24,26 @@ public static class MassTransitExtensions
                     h.Password(rabbitMqSection["Password"]!);
                 });
 
+                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
+                cfg.Publish<VisitCompletedEvent>(p =>
+                {
+                    p.ExchangeType = "fanout";
+                });
+
                 cfg.ReceiveEndpoint("user-profile.user-registered", e =>
                 {
                     e.Durable = true;
                     e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureConsumer<UserRegisteredConsumer>(context);
                 });
+
+                cfg.ConfigureEndpoints(context);
             });
+        });
+
+        services.Configure<MassTransitHostOptions>(options =>
+        {
+            options.StopTimeout = TimeSpan.FromSeconds(30);
         });
 
         return services;
