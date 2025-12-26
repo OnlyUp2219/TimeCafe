@@ -26,9 +26,7 @@ public static class CacheHelper
             var tasks = keys.Select(k => cache.RemoveAsync(k));
             await Task.WhenAll(tasks);
 
-            logger.LogInformation("Redis: RemoveKeysAsync сработал, удалены ключи: {Keys}", string.Join(", ", keys));
-            logger.LogInformation("Redis: Количество удалённых ключей = {Count}", keys.Length);
-            logger.LogInformation("Redis: Операция удаления завершена успешно");
+            logger.LogInformation("Redis: Удалено {Count} ключей: {Keys}", keys.Length, string.Join(", ", keys));
         }
         catch (Exception ex)
         {
@@ -64,10 +62,8 @@ public static class CacheHelper
 
             await cache.SetStringAsync(key, json, options ?? DefaultOptions);
 
-            logger.LogInformation("Redis: Метод SetAsync с ключом {Key} успешно выполнен", key);
-            logger.LogInformation("Redis: Значение записано в кэш");
-            logger.LogInformation("Redis: Время жизни ключа (TTL) = {TTL} секунд", (options ?? DefaultOptions).AbsoluteExpirationRelativeToNow?.TotalSeconds ?? 0);
-
+            var ttl = (options ?? DefaultOptions).AbsoluteExpirationRelativeToNow?.TotalSeconds ?? 0;
+            logger.LogInformation("Redis: Записан ключ {Key} с TTL {TTL}s", key, ttl);
         }
         catch (Exception ex)
         {
@@ -88,24 +84,20 @@ public static class CacheHelper
         try
         {
             var cached = await cache.GetStringAsync(key);
-            if (!string.IsNullOrEmpty(cached))
-            {
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-                };
-                options.Converters.Add(new DateOnlyJsonConverter());
-                options.Converters.Add(new NullableDateOnlyJsonConverter());
-
-                logger.LogInformation("Redis: GetAsync успешно получил данные для ключа {Key}", key);
-                logger.LogInformation("Redis: Данные извлечены из кэша");
-
-                return JsonSerializer.Deserialize<T>(cached, options);
-            }
-            else
+            if (string.IsNullOrEmpty(cached))
             {
                 return default;
             }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
+            options.Converters.Add(new DateOnlyJsonConverter());
+            options.Converters.Add(new NullableDateOnlyJsonConverter());
+
+            logger.LogInformation("Redis: Получены данные для ключа {Key}", key);
+            return JsonSerializer.Deserialize<T>(cached, options);
         }
         catch (Exception ex)
         {
