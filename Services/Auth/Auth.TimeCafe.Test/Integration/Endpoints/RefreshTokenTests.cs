@@ -4,7 +4,7 @@ public class RefreshTokenTests : BaseEndpointTest
 {
     public RefreshTokenTests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("refresh_user_valid@example.com", "P@ssw0rd!", true);
+        SeedUserAsync("refresh_user_valid@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
     }
 
     [Fact]

@@ -6,9 +6,9 @@ public class EmailConfirmationTests : BaseEndpointTest
 
     public EmailConfirmationTests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("unconfirmed@example.com", "P@ssw0rd!", false);
-        SeedUser("confirmed@example.com", "P@ssw0rd!", true);
-        SeedUser("another_user@example.com", "P@ssw0rd!", false);
+        SeedUserAsync("unconfirmed@example.com", "P@ssw0rd!", false).GetAwaiter().GetResult();
+        SeedUserAsync("confirmed@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
+        SeedUserAsync("another_user@example.com", "P@ssw0rd!", false).GetAwaiter().GetResult();
     }
 
     [Fact]

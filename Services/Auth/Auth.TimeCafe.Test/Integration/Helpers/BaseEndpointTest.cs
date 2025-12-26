@@ -5,20 +5,20 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     protected readonly HttpClient Client = factory.CreateClient();
     protected readonly IntegrationApiFactory Factory = factory;
 
-    protected void SeedUser(string email, string password, bool emailConfirmed)
+    protected async Task SeedUserAsync(string email, string password, bool emailConfirmed)
     {
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var user = userManager.FindByEmailAsync(email).Result;
+        var user = await userManager.FindByEmailAsync(email);
         if (user == null)
         {
             user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = emailConfirmed };
-            userManager.CreateAsync(user, password).Wait();
+            await userManager.CreateAsync(user, password);
         }
         else if (user.EmailConfirmed != emailConfirmed)
         {
             user.EmailConfirmed = emailConfirmed;
-            userManager.UpdateAsync(user).Wait();
+            await userManager.UpdateAsync(user);
         }
     }
 

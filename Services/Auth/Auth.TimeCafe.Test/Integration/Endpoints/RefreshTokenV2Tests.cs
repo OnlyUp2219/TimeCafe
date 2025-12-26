@@ -4,7 +4,7 @@ public class RefreshTokenV2Tests : BaseEndpointTest
 {
     public RefreshTokenV2Tests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("v2_refresh@example.com", "P@ssw0rd!", true);
+        SeedUserAsync("v2_refresh@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
     }
 
     private static string ExtractCookieValue(IEnumerable<string> setCookies, string name)

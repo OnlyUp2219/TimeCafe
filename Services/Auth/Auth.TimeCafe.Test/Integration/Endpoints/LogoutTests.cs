@@ -4,7 +4,7 @@ public class LogoutTests : BaseEndpointTest
 {
     public LogoutTests(IntegrationApiFactory factory) : base(factory)
     {
-        SeedUser("confirmed@example.com", "password123", true);
+        SeedUserAsync("confirmed@example.com", "password123", true).GetAwaiter().GetResult();
     }
 
     [Fact]
