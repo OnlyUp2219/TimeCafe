@@ -10,6 +10,8 @@ public record CreateVisitResult(
     List<ErrorItem>? Errors = null,
     Visit? Visit = null) : ICqrsResultV2
 {
+    public static CreateVisitResult TariffNotFound() =>
+        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
     public static CreateVisitResult CreateFailed() =>
         new(false, Code: "CreateVisitFailed", Message: "Не удалось создать посещение", StatusCode: 500);
 
@@ -33,18 +35,26 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
     }
 }
 
-public class CreateVisitCommandHandler(IVisitRepository repository) : IRequestHandler<CreateVisitCommand, CreateVisitResult>
+public class CreateVisitCommandHandler(IVisitRepository repository, ITariffRepository tariffRepository) : IRequestHandler<CreateVisitCommand, CreateVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
+    private readonly ITariffRepository _tariffRepository = tariffRepository;
 
     public async Task<CreateVisitResult> Handle(CreateVisitCommand request, CancellationToken cancellationToken)
     {
         try
         {
+            var userId = Guid.Parse(request.UserId);
+            var tariffId = Guid.Parse(request.TariffId);
+
+            var tariff = await _tariffRepository.GetByIdAsync(tariffId);
+            if (tariff == null)
+                return CreateVisitResult.TariffNotFound();
+
             var visit = new Visit
             {
-                UserId = Guid.Parse(request.UserId),
-                TariffId = Guid.Parse(request.TariffId),
+                UserId = userId,
+                TariffId = tariffId,
                 EntryTime = DateTimeOffset.UtcNow,
                 Status = VisitStatus.Active
             };

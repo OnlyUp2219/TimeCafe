@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
-
+//TODO: rewrite dto
 public record UpdateProfileCommand(Profile User) : IRequest<UpdateProfileResult>;
 
 public record UpdateProfileResult(
@@ -28,7 +28,8 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
             .NotNull().WithMessage("Профиль обязателен");
 
         RuleFor(x => x.User.UserId)
-            .NotEmpty().WithMessage("UserId обязателен");
+            .NotEmpty().WithMessage("Такого пользователя не существует")
+            .Must(id => id != Guid.Empty).WithMessage("Такого пользователя не существует");
 
         RuleFor(x => x.User.FirstName)
             .NotEmpty().WithMessage("Имя обязательно")
@@ -37,6 +38,12 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
         RuleFor(x => x.User.LastName)
             .NotEmpty().WithMessage("Фамилия обязательна")
             .MaximumLength(100).WithMessage("Фамилия не может превышать 100 символов");
+
+        RuleFor(x => x.User.Gender)
+            .IsInEnum().WithMessage("Пол указан некорректно");
+
+        RuleFor(x => x.User.ProfileStatus)
+            .IsInEnum().WithMessage("Статус профиля указан некорректно");
     }
 }
 

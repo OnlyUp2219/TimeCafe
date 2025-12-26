@@ -155,4 +155,31 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             throw;
         }
     }
+
+    [Fact]
+    public async Task Endpoint_CreateTariff_Should_Return404_WhenThemeDoesNotExist()
+    {
+        await ClearDatabaseAndCacheAsync();
+        var payload = new
+        {
+            name = TestData.NewTariffs.NewTariff2Name,
+            description = TestData.DefaultValues.DefaultTariffName,
+            pricePerMinute = TestData.NewTariffs.NewTariff2Price,
+            billingType = (int)TestData.NewTariffs.NewTariff2BillingType,
+            themeId = TestData.NonExistingIds.NonExistingThemeId,
+            isActive = true
+        };
+
+        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var jsonString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_CreateTariff_Should_Return404_WhenThemeDoesNotExist] Response: {jsonString}");
+            throw;
+        }
+    }
 }

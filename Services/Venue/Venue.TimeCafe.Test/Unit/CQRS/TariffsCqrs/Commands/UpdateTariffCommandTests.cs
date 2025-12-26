@@ -30,17 +30,17 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
                 dest.IsActive = src.IsActive;
             });
 
-        _handler = new UpdateTariffCommandHandler(TariffRepositoryMock.Object, MapperMock.Object);
+        _handler = new UpdateTariffCommandHandler(TariffRepositoryMock.Object, ThemeRepositoryMock.Object, MapperMock.Object);
     }
 
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenTariffUpdated()
     {
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.ExistingTariffs.Tariff2Id;
         var tariffDto = new TariffWithThemeDto
         {
             TariffId = tariffId,
-            Name = "Updated Tariff",
+            Name = TestData.ExistingTariffs.Tariff2Name,
             Description = "Updated",
             PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.Hourly,
@@ -49,7 +49,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         var tariff = new Tariff
         {
             TariffId = tariffId,
-            Name = "Updated Tariff",
+            Name = TestData.ExistingTariffs.Tariff2Name,
             Description = "Updated",
             PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType = BillingType.Hourly,
@@ -57,7 +57,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         };
         var command = new UpdateTariffCommand(
             tariffId.ToString(),
-            "Updated Tariff",
+            TestData.ExistingTariffs.Tariff2Name,
             "Updated",
             TestData.ExistingTariffs.Tariff2PricePerMinute,
             BillingType.Hourly,
@@ -71,7 +71,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         result.Success.Should().BeTrue();
         result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be("Updated Tariff");
+        result.Tariff!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var tariffDto = new TariffWithThemeDto
         {
             TariffId = tariffId,
@@ -129,7 +129,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new UpdateTariffCommand(
             tariffId.ToString(),
             TestData.ExistingTariffs.Tariff1Name,
@@ -184,5 +184,38 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         {
             result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
         }
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnFailed_WhenThemeSpecified_ButDoesNotExist()
+    {
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
+        var themeId = TestData.NonExistingIds.NonExistingThemeId;
+        var tariffDto = new TariffWithThemeDto
+        {
+            TariffId = tariffId,
+            Name = TestData.DefaultValues.DefaultTariffName,
+            Description = "Desc",
+            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+            BillingType = BillingType.PerMinute,
+            IsActive = true
+        };
+        var command = new UpdateTariffCommand(
+            tariffId.ToString(),
+            TestData.DefaultValues.DefaultTariffName,
+            "Desc",
+            TestData.DefaultValues.DefaultTariffPrice,
+            BillingType.PerMinute,
+            themeId.ToString(),
+            true);
+
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariffDto);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(themeId)).ReturnsAsync((Theme?)null);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Code.Should().Be("ThemeNotFound");
+        result.StatusCode.Should().Be(404);
     }
 }

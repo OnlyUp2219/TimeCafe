@@ -8,7 +8,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
 
     public UpdateVisitCommandTests()
     {
-        _handler = new UpdateVisitCommandHandler(VisitRepositoryMock.Object, MapperMock.Object);
+        _handler = new UpdateVisitCommandHandler(VisitRepositoryMock.Object, TariffRepositoryMock.Object, MapperMock.Object);
 
         MapperMock.Setup(m => m.Map(It.IsAny<UpdateVisitCommand>(), It.IsAny<VisitWithTariffDto>()))
             .Callback((UpdateVisitCommand cmd, VisitWithTariffDto dto) =>
@@ -31,6 +31,17 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
                 CalculatedCost = dto.CalculatedCost,
                 Status = dto.Status
             });
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new TariffWithThemeDto
+            {
+                TariffId = TestData.DefaultValues.DefaultTariffId,
+                Name = TestData.DefaultValues.DefaultTariffName,
+                PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+                BillingType = TestData.DefaultValues.DefaultBillingType,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                LastModified = DateTimeOffset.UtcNow
+            });
     }
 
     [Fact]
@@ -38,7 +49,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = Guid.NewGuid();
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var entryTime = DateTimeOffset.UtcNow;
 
         var command = new UpdateVisitCommand(
@@ -83,7 +94,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
 
         var command = new UpdateVisitCommand(
             visitId.ToString(),
@@ -108,7 +119,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = Guid.NewGuid();
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var entryTime = DateTimeOffset.UtcNow;
 
         var command = new UpdateVisitCommand(
@@ -144,7 +155,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = Guid.NewGuid();
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.NonExistingIds.NonExistingTariffId;
 
         var command = new UpdateVisitCommand(
             visitId.ToString(),
@@ -162,6 +173,42 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         result.Success.Should().BeFalse();
         result.Code.Should().Be("UpdateVisitFailed");
         result.StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnTariffNotFound_WhenTariffDoesNotExist()
+    {
+        var visitId = Guid.NewGuid();
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = Guid.NewGuid();
+        var entryTime = DateTimeOffset.UtcNow;
+
+        var existingDto = new VisitWithTariffDto
+        {
+            VisitId = visitId,
+            UserId = userId,
+            TariffId = tariffId,
+            EntryTime = entryTime,
+            Status = VisitStatus.Active
+        };
+
+        var command = new UpdateVisitCommand(
+            visitId.ToString(),
+            userId.ToString(),
+            tariffId.ToString(),
+            entryTime,
+            null,
+            null,
+            VisitStatus.Active);
+
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(existingDto);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync((TariffWithThemeDto?)null);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Code.Should().Be("TariffNotFound");
+        result.StatusCode.Should().Be(404);
     }
 
     [Theory]

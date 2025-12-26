@@ -6,14 +6,25 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
     public CreateVisitCommandTests()
     {
-        _handler = new CreateVisitCommandHandler(VisitRepositoryMock.Object);
+        _handler = new CreateVisitCommandHandler(VisitRepositoryMock.Object, TariffRepositoryMock.Object);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new TariffWithThemeDto
+            {
+                TariffId = TestData.DefaultValues.DefaultTariffId,
+                Name = TestData.DefaultValues.DefaultTariffName,
+                PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
+                BillingType = TestData.DefaultValues.DefaultBillingType,
+                IsActive = true,
+                CreatedAt = DateTimeOffset.UtcNow,
+                LastModified = DateTimeOffset.UtcNow
+            });
     }
 
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenVisitCreated()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
         var visit = new Visit
         {
@@ -38,7 +49,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>())).ReturnsAsync((Visit?)null!);
@@ -54,7 +65,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var tariffId = Guid.NewGuid();
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>())).ThrowsAsync(new Exception());
@@ -64,6 +75,22 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
         result.Success.Should().BeFalse();
         result.Code.Should().Be("CreateVisitFailed");
         result.StatusCode.Should().Be(500);
+    }
+
+    [Fact]
+    public async Task Handler_Should_ReturnTariffNotFound_WhenTariffDoesNotExist()
+    {
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = TestData.NonExistingIds.NonExistingTariffId;
+        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
+
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync((TariffWithThemeDto?)null);
+
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.Success.Should().BeFalse();
+        result.Code.Should().Be("TariffNotFound");
+        result.StatusCode.Should().Be(404);
     }
 
     [Theory]

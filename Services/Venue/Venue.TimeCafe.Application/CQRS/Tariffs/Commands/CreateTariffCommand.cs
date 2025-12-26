@@ -16,6 +16,9 @@ public record CreateTariffResult(
     List<ErrorItem>? Errors = null,
     Tariff? Tariff = null) : ICqrsResultV2
 {
+    public static CreateTariffResult ThemeNotFound() =>
+        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
+
     public static CreateTariffResult CreateFailed() =>
         new(false, Code: "CreateTariffFailed", Message: "Не удалось создать тариф", StatusCode: 500);
 
@@ -41,31 +44,38 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Неверный тип биллинга");
 
-        //TODO: изменить валидацию
         RuleFor(x => x.ThemeId)
-            .Must(id => string.IsNullOrEmpty(id) || Guid.TryParse(id, out _))
-            .WithMessage("Неверный формат идентификатора темы");
+            .Must(id => string.IsNullOrWhiteSpace(id) || (Guid.TryParse(id, out var guid) && guid != Guid.Empty))
+            .WithMessage("Неверный идентификатор темы");
     }
 }
 
-public class CreateTariffCommandHandler(ITariffRepository repository) : IRequestHandler<CreateTariffCommand, CreateTariffResult>
+public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository) : IRequestHandler<CreateTariffCommand, CreateTariffResult>
 {
     private readonly ITariffRepository _repository = repository;
+    private readonly IThemeRepository _themeRepository = themeRepository;
 
     public async Task<CreateTariffResult> Handle(CreateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
+            Guid? themeId = null;
+            if (!string.IsNullOrWhiteSpace(request.ThemeId))
+            {
+                themeId = Guid.Parse(request.ThemeId);
+                var themeExists = await _themeRepository.GetByIdAsync(themeId.Value);
+                if (themeExists == null)
+                    return CreateTariffResult.ThemeNotFound();
+            }
+
             var tariff = new Tariff
             {
                 Name = request.Name,
                 Description = request.Description,
                 PricePerMinute = request.PricePerMinute,
                 BillingType = request.BillingType,
-                ThemeId = string.IsNullOrWhiteSpace(request.ThemeId) ? null : Guid.Parse(request.ThemeId),
+                ThemeId = themeId,
                 IsActive = request.IsActive,
-                CreatedAt = DateTimeOffset.UtcNow,
-                LastModified = DateTimeOffset.UtcNow
             };
 
             var created = await _repository.CreateAsync(tariff);
