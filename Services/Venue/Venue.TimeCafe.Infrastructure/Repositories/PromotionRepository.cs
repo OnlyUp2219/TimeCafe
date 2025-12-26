@@ -114,7 +114,7 @@ public class PromotionRepository(
     {
         ArgumentNullException.ThrowIfNull(promotion);
 
-        promotion.CreatedAt = DateTime.UtcNow;
+        promotion.CreatedAt = DateTimeOffset.UtcNow;
         _context.Promotions.Add(promotion);
         await _context.SaveChangesAsync().ConfigureAwait(false);
 

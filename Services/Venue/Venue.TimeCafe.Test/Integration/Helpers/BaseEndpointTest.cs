@@ -48,7 +48,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             PricePerMinute = price,
             BillingType = billingType,
             IsActive = isActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         context.Tariffs.Add(tariff);
@@ -60,8 +60,8 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         string name = "Test Promotion",
         int discountPercentage = 10,
         bool isActive = true,
-        DateTime? validFrom = null,
-        DateTime? validTo = null)
+        DateTimeOffset? validFrom = null,
+        DateTimeOffset? validTo = null)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -71,10 +71,10 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             Name = name,
             Description = "Test Description",
             DiscountPercent = discountPercentage,
-            ValidFrom = validFrom ?? DateTime.UtcNow,
-            ValidTo = validTo ?? DateTime.UtcNow.AddDays(30),
+            ValidFrom = validFrom ?? DateTimeOffset.UtcNow,
+            ValidTo = validTo ?? DateTimeOffset.UtcNow.AddDays(30),
             IsActive = isActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTimeOffset.UtcNow
         };
 
         context.Promotions.Add(promotion);

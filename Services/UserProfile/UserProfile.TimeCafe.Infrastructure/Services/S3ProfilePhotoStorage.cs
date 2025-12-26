@@ -27,7 +27,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
                 ContentType = contentType
             };
             put.Metadata["original-filename"] = fileName;
-            put.Metadata["uploaded-at-utc"] = DateTime.UtcNow.ToString("O");
+            put.Metadata["uploaded-at-utc"] = DateTimeOffset.UtcNow.ToString("O");
 
             var resp = await _s3.PutObjectAsync(put, cancellationToken);
             if (resp.HttpStatusCode != HttpStatusCode.OK)

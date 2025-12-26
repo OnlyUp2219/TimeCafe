@@ -191,7 +191,7 @@ public class VisitRepository(
     public async Task<Visit> CreateAsync(Visit visit)
     {
         ArgumentNullException.ThrowIfNull(visit);
-        visit.EntryTime = DateTime.UtcNow;
+        visit.EntryTime = DateTimeOffset.UtcNow;
         visit.Status = VisitStatus.Active;
         _context.Visits.Add(visit);
         await _context.SaveChangesAsync().ConfigureAwait(false);

@@ -18,7 +18,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             billingType = (int)TestData.NewTariffs.NewTariff1BillingType,
             themeId = theme.ThemeId,
             isActive = tariff.IsActive,
-            lastModified = DateTime.UtcNow
+            lastModified = DateTimeOffset.UtcNow
         };
 
         var response = await Client.PutAsJsonAsync("/tariffs", payload);
@@ -52,7 +52,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             billingType = 2,
             themeId = theme.ThemeId,
             isActive = true,
-            lastModified = DateTime.UtcNow
+            lastModified = DateTimeOffset.UtcNow
         };
 
         var response = await Client.PutAsJsonAsync("/tariffs", payload);
@@ -119,7 +119,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             billingType = 2,
             themeId = theme.ThemeId,
             isActive = true,
-            lastModified = DateTime.UtcNow
+            lastModified = DateTimeOffset.UtcNow
         };
 
         var response = await Client.PutAsJsonAsync("/tariffs", payload);

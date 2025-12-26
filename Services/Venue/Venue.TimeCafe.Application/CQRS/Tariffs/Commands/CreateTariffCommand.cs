@@ -64,8 +64,8 @@ public class CreateTariffCommandHandler(ITariffRepository repository) : IRequest
                 BillingType = request.BillingType,
                 ThemeId = string.IsNullOrWhiteSpace(request.ThemeId) ? null : Guid.Parse(request.ThemeId),
                 IsActive = request.IsActive,
-                CreatedAt = DateTime.UtcNow,
-                LastModified = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow,
+                LastModified = DateTimeOffset.UtcNow
             };
 
             var created = await _repository.CreateAsync(tariff);

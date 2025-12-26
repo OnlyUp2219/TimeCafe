@@ -229,9 +229,9 @@ public static class TestData
     /// </summary>
     public static class DateTimeData
     {
-        public static DateTime GetValidFromDate() => DateTime.UtcNow;
-        public static DateTime GetValidToDate() => DateTime.UtcNow.AddDays(30);
-        public static DateTime GetPastDate() => DateTime.UtcNow.AddDays(-7);
-        public static DateTime GetFutureDate() => DateTime.UtcNow.AddDays(60);
+        public static DateTimeOffset GetValidFromDate() => DateTimeOffset.UtcNow;
+        public static DateTimeOffset GetValidToDate() => DateTimeOffset.UtcNow.AddDays(30);
+        public static DateTimeOffset GetPastDate() => DateTimeOffset.UtcNow.AddDays(-7);
+        public static DateTimeOffset GetFutureDate() => DateTimeOffset.UtcNow.AddDays(60);
     }
 }

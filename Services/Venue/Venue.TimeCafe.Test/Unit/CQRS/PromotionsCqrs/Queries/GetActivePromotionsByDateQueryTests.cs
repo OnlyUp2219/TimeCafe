@@ -12,7 +12,7 @@ public class GetActivePromotionsByDateQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenActivePromotionsFound()
     {
-        var date = DateTime.UtcNow;
+        var date = DateTimeOffset.UtcNow;
         var query = new GetActivePromotionsByDateQuery(date);
         var promotions = new List<Promotion>
         {
@@ -32,7 +32,7 @@ public class GetActivePromotionsByDateQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenNoActivePromotions()
     {
-        var date = DateTime.UtcNow;
+        var date = DateTimeOffset.UtcNow;
         var query = new GetActivePromotionsByDateQuery(date);
         var promotions = new List<Promotion>();
 
@@ -48,7 +48,7 @@ public class GetActivePromotionsByDateQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
-        var date = DateTime.UtcNow;
+        var date = DateTimeOffset.UtcNow;
         var query = new GetActivePromotionsByDateQuery(date);
 
         PromotionRepositoryMock.Setup(r => r.GetActiveByDateAsync(date)).ThrowsAsync(new Exception());

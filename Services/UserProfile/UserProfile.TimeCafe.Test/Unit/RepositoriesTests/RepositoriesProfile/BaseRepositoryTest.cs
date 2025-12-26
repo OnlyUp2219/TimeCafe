@@ -24,9 +24,9 @@ public abstract class BaseRepositoryTest : IDisposable
 
         TestProfiles =
         [
-            new() { UserId = Guid.NewGuid(), FirstName = "John", CreatedAt = DateTime.UtcNow },
-            new() { UserId = Guid.NewGuid(), FirstName = "Jane", CreatedAt = DateTime.UtcNow.AddDays(-1) },
-            new() { UserId = Guid.NewGuid(), FirstName = "Bob", CreatedAt = DateTime.UtcNow.AddDays(-2) }
+            new() { UserId = Guid.NewGuid(), FirstName = "John", CreatedAt = DateTimeOffset.UtcNow },
+            new() { UserId = Guid.NewGuid(), FirstName = "Jane", CreatedAt = DateTimeOffset.UtcNow.AddDays(-1) },
+            new() { UserId = Guid.NewGuid(), FirstName = "Bob", CreatedAt = DateTimeOffset.UtcNow.AddDays(-2) }
         ];
     }
 

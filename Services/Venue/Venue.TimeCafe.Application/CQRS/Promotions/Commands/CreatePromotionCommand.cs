@@ -61,7 +61,7 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IR
                 ValidFrom = request.ValidFrom,
                 ValidTo = request.ValidTo,
                 IsActive = request.IsActive,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
 
             var created = await _repository.CreateAsync(promotion);

@@ -43,7 +43,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
                 LastName = lastName,
                 Gender = gender,
                 ProfileStatus = ProfileStatus.Completed,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
             context.Profiles.Add(profile);
             await context.SaveChangesAsync();
@@ -69,7 +69,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
                 InfoId = infoGuid,
                 UserId = Guid.Parse(userId),
                 InfoText = infoText,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTimeOffset.UtcNow
             };
             context.AdditionalInfos.Add(info);
             await context.SaveChangesAsync();

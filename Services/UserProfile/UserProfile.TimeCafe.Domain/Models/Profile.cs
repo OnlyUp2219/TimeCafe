@@ -27,9 +27,9 @@ public class Profile
     public string? PhotoUrl { get; set; }
 
     public DateOnly? BirthDate { get; set; }
-
+    //TODO: migration db, change DateTimetype on DateTimeOffset
     [Required]
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
     [Required]
     public Gender Gender { get; set; } = Gender.NotSpecified;

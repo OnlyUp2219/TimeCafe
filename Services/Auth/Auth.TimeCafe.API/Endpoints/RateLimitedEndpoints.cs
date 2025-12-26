@@ -10,7 +10,7 @@ public class RateLimitedEndpoints : ICarterModule
             return Results.Ok(new
             {
                 success = true,
-                time = DateTime.UtcNow
+                time = DateTimeOffset.UtcNow
             });
         })
         .RequireRateLimiting("OneRequestPerInterval")
@@ -25,7 +25,7 @@ public class RateLimitedEndpoints : ICarterModule
             return Results.Ok(new
             {
                 success = true,
-                time = DateTime.UtcNow
+                time = DateTimeOffset.UtcNow
             });
         })
         .RequireRateLimiting("OneRequestPerInterval")
