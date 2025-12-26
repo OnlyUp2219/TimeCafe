@@ -1,9 +1,12 @@
 global using AutoMapper;
 
 global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 
 global using FluentValidation;
+
+global using MassTransit;
 
 global using MediatR;
 
