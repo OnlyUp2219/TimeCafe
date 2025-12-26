@@ -15,6 +15,7 @@ public class CreateVisit : ICarterModule
         .WithTags("Visits")
         .WithName("CreateVisit")
         .WithSummary("Создать посещение")
-        .WithDescription("Создаёт новое посещение пользователя по тарифу.");
+        .WithDescription("Создаёт новое посещение пользователя по тарифу.")
+        .RequireAuthorization();
     }
 }

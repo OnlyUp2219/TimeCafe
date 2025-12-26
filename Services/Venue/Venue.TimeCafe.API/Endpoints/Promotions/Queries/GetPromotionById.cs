@@ -15,6 +15,7 @@ public class GetPromotionById : ICarterModule
         .WithTags("Promotions")
         .WithName("GetPromotionById")
         .WithSummary("Получить акцию по ID")
-        .WithDescription("Возвращает акцию по её идентификатору.");
+        .WithDescription("Возвращает акцию по её идентификатору.")
+        .RequireAuthorization();
     }
 }

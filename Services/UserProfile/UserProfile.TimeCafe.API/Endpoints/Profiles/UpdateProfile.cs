@@ -28,6 +28,7 @@ public class UpdateProfile : ICarterModule
         .WithTags("Profiles")
         .WithName("UpdateProfile")
         .WithSummary("Обновить профиль")
-        .WithDescription("Обновляет существующий профиль пользователя.");
+        .WithDescription("Обновляет существующий профиль пользователя.")
+        .RequireAuthorization();
     }
 }

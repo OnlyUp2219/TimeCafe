@@ -13,6 +13,7 @@ public class GetAllProfiles : ICarterModule
         .WithTags("Profiles")
         .WithName("GetAllProfiles")
         .WithSummary("Получить все профили")
-        .WithDescription("Возвращает список всех профилей пользователей.");
+        .WithDescription("Возвращает список всех профилей пользователей.")
+        .RequireAuthorization();
     }
 }

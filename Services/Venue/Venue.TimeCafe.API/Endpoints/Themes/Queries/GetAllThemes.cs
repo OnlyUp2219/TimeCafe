@@ -14,6 +14,7 @@ public class GetAllThemes : ICarterModule
         .WithTags("Themes")
         .WithName("GetAllThemes")
         .WithSummary("Получить все темы")
-        .WithDescription("Возвращает список всех доступных тем оформления.");
+        .WithDescription("Возвращает список всех доступных тем оформления.")
+        .RequireAuthorization();
     }
 }

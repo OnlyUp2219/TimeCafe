@@ -15,6 +15,7 @@ public class GetAdditionalInfosByUserId : ICarterModule
         .WithTags("AdditionalInfos")
         .WithName("GetAdditionalInfosByUserId")
         .WithSummary("Список доп. информации для профиля")
-        .WithDescription("Возвращает все записи дополнительной информации для пользователя.");
+        .WithDescription("Возвращает все записи дополнительной информации для пользователя.")
+        .RequireAuthorization();
     }
 }

@@ -21,6 +21,7 @@ public class DeletePhotoProfile : ICarterModule
         {
             op.Parameters[0].Example = new Microsoft.OpenApi.Any.OpenApiString("30a3d946-97f8-470f-98b0-3c1230c09dc6");
             return op;
-        });
+        })
+        .RequireAuthorization();
     }
 }

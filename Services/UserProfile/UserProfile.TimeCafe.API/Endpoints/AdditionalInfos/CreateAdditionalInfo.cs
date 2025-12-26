@@ -15,6 +15,7 @@ public class CreateAdditionalInfo : ICarterModule
         .WithTags("AdditionalInfos")
         .WithName("CreateAdditionalInfo")
         .WithSummary("Создать запись доп. информации")
-        .WithDescription("Создаёт новую запись дополнительной информации для пользователя.");
+        .WithDescription("Создаёт новую запись дополнительной информации для пользователя.")
+        .RequireAuthorization();
     }
 }

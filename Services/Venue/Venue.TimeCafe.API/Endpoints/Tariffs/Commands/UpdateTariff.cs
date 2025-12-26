@@ -25,6 +25,7 @@ public class UpdateTariff : ICarterModule
         .WithTags("Tariffs")
         .WithName("UpdateTariff")
         .WithSummary("Обновить тариф")
-        .WithDescription("Обновляет существующий тариф.");
+        .WithDescription("Обновляет существующий тариф.")
+        .RequireAuthorization();
     }
 }

@@ -15,6 +15,7 @@ public class UpdateAdditionalInfo : ICarterModule
         .WithTags("AdditionalInfos")
         .WithName("UpdateAdditionalInfo")
         .WithSummary("Обновить запись доп. информации")
-        .WithDescription("Обновляет существующую запись дополнительной информации.");
+        .WithDescription("Обновляет существующую запись дополнительной информации.")
+        .RequireAuthorization();
     }
 }

@@ -13,6 +13,7 @@ public class GetTotalPages : ICarterModule
         .WithTags("Profiles")
         .WithName("GetTotalPages")
         .WithSummary("Получить общее количество профилей")
-        .WithDescription("Возвращает общее количество профилей в системе.");
+        .WithDescription("Возвращает общее количество профилей в системе.")
+        .RequireAuthorization();
     }
 }

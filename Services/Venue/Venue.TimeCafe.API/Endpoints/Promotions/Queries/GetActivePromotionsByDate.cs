@@ -15,6 +15,7 @@ public class GetActivePromotionsByDate : ICarterModule
         .WithTags("Promotions")
         .WithName("GetActivePromotionsByDate")
         .WithSummary("Получить активные акции на дату")
-        .WithDescription("Возвращает список активных акций на указанную дату.");
+        .WithDescription("Возвращает список активных акций на указанную дату.")
+        .RequireAuthorization();
     }
 }

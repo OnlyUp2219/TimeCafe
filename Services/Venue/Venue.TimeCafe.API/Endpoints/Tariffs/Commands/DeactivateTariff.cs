@@ -15,7 +15,8 @@ public class DeactivateTariff : ICarterModule
         .WithTags("Tariffs")
         .WithName("DeactivateTariff")
         .WithSummary("Деактивировать тариф")
-        .WithDescription("Деактивирует тариф по идентификатору.");
+        .WithDescription("Деактивирует тариф по идентификатору.")
+        .RequireAuthorization();
     }
 }
 

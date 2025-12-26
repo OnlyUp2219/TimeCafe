@@ -15,6 +15,7 @@ public class CreatePromotion : ICarterModule
         .WithTags("Promotions")
         .WithName("CreatePromotion")
         .WithSummary("Создать акцию")
-        .WithDescription("Создаёт новую акцию с указанными параметрами.");
+        .WithDescription("Создаёт новую акцию с указанными параметрами.")
+        .RequireAuthorization();
     }
 }

@@ -15,7 +15,8 @@ public class ActivateTariff : ICarterModule
         .WithTags("Tariffs")
         .WithName("ActivateTariff")
         .WithSummary("Активировать тариф")
-        .WithDescription("Активирует тариф по идентификатору.");
+        .WithDescription("Активирует тариф по идентификатору.")
+        .RequireAuthorization();
     }
 }
 

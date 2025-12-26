@@ -15,6 +15,7 @@ public class CreateEmptyProfile : ICarterModule
         .WithTags("Profiles")
         .WithName("CreateEmptyProfile")
         .WithSummary("Создать пустой профиль")
-        .WithDescription("Создаёт пустой профиль пользователя с только UserId.");
+        .WithDescription("Создаёт пустой профиль пользователя с только UserId.")
+        .RequireAuthorization();
     }
 }

@@ -15,6 +15,7 @@ public class CreateTariff : ICarterModule
         .WithTags("Tariffs")
         .WithName("CreateTariff")
         .WithSummary("Создать тариф")
-        .WithDescription("Создаёт новый тариф.");
+        .WithDescription("Создаёт новый тариф.")
+        .RequireAuthorization();
     }
 }
