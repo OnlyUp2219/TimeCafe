@@ -5,10 +5,10 @@ public class GetProfileById : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/profiles/{userId}", async (
-            ISender sender,
-            string userId) =>
+            [FromServices] ISender sender,
+            [AsParameters] GetProfileByIdDto dto) =>
         {
-            var query = new GetProfileByIdQuery(userId);
+            var query = new GetProfileByIdQuery(dto.UserId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.Profile));
         })

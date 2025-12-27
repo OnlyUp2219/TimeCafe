@@ -5,18 +5,17 @@ public class CreatePhotoProfile : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/S3/image/{userId}", async (
-            string userId,
-            ISender sender,
-            IFormFile file,
+            [FromServices] ISender sender,
+            [AsParameters] CreatePhotoProfileDto dto,
             CancellationToken ct) =>
         {
-            if (file is null)
+            if (dto.File is null)
                 return Results.BadRequest("Файл обязателен");
-            var stream = file.OpenReadStream();
-            var cmd = new UploadProfilePhotoCommand(userId, stream, file.ContentType, file.FileName, file.Length);
+            var stream = dto.File.OpenReadStream();
+            var cmd = new UploadProfilePhotoCommand(dto.UserId, stream, dto.File.ContentType, dto.File.FileName, dto.File.Length);
             var result = await sender.Send(cmd, ct);
             return result.ToHttpResultV2(r =>
-                Results.Created($"/S3/image/{userId}", new { r.Key, r.Url, r.Size, r.ContentType }));
+                Results.Created($"/S3/image/{dto.UserId}", new { r.Key, r.Url, r.Size, r.ContentType }));
         })
         .Accepts<IFormFile>("multipart/form-data")
         .DisableAntiforgery()

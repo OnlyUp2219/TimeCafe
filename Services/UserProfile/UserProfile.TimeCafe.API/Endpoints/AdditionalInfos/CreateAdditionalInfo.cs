@@ -5,7 +5,7 @@ public class CreateAdditionalInfo : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/infos", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreateAdditionalInfoDto dto) =>
         {
             var command = new CreateAdditionalInfoCommand(dto.UserId, dto.InfoText, dto.CreatedBy);

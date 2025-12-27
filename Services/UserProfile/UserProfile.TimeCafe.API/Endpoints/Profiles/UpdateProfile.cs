@@ -5,7 +5,7 @@ public class UpdateProfile : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPut("/profiles", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] UpdateProfileDto dto) =>
         {
             var profile = new Profile

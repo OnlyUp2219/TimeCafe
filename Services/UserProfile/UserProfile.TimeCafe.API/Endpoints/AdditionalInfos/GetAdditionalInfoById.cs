@@ -4,11 +4,11 @@ public class GetAdditionalInfoById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/infos/{infoId:guid}", async (
-            ISender sender,
-            string infoId) =>
+        app.MapGet("/infos/{infoId}", async (
+            [FromServices] ISender sender,
+            [AsParameters] GetAdditionalInfoByIdDto dto) =>
         {
-            var query = new GetAdditionalInfoByIdQuery(infoId);
+            var query = new GetAdditionalInfoByIdQuery(dto.InfoId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.AdditionalInfo));
         })
