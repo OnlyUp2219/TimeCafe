@@ -4,7 +4,8 @@ public class GetTotalPages : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/profiles/total", async (ISender sender) =>
+        app.MapGet("/profiles/total", async
+        ([FromServices] ISender sender) =>
         {
             var query = new GetTotalPagesQuery();
             var result = await sender.Send(query);

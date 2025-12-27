@@ -5,11 +5,10 @@ public class GetProfilesPage : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/profiles/page", async (
-            ISender sender,
-            int pageNumber = 1,
-            int pageSize = 10) =>
+            [FromServices] ISender sender,
+            [AsParameters] GetProfilesPageDto dto) =>
         {
-            var query = new GetProfilesPageQuery(pageNumber, pageSize);
+            var query = new GetProfilesPageQuery(dto.PageNumber, dto.PageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {

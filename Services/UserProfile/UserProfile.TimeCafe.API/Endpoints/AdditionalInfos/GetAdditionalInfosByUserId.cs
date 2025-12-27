@@ -5,10 +5,10 @@ public class GetAdditionalInfosByUserId : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/profiles/{userId}/infos", async (
-            ISender sender,
-            string userId) =>
+            [FromServices] ISender sender,
+            [AsParameters] GetAdditionalInfosByUserIdDto dto) =>
         {
-            var query = new GetAdditionalInfosByUserIdQuery(userId);
+            var query = new GetAdditionalInfosByUserIdQuery(dto.UserId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.AdditionalInfos));
         })

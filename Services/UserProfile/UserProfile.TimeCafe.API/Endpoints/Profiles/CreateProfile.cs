@@ -5,7 +5,7 @@ public class CreateProfile : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/profiles", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] CreateProfileDto dto) =>
         {
             var command = new CreateProfileCommand(dto.UserId, dto.FirstName, dto.LastName, dto.Gender);

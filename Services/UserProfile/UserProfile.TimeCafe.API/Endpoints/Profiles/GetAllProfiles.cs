@@ -4,7 +4,8 @@ public class GetAllProfiles : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/profiles", async (ISender sender) =>
+        app.MapGet("/profiles", async (
+            [FromServices] ISender sender) =>
         {
             var query = new GetAllProfilesQuery();
             var result = await sender.Send(query);

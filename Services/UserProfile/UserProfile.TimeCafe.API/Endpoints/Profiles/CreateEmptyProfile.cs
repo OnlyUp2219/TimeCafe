@@ -5,10 +5,10 @@ public class CreateEmptyProfile : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/profiles/empty/{userId}", async (
-            ISender sender,
-            string userId) =>
+            [FromServices] ISender sender,
+            [AsParameters] CreateEmptyProfileDto dto) =>
         {
-            var command = new CreateEmptyCommand((userId));
+            var command = new CreateEmptyCommand((dto.UserId));
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message }, statusCode: r.StatusCode ?? 201));
         })
