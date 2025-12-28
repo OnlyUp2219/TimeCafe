@@ -19,8 +19,8 @@ public class PermissionRequirementTests
     {
         // Arrange & Act
         var requirement = new PermissionRequirement(
-            PermissionCheckMode.Any, 
-            Permission.AdminView, 
+            PermissionCheckMode.Any,
+            Permission.AdminView,
             Permission.ClientView);
 
         // Assert
@@ -35,8 +35,8 @@ public class PermissionRequirementTests
     {
         // Arrange & Act
         var requirement = new PermissionRequirement(
-            PermissionCheckMode.All, 
-            Permission.ClientView, 
+            PermissionCheckMode.All,
+            Permission.ClientView,
             Permission.ClientEdit);
 
         // Assert
