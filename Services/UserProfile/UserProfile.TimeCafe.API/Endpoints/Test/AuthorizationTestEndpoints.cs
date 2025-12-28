@@ -61,11 +61,11 @@ public class AuthorizationTestEndpoints : ICarterModule
         {
             var currentUserId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isOwner = currentUserId == userId.ToString();
-            
+
             return Results.Ok(new
             {
-                message = isOwner 
-                    ? "Просмотр своего профиля" 
+                message = isOwner
+                    ? "Просмотр своего профиля"
                     : "Просмотр чужого профиля (у вас есть разрешение)",
                 currentUserId,
                 requestedUserId = userId,
@@ -82,11 +82,11 @@ public class AuthorizationTestEndpoints : ICarterModule
         {
             var currentUserId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var isOwner = currentUserId == userId.ToString();
-            
+
             return Results.Ok(new
             {
-                message = isOwner 
-                    ? "Редактирование своего профиля разрешено" 
+                message = isOwner
+                    ? "Редактирование своего профиля разрешено"
                     : "Редактирование чужого профиля (у вас есть разрешение ClientEdit)",
                 currentUserId,
                 requestedUserId = userId,
@@ -118,7 +118,7 @@ public class AuthorizationTestEndpoints : ICarterModule
         {
             var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var roles = ctx.User.FindAll(ClaimTypes.Role).Select(c => c.Value);
-            
+
             return Results.Ok(new
             {
                 message = "Публичный endpoint — только JWT авторизация",
@@ -135,7 +135,7 @@ public class AuthorizationTestEndpoints : ICarterModule
         {
             var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var roles = ctx.User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
-            
+
             if (!Guid.TryParse(userId, out var userGuid))
             {
                 return Results.BadRequest("Invalid userId in token");
@@ -143,7 +143,7 @@ public class AuthorizationTestEndpoints : ICarterModule
 
             var allPermissions = Enum.GetValues<Permission>();
             var userPermissions = new List<string>();
-            
+
             foreach (var perm in allPermissions)
             {
                 if (await permissionService.HasPermissionAsync(userGuid, perm))

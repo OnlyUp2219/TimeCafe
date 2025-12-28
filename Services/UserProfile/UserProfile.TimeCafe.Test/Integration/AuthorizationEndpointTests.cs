@@ -12,7 +12,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
     {
         _factory = factory;
         _client = factory.CreateClient();
-        
+
         _factory.PermissionService.Clear();
         _factory.PermissionService.SetAsAdmin(_adminUserId);
         _factory.PermissionService.SetAsClient(_clientUserId);
@@ -320,11 +320,11 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
     }
 
     private record TestResponse(
-        string Message, 
-        string UserId, 
-        string Endpoint, 
+        string Message,
+        string UserId,
+        string Endpoint,
         string? RequiredPermission);
-    
+
     private record IdorTestResponse(
         string Message,
         string CurrentUserId,
@@ -332,7 +332,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         bool IsOwner,
         string Endpoint,
         string IdorProtection);
-    
+
     private record WhoAmIResponse(
         string UserId,
         string[] Roles,
