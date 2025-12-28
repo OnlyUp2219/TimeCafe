@@ -1,3 +1,4 @@
+using BuildingBlocks.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -12,6 +13,8 @@ namespace UserProfile.TimeCafe.Test.Integration;
 public class IntegrationApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _dbName = $"UserProfileIntegrationDb_{Guid.NewGuid()}";
+
+    public TestPermissionService PermissionService { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -67,6 +70,11 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 return mock.Object;
             });
 
+
+            services.AddSingleton<IPermissionService>(PermissionService);
+
+            services.AddPermissionAuthorization();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = TestAuthHandler.AuthenticationScheme;
@@ -75,8 +83,6 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
                 TestAuthHandler.AuthenticationScheme, options => { });
-
-            services.AddAuthorization();
         });
     }
 }
