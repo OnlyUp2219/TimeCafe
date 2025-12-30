@@ -9,7 +9,7 @@ public static class DatabaseExtensions
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
-        
+
         return services;
     }
 

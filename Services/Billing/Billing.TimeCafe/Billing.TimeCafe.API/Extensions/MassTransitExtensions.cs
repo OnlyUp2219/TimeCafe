@@ -1,5 +1,3 @@
-using BuildingBlocks.Events;
-
 namespace Billing.TimeCafe.API.Extensions;
 
 public static class MassTransitExtensions
@@ -20,12 +18,6 @@ public static class MassTransitExtensions
                 {
                     h.Username(rabbitMqSection["Username"]!);
                     h.Password(rabbitMqSection["Password"]!);
-                });
-
-                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                cfg.Publish<VisitCompletedEvent>(p =>
-                {
-                    p.ExchangeType = "fanout";
                 });
 
                 cfg.ConfigureEndpoints(context);
