@@ -1,3 +1,5 @@
+using Billing.TimeCafe.Domain.Models;
+
 namespace Billing.TimeCafe.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
@@ -6,11 +8,13 @@ public class ApplicationDbContext : DbContext
     {
     }
 
+    public DbSet<Balance> Balances { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // TODO: Apply configurations when models are ready
-        // modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
