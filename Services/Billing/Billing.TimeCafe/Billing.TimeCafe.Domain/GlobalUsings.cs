@@ -1,1 +1,1 @@
-global using System.Text;
+// Domain layer - minimal usings

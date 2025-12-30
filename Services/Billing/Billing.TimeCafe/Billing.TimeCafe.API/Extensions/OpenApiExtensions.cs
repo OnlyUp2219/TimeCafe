@@ -1,0 +1,27 @@
+namespace Billing.TimeCafe.API.Extensions;
+
+public static class OpenApiExtensions
+{
+    public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(c =>
+        {
+            c.SwaggerDoc("v1", new() { Title = "TimeCafe Billing API", Version = "v1" });
+            c.ExampleFilters();
+        });
+        services.AddSwaggerExamples();
+
+        return services;
+    }
+
+    public static WebApplication UseSwaggerDevelopment(this WebApplication app)
+    {
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseScalarConfiguration();
+        }
+
+        return app;
+    }
+}
