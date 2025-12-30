@@ -50,7 +50,7 @@ public class Transaction
         return new Transaction
         {
             UserId = userId,
-            Amount = -amount, 
+            Amount = -amount,
             Type = TransactionType.Withdrawal,
             Source = source,
             SourceId = sourceId,
