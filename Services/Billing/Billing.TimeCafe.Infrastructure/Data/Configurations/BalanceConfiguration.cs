@@ -41,7 +41,6 @@ public class BalanceConfiguration : IEntityTypeConfiguration<Balance>
         builder.Property(b => b.CreatedAt)
             .IsRequired();
 
-        // Индексы для поиска должников
         builder.HasIndex(b => b.Debt)
             .HasFilter("\"Debt\" > 0");
 
