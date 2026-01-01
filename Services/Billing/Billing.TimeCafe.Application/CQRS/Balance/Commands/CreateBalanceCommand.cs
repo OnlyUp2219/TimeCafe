@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Domain.Repositories;
-
 namespace Billing.TimeCafe.Application.CQRS.Balance.Commands;
 
 public record CreateBalanceCommand(Guid UserId) : IRequest<CreateBalanceResult>;

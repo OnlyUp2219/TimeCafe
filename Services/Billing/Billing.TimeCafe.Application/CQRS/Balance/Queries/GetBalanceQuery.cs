@@ -1,6 +1,3 @@
-using Billing.TimeCafe.Domain.Models;
-using Billing.TimeCafe.Domain.Repositories;
-
 namespace Billing.TimeCafe.Application.CQRS.Balance.Queries;
 
 public record GetBalanceQuery(Guid UserId) : IRequest<GetBalanceResult>;
