@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Infrastructure.Repositories;
-
 namespace Billing.TimeCafe.Infrastructure;
 
 public static class InfrastructureDependencyInjection
@@ -10,5 +8,10 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         return services;
+    }
+
+    public static void AddBillingMassTransit(this ServiceCollectionBusConfigurator cfg)
+    {
+        cfg.AddConsumer<VisitCompletedEventConsumer>();
     }
 }
