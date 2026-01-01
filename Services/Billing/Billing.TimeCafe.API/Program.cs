@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Application.DependencyInjection;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
