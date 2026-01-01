@@ -1,4 +1,4 @@
-namespace Billing.TimeCafe.Application.CQRS.Balance.Commands;
+namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
 public record AdjustBalanceCommand(
     Guid UserId,
@@ -14,7 +14,7 @@ public record AdjustBalanceResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Domain.Models.Balance? Balance = null,
+    Balance? Balance = null,
     Transaction? Transaction = null) : ICqrsResultV2
 {
     public static AdjustBalanceResult BalanceNotFound() =>
@@ -28,7 +28,7 @@ public record AdjustBalanceResult(
     public static AdjustBalanceResult DuplicateTransaction() =>
         new(false, Code: "DuplicateTransaction", Message: "Транзакция уже существует", StatusCode: 409);
 
-    public static AdjustBalanceResult AdjustSuccess(Domain.Models.Balance balance, Transaction transaction) =>
+    public static AdjustBalanceResult AdjustSuccess(Balance balance, Transaction transaction) =>
         new(true, Message: "Баланс обновлён", Balance: balance, Transaction: transaction);
 }
 
@@ -69,10 +69,10 @@ public class AdjustBalanceCommandHandler(
         if (balance == null)
             return AdjustBalanceResult.BalanceNotFound();
 
-        if (request.Type == TransactionType.Debit && balance.CurrentBalance < request.Amount)
+        if (request.Type == TransactionType.Withdrawal && balance.CurrentBalance < request.Amount)
             return AdjustBalanceResult.InsufficientFunds(request.Amount, balance.CurrentBalance);
 
-        if (request.Type == TransactionType.Credit)
+        if (request.Type == TransactionType.Deposit)
         {
             balance.CurrentBalance += request.Amount;
             balance.TotalDeposited += request.Amount;
