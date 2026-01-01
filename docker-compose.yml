@@ -59,19 +59,19 @@ services:
     image: docker.elastic.co/kibana/kibana:9.2.3
     container_name: timecafe-kibana
     environment:
-        - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
-        - "5601:5601"
+      - "5601:5601"
     depends_on:
-        elasticsearch:
-            condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     networks:
-        - timecafe-network
+      - timecafe-network
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
-        interval: 30s
-        timeout: 10s
-        retries: 5
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:9.2.3
@@ -229,7 +229,7 @@ services:
   billing-service:
     build:
       context: .
-      dockerfile: ./Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API/Dockerfile
+      dockerfile: ./Services/Billing/Billing.TimeCafe.API/Dockerfile
     container_name: timecafe-billing-service
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
