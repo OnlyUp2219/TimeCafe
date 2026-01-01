@@ -33,7 +33,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.Status)
             .HasConversion<int>()
             .IsRequired()
-            .HasDefaultValue(PaymentStatus.Pending);
+            .HasDefaultValue(PaymentStatus.Pending)
+            .HasSentinel(PaymentStatus.Pending);
 
         builder.Property(p => p.TransactionId)
             .IsRequired(false);

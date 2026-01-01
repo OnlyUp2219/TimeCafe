@@ -36,7 +36,8 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(t => t.Status)
             .HasConversion<int>()
             .IsRequired()
-            .HasDefaultValue(TransactionStatus.Completed);
+            .HasDefaultValue(TransactionStatus.Completed)
+            .HasSentinel(TransactionStatus.Pending);
 
         builder.Property(t => t.Comment)
             .HasMaxLength(500)
