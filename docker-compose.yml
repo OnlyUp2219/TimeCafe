@@ -226,6 +226,43 @@ services:
       retries: 3
       start_period: 10s
 
+  billing-service:
+    build:
+      context: .
+      dockerfile: ./Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API/Dockerfile
+    container_name: timecafe-billing-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:8004
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=BillingDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
+      - Redis__ConnectionString=redis:6379
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Robokassa__MerchantLogin=${ROBOKASSA_MERCHANT_LOGIN}
+      - Robokassa__Password1=${ROBOKASSA_PASSWORD1}
+      - Robokassa__Password2=${ROBOKASSA_PASSWORD2}
+      - Robokassa__TestMode=${ROBOKASSA_TEST_MODE:-true}
+      - Robokassa__PaymentUrl=https://auth.robokassa.ru/Merchant/Index.aspx
+    ports:
+      - "8004:8004"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - timecafe-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
 networks:
   timecafe-network:
     driver: bridge
