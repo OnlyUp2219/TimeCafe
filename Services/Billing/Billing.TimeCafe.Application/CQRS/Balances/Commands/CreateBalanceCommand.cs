@@ -1,4 +1,4 @@
-namespace Billing.TimeCafe.Application.CQRS.Balance.Commands;
+namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
 public record CreateBalanceCommand(Guid UserId) : IRequest<CreateBalanceResult>;
 
@@ -8,12 +8,12 @@ public record CreateBalanceResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Domain.Models.Balance? Balance = null) : ICqrsResultV2
+    Balance? Balance = null) : ICqrsResultV2
 {
     public static CreateBalanceResult AlreadyExists() =>
         new(false, Code: "BalanceAlreadyExists", Message: "Баланс уже существует", StatusCode: 409);
 
-    public static CreateBalanceResult CreateSuccess(Domain.Models.Balance balance) =>
+    public static CreateBalanceResult CreateSuccess(Balance balance) =>
         new(true, Message: "Баланс создан", Balance: balance);
 }
 
@@ -37,7 +37,7 @@ public class CreateBalanceCommandHandler(IBalanceRepository repository) : IReque
         if (exists)
             return CreateBalanceResult.AlreadyExists();
 
-        var balance = new Domain.Models.Balance
+        var balance = new Balance
         {
             UserId = request.UserId,
             CurrentBalance = 0,
