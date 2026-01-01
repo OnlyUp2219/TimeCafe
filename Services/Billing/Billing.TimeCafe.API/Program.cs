@@ -20,6 +20,9 @@ builder.Services.AddRedis(builder.Configuration);
 // DbContext
 builder.Services.AddBillingDatabase(builder.Configuration);
 
+// Infrastructure (repositories)
+builder.Services.AddBillingInfrastructure();
+
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddBillingCqrs();
 
