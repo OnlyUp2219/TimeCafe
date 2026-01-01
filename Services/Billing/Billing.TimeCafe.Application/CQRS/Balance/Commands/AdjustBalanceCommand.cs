@@ -1,7 +1,3 @@
-using Billing.TimeCafe.Domain.Enums;
-using Billing.TimeCafe.Domain.Models;
-using Billing.TimeCafe.Domain.Repositories;
-
 namespace Billing.TimeCafe.Application.CQRS.Balance.Commands;
 
 public record AdjustBalanceCommand(
@@ -25,8 +21,8 @@ public record AdjustBalanceResult(
         new(false, Code: "BalanceNotFound", Message: "Баланс не найден", StatusCode: 404);
 
     public static AdjustBalanceResult InsufficientFunds(decimal required, decimal available) =>
-        new(false, Code: "InsufficientFunds", 
-            Message: $"Недостаточно средств. Требуется: {required:F2}₽, Доступно: {available:F2}₽", 
+        new(false, Code: "InsufficientFunds",
+            Message: $"Недостаточно средств. Требуется: {required:F2}₽, Доступно: {available:F2}₽",
             StatusCode: 400);
 
     public static AdjustBalanceResult DuplicateTransaction() =>

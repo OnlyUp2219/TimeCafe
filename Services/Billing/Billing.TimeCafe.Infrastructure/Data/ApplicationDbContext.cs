@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Domain.Models;
-
 namespace Billing.TimeCafe.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
