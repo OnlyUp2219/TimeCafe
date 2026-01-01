@@ -1,1 +1,1 @@
-// Domain layer - minimal usings
+global using System;
