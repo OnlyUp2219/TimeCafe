@@ -59,13 +59,11 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex(p => p.Status);
         builder.HasIndex(p => p.CreatedAt);
 
-        // Связь с Balance
         builder.HasOne<Balance>()
             .WithMany()
             .HasForeignKey(p => p.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Связь с Transaction (опционально)
         builder.HasOne<Transaction>()
             .WithMany()
             .HasForeignKey(p => p.TransactionId)

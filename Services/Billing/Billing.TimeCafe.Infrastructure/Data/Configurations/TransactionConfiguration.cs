@@ -50,7 +50,6 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasPrecision(18, 2)
             .IsRequired();
 
-        // Индексы
         builder.HasIndex(t => t.UserId);
         builder.HasIndex(t => t.SourceId);
         builder.HasIndex(t => new { t.Source, t.SourceId })
@@ -58,7 +57,6 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasIndex(t => t.CreatedAt);
         builder.HasIndex(t => t.Type);
 
-        // Связь с Balance (опционально, через UserId)
         builder.HasOne<Balance>()
             .WithMany()
             .HasForeignKey(t => t.UserId)

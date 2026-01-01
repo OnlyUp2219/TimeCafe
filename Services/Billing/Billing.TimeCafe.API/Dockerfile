@@ -10,20 +10,20 @@ WORKDIR /src
 COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
 
 # Copy Billing service projects
-COPY ["Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj", "Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API/"]
-COPY ["Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Application/Billing.TimeCafe.Application.csproj", "Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Application/"]
-COPY ["Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Domain/Billing.TimeCafe.Domain.csproj", "Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Domain/"]
-COPY ["Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Infrastructure/Billing.TimeCafe.Infrastructure.csproj", "Services/Billing/Billing.TimeCafe/Billing.TimeCafe.Infrastructure/"]
+COPY ["Services/Billing/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj", "Services/Billing/Billing.TimeCafe.API/"]
+COPY ["Services/Billing/Billing.TimeCafe.Application/Billing.TimeCafe.Application.csproj", "Services/Billing/Billing.TimeCafe.Application/"]
+COPY ["Services/Billing/Billing.TimeCafe.Domain/Billing.TimeCafe.Domain.csproj", "Services/Billing/Billing.TimeCafe.Domain/"]
+COPY ["Services/Billing/Billing.TimeCafe.Infrastructure/Billing.TimeCafe.Infrastructure.csproj", "Services/Billing/Billing.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN dotnet restore "Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj"
+RUN dotnet restore "Services/Billing/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj"
 
 # Copy all source files
 COPY ["BuildingBlocks/", "BuildingBlocks/"]
-COPY ["Services/Billing/Billing.TimeCafe/", "Services/Billing/Billing.TimeCafe/"]
+COPY ["Services/Billing/", "Services/Billing/"]
 
 # Build
-WORKDIR "/src/Services/Billing/Billing.TimeCafe/Billing.TimeCafe.API"
+WORKDIR "/src/Services/Billing/Billing.TimeCafe.API"
 RUN dotnet build "Billing.TimeCafe.API.csproj" -c Release -o /app/build
 
 FROM build AS publish
