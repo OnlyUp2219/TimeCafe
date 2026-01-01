@@ -93,13 +93,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Элементы решен
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{2F3A3C4E-8F2A-4CF3-9F4A-0B4E7B6D9C21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.API", "Services\Billing\Billing.TimeCafe\Billing.TimeCafe.API\Billing.TimeCafe.API.csproj", "{36187438-090D-4FC4-9683-4D347CD21531}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.API", "Services\Billing\Billing.TimeCafe.API\Billing.TimeCafe.API.csproj", "{36187438-090D-4FC4-9683-4D347CD21531}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Application", "Services\Billing\Billing.TimeCafe\Billing.TimeCafe.Application\Billing.TimeCafe.Application.csproj", "{824B9DE1-6631-4E56-80DE-E554DBBB98C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Application", "Services\Billing\Billing.TimeCafe.Application\Billing.TimeCafe.Application.csproj", "{824B9DE1-6631-4E56-80DE-E554DBBB98C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Domain", "Services\Billing\Billing.TimeCafe\Billing.TimeCafe.Domain\Billing.TimeCafe.Domain.csproj", "{E943E88D-6ACC-491F-8AA3-669FB2CAB118}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Domain", "Services\Billing\Billing.TimeCafe.Domain\Billing.TimeCafe.Domain.csproj", "{E943E88D-6ACC-491F-8AA3-669FB2CAB118}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Infrastructure", "Services\Billing\Billing.TimeCafe\Billing.TimeCafe.Infrastructure\Billing.TimeCafe.Infrastructure.csproj", "{A2CB376C-4B1F-45DD-916A-80F66F564742}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Infrastructure", "Services\Billing\Billing.TimeCafe.Infrastructure\Billing.TimeCafe.Infrastructure.csproj", "{A2CB376C-4B1F-45DD-916A-80F66F564742}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
