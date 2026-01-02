@@ -24,6 +24,17 @@ builder.Services.AddBillingInfrastructure();
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddBillingCqrs();
 
+// Authentication & Authorization (for development - allows all)
+builder.Services
+    .AddAuthentication("DummyScheme")
+    .AddScheme<AuthenticationSchemeOptions, DummyAuthenticationHandler>("DummyScheme", _ => { });
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 // Swagger & Carter
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -37,6 +48,9 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 await app.ApplyMigrationsAsync();
 
 app.UseCors(corsPolicyName);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseSwaggerDevelopment();
 
