@@ -1,7 +1,5 @@
 namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
-using Billing.TimeCafe.API.DTOs;
-
 public class CreateTransaction : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -19,7 +17,7 @@ public class CreateTransaction : ICarterModule
                 dto.Comment);
 
             var result = await sender.Send(command);
-
+            // TODO : Add Mapping
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {
                 balance = new
