@@ -1,7 +1,5 @@
 namespace Billing.TimeCafe.API.Endpoints.Balance;
 
-using Billing.TimeCafe.API.DTOs;
-
 public class GetBalance : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -14,6 +12,7 @@ public class GetBalance : ICarterModule
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {
+                // TODO : Add Mapping
                 balance = new
                 {
                     r.Balance.UserId,

@@ -1,6 +1,4 @@
-namespace Billing.TimeCafe.API.Endpoints.Balance;
-
-using Billing.TimeCafe.API.DTOs;
+namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
 public class GetTransactionHistory : ICarterModule
 {
