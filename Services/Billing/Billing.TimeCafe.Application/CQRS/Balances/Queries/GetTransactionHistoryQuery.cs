@@ -52,7 +52,9 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
             cancellationToken);
 
         if (transactions == null || transactions.Count == 0)
-            return GetTransactionHistoryResult.UserNotFound();
+        {
+            return GetTransactionHistoryResult.GetSuccess(new List<TransactionDto>(), 0, request.PageSize);
+        }
 
         var totalCount = await _repository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
 

@@ -36,7 +36,10 @@ public class GetBalanceQueryHandler(IBalanceRepository repository) : IRequestHan
         var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
 
         if (balance == null)
-            return GetBalanceResult.BalanceNotFound();
+        {
+            balance = new Balance(request.UserId);
+            await _repository.CreateAsync(balance, cancellationToken);
+        }
 
         return GetBalanceResult.GetSuccess(balance);
     }

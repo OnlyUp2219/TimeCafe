@@ -1,3 +1,5 @@
+using MassTransit.Futures.Contracts;
+
 namespace Billing.TimeCafe.Infrastructure.Repositories;
 
 public class BalanceRepository(
@@ -37,13 +39,29 @@ public class BalanceRepository(
 
     public async Task<Balance> CreateAsync(Balance balance, CancellationToken ct = default)
     {
+        var existingBalance = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+        if (existingBalance != null)
+            return existingBalance;
+
         _context.Balances.Add(balance);
-        await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+
+        try
+        {
+            await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+        }
+        catch (DbUpdateException)
+        {
+            var created = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+            if (created != null)
+                return created;
+            throw;
+        }
 
         await CacheHelper.RemoveKeysAsync(
             _cache,
             _cacheLogger,
-            CacheKeys.Balance_All).ConfigureAwait(false);
+            CacheKeys.Balance_All,
+            CacheKeys.Balance_ByUserId(balance.UserId)).ConfigureAwait(false);
 
         return balance;
     }

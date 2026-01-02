@@ -67,7 +67,10 @@ public class AdjustBalanceCommandHandler(
 
         var balance = await _balanceRepository.GetByUserIdAsync(request.UserId, cancellationToken);
         if (balance == null)
-            return AdjustBalanceResult.BalanceNotFound();
+        {
+            balance = new Balance(request.UserId);
+            balance = await _balanceRepository.CreateAsync(balance, cancellationToken);
+        }
 
         if (request.Type == TransactionType.Withdrawal && balance.CurrentBalance < request.Amount)
             return AdjustBalanceResult.InsufficientFunds(request.Amount, balance.CurrentBalance);
