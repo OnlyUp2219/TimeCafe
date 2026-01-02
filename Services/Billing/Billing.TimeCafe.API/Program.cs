@@ -9,8 +9,8 @@ var corsPolicyName = builder.Configuration["CORS:PolicyName"]
     ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
 builder.Services.AddCorsConfiguration(corsPolicyName);
 
-// MassTransit with RabbitMQ (commented out until consumers are ready)
-// builder.Services.AddRabbitMqMessaging(builder.Configuration);
+// MassTransit with RabbitMQ
+builder.Services.AddRabbitMqMessaging(builder.Configuration);
 
 // Redis
 builder.Services.AddRedis(builder.Configuration);

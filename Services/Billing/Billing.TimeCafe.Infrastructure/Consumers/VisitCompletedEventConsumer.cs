@@ -19,10 +19,8 @@ public class VisitCompletedEventConsumer(
 
             if (balance == null)
             {
-                _logger.LogWarning(
-                    "Баланс пользователя {UserId} не найден при обработке завершённого визита {VisitId}",
-                    evt.UserId, evt.VisitId);
-                return;
+                balance = new Balance(evt.UserId);
+                balance = await _balanceRepository.CreateAsync(balance, context.CancellationToken);
             }
 
             var duplicate = await _transactionRepository.ExistsBySourceAsync(
