@@ -1,4 +1,7 @@
+global using Billing.TimeCafe.API.Auth;
+global using Billing.TimeCafe.API.DTOs;
 global using Billing.TimeCafe.API.Extensions;
+global using Billing.TimeCafe.API.Filters;
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
 global using Billing.TimeCafe.Application.CQRS.Balances.Queries;
 global using Billing.TimeCafe.Application.CQRS.Transactions.Queries;
@@ -16,11 +19,16 @@ global using MassTransit;
 
 global using MediatR;
 
+global using Microsoft.AspNetCore.Authentication;
+global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.OpenApi.Any;
+global using Microsoft.OpenApi.Models;
 
 global using Scalar.AspNetCore;
 
 global using Serilog;
 
 global using Swashbuckle.AspNetCore.Filters;
+global using Swashbuckle.AspNetCore.SwaggerGen;
