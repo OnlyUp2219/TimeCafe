@@ -1,5 +1,7 @@
 namespace Billing.TimeCafe.API.Extensions;
 
+using Billing.TimeCafe.Infrastructure;
+
 public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration)
@@ -12,6 +14,8 @@ public static class MassTransitExtensions
 
         services.AddMassTransit(x =>
         {
+            x.AddBillingMassTransit();
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitMqSection["Host"]!, h =>

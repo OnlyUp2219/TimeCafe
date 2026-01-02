@@ -10,8 +10,9 @@ public static class InfrastructureDependencyInjection
         return services;
     }
 
-    public static void AddBillingMassTransit(this ServiceCollectionBusConfigurator cfg)
+    public static void AddBillingMassTransit(this IBusRegistrationConfigurator cfg)
     {
         cfg.AddConsumer<VisitCompletedEventConsumer>();
+        cfg.AddConsumer<UserRegisteredEventConsumer>();
     }
 }
