@@ -8,6 +8,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Balance> Balances { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<Payment> Payments { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

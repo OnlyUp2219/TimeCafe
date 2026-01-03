@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Domain.Enums;
-
 namespace Billing.TimeCafe.Domain.Models;
 
 public class Payment
