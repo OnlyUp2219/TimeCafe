@@ -1,4 +1,3 @@
-global using BuildingBlocks.Authorization;
 global using BuildingBlocks.Authorization.Filters;
 global using BuildingBlocks.Enum;
 global using BuildingBlocks.Utilities;

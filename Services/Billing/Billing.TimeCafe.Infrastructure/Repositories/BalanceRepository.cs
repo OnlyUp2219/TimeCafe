@@ -1,5 +1,3 @@
-using MassTransit.Futures.Contracts;
-
 namespace Billing.TimeCafe.Infrastructure.Repositories;
 
 public class BalanceRepository(

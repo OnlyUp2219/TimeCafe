@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Domain.Enums;
-
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Billing.TimeCafe.Infrastructure.Data.Configurations;

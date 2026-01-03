@@ -1,5 +1,3 @@
-using BuildingBlocks.Events;
-
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class MassTransitExtensions

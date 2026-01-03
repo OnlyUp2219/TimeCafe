@@ -39,7 +39,7 @@ public class GetUserDebtQueryHandler(IBalanceRepository repository) : IRequestHa
             balance = new Balance(request.UserId);
             await _repository.CreateAsync(balance, cancellationToken);
         }
-        
+
         return GetUserDebtResult.GetSuccess(balance.Debt);
     }
 }

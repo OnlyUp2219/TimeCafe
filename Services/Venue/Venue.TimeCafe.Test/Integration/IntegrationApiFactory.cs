@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using Venue.TimeCafe.Test.Integration.Helpers;
 
 namespace Venue.TimeCafe.Test.Integration;
 

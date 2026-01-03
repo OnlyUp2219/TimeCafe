@@ -5,13 +5,14 @@ public record GetBalanceDto
     public Guid UserId { get; set; }
 }
 
-public class GetBalanceDtoExample : IExamplesProvider<GetBalanceDto>
+public class GetBalanceExampleFilter : IOperationFilter
 {
-    public GetBalanceDto GetExamples()
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        return new GetBalanceDto
+        var param = operation.Parameters.FirstOrDefault(p => p.Name == "userId");
+        if (param != null)
         {
-            UserId = Guid.Parse("f47ac10b-58cc-4372-a567-0e02b2c3d479")
-        };
+            param.Example = new OpenApiString("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+        }
     }
 }

@@ -1,5 +1,3 @@
-using UserProfile.TimeCafe.Test.Integration.Helpers;
-
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints.AdditionalInfosEndpoints;
 
 public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)

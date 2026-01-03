@@ -1,4 +1,5 @@
 using BuildingBlocks.Authorization;
+
 using System.Security.Claims;
 
 namespace UserProfile.TimeCafe.API.Endpoints.Test;

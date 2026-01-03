@@ -1,10 +1,11 @@
 namespace Billing.TimeCafe.API.Auth;
 
-using System.Security.Claims;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+
+using System.Security.Claims;
+using System.Text.Encodings.Web;
 
 public class DummyAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {

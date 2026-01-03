@@ -1,5 +1,3 @@
-using BuildingBlocks.Authorization;
-
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 
 /// <summary>

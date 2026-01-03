@@ -1,6 +1,4 @@
-using BuildingBlocks.Authorization.Filters;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
 
 namespace BuildingBlocks.Authorization;
 

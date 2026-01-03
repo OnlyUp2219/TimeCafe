@@ -1,5 +1,3 @@
-using UserProfile.TimeCafe.Test.Integration.Helpers;
-
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints.ProfileEndpoints;
 
 public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
