@@ -97,6 +97,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Domain", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Infrastructure", "Services\Billing\Billing.TimeCafe.Infrastructure\Billing.TimeCafe.Infrastructure.csproj", "{A2CB376C-4B1F-45DD-916A-80F66F564742}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Billing.TimeCafe.Test", "Services\Billing\Billing.TimeCafe.Test\Billing.TimeCafe.Test.csproj", "{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -547,6 +549,22 @@ Global
 		{A2CB376C-4B1F-45DD-916A-80F66F564742}.Release|x64.Build.0 = Release|Any CPU
 		{A2CB376C-4B1F-45DD-916A-80F66F564742}.Release|x86.ActiveCfg = Release|Any CPU
 		{A2CB376C-4B1F-45DD-916A-80F66F564742}.Release|x86.Build.0 = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|arm64.ActiveCfg = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|arm64.Build.0 = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Debug|x86.Build.0 = Debug|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|arm64.ActiveCfg = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|arm64.Build.0 = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|x64.Build.0 = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|x86.ActiveCfg = Release|Any CPU
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -581,6 +599,7 @@ Global
 		{824B9DE1-6631-4E56-80DE-E554DBBB98C7} = {8467DBAD-94F1-4477-92EA-B6D3FD10C569}
 		{E943E88D-6ACC-491F-8AA3-669FB2CAB118} = {8467DBAD-94F1-4477-92EA-B6D3FD10C569}
 		{A2CB376C-4B1F-45DD-916A-80F66F564742} = {8467DBAD-94F1-4477-92EA-B6D3FD10C569}
+		{DE0F9DFE-3A5F-4E26-BB97-2A4C3F602C7C} = {8467DBAD-94F1-4477-92EA-B6D3FD10C569}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {795744BB-5BCC-42C7-ADFD-5B26192C92DD}
