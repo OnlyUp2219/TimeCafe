@@ -11,8 +11,13 @@ global using Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 global using Billing.TimeCafe.Application.Services.Payments;
 global using Billing.TimeCafe.Domain.Models;
 global using Billing.TimeCafe.Domain.Enums;
+global using Billing.TimeCafe.Domain.Constants;
+global using Billing.TimeCafe.Domain.Repositories;
 global using Billing.TimeCafe.Infrastructure;
 global using Billing.TimeCafe.Infrastructure.Data;
+global using Billing.TimeCafe.Test.Integration;
+global using Billing.TimeCafe.Test.TestData;
+global using BalanceModel = Billing.TimeCafe.Domain.Models.Balance;
 
 global using FluentAssertions;
 
@@ -25,7 +30,9 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Caching.Distributed;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using Microsoft.Extensions.Hosting;
+global using Microsoft.Extensions.Options;
 
 global using StackExchange.Redis;
 
