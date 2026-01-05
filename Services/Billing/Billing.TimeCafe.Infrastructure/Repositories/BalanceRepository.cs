@@ -54,12 +54,20 @@ public class BalanceRepository(
                 return created;
             throw;
         }
+        catch (ArgumentException)
+        {
+            var created = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+            if (created != null)
+                return created;
+            throw;
+        }
 
         await CacheHelper.RemoveKeysAsync(
             _cache,
             _cacheLogger,
             CacheKeys.Balance_All,
-            CacheKeys.Balance_ByUserId(balance.UserId)).ConfigureAwait(false);
+            CacheKeys.Balance_ByUserId(balance.UserId),
+            CacheKeys.Debtors_All).ConfigureAwait(false);
 
         return balance;
     }
@@ -73,7 +81,8 @@ public class BalanceRepository(
             _cache,
             _cacheLogger,
             CacheKeys.Balance_All,
-            CacheKeys.Balance_ByUserId(balance.UserId)).ConfigureAwait(false);
+            CacheKeys.Balance_ByUserId(balance.UserId),
+            CacheKeys.Debtors_All).ConfigureAwait(false);
 
         return balance;
     }
