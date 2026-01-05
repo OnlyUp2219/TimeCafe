@@ -78,27 +78,22 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
 
     private void ReplaceMassTransit(IServiceCollection services)
     {
-        var hostedServices = services
-            .Where(d => d.ServiceType == typeof(IHostedService)
-                        && d.ImplementationType != null
-                        && d.ImplementationType.Namespace != null
-                        && d.ImplementationType.Namespace.StartsWith("MassTransit"))
+        var descriptorsToRemove = services
+            .Where(d => d.ServiceType.Namespace != null && d.ServiceType.Namespace.StartsWith("MassTransit"))
             .ToList();
 
-        foreach (var descriptor in hostedServices)
+        foreach (var descriptor in descriptorsToRemove)
         {
             services.Remove(descriptor);
         }
 
-        var busDescriptors = services
-            .Where(d => d.ServiceType == typeof(IBus)
-                        || d.ServiceType == typeof(IBusControl)
-                        || d.ServiceType == typeof(IBusRegistrationContext)
-                        || d.ServiceType == typeof(IPublishEndpoint)
-                        || d.ServiceType == typeof(ISendEndpointProvider))
+        var descriptorsToRemoveImpl = services
+            .Where(d => d.ImplementationType != null
+                        && d.ImplementationType.Namespace != null
+                        && d.ImplementationType.Namespace.StartsWith("MassTransit"))
             .ToList();
 
-        foreach (var descriptor in busDescriptors)
+        foreach (var descriptor in descriptorsToRemoveImpl)
         {
             services.Remove(descriptor);
         }
