@@ -15,7 +15,7 @@
   <!-- Логирование -->
   <LoggerRunSettings>
     <Loggers>
-      <Logger friendlyName="console" enabled="false">
+      <Logger friendlyName="console" enabled="true">
         <Configuration>
           <Verbosity>normal</Verbosity>
         </Configuration>
