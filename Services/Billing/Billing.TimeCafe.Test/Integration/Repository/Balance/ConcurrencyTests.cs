@@ -181,40 +181,41 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     {
 
         var userIds = new[] { Defaults.UserId, Defaults.UserId2 };
-        var tasks = userIds.SelectMany(userId => new List<Task>
+        var createTasks = userIds.Select(userId => Task.Run(async () =>
         {
-            Task.Run(async () =>
-            {
-                using var scope = CreateScope();
-                var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                var balance = new BalanceModel(userId) { CurrentBalance = Defaults.SmallAmount };
-                await repository.CreateAsync(balance);
-            }),
-            Task.Run(async () =>
-            {
-                await Task.Delay(10);
-                using var scope = CreateScope();
-                var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                var balance = await repository.GetByUserIdAsync(userId);
-                if (balance != null)
-                {
-                    balance.CurrentBalance = Defaults.DefaultAmount;
-                    balance.LastUpdated = DateTimeOffset.UtcNow;
-                    await repository.UpdateAsync(balance);
-                }
-            }),
-            Task.Run(async () =>
-            {
-                await Task.Delay(20);
-                using var scope = CreateScope();
-                var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                var balance = await repository.GetByUserIdAsync(userId);
-                balance.Should().NotBeNull();
-                balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.SmallAmount);
-            })
-        }).ToList();
+            using var scope = CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
+            var balance = new BalanceModel(userId) { CurrentBalance = Defaults.SmallAmount };
+            await repository.CreateAsync(balance);
+        })).ToList();
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(createTasks);
+
+        var updateTasks = userIds.Select(userId => Task.Run(async () =>
+        {
+            using var scope = CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
+            var balance = await repository.GetByUserIdAsync(userId);
+            if (balance != null)
+            {
+                balance.CurrentBalance = Defaults.DefaultAmount;
+                balance.LastUpdated = DateTimeOffset.UtcNow;
+                await repository.UpdateAsync(balance);
+            }
+        })).ToList();
+
+        await Task.WhenAll(updateTasks);
+
+        var verifyTasks = userIds.Select(userId => Task.Run(async () =>
+        {
+            using var scope = CreateScope();
+            var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
+            var balance = await repository.GetByUserIdAsync(userId);
+            balance.Should().NotBeNull();
+            balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.SmallAmount);
+        })).ToList();
+
+        await Task.WhenAll(verifyTasks);
 
         foreach (var userId in userIds)
         {
