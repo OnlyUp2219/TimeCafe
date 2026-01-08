@@ -26,7 +26,7 @@ public static class CacheHelper
             var tasks = keys.Select(k => cache.RemoveAsync(k));
             await Task.WhenAll(tasks);
 
-            logger.LogInformation("Redis: Удалено {Count} ключей: {Keys}", keys.Length, string.Join(", ", keys));
+            logger.LogDebug("Redis: Удалено {Count} ключей: {Keys}", keys.Length, string.Join(", ", keys));
         }
         catch (Exception ex)
         {
@@ -63,7 +63,7 @@ public static class CacheHelper
             await cache.SetStringAsync(key, json, options ?? DefaultOptions);
 
             var ttl = (options ?? DefaultOptions).AbsoluteExpirationRelativeToNow?.TotalSeconds ?? 0;
-            logger.LogInformation("Redis: Записан ключ {Key} с TTL {TTL}s", key, ttl);
+            logger.LogDebug("Redis: Записан ключ {Key} с TTL {TTL}s", key, ttl);
         }
         catch (Exception ex)
         {
@@ -96,7 +96,7 @@ public static class CacheHelper
             options.Converters.Add(new DateOnlyJsonConverter());
             options.Converters.Add(new NullableDateOnlyJsonConverter());
 
-            logger.LogInformation("Redis: Получены данные для ключа {Key}", key);
+            logger.LogDebug("Redis: Получены данные для ключа {Key}", key);
             return JsonSerializer.Deserialize<T>(cached, options);
         }
         catch (Exception ex)
