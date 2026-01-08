@@ -10,7 +10,7 @@ public class PhoneGenerate : ICarterModule
 
         group.MapPost("generateSMS-mock", async (
             [FromServices] ISender sender,
-            [FromServices] ClaimsPrincipal user,
+            ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
@@ -33,7 +33,7 @@ public class PhoneGenerate : ICarterModule
 
         group.MapPost("generateSMS", async (
             [FromServices] ISender sender,
-            [FromServices] ClaimsPrincipal user,
+            ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {

@@ -10,7 +10,7 @@ public sealed class ChangePassword : ICarterModule
         group.MapPost("/change-password",
         async (
         [FromBody] ChangePasswordRequest request,
-        [FromServices] ClaimsPrincipal principal,
+        ClaimsPrincipal principal,
         [FromServices] ISender sender
         ) =>
         {
