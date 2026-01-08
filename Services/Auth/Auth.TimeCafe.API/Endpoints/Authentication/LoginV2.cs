@@ -5,7 +5,7 @@ public class LoginV2 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/login-jwt-v2", async (
-            [FromServices] HttpContext context,
+            HttpContext context,
             [FromServices] ISender sender,
             [FromServices] IConfiguration configuration,
             [FromBody] LoginDto dto) =>

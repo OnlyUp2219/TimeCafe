@@ -32,7 +32,7 @@ public class ExternalProviders : ICarterModule
 
         app.MapGet("/authenticate/login/google/callback", async (
             [FromQuery] string returnUrl,
-            [FromServices] HttpContext context,
+            HttpContext context,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromServices] IJwtService jwtService,
             [FromServices] UserManager<ApplicationUser> userManager,
@@ -136,7 +136,7 @@ public class ExternalProviders : ICarterModule
 
         app.MapGet("/authenticate/login/microsoft/callback", async (
             [FromQuery] string returnUrl,
-            [FromServices] HttpContext context,
+            HttpContext context,
             [FromServices] SignInManager<ApplicationUser> signInManager,
             [FromServices] IJwtService jwtService,
             [FromServices] UserManager<ApplicationUser> userManager,

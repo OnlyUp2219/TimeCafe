@@ -10,7 +10,7 @@ public class PhoneVerify : ICarterModule
 
         group.MapPost("verifySMS-mock", async (
             [FromServices] ISender sender,
-            [FromServices] ClaimsPrincipal user,
+            ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
@@ -32,7 +32,7 @@ public class PhoneVerify : ICarterModule
 
         group.MapPost("verifySMS", async (
             [FromServices] ISender sender,
-            [FromServices] ClaimsPrincipal user,
+            ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {

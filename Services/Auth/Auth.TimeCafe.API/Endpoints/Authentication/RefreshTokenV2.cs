@@ -5,7 +5,7 @@ public class RefreshTokenV2 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/refresh-jwt-v2", async (
-            [FromServices] HttpContext context,
+            HttpContext context,
             [FromServices] ISender sender,
             [FromServices] IConfiguration configuration) =>
         {
