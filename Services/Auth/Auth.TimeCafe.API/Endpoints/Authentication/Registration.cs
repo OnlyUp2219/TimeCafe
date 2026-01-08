@@ -5,7 +5,7 @@ public class Registration : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/registerWithUsername", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] RegisterDto dto) =>
         {
             var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
@@ -22,7 +22,7 @@ public class Registration : ICarterModule
             .WithDescription("Регистрирует нового пользователя по логину, email и паролю. Отправляет письмо для подтверждения email.");
 
         app.MapPost("/registerWithUsername-mock", async (
-            ISender sender,
+            [FromServices] ISender sender,
             [FromBody] RegisterDto dto) =>
         {
             var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);

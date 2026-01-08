@@ -8,7 +8,7 @@ public class ResetPassword : ICarterModule
 
         group.MapPost("/forgot-password-link-mock", async (
             [FromBody] ResetPasswordEmailRequest request,
-            ISender sender) =>
+            [FromServices] ISender sender) =>
         {
             var command = new ForgotPasswordCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
@@ -28,7 +28,7 @@ public class ResetPassword : ICarterModule
 
         group.MapPost("/forgot-password-link", async (
             [FromBody] ResetPasswordEmailRequest request,
-            ISender sender) =>
+            [FromServices] ISender sender) =>
         {
             var command = new ForgotPasswordCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);

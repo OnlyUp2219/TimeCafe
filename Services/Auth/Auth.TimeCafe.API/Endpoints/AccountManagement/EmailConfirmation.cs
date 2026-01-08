@@ -6,7 +6,9 @@ public class EmailConfirmation : ICarterModule
     {
         var group = app.MapGroup("/email").WithTags("EmailConfirmation");
 
-        group.MapPost("/confirm", async ([FromBody] ConfirmEmailRequest request, ISender sender) =>
+        group.MapPost("/confirm", async (
+            [FromBody] ConfirmEmailRequest request, 
+            [FromServices] ISender sender) =>
         {
             var command = new ConfirmEmailCommand(request.UserId, request.Token);
             var result = await sender.Send(command);

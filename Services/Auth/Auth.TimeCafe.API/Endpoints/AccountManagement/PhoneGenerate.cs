@@ -9,8 +9,8 @@ public class PhoneGenerate : ICarterModule
             .WithTags("SMS");
 
         group.MapPost("generateSMS-mock", async (
-            ISender sender,
-            ClaimsPrincipal user,
+            [FromServices] ISender sender,
+            [FromServices] ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
@@ -32,8 +32,8 @@ public class PhoneGenerate : ICarterModule
         .WithDescription("Тестовый endpoint: возвращает SMS-код и токен для подтверждения телефона без реальной отправки сообщения.");
 
         group.MapPost("generateSMS", async (
-            ISender sender,
-            ClaimsPrincipal user,
+            [FromServices] ISender sender,
+            [FromServices] ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {

@@ -6,7 +6,9 @@ public class EmailResend : ICarterModule
     {
         var group = app.MapGroup("/email").WithTags("EmailConfirmation");
 
-        group.MapPost("/resend", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
+        group.MapPost("/resend", async (
+            [FromBody] ResendConfirmationRequest request, 
+            [FromServices] ISender sender) =>
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
@@ -23,7 +25,9 @@ public class EmailResend : ICarterModule
         .WithDescription("Отправляет повторно письмо для подтверждения email пользователя. Используется, если первое письмо не дошло или истёк срок действия ссылки.");
 
 
-        group.MapPost("/resend-mock", async ([FromBody] ResendConfirmationRequest request, ISender sender) =>
+        group.MapPost("/resend-mock", async (
+            [FromBody] ResendConfirmationRequest request, 
+            [FromServices] ISender sender) =>
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);

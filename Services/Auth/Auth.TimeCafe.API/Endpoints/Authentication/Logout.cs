@@ -5,8 +5,8 @@ public class Logout : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/logout", async (
-            HttpContext context,
-            ISender sender) =>
+            [FromServices] HttpContext context,
+            [FromServices] ISender sender) =>
         {
             const string cookieName = "refresh_token";
             if (!context.Request.Cookies.TryGetValue(cookieName, out var refresh) || string.IsNullOrWhiteSpace(refresh))
