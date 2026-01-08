@@ -22,6 +22,8 @@ global using PaymentModel = Billing.TimeCafe.Domain.Models.Payment;
 global using TransactionModel = Billing.TimeCafe.Domain.Models.Transaction;
 
 global using FluentAssertions;
+global using FluentValidation;
+global using MediatR;
 
 global using MassTransit;
 
