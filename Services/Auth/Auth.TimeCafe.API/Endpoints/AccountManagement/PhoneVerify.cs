@@ -8,8 +8,8 @@ public class PhoneVerify : ICarterModule
             .WithTags("SMS");
 
         group.MapPost("verifySMS-mock", async (
-            ISender sender,
-            ClaimsPrincipal user,
+            [FromServices] ISender sender,
+            [FromServices] ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
@@ -30,8 +30,8 @@ public class PhoneVerify : ICarterModule
         .WithDescription("Тестовый endpoint: проверяет SMS-код для подтверждения телефона без реального взаимодействия с сервисом. Возвращает результат проверки, количество оставшихся попыток и необходимость капчи.");
 
         group.MapPost("verifySMS", async (
-            ISender sender,
-            ClaimsPrincipal user,
+            [FromServices] ISender sender,
+            [FromServices] ClaimsPrincipal user,
             [FromBody] PhoneVerificationRequest model
         ) =>
         {

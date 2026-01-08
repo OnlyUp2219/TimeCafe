@@ -10,9 +10,9 @@ public sealed class ChangePassword : ICarterModule
 
         group.MapPost("/change-password",
         async (
-        ChangePasswordRequest request,
-        ClaimsPrincipal principal,
-        ISender sender
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] ClaimsPrincipal principal,
+        [FromServices] ISender sender
         ) =>
         {
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);

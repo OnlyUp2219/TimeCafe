@@ -4,14 +4,18 @@ public class ExternalProviders : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/authenticate/login/google", async ([FromQuery] string returnUrl, SignInManager<ApplicationUser> signInManager) =>
+        app.MapGet("/authenticate/login/google", async (
+            [FromQuery] string returnUrl, 
+            [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Google"]);
         })
             .WithTags("ExternalProviders");
-        app.MapGet("/authenticate/login/microsoft", async ([FromQuery] string returnUrl, SignInManager<ApplicationUser> signInManager) =>
+        app.MapGet("/authenticate/login/microsoft", async (
+            [FromQuery] string returnUrl, 
+            [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
@@ -21,12 +25,12 @@ public class ExternalProviders : ICarterModule
 
         app.MapGet("/authenticate/login/google/callback", async (
             [FromQuery] string returnUrl,
-            HttpContext context,
-            SignInManager<ApplicationUser> signInManager,
-            IJwtService jwtService,
-            UserManager<ApplicationUser> userManager,
-            ApplicationDbContext db,
-            ILogger<ExternalProviders> logger) =>
+            [FromServices] HttpContext context,
+            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromServices] IJwtService jwtService,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] ApplicationDbContext db,
+            [FromServices] ILogger<ExternalProviders> logger) =>
         {
             var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
 
@@ -121,12 +125,12 @@ public class ExternalProviders : ICarterModule
             .WithTags("ExternalProviders");
         app.MapGet("/authenticate/login/microsoft/callback", async (
             [FromQuery] string returnUrl,
-            HttpContext context,
-            SignInManager<ApplicationUser> signInManager,
-            IJwtService jwtService,
-            UserManager<ApplicationUser> userManager,
-            ApplicationDbContext db,
-            ILogger<ExternalProviders> logger) =>
+            [FromServices] HttpContext context,
+            [FromServices] SignInManager<ApplicationUser> signInManager,
+            [FromServices] IJwtService jwtService,
+            [FromServices] UserManager<ApplicationUser> userManager,
+            [FromServices] ApplicationDbContext db,
+            [FromServices] ILogger<ExternalProviders> logger) =>
         {
             var result = await context.AuthenticateAsync(IdentityConstants.ExternalScheme);
 

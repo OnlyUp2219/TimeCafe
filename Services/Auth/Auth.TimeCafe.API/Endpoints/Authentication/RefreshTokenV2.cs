@@ -5,9 +5,9 @@ public class RefreshTokenV2 : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/refresh-jwt-v2", async (
-            HttpContext context,
-            ISender sender,
-            IConfiguration configuration) =>
+            [FromServices] HttpContext context,
+            [FromServices] ISender sender,
+            [FromServices] IConfiguration configuration) =>
         {
             if (!context.Request.Cookies.TryGetValue("refresh_token", out var refreshToken) || string.IsNullOrWhiteSpace(refreshToken))
                 return Results.Unauthorized();
