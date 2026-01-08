@@ -7,7 +7,7 @@ public class EmailResend : ICarterModule
         var group = app.MapGroup("/email").WithTags("EmailConfirmation");
 
         group.MapPost("/resend", async (
-            [FromBody] ResendConfirmationRequest request, 
+            [FromBody] ResendConfirmationRequest request,
             [FromServices] ISender sender) =>
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
@@ -26,7 +26,7 @@ public class EmailResend : ICarterModule
 
 
         group.MapPost("/resend-mock", async (
-            [FromBody] ResendConfirmationRequest request, 
+            [FromBody] ResendConfirmationRequest request,
             [FromServices] ISender sender) =>
         {
             var command = new ResendConfirmationCommand(request.Email, SendEmail: false);

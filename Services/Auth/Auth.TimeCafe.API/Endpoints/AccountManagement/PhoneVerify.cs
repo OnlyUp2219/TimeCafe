@@ -5,6 +5,7 @@ public class PhoneVerify : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/twilio")
+            .RequireAuthorization()
             .WithTags("SMS");
 
         group.MapPost("verifySMS-mock", async (

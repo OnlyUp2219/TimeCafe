@@ -5,7 +5,6 @@ public sealed class ChangePassword : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/account")
-        .RequireAuthorization()
         .WithTags("Authentication");
 
         group.MapPost("/change-password",
@@ -31,6 +30,7 @@ public sealed class ChangePassword : ICarterModule
             );
 
         })
+        .RequireAuthorization()
         .WithName("ChangePassword")
         .WithSummary("Смена пароля текущего пользователя")
         .WithDescription("Позволяет авторизованному пользователю сменить свой пароль. Требует текущий и новый пароль. Возвращает сообщение об успехе и количество отозванных refresh-токенов.");
