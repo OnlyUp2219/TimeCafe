@@ -5,22 +5,29 @@ public class ExternalProviders : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/authenticate/login/google", async (
-            [FromQuery] string returnUrl, 
+            [FromQuery] string returnUrl,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Google"]);
         })
+            .WithName("GoogleLogin")
+            .WithSummary("Инициирует вход через Google")
+            .WithDescription("Перенаправляет пользователя на страницу аутентификации Google. После успешной аутентификации пользователь будет перенаправлен на callback URL.")
             .WithTags("ExternalProviders");
+
         app.MapGet("/authenticate/login/microsoft", async (
-            [FromQuery] string returnUrl, 
+            [FromQuery] string returnUrl,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Microsoft"]);
         })
+            .WithName("MicrosoftLogin")
+            .WithSummary("Инициирует вход через Microsoft")
+            .WithDescription("Перенаправляет пользователя на страницу аутентификации Microsoft. После успешной аутентификации пользователь будет перенаправлен на callback URL.")
             .WithTags("ExternalProviders");
 
         app.MapGet("/authenticate/login/google/callback", async (
@@ -122,7 +129,11 @@ public class ExternalProviders : ICarterModule
             var hasPassword = await userManager.HasPasswordAsync(user) ? "true" : "false";
             return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}&emailConfirmed=true&hasPassword={hasPassword}");
         })
+            .WithName("GoogleLoginCallback")
+            .WithSummary("Обрабатывает callback от Google после аутентификации")
+            .WithDescription("Принимает ответ от Google, создает или обновляет пользователя в системе, генерирует JWT токены и перенаправляет на указанный URL с токенами.")
             .WithTags("ExternalProviders");
+
         app.MapGet("/authenticate/login/microsoft/callback", async (
             [FromQuery] string returnUrl,
             [FromServices] HttpContext context,
@@ -221,6 +232,9 @@ public class ExternalProviders : ICarterModule
             var hasPassword = await userManager.HasPasswordAsync(user) ? "true" : "false";
             return Results.Redirect($"{returnUrl}#access_token={userTokens.AccessToken}&refresh_token={userTokens.RefreshToken}&emailConfirmed=true&hasPassword={hasPassword}");
         })
+            .WithName("MicrosoftLoginCallback")
+            .WithSummary("Обрабатывает callback от Microsoft после аутентификации")
+            .WithDescription("Принимает ответ от Microsoft, создает или обновляет пользователя в системе, генерирует JWT токены и перенаправляет на указанный URL с токенами.")
             .WithTags("ExternalProviders");
     }
 }
