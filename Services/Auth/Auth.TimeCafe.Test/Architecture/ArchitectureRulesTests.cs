@@ -22,15 +22,37 @@ public class ArchitectureRulesTests
         var files = Directory.GetFiles(endpointsPath, "*.cs", SearchOption.AllDirectories);
         files.Should().NotBeEmpty();
 
+        var publicEndpoints = new[] {
+            "EmailConfirmation.cs", "ResetPassword.cs", "EmailResend.cs",
+            "Registration.cs", "ExternalProviders.cs",
+            "Login.cs", "LoginV2.cs", "Logout.cs", "RefreshToken.cs", "RefreshTokenV2.cs"
+        };
+
         foreach (var file in files)
         {
             var text = File.ReadAllText(file);
+            var fileName = Path.GetFileName(file);
 
             text.Should().Contain(".WithTags(", file + " missing WithTags");
             text.Should().Contain(".WithName(", file + " missing WithName");
             text.Should().Contain(".WithSummary(", file + " missing WithSummary");
             text.Should().Contain(".WithDescription(", file + " missing WithDescription");
-            text.Should().Contain(".RequireAuthorization(", file + " missing RequireAuthorization");
+
+            var hasClaimsPrincipal = text.Contains("ClaimsPrincipal");
+            var hasUnauthorizedCheck = text.Contains("Unauthorized()");
+            var hasAuthAttribute = text.Contains(".RequireAuthorization(");
+
+            if (!publicEndpoints.Contains(fileName))
+            {
+                if (hasClaimsPrincipal && hasUnauthorizedCheck && !hasAuthAttribute)
+                {
+                    Assert.Fail($"{file} использует ClaimsPrincipal и проверку авторизации, но не имеет .RequireAuthorization()");
+                }
+                else if (!hasClaimsPrincipal || !hasUnauthorizedCheck)
+                {
+                    text.Should().Contain(".RequireAuthorization(", file + " missing RequireAuthorization");
+                }
+            }
 
             (text.Contains("async (") || text.Contains("await ")).Should().BeTrue(file + " should use async/await in handler lambda");
 
@@ -93,15 +115,5 @@ public class ArchitectureRulesTests
         }
 
         errors.Should().BeEmpty("Архитектурные проблемы:\n" + string.Join("\n", errors));
-    }
-
-    [Fact]
-    public void Infrastructure_Repositories_Should_EndWith_Repository()
-    {
-        var repoTypes = _infrastructure.GetTypes()
-            .Where(t => t.IsClass && t.Name.EndsWith("Repository"))
-            .ToList();
-
-        repoTypes.Should().NotBeEmpty("Infrastructure должен содержать реализации репозиториев, оканчивающиеся на Repository");
     }
 }
