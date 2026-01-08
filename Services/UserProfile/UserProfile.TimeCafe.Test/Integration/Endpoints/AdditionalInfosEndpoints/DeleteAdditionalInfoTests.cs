@@ -42,6 +42,6 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var response = await Client.DeleteAsync($"/infos/{invalidGuid}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 }
