@@ -2,6 +2,15 @@ namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record class LogoutCommand(string RefreshToken) : IRequest<LogoutResult>;
 
+public class LogoutCommandValidator : AbstractValidator<LogoutCommand>
+{
+    public LogoutCommandValidator()
+    {
+        RuleFor(x => x.RefreshToken)
+            .NotEmpty().WithMessage("Refresh token обязателен");
+    }
+}
+
 public record class LogoutResult(
     bool Success,
     bool Revoked,

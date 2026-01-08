@@ -2,6 +2,15 @@ namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record class RefreshTokenCommand(string RefreshToken) : IRequest<RefreshTokenResult>;
 
+public class RefreshTokenCommandValidator : AbstractValidator<RefreshTokenCommand>
+{
+    public RefreshTokenCommandValidator()
+    {
+        RuleFor(x => x.RefreshToken)
+            .NotEmpty().WithMessage("Refresh token обязателен");
+    }
+}
+
 public record class RefreshTokenResult(
     bool Success,
     string? Code = null,
