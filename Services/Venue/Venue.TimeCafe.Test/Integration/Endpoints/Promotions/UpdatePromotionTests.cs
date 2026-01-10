@@ -99,7 +99,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenNameIsInvalid(string invalidName)
+    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenNameIsInvalid(string? invalidName)
     {
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);

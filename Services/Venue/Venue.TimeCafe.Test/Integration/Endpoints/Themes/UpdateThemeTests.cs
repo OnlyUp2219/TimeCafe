@@ -95,7 +95,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Endpoint_UpdateTheme_Should_Return422_WhenNameIsInvalid(string invalidName)
+    public async Task Endpoint_UpdateTheme_Should_Return422_WhenNameIsInvalid(string? invalidName)
     {
         var theme = await SeedThemeAsync("Исходная тема");
         var dto = new

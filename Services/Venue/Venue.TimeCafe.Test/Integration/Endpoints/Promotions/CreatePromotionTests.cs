@@ -36,7 +36,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Endpoint_CreatePromotion_Should_Return422_WhenNameIsInvalid(string invalidName)
+    public async Task Endpoint_CreatePromotion_Should_Return422_WhenNameIsInvalid(string? invalidName)
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new

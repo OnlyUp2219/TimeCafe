@@ -37,7 +37,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Theory]
     [InlineData("")]
     [InlineData(null)]
-    public async Task Endpoint_CreateTariff_Should_Return422_WhenNameIsInvalid(string invalidName)
+    public async Task Endpoint_CreateTariff_Should_Return422_WhenNameIsInvalid(string? invalidName)
     {
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync(TestData.DefaultValues.DefaultThemeName);

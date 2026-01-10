@@ -102,7 +102,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             var tariffJson = json;
             if (json.TryGetProperty("tariff", out var t)) tariffJson = t;
-            string nameValue = null;
+            string? nameValue = null;
             if (tariffJson.TryGetProperty("name", out var n)) nameValue = n.GetString();
             if (tariffJson.TryGetProperty("tariffName", out var tn)) nameValue = tn.GetString();
             nameValue.Should().Be(TestData.NewTariffs.NewTariff2Name);

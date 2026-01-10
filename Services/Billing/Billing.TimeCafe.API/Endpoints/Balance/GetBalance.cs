@@ -15,7 +15,7 @@ public class GetBalance : ICarterModule
                 // TODO : Add Mapping
                 balance = new
                 {
-                    r.Balance.UserId,
+                    r.Balance!.UserId,
                     r.Balance.CurrentBalance,
                     r.Balance.TotalDeposited,
                     r.Balance.TotalSpent,
