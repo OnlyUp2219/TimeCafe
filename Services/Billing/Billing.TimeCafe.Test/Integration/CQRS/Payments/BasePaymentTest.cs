@@ -34,7 +34,7 @@ public abstract class BasePaymentTest : IDisposable
             ExternalPaymentId = externalPaymentId
         };
 
-        await repo.CreateAsync(payment);
+        await repo.CreateAsync(payment, CancellationToken.None);
         return payment;
     }
 
@@ -70,14 +70,14 @@ public abstract class BasePaymentTest : IDisposable
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-        return await repo.GetByIdAsync(paymentId);
+        return await repo.GetByIdAsync(paymentId, CancellationToken.None);
     }
 
     protected async Task<BalanceModel?> GetBalanceByUserIdAsync(Guid userId)
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        return await repo.GetByUserIdAsync(userId);
+        return await repo.GetByUserIdAsync(userId, CancellationToken.None);
     }
 
     protected async Task<List<PaymentModel>> GetPaymentsByUserIdAsync(Guid userId, int page = 1, int pageSize = 100)
