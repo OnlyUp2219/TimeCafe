@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetTransactionHistoryQuery(Guid UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
+public record GetTransactionHistoryQuery(string UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
 
 public record GetTransactionHistoryResult(
     bool Success,
@@ -28,7 +28,7 @@ public class GetTransactionHistoryQueryValidator : AbstractValidator<GetTransact
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => x != Guid.Empty).WithMessage("Пользователь не найден");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.Page)
             .GreaterThan(0).WithMessage("Страница должна быть больше 0");
@@ -45,8 +45,10 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
 
     public async Task<GetTransactionHistoryResult> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken)
     {
+        var userId = Guid.Parse(request.UserId);
+
         var transactions = await _repository.GetByUserIdAsync(
-            request.UserId,
+            userId,
             request.Page,
             request.PageSize,
             cancellationToken);
@@ -56,7 +58,7 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
             return GetTransactionHistoryResult.GetSuccess(new List<TransactionDto>(), 0, request.PageSize);
         }
 
-        var totalCount = await _repository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
+        var totalCount = await _repository.GetTotalCountByUserIdAsync(userId, cancellationToken);
 
         var dtos = transactions.Select(t => new TransactionDto(
             t.TransactionId,

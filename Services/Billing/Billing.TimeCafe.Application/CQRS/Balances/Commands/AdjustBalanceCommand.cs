@@ -1,11 +1,11 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
 public record AdjustBalanceCommand(
-    Guid UserId,
+    string UserId,
     decimal Amount,
     TransactionType Type,
     TransactionSource Source,
-    Guid? SourceId = null,
+    string? SourceId = null,
     string? Comment = null) : IRequest<AdjustBalanceResult>;
 
 public record AdjustBalanceResult(
@@ -38,7 +38,12 @@ public class AdjustBalanceCommandValidator : AbstractValidator<AdjustBalanceComm
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => x != Guid.Empty).WithMessage("Пользователь не найден");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+
+        RuleFor(x => x.SourceId)
+            .Must(x => string.IsNullOrEmpty(x) || (Guid.TryParse(x, out var guid) && guid != Guid.Empty))
+            .WithMessage("Некорректный SourceId")
+            .When(x => !string.IsNullOrEmpty(x.SourceId));
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля");
@@ -57,18 +62,21 @@ public class AdjustBalanceCommandHandler(
 
     public async Task<AdjustBalanceResult> Handle(AdjustBalanceCommand request, CancellationToken cancellationToken)
     {
-        if (request.SourceId.HasValue)
+        var userId = Guid.Parse(request.UserId);
+        var sourceId = !string.IsNullOrEmpty(request.SourceId) ? Guid.Parse(request.SourceId) : (Guid?)null;
+
+        if (sourceId.HasValue)
         {
             var duplicate = await _transactionRepository.ExistsBySourceAsync(
-                request.Source, request.SourceId.Value, cancellationToken);
+                request.Source, sourceId.Value, cancellationToken);
             if (duplicate)
                 return AdjustBalanceResult.DuplicateTransaction();
         }
 
-        var balance = await _balanceRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var balance = await _balanceRepository.GetByUserIdAsync(userId, cancellationToken);
         if (balance == null)
         {
-            balance = new Balance(request.UserId);
+            balance = new Balance(userId);
             balance = await _balanceRepository.CreateAsync(balance, cancellationToken);
         }
 
@@ -91,11 +99,11 @@ public class AdjustBalanceCommandHandler(
         var transaction = new Transaction
         {
             TransactionId = Guid.NewGuid(),
-            UserId = request.UserId,
+            UserId = userId,
             Amount = request.Amount,
             Type = request.Type,
             Source = request.Source,
-            SourceId = request.SourceId,
+            SourceId = sourceId,
             Status = TransactionStatus.Completed,
             Comment = request.Comment,
             CreatedAt = DateTimeOffset.UtcNow,
