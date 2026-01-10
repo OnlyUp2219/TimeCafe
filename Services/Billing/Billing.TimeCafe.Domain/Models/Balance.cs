@@ -12,6 +12,13 @@ public class Balance
         UserId = userId;
     }
 
+    public Balance(string userId)
+    {
+        if (!Guid.TryParse(userId, out var guid) || guid == Guid.Empty)
+            throw new ArgumentException("Некорректный ID пользователя", nameof(userId));
+        UserId = guid;
+    }
+
     public Guid UserId { get; set; }
     public decimal CurrentBalance { get; set; } = 0;
     public decimal TotalDeposited { get; set; } = 0;

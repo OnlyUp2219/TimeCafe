@@ -12,6 +12,13 @@ public class Payment
         PaymentId = paymentId;
     }
 
+    public Payment(string paymentId)
+    {
+        if (!Guid.TryParse(paymentId, out var guid) || guid == Guid.Empty)
+            throw new ArgumentException("Некорректный ID платежа", nameof(paymentId));
+        PaymentId = guid;
+    }
+
     public Guid PaymentId { get; set; }
     public Guid UserId { get; set; }
     public decimal Amount { get; set; }
