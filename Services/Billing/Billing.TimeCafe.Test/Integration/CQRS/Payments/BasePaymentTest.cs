@@ -38,6 +38,45 @@ public abstract class BasePaymentTest : IDisposable
         return payment;
     }
 
+    protected async Task<PaymentModel> CreatePaymentAsync(
+        string paymentId,
+        string userId,
+        decimal amount,
+        PaymentStatus status = PaymentStatus.Pending,
+        string? externalPaymentId = null)
+        => await CreatePaymentAsync(
+            Guid.Parse(paymentId),
+            Guid.Parse(userId),
+            amount,
+            status,
+            externalPaymentId);
+
+    protected async Task<PaymentModel> CreatePaymentAsync(
+        string paymentId,
+        Guid userId,
+        decimal amount,
+        PaymentStatus status = PaymentStatus.Pending,
+        string? externalPaymentId = null)
+        => await CreatePaymentAsync(
+            Guid.Parse(paymentId),
+            userId,
+            amount,
+            status,
+            externalPaymentId);
+
+    protected async Task<PaymentModel> CreatePaymentAsync(
+        Guid paymentId,
+        string userId,
+        decimal amount,
+        PaymentStatus status = PaymentStatus.Pending,
+        string? externalPaymentId = null)
+        => await CreatePaymentAsync(
+            paymentId,
+            Guid.Parse(userId),
+            amount,
+            status,
+            externalPaymentId);
+
     protected async Task<PaymentModel> CreatePendingPaymentAsync(Guid paymentId, Guid userId)
         => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending);
 
@@ -50,6 +89,17 @@ public abstract class BasePaymentTest : IDisposable
     protected async Task<PaymentModel> CreateCancelledPaymentAsync(Guid paymentId, Guid userId)
         => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Cancelled);
 
+    protected async Task<PaymentModel> CreatePendingPaymentAsync(string paymentId, string userId)
+        => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending);
+
+    protected async Task<PaymentModel> CreateCompletedPaymentAsync(string paymentId, string userId, string externalPaymentId)
+        => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Completed, externalPaymentId);
+
+    protected async Task<PaymentModel> CreateFailedPaymentAsync(string paymentId, string userId)
+        => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Failed);
+
+    protected async Task<PaymentModel> CreateCancelledPaymentAsync(string paymentId, string userId)
+        => await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Cancelled);
     protected async Task<BalanceModel> CreateBalanceAsync(Guid userId, decimal balance = 0m)
     {
         using var scope = CreateScope();
@@ -66,12 +116,18 @@ public abstract class BasePaymentTest : IDisposable
         return balanceModel;
     }
 
+    protected async Task<BalanceModel> CreateBalanceAsync(string userId, decimal balance = 0m)
+        => await CreateBalanceAsync(Guid.Parse(userId), balance);
+
     protected async Task<PaymentModel?> GetPaymentByIdAsync(Guid paymentId)
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
         return await repo.GetByIdAsync(paymentId, CancellationToken.None);
     }
+
+    protected async Task<PaymentModel?> GetPaymentByIdAsync(string paymentId)
+        => await GetPaymentByIdAsync(Guid.Parse(paymentId));
 
     protected async Task<BalanceModel?> GetBalanceByUserIdAsync(Guid userId)
     {
@@ -80,12 +136,18 @@ public abstract class BasePaymentTest : IDisposable
         return await repo.GetByUserIdAsync(userId, CancellationToken.None);
     }
 
+    protected async Task<BalanceModel?> GetBalanceByUserIdAsync(string userId)
+        => await GetBalanceByUserIdAsync(Guid.Parse(userId));
+
     protected async Task<List<PaymentModel>> GetPaymentsByUserIdAsync(Guid userId, int page = 1, int pageSize = 100)
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
         return await repo.GetByUserIdAsync(userId, page, pageSize);
     }
+
+    protected async Task<List<PaymentModel>> GetPaymentsByUserIdAsync(string userId, int page = 1, int pageSize = 100)
+        => await GetPaymentsByUserIdAsync(Guid.Parse(userId), page, pageSize);
 
     protected StripeWebhookPayload CreateStripeSuccessWebhook(
         string paymentIntentId,
