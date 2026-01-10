@@ -12,8 +12,8 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         var payment = new PaymentModel()
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.DefaultAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online,
             CreatedAt = createdAt
         };
@@ -22,8 +22,8 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         result.Should().NotBeNull();
         result.PaymentId.Should().NotBe(Guid.Empty);
-        result.UserId.Should().Be(Defaults.UserId);
-        result.Amount.Should().Be(Defaults.DefaultAmount);
+        result.UserId.Should().Be(DefaultsGuid.UserId);
+        result.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.Status.Should().Be(PaymentStatus.Pending);
         result.CreatedAt.Should().Be(createdAt);
 
@@ -40,8 +40,8 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         var payment = new PaymentModel()
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.DefaultAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online
         };
 
@@ -62,15 +62,15 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         var payment1 = new PaymentModel()
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.DefaultAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online
         };
 
         var payment2 = new PaymentModel()
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.SmallAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.SmallAmount,
             PaymentMethod = PaymentMethod.Online
         };
 
@@ -92,8 +92,8 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         var payment = new PaymentModel()
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.DefaultAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online,
             CreatedAt = createdAt
         };
@@ -101,8 +101,8 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
         var result = await repository.CreateAsync(payment);
 
         result.PaymentId.Should().NotBe(Guid.Empty);
-        result.UserId.Should().Be(Defaults.UserId);
-        result.Amount.Should().Be(Defaults.DefaultAmount);
+        result.UserId.Should().Be(DefaultsGuid.UserId);
+        result.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.PaymentMethod.Should().Be(PaymentMethod.Online);
         result.CreatedAt.Should().Be(createdAt);
     }
@@ -116,10 +116,10 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
-        var payment = new PaymentModel(Defaults.PaymentId)
+        var payment = new PaymentModel(DefaultsGuid.PaymentId)
         {
-            UserId = Defaults.UserId,
-            Amount = Defaults.DefaultAmount,
+            UserId = DefaultsGuid.UserId,
+            Amount = DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online,
             Status = PaymentStatus.Pending,
             CreatedAt = new DateTimeOffset(2025, 01, 01, 10, 00, 00, TimeSpan.Zero)
@@ -127,7 +127,7 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         await repository.CreateAsync(payment);
 
-        var cacheKey = CacheKeys.Payment_ById(Defaults.PaymentId);
+        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
         var cachedValue = await cache.GetStringAsync(cacheKey);
         cachedValue.Should().NotBeNullOrEmpty();
     }

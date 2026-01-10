@@ -6,7 +6,7 @@ public class ExistsAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_ExistsAsync_Should_ReturnTrue_WhenBalanceExists()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
@@ -21,7 +21,7 @@ public class ExistsAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_ExistsAsync_Should_ReturnFalse_WhenBalanceNotExists()
     {
 
-        var nonExistentUserId = Defaults.UserId2;
+        var nonExistentUserId = DefaultsGuid.UserId2;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -35,9 +35,9 @@ public class ExistsAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_ExistsAsync_Should_CheckMultipleUsers()
     {
 
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
-        var nonExistentUserId = Defaults.UserId3;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
+        var nonExistentUserId = DefaultsGuid.UserId3;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();

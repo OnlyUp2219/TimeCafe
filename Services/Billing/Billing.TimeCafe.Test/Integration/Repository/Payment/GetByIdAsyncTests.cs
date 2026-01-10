@@ -5,17 +5,17 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_GetByIdAsync_Should_ReturnPayment_WhenExists()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var result = await repository.GetByIdAsync(Defaults.PaymentId);
+        var result = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
 
         result.Should().NotBeNull();
-        result!.PaymentId.Should().Be(Defaults.PaymentId);
-        result.UserId.Should().Be(Defaults.UserId);
-        result.Amount.Should().Be(Defaults.DefaultAmount);
+        result!.PaymentId.Should().Be(DefaultsGuid.PaymentId);
+        result.UserId.Should().Be(DefaultsGuid.UserId);
+        result.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.Status.Should().Be(PaymentStatus.Pending);
     }
 
@@ -25,7 +25,7 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var result = await repository.GetByIdAsync(InvalidData.NonExistentPaymentId);
+        var result = await repository.GetByIdAsync(InvalidDataGuid.NonExistentPaymentId);
 
         result.Should().BeNull();
     }
@@ -34,19 +34,19 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
     public async Task Repository_GetByIdAsync_Should_ReturnFromCache_WhenCalledTwice()
     {
         await ClearCacheAsync();
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
-        var result1 = await repository.GetByIdAsync(Defaults.PaymentId);
+        var result1 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
 
-        var cacheKey = CacheKeys.Payment_ById(Defaults.PaymentId);
+        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
         var cachedValue = await cache.GetStringAsync(cacheKey);
         cachedValue.Should().NotBeNullOrEmpty();
 
-        var result2 = await repository.GetByIdAsync(Defaults.PaymentId);
+        var result2 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
 
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
@@ -59,7 +59,7 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var result = await repository.GetByIdAsync(InvalidData.EmptyUserId);
+        var result = await repository.GetByIdAsync(InvalidDataGuid.EmptyUserId);
 
         result.Should().BeNull();
     }
@@ -74,14 +74,14 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
         {
             var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-            var payment = new PaymentModel(Defaults.PaymentId)
+            var payment = new PaymentModel(DefaultsGuid.PaymentId)
             {
-                UserId = Defaults.UserId,
-                Amount = Defaults.DefaultAmount,
+                UserId = DefaultsGuid.UserId,
+                Amount = DefaultsGuid.DefaultAmount,
                 PaymentMethod = PaymentMethod.Online,
                 ExternalPaymentId = Defaults.StripePaymentIntentId,
                 Status = PaymentStatus.Completed,
-                TransactionId = Defaults.TransactionId,
+                TransactionId = DefaultsGuid.TransactionId,
                 ExternalData = "{\"k\":\"v\"}",
                 CreatedAt = createdAt,
                 CompletedAt = completedAt,
@@ -94,16 +94,16 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
         using var scope2 = CreateScope();
         var repository2 = scope2.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var result = await repository2.GetByIdAsync(Defaults.PaymentId);
+        var result = await repository2.GetByIdAsync(DefaultsGuid.PaymentId);
 
         result.Should().NotBeNull();
-        result!.PaymentId.Should().Be(Defaults.PaymentId);
-        result.UserId.Should().Be(Defaults.UserId);
-        result.Amount.Should().Be(Defaults.DefaultAmount);
+        result!.PaymentId.Should().Be(DefaultsGuid.PaymentId);
+        result.UserId.Should().Be(DefaultsGuid.UserId);
+        result.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.PaymentMethod.Should().Be(PaymentMethod.Online);
         result.ExternalPaymentId.Should().Be(Defaults.StripePaymentIntentId);
         result.Status.Should().Be(PaymentStatus.Completed);
-        result.TransactionId.Should().Be(Defaults.TransactionId);
+        result.TransactionId.Should().Be(DefaultsGuid.TransactionId);
         result.ExternalData.Should().Be("{\"k\":\"v\"}");
         result.CreatedAt.Should().Be(createdAt);
         result.CompletedAt.Should().Be(completedAt);

@@ -14,8 +14,8 @@ public class GetByIdAsyncTests : BaseTransactionRepositoryTest
 
         result.Should().NotBeNull();
         result!.TransactionId.Should().Be(createdTransaction.TransactionId);
-        result.UserId.Should().Be(Defaults.UserId);
-        result.Amount.Should().Be(Defaults.DefaultAmount);
+        result.UserId.Should().Be(DefaultsGuid.UserId);
+        result.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.Type.Should().Be(TransactionType.Deposit);
     }
 
@@ -57,7 +57,7 @@ public class GetByIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetById_Should_ReturnEmptyGuid_AsValidId()
     {
-        var emptyGuid = InvalidData.EmptyUserId;
+        var emptyGuid = InvalidDataGuid.EmptyUserId;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();

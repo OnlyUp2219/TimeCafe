@@ -8,61 +8,61 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_UpdateAsync_Should_UpdateBalance_WhenExists()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var initialBalance = new BalanceModel(userId)
         {
-            CurrentBalance = Defaults.DefaultAmount,
-            TotalDeposited = Defaults.DefaultAmount
+            CurrentBalance = DefaultsGuid.DefaultAmount,
+            TotalDeposited = DefaultsGuid.DefaultAmount
         };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var created = await repository.CreateAsync(initialBalance);
 
-        created.CurrentBalance = Defaults.UpdatedAmount;
-        created.TotalDeposited = Defaults.UpdatedAmount;
+        created.CurrentBalance = DefaultsGuid.UpdatedAmount;
+        created.TotalDeposited = DefaultsGuid.UpdatedAmount;
         created.LastUpdated = DateTimeOffset.UtcNow;
 
         var updated = await repository.UpdateAsync(created);
 
-        updated.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
-        updated.TotalDeposited.Should().Be(Defaults.UpdatedAmount);
+        updated.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
+        updated.TotalDeposited.Should().Be(DefaultsGuid.UpdatedAmount);
 
         var retrieved = await repository.GetByUserIdAsync(userId);
-        retrieved.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
+        retrieved!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdateDebt_WhenDebtIncreases()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
             CurrentBalance = 0m,
-            Debt = Defaults.DebtAmount
+            Debt = DefaultsGuid.DebtAmount
         };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         await repository.CreateAsync(balance);
 
-        balance.Debt = Defaults.UpdatedAmount;
+        balance.Debt = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
         var updated = await repository.UpdateAsync(balance);
 
-        updated.Debt.Should().Be(Defaults.UpdatedAmount);
+        updated.Debt.Should().Be(DefaultsGuid.UpdatedAmount);
 
         var retrieved = await repository.GetByUserIdAsync(userId);
-        retrieved.Debt.Should().Be(Defaults.UpdatedAmount);
+        retrieved!.Debt.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_InvalidateCache()
     {
 
-        var userId = Defaults.UserId;
-        var balance = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
+        var userId = DefaultsGuid.UserId;
+        var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -70,20 +70,20 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
         await repository.CreateAsync(balance);
         var cached1 = await repository.GetByUserIdAsync(userId);
 
-        balance.CurrentBalance = Defaults.UpdatedAmount;
+        balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
         await repository.UpdateAsync(balance);
 
         var retrieved = await repository.GetByUserIdAsync(userId);
 
-        retrieved.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
+        retrieved!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdateLastUpdated()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId);
         var initialCreatedAt = balance.CreatedAt;
 
@@ -91,7 +91,7 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var created = await repository.CreateAsync(balance);
 
-        created.CurrentBalance = Defaults.UpdatedAmount;
+        created.CurrentBalance = DefaultsGuid.UpdatedAmount;
         var newLastUpdated = DateTimeOffset.UtcNow.AddHours(1);
         created.LastUpdated = newLastUpdated;
 
@@ -105,36 +105,36 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_UpdateAsync_Should_HandleMultipleUpdates()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId) { CurrentBalance = 0m };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var created = await repository.CreateAsync(balance);
 
-        created.CurrentBalance = Defaults.SmallAmount;
+        created.CurrentBalance = DefaultsGuid.SmallAmount;
         created.LastUpdated = DateTimeOffset.UtcNow;
         var update1 = await repository.UpdateAsync(created);
 
-        update1.CurrentBalance = Defaults.DefaultAmount;
+        update1.CurrentBalance = DefaultsGuid.DefaultAmount;
         update1.LastUpdated = DateTimeOffset.UtcNow;
         var update2 = await repository.UpdateAsync(update1);
 
-        update2.CurrentBalance = Defaults.UpdatedAmount;
+        update2.CurrentBalance = DefaultsGuid.UpdatedAmount;
         update2.LastUpdated = DateTimeOffset.UtcNow;
         var update3 = await repository.UpdateAsync(update2);
 
-        update3.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
+        update3.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
 
         var final = await repository.GetByUserIdAsync(userId);
-        final.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
+        final!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_HandleZeroBalance()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
@@ -151,30 +151,30 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_UpdateAsync_Should_HandleNegativeBalance()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.CurrentBalance = -Defaults.DefaultAmount;
+        balance.CurrentBalance = -DefaultsGuid.DefaultAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         var result = await repository.UpdateAsync(balance);
 
-        result.CurrentBalance.Should().Be(-Defaults.DefaultAmount);
+        result.CurrentBalance.Should().Be(-DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_PreserveCreatedAt()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
         var originalCreatedAt = balance.CreatedAt;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.CurrentBalance = Defaults.UpdatedAmount;
+        balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow.AddHours(1);
 
         var result = await repository.UpdateAsync(balance);
@@ -186,94 +186,94 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_UpdateAsync_Should_HandleDebtIncrease()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.Debt = Defaults.DebtAmount;
+        balance.Debt = DefaultsGuid.DebtAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         var result = await repository.UpdateAsync(balance);
 
-        result.Debt.Should().Be(Defaults.DebtAmount);
+        result.Debt.Should().Be(DefaultsGuid.DebtAmount);
 
-        balance.Debt = Defaults.UpdatedAmount;
+        balance.Debt = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         var result2 = await repository.UpdateAsync(balance);
 
-        result2.Debt.Should().Be(Defaults.UpdatedAmount);
+        result2.Debt.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_HandleDebtDecrease()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.Debt = Defaults.UpdatedAmount;
+        balance.Debt = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
         await repository.UpdateAsync(balance);
 
-        balance.Debt = Defaults.DebtAmount;
+        balance.Debt = DefaultsGuid.DebtAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         var result = await repository.UpdateAsync(balance);
 
-        result.Debt.Should().Be(Defaults.DebtAmount);
+        result.Debt.Should().Be(DefaultsGuid.DebtAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_PersistChangesToDatabase()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.CurrentBalance = Defaults.UpdatedAmount;
+        balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         await repository.UpdateAsync(balance);
 
         var retrieved = await repository.GetByUserIdAsync(userId);
         retrieved.Should().NotBeNull();
-        retrieved.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
+        retrieved.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_HandleAllPropertiesUpdate()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        balance.CurrentBalance = Defaults.UpdatedAmount;
-        balance.TotalDeposited = Defaults.UpdatedAmount + Defaults.DefaultAmount;
-        balance.TotalSpent = Defaults.DefaultAmount;
-        balance.Debt = Defaults.DebtAmount;
+        balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
+        balance.TotalDeposited = DefaultsGuid.UpdatedAmount + DefaultsGuid.DefaultAmount;
+        balance.TotalSpent = DefaultsGuid.DefaultAmount;
+        balance.Debt = DefaultsGuid.DebtAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 
         var result = await repository.UpdateAsync(balance);
 
-        result.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
-        result.TotalDeposited.Should().Be(Defaults.UpdatedAmount + Defaults.DefaultAmount);
-        result.TotalSpent.Should().Be(Defaults.DefaultAmount);
-        result.Debt.Should().Be(Defaults.DebtAmount);
+        result.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
+        result.TotalDeposited.Should().Be(DefaultsGuid.UpdatedAmount + DefaultsGuid.DefaultAmount);
+        result.TotalSpent.Should().Be(DefaultsGuid.DefaultAmount);
+        result.Debt.Should().Be(DefaultsGuid.DebtAmount);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_HandleLargeAmount()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         using var scope = CreateScope();

@@ -6,7 +6,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     public async Task Repository_ParallelGetByUserId_Should_HandleConcurrentReads()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userId);
 
         var tasks = new List<Task<List<TransactionModel>>>();
@@ -30,7 +30,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ParallelCreates_Should_HandleConcurrentCreations()
     {
-        var userIds = new[] { Defaults.UserId, Defaults.UserId2, Defaults.UserId3 };
+        var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
         var createTasks = userIds.Select(userId =>
         {
@@ -40,7 +40,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                 var transaction = TransactionModel.CreateDeposit(
                     userId,
-                    Defaults.DefaultAmount,
+                    DefaultsGuid.DefaultAmount,
                     TransactionSource.Manual);
                 return await repository.CreateAsync(transaction);
             });
@@ -64,7 +64,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     public async Task Repository_ParallelCreatesMultiplePerUser_Should_InvalidateCacheCorrectly()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         var createTasks = Enumerable.Range(0, 5).Select(i =>
         {
@@ -74,7 +74,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                 var transaction = TransactionModel.CreateDeposit(
                     userId,
-                    Defaults.SmallAmount * (i + 1),
+                    DefaultsGuid.SmallAmount * (i + 1),
                     TransactionSource.Manual);
                 return await repository.CreateAsync(transaction);
             });
@@ -94,7 +94,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     public async Task Repository_MixedReadCreateOperations_Should_HandleConcurrentMixedOperations()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userId);
 
         var tasks = new List<Task>();
@@ -118,9 +118,9 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                     var transaction = TransactionModel.CreateWithdrawal(
                         userId,
-                        Defaults.SmallAmount,
+                        DefaultsGuid.SmallAmount,
                         TransactionSource.Visit,
-                        Defaults.TariffId);
+                        DefaultsGuid.TariffId);
                     await repository.CreateAsync(transaction);
                 }));
             }
@@ -137,10 +137,10 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ParallelGetBySource_Should_HandleConcurrentSourceQueries()
     {
-        var sourceId = Defaults.TariffId;
+        var sourceId = DefaultsGuid.TariffId;
         var transaction = TransactionModel.CreateWithdrawal(
-            Defaults.UserId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.UserId,
+            DefaultsGuid.DefaultAmount,
             TransactionSource.Visit,
             sourceId);
 
@@ -170,10 +170,10 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ParallelExistsBySource_Should_HandleConcurrentExistenceChecks()
     {
-        var sourceId = Defaults.PaymentId;
+        var sourceId = DefaultsGuid.PaymentId;
         var transaction = TransactionModel.CreateDeposit(
-            Defaults.UserId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.UserId,
+            DefaultsGuid.DefaultAmount,
             TransactionSource.Payment,
             sourceId);
 
@@ -198,7 +198,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_RapidCreateGetBySource_Should_MaintainConsistency()
     {
-        var sourceIds = new[] { Defaults.TariffId, Defaults.PaymentId };
+        var sourceIds = new[] { DefaultsGuid.TariffId, DefaultsGuid.PaymentId };
         var tasks = sourceIds.SelectMany(sourceId => new List<Task>
         {
             Task.Run(async () =>
@@ -206,8 +206,8 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                 using var scope = CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                 var transaction = TransactionModel.CreateDeposit(
-                    Defaults.UserId,
-                    Defaults.SmallAmount,
+                    DefaultsGuid.UserId,
+                    DefaultsGuid.SmallAmount,
                     TransactionSource.Visit,
                     sourceId);
                 await repository.CreateAsync(transaction);
@@ -229,7 +229,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     public async Task Repository_ConcurrentCreateAndGetTotalCount_Should_BeConsistent()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         var tasks = new List<Task>();
 
@@ -241,7 +241,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
                 var transaction = TransactionModel.CreateDeposit(
                     userId,
-                    Defaults.SmallAmount,
+                    DefaultsGuid.SmallAmount,
                     TransactionSource.Manual);
                 await repository.CreateAsync(transaction);
             }));

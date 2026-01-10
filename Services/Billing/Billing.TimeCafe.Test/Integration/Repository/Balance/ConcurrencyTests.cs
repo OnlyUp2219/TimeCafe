@@ -8,7 +8,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     public async Task Repository_ParallelGetByUserId_Should_HandleConcurrentReads()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         await CreateTestBalanceAsync(userId);
 
         var tasks = new List<Task<BalanceModel?>>();
@@ -27,14 +27,14 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
 
         results.Should().AllSatisfy(r => r.Should().NotBeNull());
         results.Should().AllSatisfy(r => r!.UserId.Should().Be(userId));
-        results.Should().AllSatisfy(r => r!.CurrentBalance.Should().Be(Defaults.DefaultAmount));
+        results.Should().AllSatisfy(r => r!.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount));
     }
 
     [Fact]
     public async Task Repository_ParallelCreates_Should_HandleConcurrentCreations()
     {
 
-        var userIds = new[] { Defaults.UserId, Defaults.UserId2, Defaults.UserId3 };
+        var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
         var createTasks = userIds.Select(userId =>
         {
@@ -44,8 +44,8 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                 var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
                 var balance = new BalanceModel(userId)
                 {
-                    CurrentBalance = Defaults.DefaultAmount,
-                    TotalDeposited = Defaults.DefaultAmount
+                    CurrentBalance = DefaultsGuid.DefaultAmount,
+                    TotalDeposited = DefaultsGuid.DefaultAmount
                 };
                 return await repository.CreateAsync(balance);
             });
@@ -69,7 +69,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     public async Task Repository_ParallelUpdates_Should_HandleConcurrentUpdates()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = await CreateTestBalanceAsync(userId);
 
         var updateTasks = Enumerable.Range(1, 5).Select(async i =>
@@ -77,7 +77,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var current = await repository.GetByUserIdAsync(userId);
-            current!.CurrentBalance = Defaults.DefaultAmount + (i * Defaults.SmallAmount);
+            current!.CurrentBalance = DefaultsGuid.DefaultAmount + (i * DefaultsGuid.SmallAmount);
             current.LastUpdated = DateTimeOffset.UtcNow;
             return await repository.UpdateAsync(current);
         }).ToList();
@@ -88,14 +88,14 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var final = await finalRepo.GetByUserIdAsync(userId);
         final.Should().NotBeNull();
-        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.DefaultAmount);
+        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_MixedOperations_Should_HandleConcurrentReadWriteUpdates()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         await CreateTestBalanceAsync(userId);
 
         var tasks = new List<Task>();
@@ -120,7 +120,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                     var current = await repository.GetByUserIdAsync(userId);
                     if (current != null)
                     {
-                        current.CurrentBalance += Defaults.SmallAmount;
+                        current.CurrentBalance += DefaultsGuid.SmallAmount;
                         current.LastUpdated = DateTimeOffset.UtcNow;
                         await repository.UpdateAsync(current);
                     }
@@ -143,19 +143,19 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var final = await finalRepo.GetByUserIdAsync(userId);
         final.Should().NotBeNull();
-        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.DefaultAmount);
+        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_ParallelGetDebtors_Should_HandleConcurrentQueries()
     {
         await ClearCacheAsync();
-        var debtorIds = new[] { Defaults.UserId, Defaults.UserId2, Defaults.UserId3 };
+        var debtorIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
         foreach (var debtorId in debtorIds)
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            await repository.CreateAsync(new BalanceModel(debtorId) { Debt = Defaults.DebtAmount });
+            await repository.CreateAsync(new BalanceModel(debtorId) { Debt = DefaultsGuid.DebtAmount });
         }
 
         using (var cacheScope = CreateScope())
@@ -180,12 +180,12 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     public async Task Repository_RapidCreateGetUpdate_Should_MaintainConsistency()
     {
 
-        var userIds = new[] { Defaults.UserId, Defaults.UserId2 };
+        var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2 };
         var createTasks = userIds.Select(userId => Task.Run(async () =>
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = new BalanceModel(userId) { CurrentBalance = Defaults.SmallAmount };
+            var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount };
             await repository.CreateAsync(balance);
         })).ToList();
 
@@ -198,7 +198,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var balance = await repository.GetByUserIdAsync(userId);
             if (balance != null)
             {
-                balance.CurrentBalance = Defaults.DefaultAmount;
+                balance.CurrentBalance = DefaultsGuid.DefaultAmount;
                 balance.LastUpdated = DateTimeOffset.UtcNow;
                 await repository.UpdateAsync(balance);
             }
@@ -212,7 +212,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var balance = await repository.GetByUserIdAsync(userId);
             balance.Should().NotBeNull();
-            balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.SmallAmount);
+            balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.SmallAmount);
         })).ToList();
 
         await Task.WhenAll(verifyTasks);
@@ -226,7 +226,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
 
             var balance = await repository.GetByUserIdAsync(userId);
             balance.Should().NotBeNull();
-            balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.SmallAmount);
+            balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.SmallAmount);
         }
     }
 
@@ -234,7 +234,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     public async Task Repository_ConcurrentCacheInvalidation_Should_MaintainCacheConsistency()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         await CreateTestBalanceAsync(userId);
 
         var updateTasks = Enumerable.Range(0, 10).Select(async i =>
@@ -244,7 +244,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var balance = await repository.GetByUserIdAsync(userId);
             if (balance != null)
             {
-                balance.CurrentBalance = Defaults.DefaultAmount + (i * Defaults.SmallAmount);
+                balance.CurrentBalance = DefaultsGuid.DefaultAmount + (i * DefaultsGuid.SmallAmount);
                 balance.LastUpdated = DateTimeOffset.UtcNow;
                 await repository.UpdateAsync(balance);
             }
@@ -263,7 +263,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var final = await finalRepo.GetByUserIdAsync(userId);
         final.Should().NotBeNull();
-        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(Defaults.DefaultAmount);
+        final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
@@ -271,7 +271,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     {
 
         var operationCount = 50;
-        var userIds = new[] { Defaults.UserId, Defaults.UserId2, Defaults.UserId3 };
+        var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
         var tasks = new List<Task>();
 
@@ -289,7 +289,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                         var exists = await repository.ExistsAsync(userId);
                         if (!exists)
                         {
-                            await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = Defaults.SmallAmount });
+                            await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount });
                         }
                     }));
                     break;
@@ -311,7 +311,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                         var balance = await repository.GetByUserIdAsync(userId);
                         if (balance != null)
                         {
-                            balance.CurrentBalance += Defaults.SmallAmount;
+                            balance.CurrentBalance += DefaultsGuid.SmallAmount;
                             balance.LastUpdated = DateTimeOffset.UtcNow;
                             await repository.UpdateAsync(balance);
                         }

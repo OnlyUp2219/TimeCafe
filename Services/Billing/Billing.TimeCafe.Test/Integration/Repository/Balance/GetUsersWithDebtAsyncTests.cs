@@ -20,10 +20,10 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_GetUsersWithDebt_Should_ReturnOnlyUsersWithDebt()
     {
 
-        var debtorUserId = Defaults.UserId;
-        var noDebtUserId = Defaults.UserId2;
+        var debtorUserId = DefaultsGuid.UserId;
+        var noDebtUserId = DefaultsGuid.UserId2;
 
-        var balance1 = new BalanceModel(debtorUserId) { Debt = Defaults.DebtAmount };
+        var balance1 = new BalanceModel(debtorUserId) { Debt = DefaultsGuid.DebtAmount };
         var balance2 = new BalanceModel(noDebtUserId) { Debt = 0m };
 
         using var scope = CreateScope();
@@ -35,16 +35,16 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
 
         result.Should().HaveCount(1);
         result[0].UserId.Should().Be(debtorUserId);
-        result[0].Debt.Should().Be(Defaults.DebtAmount);
+        result[0].Debt.Should().Be(DefaultsGuid.DebtAmount);
     }
 
     [Fact]
     public async Task Repository_GetUsersWithDebt_Should_OrderByDebtDescending()
     {
 
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
-        var userId3 = Defaults.UserId3;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
+        var userId3 = DefaultsGuid.UserId3;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -67,13 +67,13 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_GetUsersWithDebt_Should_ReturnFromCache_WhenCalledTwice()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
-            CurrentBalance = Defaults.SmallAmount,
-            TotalDeposited = Defaults.SmallAmount,
-            TotalSpent = Defaults.DefaultAmount,
-            Debt = Defaults.DebtAmount
+            CurrentBalance = DefaultsGuid.SmallAmount,
+            TotalDeposited = DefaultsGuid.SmallAmount,
+            TotalSpent = DefaultsGuid.DefaultAmount,
+            Debt = DefaultsGuid.DebtAmount
         };
 
         using var scope = CreateScope();
@@ -89,7 +89,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
 
         result1.Should().HaveCount(1);
         result2.Should().HaveCount(1);
-        result1[0].Debt.Should().Be(Defaults.DebtAmount);
+        result1[0].Debt.Should().Be(DefaultsGuid.DebtAmount);
     }
 
     [Fact]
@@ -99,10 +99,10 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
 
-        var balance1 = new BalanceModel(userId1) { Debt = Defaults.DebtAmount };
+        var balance1 = new BalanceModel(userId1) { Debt = DefaultsGuid.DebtAmount };
         await repository.CreateAsync(balance1);
         var result1 = await repository.GetUsersWithDebtAsync();
 
@@ -118,8 +118,8 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_GetUsersWithDebt_Should_InvalidateCache_OnUpdate()
     {
         await ClearCacheAsync();
-        var userId = Defaults.UserId;
-        var balance = new BalanceModel(userId) { Debt = Defaults.DebtAmount };
+        var userId = DefaultsGuid.UserId;
+        var balance = new BalanceModel(userId) { Debt = DefaultsGuid.DebtAmount };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -127,28 +127,28 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
 
         var result1 = await repository.GetUsersWithDebtAsync();
         result1.Should().HaveCount(1);
-        result1[0].Debt.Should().Be(Defaults.DebtAmount);
+        result1[0].Debt.Should().Be(DefaultsGuid.DebtAmount);
 
-        balance.Debt = Defaults.UpdatedAmount;
+        balance.Debt = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
         await repository.UpdateAsync(balance);
 
         var result2 = await repository.GetUsersWithDebtAsync();
 
         result2.Should().HaveCount(1);
-        result2[0].Debt.Should().Be(Defaults.UpdatedAmount);
+        result2[0].Debt.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
     public async Task Repository_GetUsersWithDebt_Should_ExcludeZeroDebt()
     {
 
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        await repository.CreateAsync(new BalanceModel(userId1) { Debt = Defaults.DebtAmount });
+        await repository.CreateAsync(new BalanceModel(userId1) { Debt = DefaultsGuid.DebtAmount });
         await repository.CreateAsync(new BalanceModel(userId2) { Debt = 0m });
 
         var result = await repository.GetUsersWithDebtAsync();

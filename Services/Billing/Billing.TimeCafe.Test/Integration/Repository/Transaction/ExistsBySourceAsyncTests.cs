@@ -5,8 +5,8 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ExistsBySource_Should_ReturnTrue_WhenExists()
     {
-        var visitId = Defaults.TariffId;
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
+        var visitId = DefaultsGuid.TariffId;
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -30,8 +30,8 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ExistsBySource_Should_ReturnFalse_WhenSourceTypeNotMatches()
     {
-        var visitId = Defaults.TariffId;
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
+        var visitId = DefaultsGuid.TariffId;
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -44,9 +44,9 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ExistsBySource_Should_ReturnTrue_ForDuplicateSourceId()
     {
-        var visitId = Defaults.TariffId;
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
-        await CreateTestTransactionAsync(Defaults.UserId2, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
+        var visitId = DefaultsGuid.TariffId;
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId2, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -60,7 +60,7 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     public async Task Repository_ExistsBySource_Should_DetectPaymentTransaction()
     {
         var paymentId = Guid.NewGuid();
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.DefaultAmount, TransactionType.Deposit, TransactionSource.Payment, paymentId);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.DefaultAmount, TransactionType.Deposit, TransactionSource.Payment, paymentId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -74,7 +74,7 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     public async Task Repository_ExistsBySource_Should_DetectRefundTransaction()
     {
         var refundId = Guid.NewGuid();
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Refund, refundId);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Refund, refundId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -87,9 +87,9 @@ public class ExistsBySourceAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_ExistsBySource_Should_ReturnFalse_ForDifferentSourceIds()
     {
-        var visitId1 = Defaults.TariffId;
+        var visitId1 = DefaultsGuid.TariffId;
         var visitId2 = Guid.NewGuid();
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId1);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Visit, visitId1);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
