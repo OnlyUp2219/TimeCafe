@@ -2,7 +2,7 @@ namespace Billing.TimeCafe.API.DTOs;
 
 public record GetTransactionDto
 {
-    public Guid TransactionId { get; set; }
+    public string TransactionId { get; set; } = string.Empty;
 }
 
 public class GetTransactionDtoExample : IExamplesProvider<GetTransactionDto>
@@ -11,7 +11,7 @@ public class GetTransactionDtoExample : IExamplesProvider<GetTransactionDto>
     {
         return new GetTransactionDto
         {
-            TransactionId = Guid.Parse("a47ac10b-58cc-4372-a567-0e02b2c3d480")
+            TransactionId = "a47ac10b-58cc-4372-a567-0e02b2c3d480"
         };
     }
 }

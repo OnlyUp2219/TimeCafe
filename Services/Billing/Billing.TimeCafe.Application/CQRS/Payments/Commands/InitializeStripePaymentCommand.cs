@@ -1,7 +1,7 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
 
 public record InitializeStripePaymentCommand(
-    Guid UserId,
+    string UserId,
     decimal Amount,
     string? ReturnUrl,
     string? Description) : IRequest<InitializeStripePaymentResult>;
@@ -38,7 +38,7 @@ public class InitializeStripePaymentCommandValidator : AbstractValidator<Initial
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => x != Guid.Empty).WithMessage("Пользователь не найден");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
@@ -63,6 +63,8 @@ public class InitializeStripePaymentCommandHandler(
 
     public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken)
     {
+        var userId = Guid.Parse(request.UserId);
+
         var settings = _options.Value;
         var currency = string.IsNullOrWhiteSpace(settings.DefaultCurrency) ? "rub" : settings.DefaultCurrency;
 
@@ -74,13 +76,13 @@ public class InitializeStripePaymentCommandHandler(
             return InitializeStripePaymentResult.ConfigurationMissing();
 
         var description = string.IsNullOrWhiteSpace(request.Description)
-            ? $"Пополнение баланса пользователя {request.UserId}"
+            ? $"Пополнение баланса пользователя {userId}"
             : request.Description;
 
         var payment = new Payment
         {
             PaymentId = Guid.NewGuid(),
-            UserId = request.UserId,
+            UserId = userId,
             Amount = request.Amount,
             PaymentMethod = PaymentMethod.Online,
             Status = PaymentStatus.Pending,

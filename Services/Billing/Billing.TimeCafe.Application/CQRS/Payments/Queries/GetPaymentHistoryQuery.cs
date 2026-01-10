@@ -21,7 +21,7 @@ public record GetPaymentHistoryResult(
     public static GetPaymentHistoryResult WithPayments(List<PaymentDto> payments, int totalCount, int page, int pageSize) =>
         new(true, payments, totalCount, (totalCount + pageSize - 1) / pageSize);
 }
-
+//TODO: DTO in DTOs folder
 public record PaymentDto(
     Guid PaymentId,
     string? ExternalPaymentId,

@@ -37,13 +37,9 @@ public class ProcessStripeWebhookCommandValidator : AbstractValidator<ProcessStr
         RuleFor(x => x.Payload)
             .NotNull().WithMessage("Пустое тело запроса");
 
-        RuleFor(x => x.Payload.Data)
-            .NotNull().WithMessage("Платёж не найден")
-            .When(x => x.Payload is not null);
-
-        RuleFor(x => x.Payload.Data.Object.Id)
-            .NotEmpty().WithMessage("Платёж не найден")
-            .When(x => x.Payload?.Data?.Object is not null);
+        RuleFor(x => x.Payload)
+            .Must(p => p is { Data: { Object: { Id.Length: > 0 } } })
+            .WithMessage("Платёж не найден");
     }
 }
 
@@ -60,6 +56,12 @@ public class ProcessStripeWebhookCommandHandler(
 
     public async Task<ProcessStripeWebhookResult> Handle(ProcessStripeWebhookCommand request, CancellationToken cancellationToken)
     {
+        if (request.Payload is null)
+        {
+            _logger.LogWarning("Stripe webhook: empty payload");
+            return ProcessStripeWebhookResult.PaymentNotFound();
+        }
+
         var payload = request.Payload;
 
         var webhookSecret = _options.Value.WebhookSecret;
@@ -69,14 +71,15 @@ public class ProcessStripeWebhookCommandHandler(
             return ProcessStripeWebhookResult.Unauthorized();
         }
 
-        if (payload?.Data?.Object == null || string.IsNullOrWhiteSpace(payload.Data.Object.Id))
+        var paymentIntent = payload.Data?.Object;
+        if (paymentIntent == null || string.IsNullOrWhiteSpace(paymentIntent.Id))
             return ProcessStripeWebhookResult.PaymentNotFound();
 
-        var paymentIntentId = payload.Data.Object.Id;
+        var paymentIntentId = paymentIntent.Id;
         var payment = await _paymentRepository.GetByExternalPaymentIdAsync(paymentIntentId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (payment == null && payload.Data.Object.Metadata?.TryGetValue("paymentId", out var paymentIdStr) == true)
+        if (payment == null && paymentIntent.Metadata?.TryGetValue("paymentId", out var paymentIdStr) == true)
         {
             if (Guid.TryParse(paymentIdStr, out var paymentId))
             {
@@ -92,17 +95,17 @@ public class ProcessStripeWebhookCommandHandler(
 
         if (string.Equals(payload.Type, "payment_intent.succeeded", StringComparison.OrdinalIgnoreCase))
         {
-            return await HandleSuccessfulPayment(payment, payload, cancellationToken);
+            return await HandleSuccessfulPayment(payment, paymentIntent, cancellationToken);
         }
 
         if (string.Equals(payload.Type, "payment_intent.payment_failed", StringComparison.OrdinalIgnoreCase))
         {
-            return await HandleFailedPayment(payment, payload, cancellationToken);
+            return await HandleFailedPayment(payment, paymentIntent, cancellationToken);
         }
 
         if (string.Equals(payload.Type, "payment_intent.canceled", StringComparison.OrdinalIgnoreCase))
         {
-            return await HandleCancelledPayment(payment, payload, cancellationToken);
+            return await HandleCancelledPayment(payment, paymentIntent, cancellationToken);
         }
 
         _logger.LogInformation("Stripe: event {Event} for payment {PaymentId} skipped", payload.Type, payment.PaymentId);
@@ -111,10 +114,10 @@ public class ProcessStripeWebhookCommandHandler(
 
     private async Task<ProcessStripeWebhookResult> HandleSuccessfulPayment(
         Payment payment,
-        StripeWebhookPayload payload,
+        StripePaymentIntentObject paymentIntent,
         CancellationToken cancellationToken)
     {
-        var amountFromStripe = payload.Data.Object.Amount / 100m;
+        var amountFromStripe = paymentIntent.Amount / 100m;
 
         if (Math.Abs(amountFromStripe - payment.Amount) > 0.01m)
         {
@@ -122,11 +125,11 @@ public class ProcessStripeWebhookCommandHandler(
         }
 
         var adjustResult = await _sender.Send(new AdjustBalanceCommand(
-            payment.UserId,
+            payment.UserId.ToString(),
             amountFromStripe,
             TransactionType.Deposit,
             TransactionSource.Payment,
-            payment.PaymentId,
+            payment.PaymentId.ToString(),
             "Пополнение баланса через Stripe"), cancellationToken).ConfigureAwait(false);
 
         if (!adjustResult.Success)
@@ -138,15 +141,15 @@ public class ProcessStripeWebhookCommandHandler(
         }
 
         payment.Status = PaymentStatus.Completed;
-        payment.CompletedAt = DateTimeOffset.FromUnixTimeSeconds(payload.Data.Object.Created);
+        payment.CompletedAt = DateTimeOffset.FromUnixTimeSeconds(paymentIntent.Created);
         payment.TransactionId = adjustResult.Transaction?.TransactionId;
-        payment.ExternalPaymentId = payload.Data.Object.Id;
+        payment.ExternalPaymentId = paymentIntent.Id;
         payment.ErrorMessage = null;
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Stripe: payment {PaymentIntentId} completed for user {UserId}",
-            payload.Data.Object.Id,
+            paymentIntent.Id,
             payment.UserId);
 
         return ProcessStripeWebhookResult.Completed();
@@ -154,17 +157,17 @@ public class ProcessStripeWebhookCommandHandler(
 
     private async Task<ProcessStripeWebhookResult> HandleFailedPayment(
         Payment payment,
-        StripeWebhookPayload payload,
+        StripePaymentIntentObject paymentIntent,
         CancellationToken cancellationToken)
     {
         payment.Status = PaymentStatus.Failed;
-        payment.ErrorMessage = $"Платеж отклонен Stripe (статус: {payload.Data.Object.Status})";
-        payment.ExternalPaymentId = payload.Data.Object.Id;
+        payment.ErrorMessage = $"Платеж отклонен Stripe (статус: {paymentIntent.Status})";
+        payment.ExternalPaymentId = paymentIntent.Id;
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
 
         _logger.LogWarning("Stripe: payment {PaymentIntentId} failed for user {UserId}. Error: {Error}",
-            payload.Data.Object.Id,
+            paymentIntent.Id,
             payment.UserId,
             payment.ErrorMessage);
 
@@ -173,17 +176,17 @@ public class ProcessStripeWebhookCommandHandler(
 
     private async Task<ProcessStripeWebhookResult> HandleCancelledPayment(
         Payment payment,
-        StripeWebhookPayload payload,
+        StripePaymentIntentObject paymentIntent,
         CancellationToken cancellationToken)
     {
         payment.Status = PaymentStatus.Cancelled;
         payment.ErrorMessage = "Платеж отменен";
-        payment.ExternalPaymentId = payload.Data.Object.Id;
+        payment.ExternalPaymentId = paymentIntent.Id;
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
 
         _logger.LogInformation("Stripe: payment {PaymentIntentId} cancelled for user {UserId}",
-            payload.Data.Object.Id,
+            paymentIntent.Id,
             payment.UserId);
 
         return ProcessStripeWebhookResult.Completed("Платеж отменен");

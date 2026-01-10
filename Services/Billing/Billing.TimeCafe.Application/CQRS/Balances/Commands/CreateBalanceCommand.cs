@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
-public record CreateBalanceCommand(Guid UserId) : IRequest<CreateBalanceResult>;
+public record CreateBalanceCommand(string UserId) : IRequest<CreateBalanceResult>;
 
 public record CreateBalanceResult(
     bool Success,
@@ -23,7 +23,7 @@ public class CreateBalanceCommandValidator : AbstractValidator<CreateBalanceComm
     {
         RuleFor(x => x.UserId)
             .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => x != Guid.Empty).WithMessage("Пользователь не найден");
+            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
     }
 }
 
@@ -33,13 +33,15 @@ public class CreateBalanceCommandHandler(IBalanceRepository repository) : IReque
 
     public async Task<CreateBalanceResult> Handle(CreateBalanceCommand request, CancellationToken cancellationToken)
     {
-        var exists = await _repository.ExistsAsync(request.UserId, cancellationToken);
+        var userId = Guid.Parse(request.UserId);
+
+        var exists = await _repository.ExistsAsync(userId, cancellationToken);
         if (exists)
             return CreateBalanceResult.AlreadyExists();
 
         var balance = new Balance
         {
-            UserId = request.UserId,
+            UserId = userId,
             CurrentBalance = 0,
             TotalDeposited = 0,
             TotalSpent = 0,

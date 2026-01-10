@@ -2,7 +2,7 @@ namespace Billing.TimeCafe.API.DTOs;
 
 public record GetBalanceDto
 {
-    public Guid UserId { get; set; }
+    public string UserId { get; set; } = string.Empty;
 }
 
 public class GetBalanceExampleFilter : IOperationFilter
