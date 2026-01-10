@@ -27,13 +27,13 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         var transaction = type switch
         {
             TransactionType.Deposit => TransactionModel.CreateDeposit(
-                userId ?? Defaults.UserId,
-                amount ?? Defaults.DefaultAmount,
+                userId ?? DefaultsGuid.UserId,
+                amount ?? DefaultsGuid.DefaultAmount,
                 source,
                 sourceId),
             TransactionType.Withdrawal => TransactionModel.CreateWithdrawal(
-                userId ?? Defaults.UserId,
-                amount ?? Defaults.SmallAmount,
+                userId ?? DefaultsGuid.UserId,
+                amount ?? DefaultsGuid.SmallAmount,
                 source,
                 sourceId),
             _ => throw new ArgumentException($"Unsupported type: {type}")
@@ -48,9 +48,9 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         await cache.RemoveAsync(CacheKeys.Transaction_All, ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(Defaults.UserId), ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(Defaults.UserId2), ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(Defaults.UserId3), ct);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId), ct);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId2), ct);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId3), ct);
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken ct = default)

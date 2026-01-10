@@ -25,10 +25,10 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = new PaymentModel(paymentId ?? Defaults.PaymentId)
+        var payment = new PaymentModel(paymentId ?? DefaultsGuid.PaymentId)
         {
-            UserId = userId ?? Defaults.UserId,
-            Amount = amount ?? Defaults.DefaultAmount,
+            UserId = userId ?? DefaultsGuid.UserId,
+            Amount = amount ?? DefaultsGuid.DefaultAmount,
             PaymentMethod = PaymentMethod.Online,
             ExternalPaymentId = externalPaymentId,
             Status = status,
@@ -53,9 +53,9 @@ public abstract class BasePaymentRepositoryTest : IDisposable
 
         await cache.RemoveAsync(CacheKeys.Payment_All, ct);
         await cache.RemoveAsync(CacheKeys.Payment_Pending, ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(Defaults.UserId), ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(Defaults.UserId2), ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(Defaults.UserId3), ct);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId), ct);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId2), ct);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId3), ct);
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken ct = default)

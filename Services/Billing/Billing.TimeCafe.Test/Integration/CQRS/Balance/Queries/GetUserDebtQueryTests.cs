@@ -22,7 +22,7 @@ public class GetUserDebtQueryTests : IDisposable
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var before = await db.Balances.FindAsync(userId);
+        var before = await db.Balances.FindAsync(Guid.Parse(userId));
         before.Should().BeNull();
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
@@ -30,9 +30,9 @@ public class GetUserDebtQueryTests : IDisposable
         result.Success.Should().BeTrue();
         result.Debt.Should().Be(0m);
 
-        var created = await db.Balances.FindAsync(userId);
+        var created = await db.Balances.FindAsync(Guid.Parse(userId));
         created.Should().NotBeNull();
-        created!.UserId.Should().Be(userId);
+        created!.UserId.Should().Be(Guid.Parse(userId));
         created.Debt.Should().Be(0m);
     }
 

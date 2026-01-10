@@ -18,10 +18,10 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var balance = new BalanceModel(userId ?? Defaults.UserId)
+        var balance = new BalanceModel(userId ?? DefaultsGuid.UserId)
         {
-            CurrentBalance = amount ?? Defaults.DefaultAmount,
-            TotalDeposited = amount ?? Defaults.DefaultAmount,
+            CurrentBalance = amount ?? DefaultsGuid.DefaultAmount,
+            TotalDeposited = amount ?? DefaultsGuid.DefaultAmount,
             TotalSpent = 0m,
             Debt = 0m
         };

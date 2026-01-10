@@ -17,6 +17,8 @@ global using Billing.TimeCafe.Infrastructure;
 global using Billing.TimeCafe.Infrastructure.Data;
 global using Billing.TimeCafe.Test.Integration;
 global using Billing.TimeCafe.Test.TestData;
+global using static Billing.TimeCafe.Test.TestData.DefaultsGuid;
+global using static Billing.TimeCafe.Test.TestData.InvalidDataGuid;
 global using BalanceModel = Billing.TimeCafe.Domain.Models.Balance;
 global using PaymentModel = Billing.TimeCafe.Domain.Models.Payment;
 global using TransactionModel = Billing.TimeCafe.Domain.Models.Transaction;

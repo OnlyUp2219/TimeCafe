@@ -5,16 +5,16 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_ReturnTransactions_WhenExist()
     {
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.DefaultAmount, TransactionType.Deposit);
-        await CreateTestTransactionAsync(Defaults.UserId, Defaults.SmallAmount, TransactionType.Withdrawal);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.DefaultAmount, TransactionType.Deposit);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
 
-        var result = await repository.GetByUserIdAsync(Defaults.UserId, 1, 10);
+        var result = await repository.GetByUserIdAsync(DefaultsGuid.UserId, 1, 10);
 
         result.Should().HaveCount(2);
-        result.Should().AllSatisfy(t => t.UserId.Should().Be(Defaults.UserId));
+        result.Should().AllSatisfy(t => t.UserId.Should().Be(DefaultsGuid.UserId));
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
 
-        var result = await repository.GetByUserIdAsync(InvalidData.NonExistentUserId, 1, 10);
+        var result = await repository.GetByUserIdAsync(InvalidDataGuid.NonExistentUserId, 1, 10);
 
         result.Should().BeEmpty();
     }
@@ -31,7 +31,7 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_ReturnOrderedByDescending()
     {
-        var userIdToTest = Defaults.UserId;
+        var userIdToTest = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userIdToTest);
         await Task.Delay(100);
         await CreateTestTransactionAsync(userIdToTest);
@@ -53,7 +53,7 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_RespectPageSize()
     {
-        var userIdToTest = Defaults.UserId;
+        var userIdToTest = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userIdToTest);
         await CreateTestTransactionAsync(userIdToTest);
         await CreateTestTransactionAsync(userIdToTest);
@@ -69,12 +69,12 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_RespectPageNumber()
     {
-        var userIdToTest = Defaults.UserId;
-        await CreateTestTransactionAsync(userIdToTest, Defaults.DefaultAmount);
+        var userIdToTest = DefaultsGuid.UserId;
+        await CreateTestTransactionAsync(userIdToTest, DefaultsGuid.DefaultAmount);
         await Task.Delay(50);
-        await CreateTestTransactionAsync(userIdToTest, Defaults.DefaultAmount);
+        await CreateTestTransactionAsync(userIdToTest, DefaultsGuid.DefaultAmount);
         await Task.Delay(50);
-        await CreateTestTransactionAsync(userIdToTest, Defaults.DefaultAmount);
+        await CreateTestTransactionAsync(userIdToTest, DefaultsGuid.DefaultAmount);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -90,23 +90,23 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_NotReturnOtherUsersTransactions()
     {
-        await CreateTestTransactionAsync(Defaults.UserId);
-        await CreateTestTransactionAsync(Defaults.UserId2);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId);
+        await CreateTestTransactionAsync(DefaultsGuid.UserId2);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
 
-        var result = await repository.GetByUserIdAsync(Defaults.UserId, 1, 10);
+        var result = await repository.GetByUserIdAsync(DefaultsGuid.UserId, 1, 10);
 
         result.Should().HaveCount(1);
-        result[0].UserId.Should().Be(Defaults.UserId);
+        result[0].UserId.Should().Be(DefaultsGuid.UserId);
     }
 
     [Fact]
     public async Task Repository_GetByUserId_Should_CacheResults()
     {
         await ClearCacheAsync();
-        var userIdToTest = Defaults.UserId;
+        var userIdToTest = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userIdToTest);
 
         using var scope = CreateScope();
@@ -124,7 +124,7 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
     [Fact]
     public async Task Repository_GetByUserId_Should_ReturnEmpty_WhenPageOutOfRange()
     {
-        var userIdToTest = Defaults.UserId;
+        var userIdToTest = DefaultsGuid.UserId;
         await CreateTestTransactionAsync(userIdToTest);
 
         using var scope = CreateScope();

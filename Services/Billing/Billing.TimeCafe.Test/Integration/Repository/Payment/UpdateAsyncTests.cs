@@ -5,19 +5,19 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdatePaymentStatus_FromPendingToCompleted()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, status: PaymentStatus.Pending);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, status: PaymentStatus.Pending);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
         payment!.Status = PaymentStatus.Completed;
 
         await repository.UpdateAsync(payment);
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
         retrieved!.Status.Should().Be(PaymentStatus.Completed);
     }
@@ -26,12 +26,12 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     public async Task Repository_UpdateAsync_Should_SetCompletedAtWhenStatusCompleted()
     {
         var completedAt = new DateTimeOffset(2025, 01, 01, 10, 05, 00, TimeSpan.Zero);
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, status: PaymentStatus.Pending);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, status: PaymentStatus.Pending);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
         payment!.Status = PaymentStatus.Completed;
@@ -39,7 +39,7 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
 
         await repository.UpdateAsync(payment);
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
         retrieved!.CompletedAt.Should().Be(completedAt);
         retrieved.Status.Should().Be(PaymentStatus.Completed);
@@ -48,19 +48,19 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_UpdateAsync_Should_UpdateExternalPaymentId()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, externalPaymentId: null);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, externalPaymentId: null);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
         payment!.ExternalPaymentId = Defaults.StripePaymentIntentId;
 
         await repository.UpdateAsync(payment);
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
         retrieved!.ExternalPaymentId.Should().Be(Defaults.StripePaymentIntentId);
     }
@@ -68,12 +68,12 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_UpdateAsync_Should_SetErrorMessageWhenFailed()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, status: PaymentStatus.Pending);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, status: PaymentStatus.Pending);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
         payment!.Status = PaymentStatus.Failed;
@@ -81,7 +81,7 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
 
         await repository.UpdateAsync(payment);
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
         retrieved!.Status.Should().Be(PaymentStatus.Failed);
         retrieved.ErrorMessage.Should().Be("Card declined");
@@ -90,32 +90,32 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_UpdateAsync_Should_LinkTransactionId()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, status: PaymentStatus.Pending);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, status: PaymentStatus.Pending);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
-        payment!.TransactionId = Defaults.TransactionId;
+        payment!.TransactionId = DefaultsGuid.TransactionId;
 
         await repository.UpdateAsync(payment);
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
-        retrieved!.TransactionId.Should().Be(Defaults.TransactionId);
+        retrieved!.TransactionId.Should().Be(DefaultsGuid.TransactionId);
     }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_ReturnUpdatedPayment()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, status: PaymentStatus.Pending);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, status: PaymentStatus.Pending);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
 
-        var payment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var payment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         payment.Should().NotBeNull();
 
         payment!.ExternalPaymentId = Defaults.StripePaymentIntentId;
@@ -123,7 +123,7 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
 
         var updated = await repository.UpdateAsync(payment);
 
-        updated.PaymentId.Should().Be(Defaults.PaymentId);
+        updated.PaymentId.Should().Be(DefaultsGuid.PaymentId);
         updated.ExternalPaymentId.Should().Be(Defaults.StripePaymentIntentId);
     }
 
@@ -131,16 +131,16 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
     public async Task Repository_UpdateAsync_Should_InvalidateCache_ById()
     {
         await ClearCacheAsync();
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
-        var cachedPayment = await repository.GetByIdAsync(Defaults.PaymentId);
+        var cachedPayment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         cachedPayment.Should().NotBeNull();
 
-        var cacheKey = CacheKeys.Payment_ById(Defaults.PaymentId);
+        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
         var cachedBefore = await cache.GetStringAsync(cacheKey);
         cachedBefore.Should().NotBeNullOrEmpty();
 
@@ -151,7 +151,7 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
         var cachedAfter = await cache.GetStringAsync(cacheKey);
         cachedAfter.Should().BeNullOrEmpty();
 
-        var retrieved = await repository.GetByIdAsync(Defaults.PaymentId);
+        var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();
         retrieved!.Status.Should().Be(PaymentStatus.Failed);
     }

@@ -21,7 +21,7 @@ public class GetBalanceQueryTests : IDisposable
         using (var scope = CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var before = await db.Balances.FindAsync(userId);
+            var before = await db.Balances.FindAsync(Guid.Parse(userId));
             before.Should().BeNull();
         }
 
@@ -39,7 +39,7 @@ public class GetBalanceQueryTests : IDisposable
 
         using var scope2 = CreateScope();
         var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var created = await db2.Balances.FindAsync(userId);
+        var created = await db2.Balances.FindAsync(Guid.Parse(userId));
         created.Should().NotBeNull();
     }
 

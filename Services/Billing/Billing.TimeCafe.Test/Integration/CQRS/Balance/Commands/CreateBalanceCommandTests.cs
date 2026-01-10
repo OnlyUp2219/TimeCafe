@@ -34,9 +34,9 @@ public class CreateBalanceCommandTests : IDisposable
 
         using var scope2 = CreateScope();
         var db = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var created = await db.Balances.FindAsync(userId);
+        var created = await db.Balances.FindAsync(Guid.Parse(userId));
         created.Should().NotBeNull();
-        created!.UserId.Should().Be(userId);
+        created!.UserId.Should().Be(Guid.Parse(userId));
     }
 
     [Fact]

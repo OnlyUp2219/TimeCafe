@@ -8,11 +8,11 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_InsertBalance_WhenValid()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
-            CurrentBalance = Defaults.DefaultAmount,
-            TotalDeposited = Defaults.DefaultAmount
+            CurrentBalance = DefaultsGuid.DefaultAmount,
+            TotalDeposited = DefaultsGuid.DefaultAmount
         };
 
         using var scope = CreateScope();
@@ -22,34 +22,34 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
 
         result.Should().NotBeNull();
         result.UserId.Should().Be(userId);
-        result.CurrentBalance.Should().Be(Defaults.DefaultAmount);
-        result.TotalDeposited.Should().Be(Defaults.DefaultAmount);
+        result.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
+        result.TotalDeposited.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_ReturnExisting_WhenAlreadyExists()
     {
 
-        var userId = Defaults.UserId;
-        var balance = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
+        var userId = DefaultsGuid.UserId;
+        var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
         var created = await repository.CreateAsync(balance);
-        var existing = await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = Defaults.UpdatedAmount });
+        var existing = await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = DefaultsGuid.UpdatedAmount });
 
         created.UserId.Should().Be(userId);
         existing.UserId.Should().Be(userId);
-        existing.CurrentBalance.Should().Be(Defaults.DefaultAmount);
+        existing.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_InvalidateCache()
     {
 
-        var userId = Defaults.UserId;
-        var balance = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
+        var userId = DefaultsGuid.UserId;
+        var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -66,20 +66,18 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_HandleConcurrentCreation()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var balance1 = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
-        var balance2 = new BalanceModel(userId) { CurrentBalance = Defaults.UpdatedAmount };
+        var balance1 = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
+        var balance2 = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.UpdatedAmount };
 
         var task1 = repository.CreateAsync(balance1);
         var task2 = repository.CreateAsync(balance2);
 
-        await Task.WhenAll(task1, task2);
-
-        var result1 = task1.Result;
-        var result2 = task2.Result;
+        var result1 = await task1;
+        var result2 = await task2;
 
         result1.UserId.Should().Be(userId);
         result2.UserId.Should().Be(userId);
@@ -89,7 +87,7 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_CreateWithZeroAmount()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
             CurrentBalance = 0m,
@@ -110,11 +108,11 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_CreateWithNegativeAmount()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
-            CurrentBalance = -Defaults.DefaultAmount,
-            Debt = Defaults.DefaultAmount
+            CurrentBalance = -DefaultsGuid.DefaultAmount,
+            Debt = DefaultsGuid.DefaultAmount
         };
 
         using var scope = CreateScope();
@@ -122,21 +120,21 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
 
         var result = await repository.CreateAsync(balance);
 
-        result.CurrentBalance.Should().Be(-Defaults.DefaultAmount);
-        result.Debt.Should().Be(Defaults.DefaultAmount);
+        result.CurrentBalance.Should().Be(-DefaultsGuid.DefaultAmount);
+        result.Debt.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_PreserveAllProperties()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var balance = new BalanceModel(userId)
         {
-            CurrentBalance = Defaults.DefaultAmount,
-            TotalDeposited = Defaults.DefaultAmount,
-            TotalSpent = Defaults.SmallAmount,
-            Debt = Defaults.DebtAmount
+            CurrentBalance = DefaultsGuid.DefaultAmount,
+            TotalDeposited = DefaultsGuid.DefaultAmount,
+            TotalSpent = DefaultsGuid.SmallAmount,
+            Debt = DefaultsGuid.DebtAmount
         };
 
         using var scope = CreateScope();
@@ -144,17 +142,17 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
 
         var result = await repository.CreateAsync(balance);
 
-        result.CurrentBalance.Should().Be(Defaults.DefaultAmount);
-        result.TotalDeposited.Should().Be(Defaults.DefaultAmount);
-        result.TotalSpent.Should().Be(Defaults.SmallAmount);
-        result.Debt.Should().Be(Defaults.DebtAmount);
+        result.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
+        result.TotalDeposited.Should().Be(DefaultsGuid.DefaultAmount);
+        result.TotalSpent.Should().Be(DefaultsGuid.SmallAmount);
+        result.Debt.Should().Be(DefaultsGuid.DebtAmount);
     }
 
     [Fact]
     public async Task Repository_CreateAsync_Should_SetTimestamps()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var beforeCreate = DateTimeOffset.UtcNow;
         var balance = new BalanceModel(userId);
 
@@ -171,17 +169,17 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_NotCreateDuplicate()
     {
 
-        var userId = Defaults.UserId;
-        var balance1 = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
-        var balance2 = new BalanceModel(userId) { CurrentBalance = Defaults.UpdatedAmount };
+        var userId = DefaultsGuid.UserId;
+        var balance1 = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
+        var balance2 = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.UpdatedAmount };
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var result1 = await repository.CreateAsync(balance1);
         var result2 = await repository.CreateAsync(balance2);
 
-        result1.CurrentBalance.Should().Be(Defaults.DefaultAmount);
-        result2.CurrentBalance.Should().Be(Defaults.DefaultAmount);
+        result1.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
+        result2.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
         result1.UserId.Should().Be(result2.UserId);
 
         using var dbScope = CreateScope(); var db = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -193,7 +191,7 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     public async Task Repository_CreateAsync_Should_HandleLargeAmount()
     {
 
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var largeAmount = 999999999.99m;
         var balance = new BalanceModel(userId) { CurrentBalance = largeAmount };
 

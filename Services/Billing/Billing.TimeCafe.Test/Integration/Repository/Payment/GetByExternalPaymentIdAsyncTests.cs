@@ -6,7 +6,7 @@ public class GetByExternalPaymentIdAsyncTests : BasePaymentRepositoryTest
     public async Task Repository_GetByExternalPaymentIdAsync_Should_ReturnPayment_WhenExists()
     {
         await CreateTestPaymentAsync(
-            paymentId: Defaults.PaymentId,
+            paymentId: DefaultsGuid.PaymentId,
             externalPaymentId: Defaults.StripePaymentIntentId);
 
         using var scope = CreateScope();
@@ -15,7 +15,7 @@ public class GetByExternalPaymentIdAsyncTests : BasePaymentRepositoryTest
         var result = await repository.GetByExternalPaymentIdAsync(Defaults.StripePaymentIntentId);
 
         result.Should().NotBeNull();
-        result!.PaymentId.Should().Be(Defaults.PaymentId);
+        result!.PaymentId.Should().Be(DefaultsGuid.PaymentId);
         result.ExternalPaymentId.Should().Be(Defaults.StripePaymentIntentId);
     }
 
@@ -55,7 +55,7 @@ public class GetByExternalPaymentIdAsyncTests : BasePaymentRepositoryTest
     [Fact]
     public async Task Repository_GetByExternalPaymentIdAsync_Should_ReturnNull_WhenPaymentHasNoExternalPaymentId()
     {
-        await CreateTestPaymentAsync(paymentId: Defaults.PaymentId, externalPaymentId: null);
+        await CreateTestPaymentAsync(paymentId: DefaultsGuid.PaymentId, externalPaymentId: null);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
@@ -69,7 +69,7 @@ public class GetByExternalPaymentIdAsyncTests : BasePaymentRepositoryTest
     public async Task Repository_GetByExternalPaymentIdAsync_Should_ReturnPaymentWithCorrectStatus()
     {
         await CreateTestPaymentAsync(
-            paymentId: Defaults.PaymentId,
+            paymentId: DefaultsGuid.PaymentId,
             externalPaymentId: Defaults.StripePaymentIntentId,
             status: PaymentStatus.Completed);
 
