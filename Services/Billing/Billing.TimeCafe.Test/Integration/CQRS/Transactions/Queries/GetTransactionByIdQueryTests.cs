@@ -28,7 +28,7 @@ public class GetTransactionByIdQueryTests : IDisposable
                 TransactionSource.Payment,
                 Defaults.PaymentId,
                 comment: "Test transaction");
-            transaction.TransactionId = transactionId;
+            transaction.TransactionId = Guid.Parse(transactionId);
             transaction.BalanceAfter = Defaults.DefaultAmount;
             await repo.CreateAsync(transaction);
         }

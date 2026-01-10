@@ -193,9 +193,14 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
         return await sender.Send(new InitializeStripePaymentCommand(
-            userId,
+            userId.ToString(),
             amount,
             null,
             StripeTestData.Descriptions.BalanceReplenishment));
     }
+
+    private async Task<InitializeStripePaymentResult> CreatePaymentAndInitializeAsync(
+        string userId,
+        decimal amount)
+        => await CreatePaymentAndInitializeAsync(Guid.Parse(userId), amount);
 }

@@ -6,7 +6,7 @@ public class CreateBalanceCommandValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new CreateBalanceCommandValidator();
-        var cmd = new CreateBalanceCommand(InvalidData.EmptyUserId);
+        var cmd = new CreateBalanceCommand(InvalidData.EmptyUserId.ToString());
 
         var result = validator.Validate(cmd);
 

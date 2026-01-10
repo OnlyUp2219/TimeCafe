@@ -19,7 +19,7 @@ public class GetUserDebtQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdDefault()
     {
         var validator = new GetUserDebtQueryValidator();
-        var query = new GetUserDebtQuery(Guid.Empty);
+        var query = new GetUserDebtQuery(InvalidData.EmptyUserId);
 
         var result = validator.Validate(query);
 

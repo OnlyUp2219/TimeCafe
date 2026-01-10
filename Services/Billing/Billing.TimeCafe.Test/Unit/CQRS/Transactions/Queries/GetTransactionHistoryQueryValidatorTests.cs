@@ -6,7 +6,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(InvalidData.EmptyUserId, Page: 1, PageSize: 10);
+        var query = new GetTransactionHistoryQuery(InvalidData.EmptyUserId.ToString(), Page: 1, PageSize: 10);
 
         var result = validator.Validate(query);
 

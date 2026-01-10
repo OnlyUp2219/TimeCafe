@@ -37,7 +37,7 @@ public class AdjustBalanceCommandTests : IDisposable
 
         using var scope2 = CreateScope();
         var balances2 = scope2.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var fetched = await balances2.GetByUserIdAsync(userId);
+        var fetched = await balances2.GetByUserIdAsync(Guid.Parse(userId));
         fetched!.CurrentBalance.Should().Be(Defaults.SmallAmount);
     }
 
