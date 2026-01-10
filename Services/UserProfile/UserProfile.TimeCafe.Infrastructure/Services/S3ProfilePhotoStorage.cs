@@ -42,7 +42,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
 
             return new PhotoUploadDto(true, key, url, data.Length, contentType);
         }
-        catch (Exception ex)
+        catch
         {
             return new PhotoUploadDto(false);
         }
