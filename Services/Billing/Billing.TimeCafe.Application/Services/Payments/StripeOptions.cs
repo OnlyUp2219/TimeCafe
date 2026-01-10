@@ -7,4 +7,6 @@ public class StripeOptions
     public string? WebhookSecret { get; set; }
     public string DefaultCurrency { get; set; } = "rub";
     public string? DefaultReturnUrl { get; set; }
+    public string? CheckoutSuccessUrl { get; set; }
+    public string? CheckoutCancelUrl { get; set; }
 }
