@@ -6,7 +6,7 @@ export interface RateLimitedHeaders {
     remaining?: number;
 }
 
-export interface RateLimitedResult<T = any> {
+export interface RateLimitedResult<T = unknown> {
     data: T | null;
     countdown: number;
     remaining: number;
@@ -15,7 +15,7 @@ export interface RateLimitedResult<T = any> {
     sendRequest: () => Promise<T | null>;
 }
 
-export function useRateLimitedRequest<T = any>(
+export function useRateLimitedRequest<T = unknown>(
     id: string,
     fetcher: () => Promise<{ data: T | null; headers: RateLimitedHeaders; status: number }>
 ): RateLimitedResult<T> {
