@@ -2,18 +2,19 @@ import {Button, Input, Field, Link, Text, Title3, Divider} from '@fluentui/react
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {validateEmail, validatePassword} from "../utility/validate.ts";
-import {loginUser} from "../api/auth.ts";
+import {registerUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {useDispatch} from "react-redux";
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [errors, setErrors] = useState({email: "", password: ""});
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [errors, setErrors] = useState({email: "", password: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const apiBase = import.meta.env.VITE_API_BASE_URL;
@@ -22,8 +23,9 @@ export const LoginPage = () => {
     const validate = () => {
         const emailError = validateEmail(email);
         const passwordError = validatePassword(password);
-        setErrors({email: emailError, password: passwordError});
-        return !emailError && !passwordError;
+        const confirmPasswordError = password !== confirmPassword ? "Пароли не совпадают" : "";
+        setErrors({email: emailError, password: passwordError, confirmPassword: confirmPasswordError});
+        return !emailError && !passwordError && !confirmPasswordError;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -32,12 +34,10 @@ export const LoginPage = () => {
 
         setIsSubmitting(true);
         try {
-            const r = await loginUser({email, password}, dispatch);
-            if (r.emailNotConfirmed) {
-                showToast("Подтвердите email для входа", "warning");
-                return;
-            }
-            navigate("/home");
+            // TODO: STUB - реальная регистрация (подключить бек)
+            // await registerUser({email, password}, dispatch);
+            showToast("Проверьте почту для подтверждения аккаунта", "success");
+            navigate("/login");
         } catch (err: unknown) {
             if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as {
                 errors: Array<{ description: string }>
@@ -47,7 +47,7 @@ export const LoginPage = () => {
                 }).errors.map(e => e.description).join(" ");
                 showToast(message, "error");
             } else {
-                showToast("Ошибка входа. Проверьте данные", "error");
+                showToast("Ошибка регистрации. Попробуйте позже", "error");
             }
         } finally {
             setIsSubmitting(false);
@@ -55,13 +55,16 @@ export const LoginPage = () => {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        // TODO: STUB - интеграция Google OAuth (подключить бек)
+        // window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        showToast("Google OAuth еще не интегрирован", "warning");
     };
 
     const handleMicrosoftLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
+        // TODO: STUB - интеграция Microsoft OAuth (подключить бек)
+        // window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
+        showToast("Microsoft OAuth еще не интегрирован", "warning");
     };
-
 
     return (
         <div
@@ -69,15 +72,19 @@ export const LoginPage = () => {
              sm:grid-cols-2 sm:justify-stretch sm:items-stretch ">
             {ToasterElement}
 
-            {/* Login Form */}
+            {/* Hero Section - Left Side (Desktop Only) */}
+            <div id="Left Side" className="hidden sm:block bg-sky-400">
+            </div>
+
+            {/* Register Form */}
             <div id="Form"
                  className="flex flex-col flex-wrap items-center w-full
                  sm:w-auto sm:justify-center sm:p-8">
                 <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
-                        <Title3 block>Добро пожаловать</Title3>
-                        <Text block>Войдите в свой аккаунт TimeCafe</Text>
+                        <Title3 block>Создать аккаунт</Title3>
+                        <Text block>Присоединитесь к TimeCafe</Text>
                     </div>
 
                     <Field
@@ -112,22 +119,29 @@ export const LoginPage = () => {
                         />
                     </Field>
 
-                    <div className="flex items-center justify-between">
-                        <Link
-                            onClick={() => navigate("/reset-password")}
-                            className=""
-                        >
-                            Забыли пароль?
-                        </Link>
-                    </div>
+                    <Field
+                        label="Подтвердите пароль"
+                        required
+                        validationState={errors.confirmPassword ? "error" : undefined}
+                        validationMessage={errors.confirmPassword}
+                    >
+                        <Input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(_, data) => setConfirmPassword(data.value)}
+                            placeholder="Повторите пароль"
+                            disabled={isSubmitting}
+                            className="w-full"
+                        />
+                    </Field>
 
                     <Button
                         appearance="primary"
-                        type="submit"
+                        onClick={handleSubmit}
                         disabled={isSubmitting}
                         className="sm:w-full"
                     >
-                        {isSubmitting ? "Вход..." : "Войти"}
+                        {isSubmitting ? "Регистрация..." : "Зарегистрироваться"}
                     </Button>
 
                     <Divider appearance="brand" className="divider grow-0">или продолжить с</Divider>
@@ -156,19 +170,15 @@ export const LoginPage = () => {
 
                     <div>
                         <Text size={300}>
-                            Нет аккаунта?{' '}
+                            Уже есть аккаунт?{' '}
                             <Link
-                                onClick={() => navigate("/register")}
+                                onClick={() => navigate("/login")}
                             >
-                                Зарегистрироваться
+                                Войти
                             </Link>
                         </Text>
                     </div>
                 </div>
-            </div>
-
-            {/* Hero Section - Right Side (Desktop Only) */}
-            <div id="Right Side" className="hidden sm:block bg-sky-400">
             </div>
         </div>
     );
