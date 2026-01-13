@@ -1,36 +1,25 @@
-import {Button, Input, Field, Link, Text, Title3, Divider} from '@fluentui/react-components';
-import {useState} from "react";
+import {Button, Link, Text, Title3, Divider} from '@fluentui/react-components';
+import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {validateEmail, validatePassword} from "../utility/validate.ts";
-import {registerUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {useDispatch} from "react-redux";
+import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../components/FormFields";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
-    const dispatch = useDispatch();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL;
-    const returnUrl = `${window.location.origin}/external-callback`;
-
-    const validate = () => {
-        const emailError = validateEmail(email);
-        const passwordError = validatePassword(password);
-        const confirmPasswordError = password !== confirmPassword ? "Пароли не совпадают" : "";
-        setErrors({email: emailError, password: passwordError, confirmPassword: confirmPasswordError});
-        return !emailError && !passwordError && !confirmPasswordError;
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+        setSubmitted(true);
+        if (errors.email || errors.password || errors.confirmPassword || !email || !password) return;
 
         setIsSubmitting(true);
         try {
@@ -66,6 +55,18 @@ export const RegisterPage = () => {
         showToast("Microsoft OAuth еще не интегрирован", "warning");
     };
 
+    const handleEmailValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, email: error}));
+    }, []);
+
+    const handlePasswordValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, password: error}));
+    }, []);
+
+    const handleConfirmPasswordValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, confirmPassword: error}));
+    }, []);
+
     return (
         <div
             className="!grid grid-cols-1 items-center justify-center
@@ -87,53 +88,31 @@ export const RegisterPage = () => {
                         <Text block>Присоединитесь к TimeCafe</Text>
                     </div>
 
-                    <Field
-                        label="Email"
-                        required
-                        validationState={errors.email ? "error" : undefined}
-                        validationMessage={errors.email}
-                    >
-                        <Input
-                            type="email"
-                            value={email}
-                            onChange={(_, data) => setEmail(data.value)}
-                            placeholder="example@timecafe.ru"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        />
-                    </Field>
+                    <EmailInput
+                        value={email}
+                        onChange={setEmail}
+                        disabled={isSubmitting}
+                        onValidationChange={handleEmailValidationChange}
+                        shouldValidate={submitted}
+                    />
 
-                    <Field
-                        label="Пароль"
-                        required
-                        validationState={errors.password ? "error" : undefined}
-                        validationMessage={errors.password}
-                    >
-                        <Input
-                            type="password"
-                            value={password}
-                            onChange={(_, data) => setPassword(data.value)}
-                            placeholder="Введите пароль"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        />
-                    </Field>
+                    <PasswordInput
+                        value={password}
+                        onChange={setPassword}
+                        disabled={isSubmitting}
+                        showRequirements={true}
+                        onValidationChange={handlePasswordValidationChange}
+                        shouldValidate={submitted}
+                    />
 
-                    <Field
-                        label="Подтвердите пароль"
-                        required
-                        validationState={errors.confirmPassword ? "error" : undefined}
-                        validationMessage={errors.confirmPassword}
-                    >
-                        <Input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(_, data) => setConfirmPassword(data.value)}
-                            placeholder="Повторите пароль"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        />
-                    </Field>
+                    <ConfirmPasswordInput
+                        value={confirmPassword}
+                        onChange={setConfirmPassword}
+                        passwordValue={password}
+                        disabled={isSubmitting}
+                        onValidationChange={handleConfirmPasswordValidationChange}
+                        shouldValidate={submitted}
+                    />
 
                     <Button
                         appearance="primary"

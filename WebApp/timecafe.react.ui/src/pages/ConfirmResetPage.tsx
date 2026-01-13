@@ -1,8 +1,8 @@
 import {Button, Input, Field, Link, Text, Title3} from '@fluentui/react-components';
-import {useState, useEffect} from "react";
+import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
-import {validatePassword} from "../utility/validate.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {PasswordInput, ConfirmPasswordInput} from "../components/FormFields";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();
@@ -17,24 +17,23 @@ export const ConfirmResetPage = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState({code: "", newPassword: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         if (!email || !token) {
-            const from = location.state?.from || "/login";
-            navigate(from, {replace: true});
+            navigate("/login", {replace: true});
         }
     }, [email, token, navigate, location]);
 
     const validate = () => {
         const codeError = !code ? "Код обязателен" : "";
-        const passwordError = validatePassword(newPassword);
-        const confirmPasswordError = newPassword !== confirmPassword ? "Пароли не совпадают" : "";
-        setErrors({code: codeError, newPassword: passwordError, confirmPassword: confirmPasswordError});
-        return !codeError && !passwordError && !confirmPasswordError;
+        setErrors(prev => ({...prev, code: codeError}));
+        return !codeError && !errors.newPassword && !errors.confirmPassword;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitted(true);
         if (!validate()) return;
 
         setIsSubmitting(true);
@@ -58,6 +57,14 @@ export const ConfirmResetPage = () => {
             setIsSubmitting(false);
         }
     };
+
+    const handleNewPasswordValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, newPassword: error}));
+    }, []);
+
+    const handleConfirmPasswordValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, confirmPassword: error}));
+    }, []);
 
     if (!email || !token) {
         return null;
@@ -101,37 +108,24 @@ export const ConfirmResetPage = () => {
                             />
                         </Field>
 
-                        <Field
+                        <PasswordInput
+                            value={newPassword}
+                            onChange={setNewPassword}
+                            disabled={isSubmitting}
                             label="Новый пароль"
-                            required
-                            validationState={errors.newPassword ? "error" : undefined}
-                            validationMessage={errors.newPassword}
-                        >
-                            <Input
-                                type="password"
-                                value={newPassword}
-                                onChange={(_, data) => setNewPassword(data.value)}
-                                placeholder="Введите новый пароль"
-                                disabled={isSubmitting}
-                                className="w-full"
-                            />
-                        </Field>
+                            placeholder="Введите новый пароль"
+                            onValidationChange={handleNewPasswordValidationChange}
+                            shouldValidate={submitted}
+                        />
 
-                        <Field
-                            label="Подтвердите пароль"
-                            required
-                            validationState={errors.confirmPassword ? "error" : undefined}
-                            validationMessage={errors.confirmPassword}
-                        >
-                            <Input
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(_, data) => setConfirmPassword(data.value)}
-                                placeholder="Повторите пароль"
-                                disabled={isSubmitting}
-                                className="w-full"
-                            />
-                        </Field>
+                        <ConfirmPasswordInput
+                            value={confirmPassword}
+                            onChange={setConfirmPassword}
+                            passwordValue={newPassword}
+                            disabled={isSubmitting}
+                            onValidationChange={handleConfirmPasswordValidationChange}
+                            shouldValidate={submitted}
+                        />
 
                         <Button
                             appearance="primary"
