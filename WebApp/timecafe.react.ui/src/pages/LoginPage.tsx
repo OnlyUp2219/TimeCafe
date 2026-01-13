@@ -1,9 +1,9 @@
-import {Button, Input, Field, Link, Text, Title3, Divider} from '@fluentui/react-components';
-import {useState} from "react";
+import {Button, Link, Text, Title3, Divider} from '@fluentui/react-components';
+import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {validateEmail, validatePassword} from "../utility/validate.ts";
 import {loginUser} from "../api/auth.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {EmailInput, PasswordInput} from "../components/FormFields";
 import {useDispatch} from "react-redux";
 
 export const LoginPage = () => {
@@ -15,20 +15,15 @@ export const LoginPage = () => {
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     const apiBase = import.meta.env.VITE_API_BASE_URL;
     const returnUrl = `${window.location.origin}/external-callback`;
 
-    const validate = () => {
-        const emailError = validateEmail(email);
-        const passwordError = validatePassword(password);
-        setErrors({email: emailError, password: passwordError});
-        return !emailError && !passwordError;
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+        setSubmitted(true);
+        if (errors.email || errors.password || !email || !password) return;
 
         setIsSubmitting(true);
         try {
@@ -62,6 +57,13 @@ export const LoginPage = () => {
         window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
+    const handleEmailValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, email: error}));
+    }, []);
+
+    const handlePasswordValidationChange = useCallback((error: string) => {
+        setErrors(prev => ({...prev, password: error}));
+    }, []);
 
     return (
         <div
@@ -80,37 +82,21 @@ export const LoginPage = () => {
                         <Text block>Войдите в свой аккаунт TimeCafe</Text>
                     </div>
 
-                    <Field
-                        label="Email"
-                        required
-                        validationState={errors.email ? "error" : undefined}
-                        validationMessage={errors.email}
-                    >
-                        <Input
-                            type="email"
-                            value={email}
-                            onChange={(_, data) => setEmail(data.value)}
-                            placeholder="example@timecafe.ru"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        />
-                    </Field>
+                    <EmailInput
+                        value={email}
+                        onChange={setEmail}
+                        disabled={isSubmitting}
+                        onValidationChange={handleEmailValidationChange}
+                        shouldValidate={submitted}
+                    />
 
-                    <Field
-                        label="Пароль"
-                        required
-                        validationState={errors.password ? "error" : undefined}
-                        validationMessage={errors.password}
-                    >
-                        <Input
-                            type="password"
-                            value={password}
-                            onChange={(_, data) => setPassword(data.value)}
-                            placeholder="Введите пароль"
-                            disabled={isSubmitting}
-                            className="w-full"
-                        />
-                    </Field>
+                    <PasswordInput
+                        value={password}
+                        onChange={setPassword}
+                        disabled={isSubmitting}
+                        onValidationChange={handlePasswordValidationChange}
+                        shouldValidate={submitted}
+                    />
 
                     <div className="flex items-center justify-between">
                         <Link

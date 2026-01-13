@@ -1,7 +1,5 @@
 import {
     Button,
-    Input,
-    Field,
     Link,
     Text,
     Title3,
@@ -10,13 +8,13 @@ import {
     DialogBody,
     DialogSurface,
     DialogTitle,
-    DialogTrigger, DialogActions
+    DialogActions
 } from '@fluentui/react-components';
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {validateEmail} from "../utility/validate.ts";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
+import {EmailInput} from "../components/FormFields";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -27,16 +25,12 @@ export const ResetPasswordPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [sentEmail, setSentEmail] = useState("");
-
-    const validate = () => {
-        const emailError = validateEmail(email);
-        setErrors({email: emailError});
-        return !emailError;
-    };
+    const [submitted, setSubmitted] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+        setSubmitted(true);
+        if (errors.email || !email) return;
 
         setIsSubmitting(true);
         try {
@@ -122,21 +116,13 @@ export const ResetPasswordPage = () => {
                         </div>
 
                         <form onSubmit={handleSubmit}>
-                            <Field
-                                label="Email"
-                                required
-                                validationState={errors.email ? "error" : undefined}
-                                validationMessage={errors.email}
-                            >
-                                <Input
-                                    type="email"
-                                    value={email}
-                                    onChange={(_, data) => setEmail(data.value)}
-                                    placeholder="example@timecafe.ru"
-                                    disabled={isSubmitting || openDialog}
-                                    className="w-full"
-                                />
-                            </Field>
+                            <EmailInput
+                                value={email}
+                                onChange={setEmail}
+                                disabled={isSubmitting || openDialog}
+                                onValidationChange={(error) => setErrors({email: error})}
+                                shouldValidate={submitted}
+                            />
 
                             <Button
                                 appearance="primary"
