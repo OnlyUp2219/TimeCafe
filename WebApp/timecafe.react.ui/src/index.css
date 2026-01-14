@@ -3,9 +3,14 @@
 html,
 body,
 #root {
-  width: 100vw;
+  width: 100%;
   margin: 0;
   padding: 0;
+}
+
+body,
+#root {
+  overflow-x: hidden;
 }
 
 :root {
@@ -23,6 +28,15 @@ body,
 }
 
 .FluentProvider {
-  background-color: var(--colorNeutralBackground2) !important;
+  /* background-color: var(--colorNeutralBackground2) !important; */
   width: 100%;
+}
+
+.tc-noise-overlay {
+  /*background-image: url("./assets/nnnoise_0F6CBD.svg");*/
+
+  background-image: url("assets/ooorganize.svg");
+
+  background-size: 150px 150px;
+  background-color: rgba(255, 255, 255, 1);
 }
