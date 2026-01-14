@@ -8,8 +8,13 @@ import {
     Card,
     Divider,
     Tag,
-    Text,
+    Body1,
+    Body2,
+    Caption1,
+    Subtitle1,
+    Subtitle2Stronger,
     Title2,
+    Title3,
     tokens,
 } from "@fluentui/react-components";
 import type {FC} from "react";
@@ -142,7 +147,7 @@ export const LandingPage: FC = () => {
                     src={blob1Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-20 -right-24 w-[360px] rotate-6 select-none sm:-top-24 sm:-right-28 sm:w-[640px]"
+                    className="absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none"
                     style={{opacity: 0.10}}
                     draggable={false}
                 />
@@ -152,7 +157,7 @@ export const LandingPage: FC = () => {
                     src={blob2Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute left-[-9rem] top-[34rem] w-[420px] -rotate-6 select-none sm:left-[-12rem] sm:top-[40rem] sm:w-[720px]"
+                    className="absolute -left-[12vw] top-[40vh] w-[55vw] max-w-[720px] -rotate-6 select-none"
                     style={{opacity: 0.10}}
                     draggable={false}
                 />
@@ -162,7 +167,7 @@ export const LandingPage: FC = () => {
                     src={squigglyUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-20 left-1/2 w-[760px] -translate-x-1/2 select-none sm:-top-16 sm:w-[980px]"
+                    className="absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none"
                     style={{opacity: 0.10}}
                     draggable={false}
                 />
@@ -172,17 +177,17 @@ export const LandingPage: FC = () => {
                     src={squigglyUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute bottom-[-10rem] left-1/2 w-[860px] -translate-x-1/2 rotate-180 select-none sm:bottom-[-14rem] sm:w-[1100px]"
+                    className="absolute -bottom-[12vw] left-1/2 w-[90vw] max-w-[1100px] -translate-x-1/2 rotate-180 select-none"
                     style={{opacity: 0.10}}
                     draggable={false}
                 />
 
-                {/* vortex as accent around tariffs/faq */}
+                {/* vortex */}
                 <img
                     src={vortexUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute right-[-10rem] top-[64rem] w-[520px] select-none sm:right-[-8rem] sm:top-[72rem] sm:w-[720px]"
+                    className="absolute -right-[12vw] top-[70vh] w-[60vw] max-w-[720px] select-none lg:top-[64rem]"
                     style={{opacity: 0.10}}
                     draggable={false}
                 />
@@ -198,12 +203,12 @@ export const LandingPage: FC = () => {
                                 Плати только за время — без сюрпризов
                             </Title2>
 
-                            <Text block style={subtleTextStyle}>
+                            <Body1 block style={subtleTextStyle}>
                                 Запускайте визит, следите за таймером и прогнозом стоимости в реальном времени.
-                            </Text>
-                            <Text block style={subtleTextStyle}>
+                            </Body1>
+                            <Body1 block style={subtleTextStyle}>
                                 Баланс, история операций и статусы профиля — всегда под рукой.
-                            </Text>
+                            </Body1>
 
                             <div className="flex flex-col gap-3 sm:flex-row">
                                 <Button appearance="primary" onClick={() => navigate("/register")}
@@ -236,25 +241,25 @@ export const LandingPage: FC = () => {
                                 <div className="grid grid-cols-1 gap-3">
                                     <HoverTiltCard className=" h-full">
                                         <div className="flex items-center justify-between">
-                                            <Text weight="semibold">Баланс</Text>
+                                            <Subtitle2Stronger>Баланс</Subtitle2Stronger>
                                             <Badge appearance="outline">Demo</Badge>
                                         </div>
                                         <Divider className="my-3"/>
-                                        <Text size={500} weight="semibold">75 BYN</Text>
-                                        <Text style={subtleTextStyle}>Доступно для оплаты визитов</Text>
+                                        <Title3>75 BYN</Title3>
+                                        <Caption1 style={subtleTextStyle}>Доступно для оплаты визитов</Caption1>
                                     </HoverTiltCard>
 
                                     <HoverTiltCard className="h-full">
                                         <div className="flex items-center justify-between">
-                                            <Text weight="semibold">Активный визит</Text>
+                                            <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
                                             <Badge appearance="outline">Demo</Badge>
                                         </div>
                                         <Divider className="my-3"/>
                                         <div className="flex items-baseline justify-between">
-                                            <Text size={500} weight="semibold">1:42</Text>
-                                            <Text style={subtleTextStyle}>примерно 15.5 BYN</Text>
+                                            <Title3>1:42</Title3>
+                                            <Caption1 style={subtleTextStyle}>примерно 15.5 BYN</Caption1>
                                         </div>
-                                        <Text style={subtleTextStyle}>Тариф: часовой</Text>
+                                        <Caption1 style={subtleTextStyle}>Тариф: часовой</Caption1>
                                     </HoverTiltCard>
                                 </div>
                             </div>
@@ -264,15 +269,15 @@ export const LandingPage: FC = () => {
 
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                        <Text weight="semibold" block>Как это работает</Text>
-                        <Text block style={subtleTextStyle}>Три шага — и вы в деле</Text>
+                        <Title3 block>Как это работает</Title3>
+                        <Body2 block style={subtleTextStyle}>Три шага — и вы в деле</Body2>
                     </div>
 
                     <div className=" grid grid-cols-1 gap-3  sm:grid-cols-3">
                         {steps.map((s, idx) => (
                             <HoverTiltCard key={s.title} className="p-4 h-full">
                                 <div className="flex items-start justify-between">
-                                    <Text weight="semibold" block>{s.title}</Text>
+                                    <Subtitle2Stronger block>{s.title}</Subtitle2Stronger>
                                     <Tag appearance="brand">{idx + 1}</Tag>
                                 </div>
                                 <TruncatedText textStyle={subtleTextStyle}>
@@ -285,8 +290,8 @@ export const LandingPage: FC = () => {
 
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                        <Text weight="semibold" block>Возможности</Text>
-                        <Text block style={subtleTextStyle}>Всё, что нужно гостю: визиты, баланс, профиль</Text>
+                        <Title3 block>Возможности</Title3>
+                        <Body2 block style={subtleTextStyle}>Всё, что нужно гостю: визиты, баланс, профиль</Body2>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -300,7 +305,7 @@ export const LandingPage: FC = () => {
                                             {f.icon}
                                         </Badge>
                                         <div className="min-w-0 gap-2 flex flex-col">
-                                            <Text weight="semibold" block>{f.title}</Text>
+                                            <Subtitle2Stronger block>{f.title}</Subtitle2Stronger>
                                             <TruncatedText textStyle={subtleTextStyle}>
                                                 {f.description}
                                             </TruncatedText>
@@ -316,16 +321,17 @@ export const LandingPage: FC = () => {
 
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                        <Text weight="semibold" block>Тарифы</Text>
-                        <Text block style={subtleTextStyle}>Тариф выбирается перед визитом, оплата — по факту
-                            времени</Text>
+                        <Title3 block>Тарифы</Title3>
+                        <Body2 block style={subtleTextStyle}>
+                            Тариф выбирается перед визитом, оплата — по факту времени
+                        </Body2>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {tariffCards.map((t) => (
                             <HoverTiltCard key={t.title} className="p-4 h-full">
                                 <div className="flex items-center justify-between">
-                                    <Text weight="semibold" block>{t.title}</Text>
+                                    <Subtitle1 block>{t.title}</Subtitle1>
                                     <Tag appearance="brand">{t.highlight}</Tag>
                                 </div>
                                 <TruncatedText className="mt-2" textStyle={subtleTextStyle}>
@@ -344,8 +350,8 @@ export const LandingPage: FC = () => {
 
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
-                        <Text weight="semibold" block>FAQ</Text>
-                        <Text block style={subtleTextStyle}>Короткие ответы на частые вопросы</Text>
+                        <Title3 block>FAQ</Title3>
+                        <Body2 block style={subtleTextStyle}>Короткие ответы на частые вопросы</Body2>
                     </div>
 
                     <div>
@@ -355,7 +361,7 @@ export const LandingPage: FC = () => {
                                     <AccordionItem key={item.question} value={idx}>
                                         <AccordionHeader>{item.question}</AccordionHeader>
                                         <AccordionPanel>
-                                            <Text block style={subtleTextStyle}>{item.answer}</Text>
+                                            <Body2 block style={subtleTextStyle}>{item.answer}</Body2>
                                         </AccordionPanel>
                                     </AccordionItem>
                                 ))}
@@ -373,8 +379,8 @@ export const LandingPage: FC = () => {
                     >
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                                <Text weight="semibold" block>Готовы попробовать?</Text>
-                                <Text block style={subtleTextStyle}>Создайте аккаунт и начните первый визит</Text>
+                                <Title3 block>Готовы попробовать?</Title3>
+                                <Body2 block style={subtleTextStyle}>Создайте аккаунт и начните первый визит</Body2>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
                                 <Button appearance="primary" onClick={() => navigate("/register")}

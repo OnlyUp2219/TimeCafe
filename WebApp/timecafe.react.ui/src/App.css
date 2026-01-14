@@ -7,7 +7,6 @@
 .app_root {
     display: flex;
     flex-direction: column;
-
 }
 
 .app_root > div {
@@ -15,7 +14,6 @@
     flex-direction: column;
     min-height: 100vh;
     height: 100%;
-
 }
 
 .auth_root {
