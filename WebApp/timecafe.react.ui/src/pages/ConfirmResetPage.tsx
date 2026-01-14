@@ -1,8 +1,9 @@
-import {Button, Input, Field, Link, Text, Title3} from '@fluentui/react-components';
+import {Button, Input, Field, Link, Body2, Caption1, Title3} from '@fluentui/react-components';
 import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "../components/FormFields";
+import {authFormContainerClassName} from "../layouts/authLayout";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();
@@ -82,13 +83,12 @@ export const ConfirmResetPage = () => {
 
             {/* Confirm Reset Form */}
             <div id="Form"
-                 className="flex flex-col flex-wrap items-center w-full
-                 sm:w-auto sm:justify-center sm:p-8">
+                  className={authFormContainerClassName}>
                 <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
                         <Title3 block>Установить новый пароль</Title3>
-                        <Text block>Восстановление доступа для {email}</Text>
+                        <Body2 block>Восстановление доступа для {email}</Body2>
                     </div>
 
                     <form onSubmit={handleSubmit}>
@@ -138,13 +138,13 @@ export const ConfirmResetPage = () => {
                     </form>
 
                     <div>
-                        <Text size={300}>
+                        <Caption1>
                             <Link
                                 onClick={() => navigate("/login")}
                             >
                                 Вернуться к входу
                             </Link>
-                        </Text>
+                        </Caption1>
                     </div>
                 </div>
             </div>

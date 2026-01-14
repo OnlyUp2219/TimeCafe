@@ -1,8 +1,9 @@
-import {Button, Link, Text, Title3, Divider} from '@fluentui/react-components';
+import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../components/FormFields";
+import {authFormContainerClassName} from "../layouts/authLayout";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -79,13 +80,12 @@ export const RegisterPage = () => {
 
             {/* Register Form */}
             <div id="Form"
-                 className="flex flex-col flex-wrap items-center w-full
-                 sm:w-auto sm:justify-center sm:p-8">
+                 className={authFormContainerClassName}>
                 <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
                         <Title3 block>Создать аккаунт</Title3>
-                        <Text block>Присоединитесь к TimeCafe</Text>
+                        <Body2 block>Присоединитесь к TimeCafe</Body2>
                     </div>
 
                     <EmailInput
@@ -128,7 +128,7 @@ export const RegisterPage = () => {
                     <div>
                         <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2">
                             <Button
-                                appearance="outline"
+                                appearance="secondary"
                                 onClick={handleGoogleLogin}
                                 disabled={isSubmitting}
                             >
@@ -137,7 +137,7 @@ export const RegisterPage = () => {
                             </Button>
 
                             <Button
-                                appearance="outline"
+                                appearance="secondary"
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}
                             >
@@ -148,14 +148,14 @@ export const RegisterPage = () => {
                     </div>
 
                     <div>
-                        <Text size={300}>
+                        <Caption1>
                             Уже есть аккаунт?{' '}
                             <Link
                                 onClick={() => navigate("/login")}
                             >
                                 Войти
                             </Link>
-                        </Text>
+                        </Caption1>
                     </div>
                 </div>
             </div>

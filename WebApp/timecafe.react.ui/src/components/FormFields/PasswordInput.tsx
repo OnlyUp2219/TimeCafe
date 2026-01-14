@@ -1,4 +1,4 @@
-import {Input, Field, Text} from '@fluentui/react-components';
+import {Input, Field, Caption1} from '@fluentui/react-components';
 import {CheckmarkFilled, DismissFilled} from "@fluentui/react-icons";
 import { useState, useEffect } from 'react';
 import { validatePassword as defaultValidatePassword } from '../../utility/validate';
@@ -62,12 +62,12 @@ export const PasswordInput = ({
             {showRequirements && value && (
                 <div className="">
                     {PASSWORD_REQUIREMENTS.map((req, idx) => (
-                        <Text
+                        <Caption1
                             key={idx}
                             className={metRequirements[idx] ? "text-emerald-600" : "text-red-600"}
                         >
                             {metRequirements[idx] ? <CheckmarkFilled/> : <DismissFilled/>} {req.text} <br/>
-                        </Text>
+                        </Caption1>
                     ))}
                 </div>
             )}

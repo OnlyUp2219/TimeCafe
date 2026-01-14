@@ -1,7 +1,8 @@
 import {
     Button,
     Link,
-    Text,
+    Body2,
+    Caption1,
     Title3,
     Dialog,
     DialogContent,
@@ -15,6 +16,7 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput} from "../components/FormFields";
+import {authFormContainerClassName} from "../layouts/authLayout";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -70,13 +72,14 @@ export const ResetPasswordPage = () => {
                     <DialogBody>
                         <DialogTitle>
                             <div>
-                                <MailCheckmark20Filled style={{color: '#107C10'}} />
+                                <MailCheckmark20Filled style={{color: '#107C10'}}/>
                                 Письмо отправлено
                             </div>
                         </DialogTitle>
                         <DialogContent>
-                            <Text block className="mb-3">Мы отправили письмо на почту <strong>{sentEmail}</strong></Text>
-                            <Text block>Перейдите на почту и нажмите ссылку для сброса пароля</Text>
+                            <Body2 block className="mb-3">Мы отправили письмо на
+                                почту <strong>{sentEmail}</strong></Body2>
+                            <Body2 block>Перейдите на почту и нажмите ссылку для сброса пароля</Body2>
                         </DialogContent>
                         <DialogActions>
                             <Button
@@ -96,8 +99,7 @@ export const ResetPasswordPage = () => {
                 </DialogSurface>
             </Dialog>
 
-            <div
-                className="!grid grid-cols-1 items-center justify-center
+            <div className="!grid grid-cols-1 items-center justify-center
                  sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
 
                 {/* Hero Section - Left Side (Desktop Only) */}
@@ -106,13 +108,12 @@ export const ResetPasswordPage = () => {
 
                 {/* Reset Form */}
                 <div id="Form"
-                     className="flex flex-col flex-wrap items-center w-full
-                     sm:w-auto sm:justify-center sm:p-8">
+                     className={authFormContainerClassName}>
                     <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                         <div className="flex flex-col items-center">
                             <Title3 block>Восстановление пароля</Title3>
-                            <Text block>Введите почту вашего аккаунта</Text>
+                            <Body2 block>Введите почту вашего аккаунта</Body2>
                         </div>
 
                         <form onSubmit={handleSubmit}>
@@ -135,13 +136,13 @@ export const ResetPasswordPage = () => {
                         </form>
 
                         <div>
-                            <Text size={300}>
+                            <Caption1>
                                 <Link
                                     onClick={() => navigate("/login")}
                                 >
                                     Вернуться к входу
                                 </Link>
-                            </Text>
+                            </Caption1>
                         </div>
                     </div>
                 </div>
