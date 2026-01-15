@@ -3,41 +3,46 @@
 html,
 body,
 #root {
-    width: 100%;
-    margin: 0;
-    padding: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body,
 #root {
-    overflow-x: hidden;
+  overflow-x: hidden;
 }
 
 :root {
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    font-weight: 400;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
 
-    color-scheme: light;
-    color: rgba(255, 255, 255, 0.87);
+  color-scheme: light;
+  color: rgba(255, 255, 255, 0.87);
 
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .FluentProvider {
-    /* background-color: var(--colorNeutralBackground2) !important; */
-    width: 100%;
+  /* background-color: var(--colorNeutralBackground2) !important; */
+  width: 100%;
 }
 
 .tc-noise-overlay {
-    /*background-image: url("./assets/nnnoise_0F6CBD.svg");*/
+  /*background-image: url("./assets/nnnoise_0F6CBD.svg");*/
 
-    background-image: url("assets/ooorganize.svg");
+  background-image: url("assets/ooorganize.svg");
 
-    background-size: 300px 300px;
-    background-color: rgba(0, 0, 0, 0.02);
+  background-size: 300px 300px;
+  background-color: rgba(0, 0, 0, 0.02);
+}
 
+.tc-wave-repeat-x {
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: 2400px auto;
 }
