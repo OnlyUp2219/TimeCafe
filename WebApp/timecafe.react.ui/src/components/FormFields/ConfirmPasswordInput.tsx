@@ -1,5 +1,5 @@
 import { Input, Field } from '@fluentui/react-components';
-import { useState, useEffect } from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import { validateConfirmPassword as defaultValidateConfirmPassword } from '../../utility/validate';
 
 interface ConfirmPasswordInputProps {
@@ -25,20 +25,26 @@ export const ConfirmPasswordInput = ({
     onValidationChange,
     shouldValidate = true
 }: ConfirmPasswordInputProps) => {
-    const [error, setError] = useState("");
+    const errorMsg = useMemo(
+        () => (shouldValidate ? validate(value, passwordValue) : ""),
+        [passwordValue, shouldValidate, validate, value]
+    );
+
+    const onValidationChangeRef = useRef(onValidationChange);
+    useEffect(() => {
+        onValidationChangeRef.current = onValidationChange;
+    }, [onValidationChange]);
 
     useEffect(() => {
-        const errorMsg = validate(value, passwordValue);
-        setError(errorMsg);
-        onValidationChange?.(errorMsg);
-    }, [value, passwordValue, validate, onValidationChange]);
+        onValidationChangeRef.current?.(errorMsg);
+    }, [errorMsg]);
 
     return (
         <Field
             label={label}
             required
-            validationState={shouldValidate && error ? "error" : undefined}
-            validationMessage={shouldValidate ? error : undefined}
+            validationState={shouldValidate && errorMsg ? "error" : undefined}
+            validationMessage={shouldValidate ? errorMsg : undefined}
         >
             <Input
                 type="password"

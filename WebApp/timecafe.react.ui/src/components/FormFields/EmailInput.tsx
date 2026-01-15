@@ -1,6 +1,7 @@
 import { Input, Field } from '@fluentui/react-components';
 import { useState, useEffect } from 'react';
 import { validateEmail as defaultValidateEmail } from '../../utility/validate';
+import type { ReactNode } from 'react';
 
 interface EmailInputProps {
     value: string;
@@ -10,6 +11,7 @@ interface EmailInputProps {
     validate?: (email: string) => string;
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
+    trailingElement?: ReactNode;
 }
 
 export const EmailInput = ({
@@ -19,7 +21,8 @@ export const EmailInput = ({
     placeholder = "example@timecafe.ru",
     validate = defaultValidateEmail,
     onValidationChange,
-    shouldValidate = true
+    shouldValidate = true,
+    trailingElement,
 }: EmailInputProps) => {
     const [error, setError] = useState("");
 
@@ -36,14 +39,17 @@ export const EmailInput = ({
             validationState={shouldValidate && error ? "error" : undefined}
             validationMessage={shouldValidate ? error : undefined}
         >
-            <Input
-                type="email"
-                value={value}
-                onChange={(_, data) => onChange(data.value)}
-                placeholder={placeholder}
-                disabled={disabled}
-                className="w-full"
-            />
+            <div className="input-with-button">
+                <Input
+                    type="email"
+                    value={value}
+                    onChange={(_, data) => onChange(data.value)}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    className="w-full"
+                />
+                {trailingElement}
+            </div>
         </Field>
     );
 };
