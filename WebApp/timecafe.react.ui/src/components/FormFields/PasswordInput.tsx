@@ -1,6 +1,6 @@
 import {Input, Field, Caption1} from '@fluentui/react-components';
 import {CheckmarkFilled, DismissFilled} from "@fluentui/react-icons";
-import { useState, useEffect } from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import { validatePassword as defaultValidatePassword } from '../../utility/validate';
 
 interface PasswordInputProps {
@@ -32,22 +32,29 @@ export const PasswordInput = ({
                                   onValidationChange,
                                   shouldValidate = true
                               }: PasswordInputProps) => {
-    const [error, setError] = useState("");
     const metRequirements = PASSWORD_REQUIREMENTS.map(req => req.rule(value));
 
+    const errorMsg = useMemo(
+        () => (shouldValidate ? validate(value) : ""),
+        [shouldValidate, validate, value]
+    );
+
+    const onValidationChangeRef = useRef(onValidationChange);
     useEffect(() => {
-        const errorMsg = validate(value);
-        setError(errorMsg);
-        onValidationChange?.(errorMsg);
-    }, [value, validate, onValidationChange]);
+        onValidationChangeRef.current = onValidationChange;
+    }, [onValidationChange]);
+
+    useEffect(() => {
+        onValidationChangeRef.current?.(errorMsg);
+    }, [errorMsg]);
 
     return (
         <>
             <Field
                 label={label}
                 required
-                validationState={shouldValidate && error && !showRequirements ? "error" : undefined}
-                validationMessage={shouldValidate && !showRequirements ? error : undefined}
+                validationState={shouldValidate && errorMsg && !showRequirements ? "error" : undefined}
+                validationMessage={shouldValidate && !showRequirements ? errorMsg : undefined}
             >
                 <Input
                     type="password"
