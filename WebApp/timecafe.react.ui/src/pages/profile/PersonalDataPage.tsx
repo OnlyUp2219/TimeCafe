@@ -9,11 +9,13 @@ import {
     tokens,
 } from "@fluentui/react-components";
 import {useMemo, useCallback} from "react";
+import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {RootState} from "../../store";
 import {PersonalInfoForm} from "../../components/PersonalDataForm/PersonalInfoForm";
 import {ChangePasswordForm} from "../../components/PersonalDataForm/ChangePasswordForm";
+import {ProfilePhotoCard} from "../../components/ProfilePhotoCard/ProfilePhotoCard";
 import type {ClientInfo} from "../../types/client";
 import {setClient, updateClientProfile} from "../../store/clientSlice";
 import type {AppDispatch} from "../../store";
@@ -31,6 +33,7 @@ export const PersonalDataPage = () => {
     const client = useSelector((state: RootState) => state.client.data);
     const saving = useSelector((state: RootState) => state.client.saving);
     const saveError = useSelector((state: RootState) => state.client.error);
+    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
 
     const {showToast, ToasterElement} = useProgressToast();
 
@@ -80,6 +83,8 @@ export const PersonalDataPage = () => {
 
     const backgroundOpacity = client ? 0.08 : 0.10;
 
+    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+
     const content = !client ? (
         <div className="mx-auto w-full max-w-3xl px-4 py-6 relative z-10">
             <div
@@ -122,7 +127,7 @@ export const PersonalDataPage = () => {
                                 name={`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`.trim() || client.email}
                                 color="colorful"
                                 initials={`${client.firstName?.[0] ?? ""}${client.lastName?.[0] ?? ""}`.trim() || "TC"}
-                                image={client.photo ? {src: client.photo} : undefined}
+                                image={photoUrl ? {src: photoUrl} : client.photo ? {src: client.photo} : undefined}
                                 size={56}
                             />
 
@@ -138,8 +143,8 @@ export const PersonalDataPage = () => {
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            <Tag appearance={client.emailConfirmed ? "brand" : "outline"}>
-                                {client.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
+                            <Tag appearance={authEmailConfirmed ? "brand" : "outline"}>
+                                {authEmailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
                             </Tag>
                             <Tag appearance={client.phoneNumberConfirmed ? "brand" : "outline"}>
                                 {client.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
@@ -155,7 +160,13 @@ export const PersonalDataPage = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+                        <ProfilePhotoCard
+                            className="h-full lg:col-span-2 xl:col-span-1"
+                            displayName={`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`.trim() || client.email}
+                            onPhotoUrlChange={setPhotoUrl}
+                        />
+
                         <PersonalInfoForm
                             client={client}
                             className="h-full"
@@ -163,6 +174,7 @@ export const PersonalDataPage = () => {
                             showDownloadButton={false}
                             onSave={handleSave}
                         />
+
                         <ChangePasswordForm
                             className="h-full"
                             redirectToLoginOnSuccess
@@ -175,7 +187,7 @@ export const PersonalDataPage = () => {
     );
 
     return (
-        <div className="tc-noise-overlay relative overflow-hidden  h-full">
+        <div className="tc-noise-overlay relative overflow-hidden min-h-screen">
             {ToasterElement}
 
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

@@ -23,9 +23,9 @@ import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
 import type {RootState} from "../../store";
 import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
-import vvvortex from "../../assets/vvvortex.svg";
-import rrrepeat from "../../assets/rrrepeat (2).svg";
-import sssurf from "../../assets/sssurf.svg";
+import vortex from "../../assets/vvvortex.svg";
+import repeat from "../../assets/rrrepeat (2).svg";
+import surf from "../../assets/sssurf.svg";
 
 export const HomePage = () => {
     const navigate = useNavigate();
@@ -61,7 +61,7 @@ export const HomePage = () => {
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <img
-                    src={vvvortex}
+                    src={vortex}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[10vw] -left-[10vw] w-[50vw] max-w-[640px] select-none"
@@ -69,7 +69,7 @@ export const HomePage = () => {
                     draggable={false}
                 />
                 <img
-                    src={rrrepeat}
+                    src={repeat}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[6vw] -right-[8vw] w-[40vw] max-w-[520px] select-none"
@@ -77,19 +77,19 @@ export const HomePage = () => {
                     draggable={false}
                 />
                 <img
-                    src={sssurf}
+                    src={surf}
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[16vw] left-0 w-[100vw] max-w-none select-none"
-                    style={{ opacity: 0.30 }}
+                    style={{opacity: 0.30}}
                     draggable={false}
                 />
                 <img
-                    src={sssurf}
+                    src={surf}
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[16vw] right-0 -scale-x-100 w-[100vw] max-w-none select-none"
-                    style={{ opacity: 0.30 }}
+                    style={{opacity: 0.30}}
                     draggable={false}
                 />
             </div>
