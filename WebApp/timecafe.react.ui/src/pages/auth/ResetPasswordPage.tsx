@@ -14,9 +14,9 @@ import {
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput} from "../components/FormFields";
-import {authFormContainerClassName} from "../layouts/authLayout";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
+import {EmailInput} from "../../components/FormFields";
+import {authFormContainerClassName} from "../../layouts/authLayout";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();

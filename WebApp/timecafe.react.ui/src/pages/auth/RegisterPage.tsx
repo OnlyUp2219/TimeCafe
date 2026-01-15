@@ -1,9 +1,9 @@
 import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../components/FormFields";
-import {authFormContainerClassName} from "../layouts/authLayout";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
+import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
+import {authFormContainerClassName} from "../../layouts/authLayout";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();

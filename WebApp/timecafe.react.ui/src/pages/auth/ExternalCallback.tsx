@@ -1,6 +1,6 @@
 import {useDispatch} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {setAccessToken, setEmailConfirmed} from "../store/authSlice.ts";
+import {setAccessToken, setEmailConfirmed} from "../../store/authSlice.ts";
 import {Spinner} from "@fluentui/react-components";
 import React, {useEffect} from "react";
 
