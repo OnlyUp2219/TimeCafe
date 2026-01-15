@@ -1,11 +1,11 @@
 import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {loginUser} from "../api/auth.ts";
-import {useProgressToast} from "../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput, PasswordInput} from "../components/FormFields";
+import {loginUser} from "../../api/auth.ts";
+import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
+import {EmailInput, PasswordInput} from "../../components/FormFields";
 import {useDispatch} from "react-redux";
-import {authFormContainerClassName} from "../layouts/authLayout";
+import {authFormContainerClassName} from "../../layouts/authLayout";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -75,7 +75,7 @@ export const LoginPage = () => {
             {/* Login Form */}
             <div id="Form"
                  className={authFormContainerClassName}>
-                <div className="flex flex-col w-full max-w-md gap-[12px]">
+                <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
                         <Title3 block>Добро пожаловать</Title3>
@@ -150,7 +150,7 @@ export const LoginPage = () => {
                             </Link>
                         </Caption1>
                     </div>
-                </div>
+                </form>
             </div>
 
             {/* Hero Section - Right Side (Desktop Only) */}

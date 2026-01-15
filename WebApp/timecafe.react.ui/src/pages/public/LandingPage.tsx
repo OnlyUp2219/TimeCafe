@@ -20,10 +20,10 @@ import {
 import type {FC} from "react";
 import {useMemo} from "react";
 import {useNavigate} from "react-router-dom";
-import {Header} from "../components/Header/Header";
-import {Footer} from "../components/Footer/Footer";
-import {HoverTiltCard} from "../components/HoverTiltCard/HoverTiltCard";
-import {TruncatedText} from "../components/TruncatedText/TruncatedText";
+import {Header} from "../../components/Header/Header";
+import {Footer} from "../../components/Footer/Footer";
+import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
+import {TruncatedText} from "../../components/TruncatedText/TruncatedText";
 import {
     Clock20Regular,
     MailCheckmark20Regular,
@@ -31,10 +31,10 @@ import {
     PersonAdd20Regular,
 } from "@fluentui/react-icons";
 
-import blob1Url from "../assets/ssshape_blob1.svg";
-import blob2Url from "../assets/ssshape_blob2.svg";
-import squigglyUrl from "../assets/sssquiggly.svg";
-import vortexUrl from "../assets/vvvortex.svg";
+import blob1Url from "../../assets/ssshape_blob1.svg";
+import blob2Url from "../../assets/ssshape_blob2.svg";
+import squigglyUrl from "../../assets/sssquiggly.svg";
+import vortexUrl from "../../assets/vvvortex.svg";
 
 type FaqItem = {
     question: string;
