@@ -1,15 +1,29 @@
 import {useEffect, useRef, useState} from "react";
-import {Avatar, Button, Card, Caption1, Field, Title2, tokens} from "@fluentui/react-components";
+import {Avatar, Button, Card, Field, Title2} from "@fluentui/react-components";
 import {Delete24Regular, ImageAdd24Regular} from "@fluentui/react-icons";
 
 interface ProfilePhotoCardProps {
     displayName: string;
     onPhotoUrlChange?: (url: string | null) => void;
     className?: string;
+    asCard?: boolean;
+    showTitle?: boolean;
+    disabled?: boolean;
+    variant?: "view" | "edit";
+    initialPhotoUrl?: string | null;
 }
 
-export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: ProfilePhotoCardProps) {
-    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+export function ProfilePhotoCard({
+                                    displayName,
+                                    onPhotoUrlChange,
+                                    className,
+                                    asCard = true,
+                                    showTitle = true,
+                                    disabled = false,
+                                    variant = "edit",
+                                    initialPhotoUrl = null,
+                                }: ProfilePhotoCardProps) {
+    const [photoUrl, setPhotoUrl] = useState<string | null>(initialPhotoUrl);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     const objectUrlRef = useRef<string | null>(null);
@@ -41,25 +55,40 @@ export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: Pro
         };
     }, []);
 
-    return (
-        <Card className={className}>
-            <div className="flex items-start justify-between gap-3">
-                <Title2>Фото профиля</Title2>
-            </div>
+    useEffect(() => {
+        if (objectUrlRef.current) {
+            URL.revokeObjectURL(objectUrlRef.current);
+            objectUrlRef.current = null;
+        }
+        setSelectedFile(null);
+        setPhotoUrl(initialPhotoUrl);
+        onPhotoUrlChange?.(initialPhotoUrl);
+    }, [initialPhotoUrl, onPhotoUrlChange]);
 
-            <div className="mt-3 flex items-center gap-4">
+    const body = variant === "view" ? (
+        <div className="flex items-center gap-4">
+            <Avatar
+                name={displayName}
+                size={72}
+                color="colorful"
+                image={photoUrl ? {src: photoUrl} : undefined}
+            />
+        </div>
+    ) : (
+        <>
+            {showTitle && (
+                <div className="flex items-start justify-between gap-3">
+                    <Title2>Фото профиля</Title2>
+                </div>
+            )}
+
+            <div className={showTitle ? "mt-3 flex items-center gap-4" : "flex items-center gap-4"}>
                 <Avatar
                     name={displayName}
                     size={72}
                     color="colorful"
                     image={photoUrl ? {src: photoUrl} : undefined}
                 />
-
-                <div className="flex flex-col gap-1 min-w-0">
-                    <Caption1 style={{color: tokens.colorNeutralForeground2}}>
-                        JPG/PNG. Сейчас это только UI-превью (без загрузки).
-                    </Caption1>
-                </div>
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
@@ -67,13 +96,10 @@ export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: Pro
                     <input
                         type="file"
                         accept="image/*"
-                        disabled={false}
+                        disabled={disabled}
                         onChange={(e) => {
                             const file = e.target.files?.[0] ?? null;
                             setSelectedFile(file);
-                            if (file) {
-                                setPhotoFromBlob(file);
-                            }
                         }}
                     />
                 </Field>
@@ -82,7 +108,7 @@ export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: Pro
                     <Button
                         appearance="primary"
                         icon={<ImageAdd24Regular/>}
-                        disabled={!selectedFile}
+                        disabled={disabled || !selectedFile}
                         onClick={() => {
                             if (selectedFile) setPhotoFromBlob(selectedFile);
                         }}
@@ -92,7 +118,7 @@ export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: Pro
                     <Button
                         appearance="secondary"
                         icon={<Delete24Regular/>}
-                        disabled={!photoUrl}
+                        disabled={disabled || !photoUrl}
                         onClick={() => {
                             setSelectedFile(null);
                             clearPhoto();
@@ -102,6 +128,16 @@ export function ProfilePhotoCard({displayName, onPhotoUrlChange, className}: Pro
                     </Button>
                 </div>
             </div>
+        </>
+    );
+
+    if (!asCard) {
+        return <div className={className}>{body}</div>;
+    }
+
+    return (
+        <Card className={className}>
+            {body}
         </Card>
     );
 }

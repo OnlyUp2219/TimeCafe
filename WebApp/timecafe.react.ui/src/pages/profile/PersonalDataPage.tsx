@@ -3,8 +3,8 @@ import {
     Badge,
     Body2,
     Button,
+    Card,
     Divider,
-    Tag,
     Title2,
     tokens,
 } from "@fluentui/react-components";
@@ -13,13 +13,16 @@ import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {RootState} from "../../store";
-import {PersonalInfoForm} from "../../components/PersonalDataForm/PersonalInfoForm";
 import {ChangePasswordForm} from "../../components/PersonalDataForm/ChangePasswordForm";
-import {ProfilePhotoCard} from "../../components/ProfilePhotoCard/ProfilePhotoCard";
 import type {ClientInfo} from "../../types/client";
 import {setClient, updateClientProfile} from "../../store/clientSlice";
 import type {AppDispatch} from "../../store";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress";
+import {PersonalDataMainForm} from "../../components/PersonalDataForm/PersonalDataMainForm";
+import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
+import {EmailFormCard} from "../../components/PersonalDataForm/EmailFormCard";
+import {LogoutCard} from "../../components/PersonalDataForm/LogoutCard";
+import {logoutServer} from "../../api/auth.ts";
 
 import blob3Url from "../../assets/ssshape_blob3.svg";
 import blob4Url from "../../assets/ssshape_blob4.svg";
@@ -33,24 +36,16 @@ export const PersonalDataPage = () => {
     const client = useSelector((state: RootState) => state.client.data);
     const saving = useSelector((state: RootState) => state.client.saving);
     const saveError = useSelector((state: RootState) => state.client.error);
-    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
 
     const {showToast, ToasterElement} = useProgressToast();
 
     const subtleTextStyle = useMemo(() => ({color: tokens.colorNeutralForeground2}), []);
 
-    const handleSave = useCallback(
-        async (next: ClientInfo) => {
-            const patch: Partial<ClientInfo> = {
-                email: next.email,
-                phoneNumber: next.phoneNumber,
-                birthDate: next.birthDate,
-                genderId: next.genderId,
-            };
-
+    const savePatch = useCallback(
+        async (patch: Partial<ClientInfo>, successMessage: string) => {
             const action = await dispatch(updateClientProfile(patch));
             if (updateClientProfile.fulfilled.match(action)) {
-                showToast("Данные профиля сохранены.", "success", "Готово");
+                showToast(successMessage, "success", "Готово");
                 return;
             }
 
@@ -83,7 +78,13 @@ export const PersonalDataPage = () => {
 
     const backgroundOpacity = client ? 0.08 : 0.10;
 
-    const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+    const [photoUrl, setPhotoUrl] = useState<string | null | undefined>(undefined);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+
+    const handleLogout = useCallback(async () => {
+        await logoutServer(dispatch);
+        navigate("/login", {replace: true});
+    }, [dispatch, navigate]);
 
     const content = !client ? (
         <div className="mx-auto w-full max-w-3xl px-4 py-6 relative z-10">
@@ -127,7 +128,11 @@ export const PersonalDataPage = () => {
                                 name={`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`.trim() || client.email}
                                 color="colorful"
                                 initials={`${client.firstName?.[0] ?? ""}${client.lastName?.[0] ?? ""}`.trim() || "TC"}
-                                image={photoUrl ? {src: photoUrl} : client.photo ? {src: client.photo} : undefined}
+                                image={
+                                    photoUrl !== undefined
+                                        ? (photoUrl ? {src: photoUrl} : undefined)
+                                        : (client.photo ? {src: client.photo} : undefined)
+                                }
                                 size={56}
                             />
 
@@ -142,14 +147,7 @@ export const PersonalDataPage = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
-                            <Tag appearance={authEmailConfirmed ? "brand" : "outline"}>
-                                {authEmailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
-                            </Tag>
-                            <Tag appearance={client.phoneNumberConfirmed ? "brand" : "outline"}>
-                                {client.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
-                            </Tag>
-                        </div>
+                        <div />
                     </div>
 
                     <Divider/>
@@ -160,26 +158,50 @@ export const PersonalDataPage = () => {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                        <ProfilePhotoCard
-                            className="h-full lg:col-span-2 xl:col-span-1"
-                            displayName={`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`.trim() || client.email}
-                            onPhotoUrlChange={setPhotoUrl}
-                        />
-
-                        <PersonalInfoForm
+                    <div className="flex flex-col gap-4">
+                        <PersonalDataMainForm
                             client={client}
-                            className="h-full"
                             loading={saving}
-                            showDownloadButton={false}
-                            onSave={handleSave}
+                            onPhotoUrlChange={(url) => setPhotoUrl(url)}
+                            onSave={(patch) => savePatch(patch, "Персональные данные сохранены.")}
                         />
 
-                        <ChangePasswordForm
-                            className="h-full"
-                            redirectToLoginOnSuccess
-                            autoClearTokensOnSuccess
-                        />
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <PhoneFormCard
+                                client={client}
+                                loading={saving}
+                                onSave={(patch) => savePatch(patch, "Телефон сохранён.")}
+                            />
+
+                            <EmailFormCard
+                                client={client}
+                                loading={saving}
+                                onSave={(patch) => savePatch(patch, "Почта сохранена.")}
+                            />
+
+                            <Card className="sm:col-span-2 lg:col-span-1">
+                                <Title2>Смена пароля</Title2>
+                                <div className="mt-3">
+                                    {!showPasswordForm ? (
+                                        <Button appearance="primary" onClick={() => setShowPasswordForm(true)}>
+                                            Сменить пароль
+                                        </Button>
+                                    ) : (
+                                        <ChangePasswordForm
+                                            wrapInCard={false}
+                                            showTitle={false}
+                                            mode="ui"
+                                            redirectToLoginOnSuccess={false}
+                                            autoClearTokensOnSuccess={false}
+                                            showCancelButton
+                                            onCancel={() => setShowPasswordForm(false)}
+                                        />
+                                    )}
+                                </div>
+                            </Card>
+                        </div>
+
+                        <LogoutCard onLogout={handleLogout} />
                     </div>
                 </div>
             </div>
