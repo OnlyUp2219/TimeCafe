@@ -23,6 +23,9 @@ export interface ChangePasswordFormProps {
     onCancel?: () => void;
     showCancelButton?: boolean;
     className?: string;
+    wrapInCard?: boolean;
+    showTitle?: boolean;
+    mode?: "api" | "ui";
 }
 
 export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
@@ -32,6 +35,9 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                                                                     onCancel,
                                                                     showCancelButton = false,
                                                                     className,
+                                                                    wrapInCard = true,
+                                                                    showTitle = true,
+                                                                    mode = "api",
                                                                 }) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -76,7 +82,11 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
 
         setLoading(true);
         try {
-            await changePassword({currentPassword, newPassword});
+            if (mode === "ui") {
+                await new Promise((r) => setTimeout(r, 450));
+            } else {
+                await changePassword({currentPassword, newPassword});
+            }
             setSuccess(true);
             onSuccess?.();
             if (autoClearTokensOnSuccess) {
@@ -94,9 +104,9 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         }
     };
 
-    return (
-        <Card className={className}>
-            <Title2>Смена пароля</Title2>
+    const body = (
+        <>
+            {showTitle && <Title2>Смена пароля</Title2>}
             {error && (
                 <MessageBar intent="error">
                     <MessageBarBody>
@@ -113,7 +123,8 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     </MessageBarBody>
                 </MessageBar>
             )}
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[12px] mt-[8px]">
+
+            <form onSubmit={handleSubmit} className={showTitle ? "flex flex-col gap-[12px] mt-[8px]" : "flex flex-col gap-[12px]"}>
                 <PasswordInput
                     value={currentPassword}
                     onChange={setCurrentPassword}
@@ -158,6 +169,16 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     )}
                 </div>
             </form>
+        </>
+    );
+
+    if (!wrapInCard) {
+        return <div className={className}>{body}</div>;
+    }
+
+    return (
+        <Card className={className}>
+            {body}
         </Card>
     );
 };
