@@ -46,3 +46,12 @@ body,
   background-position: center bottom;
   background-size: 2400px auto;
 }
+
+/* Fluent UI Button: единый паттерн для текста (no-wrap + ellipsis) */
+.fui-Button .fui-Button__content {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

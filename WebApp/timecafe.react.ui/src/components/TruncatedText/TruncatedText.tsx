@@ -1,4 +1,4 @@
-import {Body2, Tooltip} from "@fluentui/react-components";
+import {Body2, Text, Title3, Tooltip} from "@fluentui/react-components";
 import type {CSSProperties, FC, ReactNode} from "react";
 import {useLayoutEffect, useMemo, useRef, useState} from "react";
 
@@ -7,6 +7,7 @@ type TruncatedTextProps = {
     lines?: number;
     className?: string;
     textStyle?: CSSProperties;
+    as?: "body2" | "text" | "title3";
 };
 
 export const TruncatedText: FC<TruncatedTextProps> = ({
@@ -14,6 +15,7 @@ export const TruncatedText: FC<TruncatedTextProps> = ({
     lines = 2,
     className,
     textStyle,
+    as = "body2",
 }) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [isOverflowing, setIsOverflowing] = useState(false);
@@ -50,9 +52,15 @@ export const TruncatedText: FC<TruncatedTextProps> = ({
         };
     }, [children, lines]);
 
+    const textNode = useMemo((): ReactNode => {
+        if (as === "title3") return <Title3 block style={textStyle}>{children}</Title3>;
+        if (as === "text") return <Text block style={textStyle}>{children}</Text>;
+        return <Body2 block style={textStyle}>{children}</Body2>;
+    }, [as, children, textStyle]);
+
     const content: ReactNode = (
         <div ref={containerRef} className={className} style={clampStyle}>
-            <Body2 block style={textStyle}>{children}</Body2>
+            {textNode}
         </div>
     );
 
