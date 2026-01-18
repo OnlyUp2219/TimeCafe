@@ -75,7 +75,7 @@ export const Sidebar: FC = () => {
     const navItems = [
         {id: "1", label: "Главная", path: "/home"},
         {id: "2", label: "Персональные данные", path: "/personal-data"},
-        {id: "3", label: "Логин тест", path: "/login-test"},
+        {id: "3", label: "Начать визит", path: "/visit/start"},
     ];
 
 

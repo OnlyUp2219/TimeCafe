@@ -1,16 +1,17 @@
 import {
     Badge,
+    Body2,
     Button,
     Card,
     Caption1,
     Divider,
     Tag,
     Text,
+    Title3,
     tokens,
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
-import {TruncatedText} from "../TruncatedText/TruncatedText";
 
 export type TariffBillingType = "Hourly" | "PerMinute";
 
@@ -43,7 +44,6 @@ const formatMoney = (value: number) => {
 };
 
 export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
-    const subtleTextStyle = useMemo(() => ({color: tokens.colorNeutralForeground2}), []);
 
     const accent = useMemo(() => {
         if (tariff.accent === "green") return tokens.colorPaletteLightGreenBackground2;
@@ -55,9 +55,10 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
     const perMinute = tariff.pricePerMinute;
     const perHour = tariff.pricePerMinute * 60;
 
+
     return (
         <Card
-            className="w-[360px] max-w-[82vw]"
+            className="sm:w-[360px] sm:max-w-[82vw]"
             style={{
                 border: `1px solid ${selected ? tokens.colorBrandStroke1 : tokens.colorNeutralStroke1}`,
                 boxShadow: selected ? tokens.shadow16 : tokens.shadow8,
@@ -66,15 +67,13 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
         >
             <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
+                    <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <div className="min-w-0 flex-1">
-                                <TruncatedText as="title3" lines={2}>
-                                    {tariff.name}
-                                </TruncatedText>
-                            </div>
+                            <Title3 truncate wrap={false} block>
+                                {tariff.name}
+                            </Title3>
                             {tariff.recommended && (
-                                <Tag appearance="brand" size="small">
+                                <Tag className="!hidden sm:!block" appearance="brand" size="small">
                                     Рекомендуем
                                 </Tag>
                             )}
@@ -84,42 +83,42 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
                                 </Tag>
                             )}
                         </div>
-                        <div className="mt-1">
-                            <TruncatedText as="body2" lines={2} textStyle={subtleTextStyle}>
-                                {tariff.description}
-                            </TruncatedText>
-                        </div>
+                        <Body2 className="!line-clamp-2">
+                            {tariff.description}
+                        </Body2>
                     </div>
 
-                    {selected ? (
-                        <Badge appearance="tint" size="large">
-                            Выбран
-                        </Badge>
-                    ) : (
-                        <Badge appearance="outline" size="large">
-                            Тариф
-                        </Badge>
-                    )}
+                    <div>
+                        {selected ? (
+                            <Badge appearance="tint" size="large">
+                                Выбран
+                            </Badge>
+                        ) : (
+                            <Badge appearance="ghost" size="large">
+                                Тариф
+                            </Badge>
+                        )}
+                    </div>
                 </div>
 
-                <Divider />
+                <Divider appearance="brand" className="divider grow-0"/>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-wrap gap-x-10">
                     <div className="flex flex-col gap-1">
-                        <Caption1 style={subtleTextStyle}>Поминутно</Caption1>
+                        <Caption1>Поминутно</Caption1>
                         <div className="text-base font-semibold">
                             {formatMoney(perMinute)} / мин
                         </div>
                     </div>
-                    <div className="flex flex-col gap-1 text-right">
-                        <Caption1 style={subtleTextStyle}>Почасово</Caption1>
+                    <div className="flex flex-col gap-1">
+                        <Caption1>Почасово</Caption1>
                         <div className="text-base font-semibold">
                             {formatMoney(perHour)} / час
                         </div>
                     </div>
                 </div>
 
-                <div className="flex gap-2 pt-1">
+                <div className="flex flex-wrap gap-2">
                     <Button
                         appearance={selected ? "primary" : "secondary"}
                         onClick={() => onSelect?.(tariff.tariffId)}

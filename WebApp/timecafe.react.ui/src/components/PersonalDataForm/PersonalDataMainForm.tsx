@@ -1,6 +1,6 @@
-import {useEffect, useMemo, useState, type FC} from "react";
-import {Button, Card, Field, Input, Radio, RadioGroup, Text, Title2, tokens} from "@fluentui/react-components";
-import {Edit20Regular} from "@fluentui/react-icons";
+import {useEffect, useState, type FC} from "react";
+import {Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
+import {Edit20Filled} from "@fluentui/react-icons";
 import type {ClientInfo} from "../../types/client.ts";
 import {DateInput} from "../FormFields";
 import {ProfilePhotoCard} from "../ProfilePhotoCard/ProfilePhotoCard";
@@ -30,13 +30,12 @@ const normalizeGenderId = (value: unknown): 0 | 1 | 2 => {
 };
 
 export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
-    client,
-    loading = false,
-    className,
-    onSave,
-    onPhotoUrlChange,
-}) => {
-    const subtleTextStyle = useMemo(() => ({color: tokens.colorNeutralForeground2}), []);
+                                                                        client,
+                                                                        loading = false,
+                                                                        className,
+                                                                        onSave,
+                                                                        onPhotoUrlChange,
+                                                                    }) => {
 
     const [firstName, setFirstName] = useState(client.firstName ?? "");
     const [lastName, setLastName] = useState(client.lastName ?? "");
@@ -85,7 +84,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
         <Card className={className}>
             <Title2>Персональные данные</Title2>
 
-            <div className="mt-3">
+            <div>
                 {!isEditing ? (
                     <div className="flex flex-col gap-3">
                         <div className="flex items-center gap-4">
@@ -100,16 +99,16 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
                             <div className="flex flex-col gap-1">
                                 <Text weight="semibold" size={400}>{fullName || "—"}</Text>
-                                <Text style={subtleTextStyle}>Пол: {genderText}</Text>
-                                <Text style={subtleTextStyle}>Дата рождения: {birthDateText}</Text>
-                                <Text style={subtleTextStyle}>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
+                                <Text>Пол: {genderText}</Text>
+                                <Text>Дата рождения: {birthDateText}</Text>
+                                <Text>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-1">
+                        <div className="flex flex-col sm:items-center sm:flex-row flex-wrap gap-2">
                             <Button
                                 appearance="primary"
-                                icon={<Edit20Regular />}
+                                icon={<Edit20Filled/>}
                                 onClick={() => setMode("edit")}
                                 disabled={loading}
                             >
@@ -134,13 +133,16 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <Field label="Фамилия">
-                                    <Input value={lastName} onChange={(_, d) => setLastName(d.value)} disabled={loading} />
+                                    <Input value={lastName} onChange={(_, d) => setLastName(d.value)}
+                                           disabled={loading}/>
                                 </Field>
                                 <Field label="Имя">
-                                    <Input value={firstName} onChange={(_, d) => setFirstName(d.value)} disabled={loading} />
+                                    <Input value={firstName} onChange={(_, d) => setFirstName(d.value)}
+                                           disabled={loading}/>
                                 </Field>
                                 <Field label="Отчество">
-                                    <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)} disabled={loading} />
+                                    <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)}
+                                           disabled={loading}/>
                                 </Field>
 
                                 <DateInput
@@ -160,17 +162,17 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                         setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
                                     }}
                                 >
-                                    <Radio value="0" label="Не указан" />
-                                    <Radio value="1" label="Мужчина" />
-                                    <Radio value="2" label="Женщина" />
+                                    <Radio value="0" label="Не указан"/>
+                                    <Radio value="1" label="Мужчина"/>
+                                    <Radio value="2" label="Женщина"/>
                                 </RadioGroup>
                             </Field>
 
                             <div>
-                                <Text style={subtleTextStyle}>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
+                                <Text>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
                             </div>
 
-                            <div className="flex flex-wrap gap-2 pt-1">
+                            <div className="flex flex-wrap gap-2">
                                 <Button appearance="primary" onClick={handleSave} disabled={loading}>
                                     Сохранить изменения
                                 </Button>

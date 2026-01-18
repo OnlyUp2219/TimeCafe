@@ -1,6 +1,6 @@
 import {createElement, useEffect, useState, type FC} from "react";
-import {Button, Card, Tag, Text, Title2, Tooltip} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
+import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
+import {CheckmarkFilled, DismissFilled, Edit20Filled, type FluentIcon} from "@fluentui/react-icons";
 import type {ClientInfo} from "../../types/client.ts";
 import {EmailInput} from "../FormFields";
 
@@ -46,13 +46,20 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
     return (
         <Card className={className}>
             <Title2>Почта</Title2>
+            <Body2 className="!line-clamp-2">
+                Нужна для важных уведомлений и восстановления доступа.
+            </Body2>
 
-            <div className="mt-3 flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
                 {!isEditing ? (
                     <div className="flex flex-col gap-2">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                                <Text weight="semibold">{email || "—"}</Text>
+                        <div className="flex flex-col sm:items-center sm:flex-row justify-between gap-2 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <Tooltip content={`Почта: ${email || "не указан"}`} relationship="label">
+                                    <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
+                                        {email || "—"}
+                                    </Body1Strong>
+                                </Tooltip>
                                 <Tooltip
                                     content={client.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
                                     relationship="description"
@@ -66,7 +73,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
                             </div>
                             <Button
                                 appearance="primary"
-                                icon={<Edit20Regular />}
+                                icon={<Edit20Filled/>}
                                 onClick={() => setMode("edit")}
                                 disabled={loading}
                             >
@@ -93,7 +100,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
                             }
                         />
 
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-nowrap items-center justify-end gap-2">
                             <Button appearance="primary" onClick={handleSave} disabled={loading || !email.trim()}>
                                 Сохранить
                             </Button>
