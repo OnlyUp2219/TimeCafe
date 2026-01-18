@@ -34,8 +34,6 @@ export const HomePage = () => {
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const client = useSelector((state: RootState) => state.client.data);
 
-    const subtleTextStyle = useMemo(() => ({color: tokens.colorNeutralForeground2}), []);
-
     const displayName = useMemo(() => {
         const firstName = client?.firstName?.trim();
         if (firstName) return firstName;
@@ -94,7 +92,7 @@ export const HomePage = () => {
                 />
             </div>
 
-            <div className="relative mx-auto w-full max-w-6xl px-4 py-6">
+            <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
                 <div
                     className="flex flex-col gap-4 overflow-hidden rounded-3xl p-5 sm:p-8"
                     style={{
@@ -120,7 +118,7 @@ export const HomePage = () => {
                         <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-end">
 
                             <div className="flex flex-col gap-2 ">
-                                <Body2 style={subtleTextStyle}>
+                                <Body2>
                                     Короткий обзор: баланс, визит и быстрые действия.
                                 </Body2>
 
@@ -163,7 +161,7 @@ export const HomePage = () => {
                             <div className="flex items-end justify-between gap-3 flex-wrap">
                                 <div className="flex flex-col gap-1">
                                     <Title3>{demo.balance}</Title3>
-                                    <Caption1 style={subtleTextStyle}>{demo.balanceHint}</Caption1>
+                                    <Caption1>{demo.balanceHint}</Caption1>
                                 </div>
                                 <Button appearance="secondary" disabled>
                                     Операции (скоро)
@@ -185,16 +183,16 @@ export const HomePage = () => {
 
                             <div className="flex flex-row justify-between gap-4 flex-wrap">
                                 <div className="flex flex-col gap-1">
-                                    <Caption1 style={subtleTextStyle}>Длительность</Caption1>
+                                    <Caption1>Длительность</Caption1>
                                     <Title3>{demo.visitDuration}</Title3>
                                 </div>
                                 <div className="flex flex-col gap-1 text-right">
-                                    <Caption1 style={subtleTextStyle}>Оценка</Caption1>
+                                    <Caption1>Оценка</Caption1>
                                     <Title3>{demo.visitEstimate}</Title3>
                                 </div>
                             </div>
 
-                            <Caption1 style={subtleTextStyle}>
+                            <Caption1>
                                 {demo.visitHint}
                             </Caption1>
 
@@ -224,7 +222,7 @@ export const HomePage = () => {
 
                             <div className="flex flex-col gap-1">
                                 <Title3>{demo.weekSpent}</Title3>
-                                <Caption1 style={subtleTextStyle}>{demo.weekSpentHint}</Caption1>
+                                <Caption1>{demo.weekSpentHint}</Caption1>
                             </div>
                             <div className="mt-4">
                                 <Button appearance="secondary" className="w-full" disabled>
@@ -252,20 +250,20 @@ export const HomePage = () => {
                             {client ? (
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col gap-1 min-w-0">
-                                        <Caption1 style={subtleTextStyle}>ФИО</Caption1>
+                                        <Caption1>ФИО</Caption1>
                                         <Title3>{`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`}</Title3>
                                     </div>
                                     <div className="flex flex-col gap-1 sm:text-right min-w-0">
-                                        <Caption1 style={subtleTextStyle}>Контакты</Caption1>
+                                        <Caption1>Контакты</Caption1>
                                         <Body2>{client.email}</Body2>
-                                        <Caption1 style={subtleTextStyle}>
+                                        <Caption1>
                                             {client.phoneNumber ?? "Телефон не указан"}
                                         </Caption1>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2">
-                                    <Body2 style={subtleTextStyle}>
+                                    <Body2>
                                         Заполните профиль, чтобы продолжить пользовательский сценарий.
                                     </Body2>
                                     <div className="flex flex-col gap-2 sm:flex-row sm:flex-nowrap sm:min-w-0">
