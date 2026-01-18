@@ -8,7 +8,7 @@ import {
     Title2,
     tokens,
 } from "@fluentui/react-components";
-import {useMemo, useCallback} from "react";
+import {useCallback} from "react";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -23,7 +23,7 @@ import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
 import {EmailFormCard} from "../../components/PersonalDataForm/EmailFormCard";
 import {LogoutCard} from "../../components/PersonalDataForm/LogoutCard";
 import {logoutServer} from "../../api/auth.ts";
-
+import {PasswordFilled} from "@fluentui/react-icons";
 import blob3Url from "../../assets/ssshape_blob3.svg";
 import blob4Url from "../../assets/ssshape_blob4.svg";
 import squiggly1Url from "../../assets/sssquiggl_1.svg";
@@ -38,8 +38,6 @@ export const PersonalDataPage = () => {
     const saveError = useSelector((state: RootState) => state.client.error);
 
     const {showToast, ToasterElement} = useProgressToast();
-
-    const subtleTextStyle = useMemo(() => ({color: tokens.colorNeutralForeground2}), []);
 
     const savePatch = useCallback(
         async (patch: Partial<ClientInfo>, successMessage: string) => {
@@ -87,7 +85,7 @@ export const PersonalDataPage = () => {
     }, [dispatch, navigate]);
 
     const content = !client ? (
-        <div className="mx-auto w-full max-w-3xl px-4 py-6 relative z-10">
+        <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
             <div
                 className="rounded-3xl p-6"
                 style={{
@@ -97,7 +95,7 @@ export const PersonalDataPage = () => {
                 }}
             >
                 <Title2>Персональные данные</Title2>
-                <div className="mt-2" style={subtleTextStyle}>
+                <div>
                     Профиль не загружен. Перейдите на главную и попробуйте снова.
                 </div>
 
@@ -112,7 +110,7 @@ export const PersonalDataPage = () => {
             </div>
         </div>
     ) : (
-        <div className="mx-auto w-full max-w-6xl px-4 py-6 relative z-10">
+        <div className="mx-auto  w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10 ">
             <div
                 className="rounded-3xl p-5 sm:p-8"
                 style={{
@@ -141,19 +139,20 @@ export const PersonalDataPage = () => {
                                     <Title2>Профиль</Title2>
                                     <Badge appearance="tint" size="large">PersonalData</Badge>
                                 </div>
-                                <Body2 style={subtleTextStyle}>
-                                    Обновляйте контакты и основные данные — они используются для уведомлений и восстановления доступа.
+                                <Body2>
+                                    Обновляйте контакты и основные данные — они используются для уведомлений и
+                                    восстановления доступа.
                                 </Body2>
                             </div>
                         </div>
 
-                        <div />
+                        <div/>
                     </div>
 
                     <Divider/>
 
                     {saveError && (
-                        <div style={subtleTextStyle}>
+                        <div>
                             Последняя ошибка сохранения: {saveError}
                         </div>
                     )}
@@ -166,7 +165,7 @@ export const PersonalDataPage = () => {
                             onSave={(patch) => savePatch(patch, "Персональные данные сохранены.")}
                         />
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
                             <PhoneFormCard
                                 client={client}
                                 loading={saving}
@@ -181,9 +180,15 @@ export const PersonalDataPage = () => {
 
                             <Card className="sm:col-span-2 lg:col-span-1">
                                 <Title2>Смена пароля</Title2>
-                                <div className="mt-3">
+                                <Body2 className="!line-clamp-2">
+                                    Рекомендуется менять пароль регулярно и использовать уникальные пароли для
+                                    разных сервисов.
+                                </Body2>
+                                <div
+                                    className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center" : "w-full"}>
                                     {!showPasswordForm ? (
-                                        <Button appearance="primary" onClick={() => setShowPasswordForm(true)}>
+                                        <Button appearance="primary" icon={<PasswordFilled/>}
+                                                onClick={() => setShowPasswordForm(true)}>
                                             Сменить пароль
                                         </Button>
                                     ) : (
@@ -199,9 +204,10 @@ export const PersonalDataPage = () => {
                                     )}
                                 </div>
                             </Card>
+
+                            <LogoutCard className="sm:col-span-2 lg:col-span-1" onLogout={handleLogout}/>
                         </div>
 
-                        <LogoutCard onLogout={handleLogout} />
                     </div>
                 </div>
             </div>
@@ -209,7 +215,7 @@ export const PersonalDataPage = () => {
     );
 
     return (
-        <div className="tc-noise-overlay relative overflow-hidden min-h-screen">
+        <div className="tc-noise-overlay relative overflow-hidden min-h-full">
             {ToasterElement}
 
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

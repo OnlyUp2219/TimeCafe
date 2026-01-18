@@ -57,4 +57,10 @@
 .dark-red {
     background: var(--colorStatusDangerBackground1) !important;
     color: var(--colorStatusDangerForeground1) !important;
+    border-color: var(--colorStatusDangerBorder1) !important;
+}
+
+.dark-red:hover {
+    background: var(--colorStatusDangerBackground2) !important;
+    color: var(--colorStatusDangerForeground1) !important;
 }
