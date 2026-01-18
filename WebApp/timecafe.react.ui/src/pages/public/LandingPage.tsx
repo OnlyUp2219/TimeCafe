@@ -23,7 +23,6 @@ import {useNavigate} from "react-router-dom";
 import {Header} from "../../components/Header/Header";
 import {Footer} from "../../components/Footer/Footer";
 import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
-import {TruncatedText} from "../../components/TruncatedText/TruncatedText";
 import {
     Clock20Regular,
     MailCheckmark20Regular,
@@ -203,10 +202,10 @@ export const LandingPage: FC = () => {
                                 Плати только за время — без сюрпризов
                             </Title2>
 
-                            <Body1 block style={subtleTextStyle}>
+                            <Body1 block>
                                 Запускайте визит, следите за таймером и прогнозом стоимости в реальном времени.
                             </Body1>
-                            <Body1 block style={subtleTextStyle}>
+                            <Body1 block>
                                 Баланс, история операций и статусы профиля — всегда под рукой.
                             </Body1>
 
@@ -246,7 +245,7 @@ export const LandingPage: FC = () => {
                                         </div>
                                         <Divider className="my-3"/>
                                         <Title3>75 BYN</Title3>
-                                        <Caption1 style={subtleTextStyle}>Доступно для оплаты визитов</Caption1>
+                                        <Caption1>Доступно для оплаты визитов</Caption1>
                                     </HoverTiltCard>
 
                                     <HoverTiltCard className="h-full">
@@ -257,9 +256,9 @@ export const LandingPage: FC = () => {
                                         <Divider className="my-3"/>
                                         <div className="flex items-baseline justify-between">
                                             <Title3>1:42</Title3>
-                                            <Caption1 style={subtleTextStyle}>примерно 15.5 BYN</Caption1>
+                                            <Caption1>примерно 15.5 BYN</Caption1>
                                         </div>
-                                        <Caption1 style={subtleTextStyle}>Тариф: часовой</Caption1>
+                                        <Caption1>Тариф: часовой</Caption1>
                                     </HoverTiltCard>
                                 </div>
                             </div>
@@ -270,7 +269,7 @@ export const LandingPage: FC = () => {
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
                         <Title3 block>Как это работает</Title3>
-                        <Body2 block style={subtleTextStyle}>Три шага — и вы в деле</Body2>
+                        <Body2 block>Три шага — и вы в деле</Body2>
                     </div>
 
                     <div className=" grid grid-cols-1 gap-3  sm:grid-cols-3">
@@ -280,9 +279,9 @@ export const LandingPage: FC = () => {
                                     <Subtitle2Stronger block>{s.title}</Subtitle2Stronger>
                                     <Tag appearance="brand">{idx + 1}</Tag>
                                 </div>
-                                <TruncatedText textStyle={subtleTextStyle}>
+                                <Body2>
                                     {s.description}
-                                </TruncatedText>
+                                </Body2>
                             </HoverTiltCard>
                         ))}
                     </div>
@@ -291,7 +290,7 @@ export const LandingPage: FC = () => {
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
                         <Title3 block>Возможности</Title3>
-                        <Body2 block style={subtleTextStyle}>Всё, что нужно гостю: визиты, баланс, профиль</Body2>
+                        <Body2 block>Всё, что нужно гостю: визиты, баланс, профиль</Body2>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -306,9 +305,9 @@ export const LandingPage: FC = () => {
                                         </Badge>
                                         <div className="min-w-0 gap-2 flex flex-col">
                                             <Subtitle2Stronger block>{f.title}</Subtitle2Stronger>
-                                            <TruncatedText textStyle={subtleTextStyle}>
+                                            <Body2>
                                                 {f.description}
-                                            </TruncatedText>
+                                            </Body2>
                                         </div>
                                     </div>
                                     <Badge appearance="tint" size="large" shape="rounded"
@@ -322,7 +321,7 @@ export const LandingPage: FC = () => {
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
                         <Title3 block>Тарифы</Title3>
-                        <Body2 block style={subtleTextStyle}>
+                        <Body2 block>
                             Тариф выбирается перед визитом, оплата — по факту времени
                         </Body2>
                     </div>
@@ -334,9 +333,9 @@ export const LandingPage: FC = () => {
                                     <Subtitle1 block>{t.title}</Subtitle1>
                                     <Tag appearance="brand">{t.highlight}</Tag>
                                 </div>
-                                <TruncatedText className="mt-2" textStyle={subtleTextStyle}>
+                                <Body2 className="mt-2">
                                     {t.description}
-                                </TruncatedText>
+                                </Body2>
                                 <div className="mt-4">
                                     <Button appearance="primary" onClick={() => navigate("/register")}
                                             className="w-full sm:w-auto">
@@ -351,7 +350,7 @@ export const LandingPage: FC = () => {
                 <section className="flex flex-col gap-2">
                     <div className="flex flex-col gap-2">
                         <Title3 block>FAQ</Title3>
-                        <Body2 block style={subtleTextStyle}>Короткие ответы на частые вопросы</Body2>
+                        <Body2 block>Короткие ответы на частые вопросы</Body2>
                     </div>
 
                     <div>
@@ -361,7 +360,7 @@ export const LandingPage: FC = () => {
                                     <AccordionItem key={item.question} value={idx}>
                                         <AccordionHeader>{item.question}</AccordionHeader>
                                         <AccordionPanel>
-                                            <Body2 block style={subtleTextStyle}>{item.answer}</Body2>
+                                            <Body2 block>{item.answer}</Body2>
                                         </AccordionPanel>
                                     </AccordionItem>
                                 ))}
@@ -380,7 +379,7 @@ export const LandingPage: FC = () => {
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <Title3 block>Готовы попробовать?</Title3>
-                                <Body2 block style={subtleTextStyle}>Создайте аккаунт и начните первый визит</Body2>
+                                <Body2 block>Создайте аккаунт и начните первый визит</Body2>
                             </div>
                             <div className="flex flex-col gap-2 sm:flex-row">
                                 <Button appearance="primary" onClick={() => navigate("/register")}
