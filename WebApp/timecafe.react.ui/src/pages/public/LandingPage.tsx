@@ -43,10 +43,6 @@ type FaqItem = {
 export const LandingPage: FC = () => {
     const navigate = useNavigate();
 
-    const subtleTextStyle = useMemo(() => ({
-        color: tokens.colorNeutralForeground2,
-    }), []);
-
     const steps = useMemo(
         () => [
             {

@@ -1,14 +1,18 @@
-export enum Gender {
-  NotSpecified = 0,
-  Male = 1,
-  Female = 2,
-}
+export const Gender = {
+  NotSpecified: 0,
+  Male: 1,
+  Female: 2,
+} as const;
 
-export enum ProfileStatus {
-  Pending = 0,
-  Completed = 1,
-  Banned = 2,
-}
+export type Gender = (typeof Gender)[keyof typeof Gender];
+
+export const ProfileStatus = {
+  Pending: 0,
+  Completed: 1,
+  Banned: 2,
+} as const;
+
+export type ProfileStatus = (typeof ProfileStatus)[keyof typeof ProfileStatus];
 
 export interface Profile {
   firstName: string;
