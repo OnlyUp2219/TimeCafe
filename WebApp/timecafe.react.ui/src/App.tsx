@@ -11,6 +11,7 @@ import {LandingPage} from './pages/public/LandingPage';
 import {HomePage} from './pages/home/HomePage';
 import {PersonalDataPage} from "./pages/profile/PersonalDataPage";
 import {TariffSelectionPage} from "./pages/visits/TariffSelectionPage";
+import {ActiveVisitPage} from "./pages/visits/ActiveVisitPage";
 import {AuthLayout} from './layouts/AuthLayout/AuthLayuot';
 import {MainLayout} from './layouts/MainLayout/MainLayuot';
 
@@ -33,6 +34,7 @@ export default function App() {
                         <Route path="/home" element={<HomePage/>}/>
                         <Route path="/personal-data" element={<PersonalDataPage/>}/>
                         <Route path="/visit/start" element={<TariffSelectionPage/>}/>
+                        <Route path="/visit/active" element={<ActiveVisitPage/>}/>
                         <Route path="/login-test" element={<LoginPage/>}/>
 
                     </Route>
