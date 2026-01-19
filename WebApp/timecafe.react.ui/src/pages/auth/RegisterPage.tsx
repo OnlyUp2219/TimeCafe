@@ -1,8 +1,8 @@
-import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
-import {useState, useCallback} from "react";
+import {Body2, Button, Caption1, Divider, Link, Title3} from '@fluentui/react-components';
+import {useCallback, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
+import {ConfirmPasswordInput, EmailInput, PasswordInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
 
 export const RegisterPage = () => {
@@ -75,7 +75,9 @@ export const RegisterPage = () => {
             {ToasterElement}
 
             {/* Hero Section - Left Side (Desktop Only) */}
-            <div id="Left Side" className="hidden sm:block bg-sky-400">
+            <div id="Left Side"
+                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
             </div>
 
             {/* Register Form */}
