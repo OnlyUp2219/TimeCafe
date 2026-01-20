@@ -1,15 +1,15 @@
 import {
-    Body2,
     Button,
+    Link,
+    Body2,
     Caption1,
+    Title3,
     Dialog,
-    DialogActions,
-    DialogBody,
     DialogContent,
+    DialogBody,
     DialogSurface,
     DialogTitle,
-    Link,
-    Title3
+    DialogActions
 } from '@fluentui/react-components';
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
 import {useState} from "react";
@@ -103,9 +103,8 @@ export const ResetPasswordPage = () => {
                  sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
 
                 {/* Hero Section - Left Side (Desktop Only) */}
-                <div id="Left Side"
-                     className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                    <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
+                <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                    <div className="absolute inset-0 bg-black/40 pointer-events-none" />
                 </div>
 
                 {/* Reset Form */}
