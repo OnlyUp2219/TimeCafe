@@ -52,7 +52,7 @@ export const Sidebar: FC = () => {
     );
 
     useEffect(() => {
-        const match = window.matchMedia("(max-width: 720px)");
+        const match = window.matchMedia("(max-width: 828px)");
         if (match.matches) {
             setType("overlay");
         }
