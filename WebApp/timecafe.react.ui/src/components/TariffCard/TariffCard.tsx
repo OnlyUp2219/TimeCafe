@@ -6,41 +6,18 @@ import {
     Caption1,
     Divider,
     Tag,
-    Text,
     Title3,
     tokens,
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
-
-export type TariffBillingType = "Hourly" | "PerMinute";
-
-export type UiTariff = {
-    tariffId: string;
-    name: string;
-    description: string;
-    pricePerMinute: number;
-    isActive: boolean;
-    accent?: "brand" | "green" | "pink" | "purple";
-    recommended?: boolean;
-};
+import type {Tariff} from "../../types/tariff";
+import {formatMoneyByN} from "../../utility/formatMoney";
 
 type Props = {
-    tariff: UiTariff;
+    tariff: Tariff;
     selected?: boolean;
     onSelect?: (tariffId: string) => void;
-};
-
-const formatMoney = (value: number) => {
-    try {
-        return new Intl.NumberFormat("ru-RU", {
-            style: "currency",
-            currency: "BYN",
-            maximumFractionDigits: 2,
-        }).format(value);
-    } catch {
-        return `${value.toFixed(2)} BYN`;
-    }
 };
 
 export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
@@ -52,8 +29,9 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
         return tokens.colorBrandBackground2;
     }, [tariff.accent]);
 
-    const perMinute = tariff.pricePerMinute;
-    const perHour = tariff.pricePerMinute * 60;
+    const rateLabel = tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный";
+    const unitLabel = tariff.billingType === "Hourly" ? "/ час" : "/ мин";
+    const rateValue = tariff.billingType === "Hourly" ? tariff.pricePerMinute * 60 : tariff.pricePerMinute;
 
 
     return (
@@ -83,7 +61,7 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
                                 </Tag>
                             )}
                         </div>
-                        <Body2 className="!line-clamp-2">
+                        <Body2 className="!line-clamp-2 min-h-[2.75rem]">
                             {tariff.description}
                         </Body2>
                     </div>
@@ -105,16 +83,10 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
 
                 <div className="flex flex-wrap gap-x-10">
                     <div className="flex flex-col gap-1">
-                        <Caption1>Поминутно</Caption1>
-                        <div className="text-base font-semibold">
-                            {formatMoney(perMinute)} / мин
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <Caption1>Почасово</Caption1>
-                        <div className="text-base font-semibold">
-                            {formatMoney(perHour)} / час
-                        </div>
+                        <Caption1>{rateLabel}</Caption1>
+                        <Title3 block>
+                            {formatMoneyByN(rateValue)} {unitLabel}
+                        </Title3>
                     </div>
                 </div>
 
@@ -127,7 +99,7 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
                         {selected ? "Выбран" : "Выбрать"}
                     </Button>
                     <Button appearance="secondary" disabled>
-                        <Text truncate wrap={false}>Детали (скоро)</Text>
+                        <span className="block truncate">Детали (скоро)</span>
                     </Button>
                 </div>
             </div>
