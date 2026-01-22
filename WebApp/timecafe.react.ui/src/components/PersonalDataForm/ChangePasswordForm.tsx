@@ -8,6 +8,7 @@ import {
     MessageBarTitle,
     Title2
 } from "@fluentui/react-components";
+import {LockClosedRegular} from "@fluentui/react-icons";
 import {changePassword} from "../../api/auth.ts";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../../store";
@@ -81,17 +82,21 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         }
 
         setLoading(true);
+
         try {
             if (mode === "ui") {
                 await new Promise((r) => setTimeout(r, 450));
             } else {
                 await changePassword({currentPassword, newPassword});
             }
+
             setSuccess(true);
             onSuccess?.();
+
             if (autoClearTokensOnSuccess) {
                 dispatch(clearTokens());
             }
+
             if (redirectToLoginOnSuccess) {
                 setTimeout(() => {
                     navigate("/login");
@@ -106,7 +111,14 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
 
     const body = (
         <>
-            {showTitle && <Title2>Смена пароля</Title2>}
+            {showTitle && (
+                <Title2 block className="!flex gap-2">
+                    <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
+                        <LockClosedRegular />
+                    </div>
+                    Смена пароля
+                </Title2>
+            )}
             {error && (
                 <MessageBar intent="error">
                     <MessageBarBody>

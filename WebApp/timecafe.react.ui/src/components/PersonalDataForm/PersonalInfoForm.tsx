@@ -184,7 +184,9 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
+                currentPhoneNumberConfirmed={client.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
+                mode="ui"
             />
         </Card>
     );
