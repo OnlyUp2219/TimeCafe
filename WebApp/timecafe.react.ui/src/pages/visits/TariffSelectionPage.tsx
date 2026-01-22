@@ -9,6 +9,8 @@ import {
     Tag,
     Body1,
     Body2,
+    Text,
+    Tooltip,
     Title2,
     Title3,
     tokens,
@@ -24,8 +26,9 @@ import {
 } from "@fluentui/react-components";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "../../store";
-import {setSelectedTariffId} from "../../store/visitSlice";
+import {setSelectedTariffId, startVisit} from "../../store/visitSlice";
 import {TariffCard} from "../../components/TariffCard/TariffCard";
 import type {BillingType, Tariff} from "../../types/tariff";
 import {clamp} from "../../utility/clamp";
@@ -269,13 +272,6 @@ const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => 
                                 </div>
                             </div>
                         </div>
-
-                        <Button appearance="primary" disabled className="w-full">
-                            <span className="block truncate">Начать визит (скоро)</span>
-                        </Button>
-                        <Button appearance="secondary" disabled className="w-full">
-                            <span className="block truncate">Перейти к визиту (скоро)</span>
-                        </Button>
                     </div>
                 )}
             </div>
@@ -285,7 +281,9 @@ const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => 
 
 export const TariffSelectionPage = () => {
     const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
     const selectedTariffId = useSelector((state: RootState) => state.visit.selectedTariffId);
+    const visitStatus = useSelector((state: RootState) => state.visit.status);
 
     const mockTariffs = useMemo<Tariff[]>(
         () => [
@@ -374,6 +372,12 @@ export const TariffSelectionPage = () => {
         setActiveIndex(initialActiveIndex);
     }, [initialActiveIndex]);
 
+    useEffect(() => {
+        if (visitStatus === "active") {
+            navigate("/visit/active", {replace: true});
+        }
+    }, [navigate, visitStatus]);
+
     const presets = useMemo(() => [30, 60, 90, 120, 180, 240], []);
 
     return (
@@ -457,6 +461,28 @@ export const TariffSelectionPage = () => {
                             />
 
                             <TariffForecastCard selectedTariff={selectedTariff} calc={calc}/>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Tooltip content="Начать визит" relationship="label">
+                                <Button
+                                    appearance="primary"
+                                    className="w-full"
+                                    disabled={!selectedTariff}
+                                    onClick={() => {
+                                        if (!selectedTariff) return;
+                                        dispatch(
+                                            startVisit({
+                                                tariff: selectedTariff,
+                                                plannedMinutes: durationMinutes,
+                                            })
+                                        );
+                                        navigate("/visit/active");
+                                    }}
+                                >
+                                    <Text truncate wrap={false}>Начать визит</Text>
+                                </Button>
+                            </Tooltip>
                         </div>
                     </div>
                 </div>

@@ -22,6 +22,7 @@ export const Sidebar: FC = () => {
 
     const dispatch = useDispatch();
     const isOpen = useSelector((state: RootState) => state.ui.isSideBarOpen);
+    const visitStatus = useSelector((state: RootState) => state.visit.status);
     const location = useLocation();
 
     useEffect(() => {
@@ -36,7 +37,7 @@ export const Sidebar: FC = () => {
                 dispatch(setSelectedNav("1"));
             }
         }
-    }, [location]);
+    }, [location, visitStatus]);
 
 
     const handleOpenChange = (open: boolean) => {
@@ -72,11 +73,14 @@ export const Sidebar: FC = () => {
     };
     const navigate = useNavigate();
 
+    const visitNav = visitStatus === "active"
+        ? {id: "3", label: "Активный визит", path: "/visit/active"}
+        : {id: "3", label: "Начать визит", path: "/visit/start"};
+
     const navItems = [
         {id: "1", label: "Главная", path: "/home"},
         {id: "2", label: "Персональные данные", path: "/personal-data"},
-        {id: "3", label: "Начать визит", path: "/visit/start"},
-        {id: "4", label: "Активный визит", path: "/visit/active"},
+        visitNav,
         {id: "6", label: "Баланс и транзакции", path: "/billing"},
     ];
 

@@ -29,13 +29,17 @@ import {
     WeatherMoon20Regular,
 } from "@fluentui/react-icons";
 import {useEffect, useMemo, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import type {AppDispatch, RootState} from "../../store";
+import {finishVisit, resetVisit} from "../../store/visitSlice";
+import type {BillingType} from "../../types/tariff";
+import {formatMoneyByN} from "../../utility/formatMoney";
 
 import vortex from "../../assets/vvvortex.svg";
 import repeat from "../../assets/rrrepeat (2).svg";
 import surf from "../../assets/sssurf.svg";
 import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
-
-type BillingType = "Hourly" | "PerMinute";
 
 const clampMin = (value: number, min: number) => Math.max(min, value);
 
@@ -46,17 +50,6 @@ const formatTimeHHmm = (hhmm: string, fallback: Date) => {
     return `${pad2(fallback.getHours())}:${pad2(fallback.getMinutes())}`;
 };
 
-const formatMoneyRub = (value: number) => {
-    try {
-        return new Intl.NumberFormat("ru-RU", {
-            style: "currency",
-            currency: "RUB",
-            maximumFractionDigits: 0,
-        }).format(value);
-    } catch {
-        return `${Math.round(value)} ₽`;
-    }
-};
 
 const formatDuration = (totalSeconds: number) => {
     const safeSeconds = clampMin(Math.floor(totalSeconds), 0);
@@ -69,48 +62,50 @@ const formatDuration = (totalSeconds: number) => {
 };
 
 type Estimate = {
-    totalRub: number;
+    total: number;
     breakdown: string;
     chargedHours?: number;
     chargedMinutes?: number;
 };
 
-const calcEstimate = (elapsedMinutes: number, billingType: BillingType): Estimate => {
+const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePerMinute: number): Estimate => {
     const minutes = clampMin(Math.floor(elapsedMinutes), 1);
 
+    const safePricePerMinute = Math.max(0, pricePerMinute);
+
     if (billingType === "PerMinute") {
-        const pricePerMinute = 7;
         return {
-            totalRub: minutes * pricePerMinute,
+            total: minutes * safePricePerMinute,
             chargedMinutes: minutes,
-            breakdown: `${pricePerMinute} ₽/мин × ${minutes} мин`,
+            breakdown: `${formatMoneyByN(safePricePerMinute)} / мин × ${minutes} мин`,
         };
     }
 
-    const pricePerHour = 250;
-    const hours = clampMin(Math.floor(minutes / 60), 1);
+    const pricePerHour = safePricePerMinute * 60;
+    const hours = clampMin(Math.ceil(minutes / 60), 1);
 
     return {
-        totalRub: hours * pricePerHour,
+        total: hours * pricePerHour,
         chargedHours: hours,
-        breakdown: `${pricePerHour} ₽/ч × ${hours} ч`,
+        breakdown: `${formatMoneyByN(pricePerHour)} / час × ${hours} ч`,
     };
 };
 
 export const ActiveVisitPage = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const navigate = useNavigate();
+    const visitStatus = useSelector((state: RootState) => state.visit.status);
+    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
+
     const [now, setNow] = useState(() => Date.now());
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [exitComplete, setExitComplete] = useState(false);
 
-    const demo = useMemo(
-        () => ({
-            entryTimeLabel: "14:30",
-            tariffName: "Стандартный",
-            billingType: "Hourly" as BillingType,
-            startedAtMs: Date.now() - 135 * 60 * 1000,
-        }),
-        []
-    );
+    useEffect(() => {
+        if (visitStatus !== "active" || !activeVisit) {
+            navigate("/visit/start", {replace: true});
+        }
+    }, [activeVisit, navigate, visitStatus]);
 
     useEffect(() => {
         const id = window.setInterval(() => setNow(Date.now()), 1000);
@@ -118,19 +113,24 @@ export const ActiveVisitPage = () => {
     }, []);
 
     const elapsedSeconds = useMemo(() => {
-        const delta = now - demo.startedAtMs;
+        const startedAtMs = activeVisit?.startedAtMs ?? now;
+        const delta = now - startedAtMs;
         return Math.max(0, Math.floor(delta / 1000));
-    }, [demo.startedAtMs, now]);
+    }, [activeVisit?.startedAtMs, now]);
 
     const elapsedMinutes = useMemo(() => Math.max(1, Math.ceil(elapsedSeconds / 60)), [elapsedSeconds]);
 
-    const estimate = useMemo(() => calcEstimate(elapsedMinutes, demo.billingType), [demo.billingType, elapsedMinutes]);
+    const estimate = useMemo(() => {
+        const billingType = activeVisit?.tariff.billingType ?? "PerMinute";
+        const pricePerMinute = activeVisit?.tariff.pricePerMinute ?? 0;
+        return calcEstimate(elapsedMinutes, billingType, pricePerMinute);
+    }, [activeVisit?.tariff.billingType, activeVisit?.tariff.pricePerMinute, elapsedMinutes]);
 
     const progressToNextHour = useMemo(() => {
-        if (demo.billingType !== "Hourly") return null;
+        if (activeVisit?.tariff.billingType !== "Hourly") return null;
         const minutesIntoHour = elapsedMinutes % 60;
         return minutesIntoHour / 60;
-    }, [demo.billingType, elapsedMinutes]);
+    }, [activeVisit?.tariff.billingType, elapsedMinutes]);
 
     return (
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
@@ -197,9 +197,11 @@ export const ActiveVisitPage = () => {
                                             <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
                                         </div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <Tag appearance="outline" icon={<Sticker20Regular/>}>{demo.tariffName}</Tag>
+                                            <Tag appearance="outline" icon={<Sticker20Regular/>}>
+                                                {activeVisit?.tariff.name ?? "Тариф"}
+                                            </Tag>
                                             <Tag appearance="outline"
-                                                 icon={<Money20Regular/>}>{formatMoneyRub(estimate.totalRub)}</Tag>
+                                                 icon={<Money20Regular/>}>{formatMoneyByN(estimate.total)}</Tag>
                                         </div>
                                     </div>
                                     <Divider/>
@@ -212,7 +214,7 @@ export const ActiveVisitPage = () => {
 
                                         <div className="flex flex-col gap-2 sm:items-end sm:text-right">
                                             <Body1 block>Ориентировочная стоимость</Body1>
-                                            <Title1 block>{formatMoneyRub(estimate.totalRub)}</Title1>
+                                            <Title1 block>{formatMoneyByN(estimate.total)}</Title1>
                                             <Body1 block>{estimate.breakdown}</Body1>
                                         </div>
                                     </div>
@@ -239,12 +241,14 @@ export const ActiveVisitPage = () => {
                                         <div className="flex items-center justify-between gap-3">
                                             <Body1>Время входа</Body1>
                                             <Title3>
-                                                {formatTimeHHmm(demo.entryTimeLabel, new Date(demo.startedAtMs))}
+                                                {formatTimeHHmm("", new Date(activeVisit?.startedAtMs ?? now))}
                                             </Title3>
                                         </div>
                                         <div className="flex items-center justify-between gap-3">
                                             <Body1>Тип</Body1>
-                                            <Body1>{demo.billingType === "Hourly" ? "Почасовая" : "Поминутная"}</Body1>
+                                            <Body1>
+                                                {activeVisit?.tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный"}
+                                            </Body1>
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +270,7 @@ export const ActiveVisitPage = () => {
                                                     <Sticker20Regular/>
                                                     <Body1 block>Тариф</Body1>
                                                 </div>
-                                                <Title3 block>{demo.tariffName}</Title3>
+                                                <Title3 block>{activeVisit?.tariff.name ?? "Тариф"}</Title3>
                                             </div>
 
                                             <Divider/>
@@ -277,7 +281,7 @@ export const ActiveVisitPage = () => {
                                                     <Body1 block>Тип</Body1>
                                                 </div>
                                                 <Title3 block>
-                                                    {demo.billingType === "Hourly" ? "Почасовая" : "Поминутная"}
+                                                    {activeVisit?.tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный"}
                                                 </Title3>
                                             </div>
 
@@ -290,7 +294,7 @@ export const ActiveVisitPage = () => {
                                                 </div>
 
                                                 <div className="flex flex-col items-end gap-2 text-right">
-                                                    <Title1 block>{formatMoneyRub(estimate.totalRub)}</Title1>
+                                                    <Title1 block>{formatMoneyByN(estimate.total)}</Title1>
                                                     <Body1 block>{estimate.breakdown}</Body1>
                                                 </div>
                                             </div>
@@ -298,9 +302,9 @@ export const ActiveVisitPage = () => {
                                     </div>
 
                                     <Body2 block>
-                                        {demo.billingType === "Hourly"
-                                            ? "Почасовая: учитываются только полные часы (demo)."
-                                            : "Поминутная: учитываются минуты (demo)."}
+                                        {activeVisit?.tariff.billingType === "Hourly"
+                                            ? "Почасовой: округление вверх до часа."
+                                            : "Поминутный: расчёт по минутам."}
                                     </Body2>
                                 </div>
                             </HoverTiltCard>
@@ -313,13 +317,13 @@ export const ActiveVisitPage = () => {
                                     </div>
 
                                     <Body2 block>
-                                        Декоративная панель для десктопа: потом сюда можно добавить подсказки, правила
-                                        или мини-статус заведения.
+                                        Небольшая панель для полезной информации: правила, Wi‑Fi, розетки, кухня и
+                                        быстрые подсказки по тарифу.
                                     </Body2>
 
                                     <Divider/>
 
-                                    {demo.billingType === "Hourly" && progressToNextHour !== null ? (
+                                    {activeVisit?.tariff.billingType === "Hourly" && progressToNextHour !== null ? (
                                         <div className="flex flex-col gap-2">
                                             <Body1 block>Прогресс до следующего часа</Body1>
                                             <ProgressBar value={progressToNextHour}/>
@@ -331,7 +335,7 @@ export const ActiveVisitPage = () => {
                                         <div className="flex flex-col gap-2">
                                             <Body1 block>Статус визита</Body1>
                                             <ProgressBar/>
-                                            <Body1 block>Идёт в реальном времени</Body1>
+                                            <Body1 block>Активен — обновляется в реальном времени</Body1>
                                         </div>
                                     )}
                                 </div>
@@ -361,7 +365,7 @@ export const ActiveVisitPage = () => {
                                                 <div className="flex flex-col gap-3">
                                                     <div className="flex items-center justify-between gap-3">
                                                         <Body1>Тариф</Body1>
-                                                        <Body1>{demo.tariffName}</Body1>
+                                                        <Body1>{activeVisit?.tariff.name ?? "Тариф"}</Body1>
                                                     </div>
                                                     <div className="flex items-center justify-between gap-3">
                                                         <Body1>Длительность</Body1>
@@ -374,7 +378,7 @@ export const ActiveVisitPage = () => {
                                                         <Body1 block>
                                                             Итого к списанию
                                                         </Body1>
-                                                        <Title3>{formatMoneyRub(estimate.totalRub)}</Title3>
+                                                        <Title3>{formatMoneyByN(estimate.total)}</Title3>
                                                     </div>
                                                     <Body1>{estimate.breakdown}</Body1>
                                                 </div>
@@ -391,6 +395,7 @@ export const ActiveVisitPage = () => {
                                             onClick={() => {
                                                 setExitComplete(true);
                                                 setConfirmOpen(false);
+                                                dispatch(finishVisit());
                                             }}
                                         >
                                             Завершить визит
