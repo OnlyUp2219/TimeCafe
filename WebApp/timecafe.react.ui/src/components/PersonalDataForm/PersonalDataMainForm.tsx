@@ -1,6 +1,6 @@
 import {useEffect, useState, type FC} from "react";
 import {Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
-import {Edit20Filled} from "@fluentui/react-icons";
+import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
 import type {ClientInfo} from "../../types/client.ts";
 import {DateInput} from "../FormFields";
 import {ProfilePhotoCard} from "../ProfilePhotoCard/ProfilePhotoCard";
@@ -82,7 +82,12 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
     return (
         <Card className={className}>
-            <Title2>Персональные данные</Title2>
+            <Title2 block className="!flex gap-2">
+                <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
+                    <PersonRegular/>
+                </div>
+                Персональные данные
+            </Title2>
 
             <div>
                 {!isEditing ? (
@@ -101,11 +106,14 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 <Text weight="semibold" size={400}>{fullName || "—"}</Text>
                                 <Text>Пол: {genderText}</Text>
                                 <Text>Дата рождения: {birthDateText}</Text>
-                                <Text>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
+                                <Text>
+                                    Номер карты
+                                    доступа: {client.phoneNumberConfirmed === true ? (client.accessCardNumber ?? "—") : "—"}
+                                </Text>
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:items-center sm:flex-row flex-wrap gap-2">
+                        <div className="flex flex-col sm:items-center sm:flex-row flex-wrap gap-2 sm:justify-end">
                             <Button
                                 appearance="primary"
                                 icon={<Edit20Filled/>}
@@ -169,10 +177,13 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             </Field>
 
                             <div>
-                                <Text>Номер карты доступа: {client.accessCardNumber ?? "—"}</Text>
+                                <Text>
+                                    Номер карты
+                                    доступа: {client.phoneNumberConfirmed === true ? (client.accessCardNumber ?? "—") : "—"}
+                                </Text>
                             </div>
 
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 sm:justify-end">
                                 <Button appearance="primary" onClick={handleSave} disabled={loading}>
                                     Сохранить изменения
                                 </Button>

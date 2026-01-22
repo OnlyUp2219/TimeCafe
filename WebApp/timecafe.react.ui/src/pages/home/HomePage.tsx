@@ -2,21 +2,21 @@ import {useMemo} from "react";
 import {
     Badge,
     Body2,
+    Button,
     Caption1,
+    Divider,
     LargeTitle,
     Subtitle2Stronger,
-    Title3,
-    Button,
-    Divider,
     Tag,
-    tokens,
     Text,
+    Title3,
+    tokens,
 } from "@fluentui/react-components";
 import {
     ArrowTrendingLines20Regular,
     Clock20Regular,
     Money20Regular,
-    Person20Regular,
+    PersonRegular,
     Sparkle20Regular,
 } from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
@@ -237,7 +237,7 @@ export const HomePage = () => {
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-2 flex-wrap justify-between">
                                     <div className="flex items-center gap-2">
-                                        <Person20Regular/>
+                                        <PersonRegular/>
                                         <Subtitle2Stronger>Профиль</Subtitle2Stronger>
                                     </div>
                                     <Tag appearance={client ? "brand" : "outline"}>

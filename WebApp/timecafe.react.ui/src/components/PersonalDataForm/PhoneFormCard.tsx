@@ -1,8 +1,38 @@
 import {createElement, useEffect, useState, type FC} from "react";
 import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, Edit20Filled, type FluentIcon} from "@fluentui/react-icons";
+import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
 import type {ClientInfo} from "../../types/client.ts";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
+
+type PhoneVerificationSessionV1 = {
+    open: boolean;
+    step: "input" | "verify";
+    phoneNumber: string;
+    mode: "api" | "ui";
+    uiGeneratedCode?: string | null;
+};
+
+const PHONE_VERIFICATION_SESSION_KEY = "tc_phone_verification_session_v1";
+
+const loadPhoneSession = (): PhoneVerificationSessionV1 | null => {
+    try {
+        const raw = window.localStorage.getItem(PHONE_VERIFICATION_SESSION_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as PhoneVerificationSessionV1;
+        if (!parsed || typeof parsed !== "object") return null;
+        if (parsed.step !== "input" && parsed.step !== "verify") return null;
+        if (parsed.mode !== "api" && parsed.mode !== "ui") return null;
+        return {
+            open: Boolean(parsed.open),
+            step: parsed.step,
+            phoneNumber: String(parsed.phoneNumber ?? ""),
+            mode: parsed.mode,
+            uiGeneratedCode: parsed.uiGeneratedCode ?? null,
+        };
+    } catch {
+        return null;
+    }
+};
 
 export interface PhoneFormCardProps {
     client: ClientInfo;
@@ -24,21 +54,29 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
 };
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, className, onSave}) => {
-    const [phone, setPhone] = useState(client.phoneNumber || "");
     const [showPhoneModal, setShowPhoneModal] = useState(false);
 
+    const phone = client.phoneNumber || "";
+
     useEffect(() => {
-        setPhone(client.phoneNumber || "");
-    }, [client.clientId, client.phoneNumber]);
+        const session = loadPhoneSession();
+        if (session?.open && session.step === "verify") {
+            setShowPhoneModal(true);
+        }
+    }, []);
 
     const handlePhoneVerified = (verifiedPhone: string) => {
-        setPhone(verifiedPhone);
         onSave?.({phoneNumber: verifiedPhone, phoneNumberConfirmed: true});
     };
 
     return (
         <Card className={className}>
-            <Title2>Телефон</Title2>
+            <Title2 block className="!flex gap-2">
+                <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
+                    <PhoneRegular />
+                </div>
+                Телефон
+            </Title2>
             <Body2 className="!line-clamp-2">
                 Используется для уведомлений и подтверждения номера.
             </Body2>
@@ -79,8 +117,10 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, 
             <PhoneVerificationModal
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
-                currentPhoneNumber={phone}
+                currentPhoneNumber={client.phoneNumber || ""}
+                currentPhoneNumberConfirmed={client.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
+                mode="ui"
             />
         </Card>
     );

@@ -57,10 +57,24 @@
 .dark-red {
     background: var(--colorStatusDangerBackground1) !important;
     color: var(--colorStatusDangerForeground1) !important;
+}
+
+.dark-red-badge {
+    background: var(--colorStatusDangerBackground2) !important;
+    color: var(--colorStatusDangerForeground1) !important;
+}
+
+.brand-badge {
+    background: var(--colorBrandBackground2) !important;
+    color: var(--colorBrandForeground1) !important;
+}
+
+.dark-red-button {
+    background: var(--colorStatusDangerBackground3) !important;
     border-color: var(--colorStatusDangerBorder1) !important;
 }
 
-.dark-red:hover {
+.dark-red-button:hover {
     background: var(--colorStatusDangerBackground2) !important;
     color: var(--colorStatusDangerForeground1) !important;
 }
