@@ -213,6 +213,8 @@ export const TariffSelectionPage = () => {
                                 </Text>
                             </div>
 
+                            <Divider/>
+
                             <Carousel
                                 activeIndex={activeIndex}
                                 groupSize={1}
