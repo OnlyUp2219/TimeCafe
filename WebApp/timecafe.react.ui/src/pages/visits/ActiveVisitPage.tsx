@@ -1,5 +1,4 @@
 import {
-    Badge,
     Button,
     Card,
     Divider,
@@ -11,7 +10,6 @@ import {
     Subtitle2Stronger,
     Body1,
     Body2,
-    Caption1,
     Dialog,
     DialogBody,
     DialogSurface,
@@ -35,7 +33,7 @@ import {useEffect, useMemo, useState} from "react";
 import vortex from "../../assets/vvvortex.svg";
 import repeat from "../../assets/rrrepeat (2).svg";
 import surf from "../../assets/sssurf.svg";
-import { HoverTiltCard } from "../../components/HoverTiltCard/HoverTiltCard";
+import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
 
 type BillingType = "Hourly" | "PerMinute";
 
@@ -182,50 +180,40 @@ export const ActiveVisitPage = () => {
                 >
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <Tag appearance="brand" icon={<Clock20Regular />}>Визит</Tag>
-                                <Badge appearance="tint" size="large">UI</Badge>
-                                <Tag appearance={demo.billingType === "Hourly" ? "outline" : "brand"}>
-                                    {demo.billingType === "Hourly" ? "Почасовая" : "Поминутная"}
-                                </Tag>
-                            </div>
-
                             <Title2 block>Вы в заведении</Title2>
                             <Body2 block>
                                 Таймер и ориентировочная стоимость обновляются в реальном времени.
                             </Body2>
-                            <Caption1 block>
-                                Сейчас это демо-интерфейс без реального списания.
-                            </Caption1>
                         </div>
 
-                        <Divider />
+                        <Divider/>
 
                         <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                             <HoverTiltCard className="order-2 lg:order-1 lg:col-span-8">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center justify-between gap-3 flex-wrap">
                                         <div className="flex items-center gap-2">
-                                            <Clock20Regular />
+                                            <Clock20Regular/>
                                             <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
                                         </div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <Tag appearance="outline" icon={<Sticker20Regular />}>{demo.tariffName}</Tag>
-                                            <Tag appearance="outline" icon={<Money20Regular />}>{formatMoneyRub(estimate.totalRub)}</Tag>
+                                            <Tag appearance="outline" icon={<Sticker20Regular/>}>{demo.tariffName}</Tag>
+                                            <Tag appearance="outline"
+                                                 icon={<Money20Regular/>}>{formatMoneyRub(estimate.totalRub)}</Tag>
                                         </div>
                                     </div>
-
+                                    <Divider/>
                                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="flex flex-col gap-2">
-                                            <Caption1 block>Прошедшее время</Caption1>
+                                            <Body1 block>Прошедшее время</Body1>
                                             <LargeTitle block>{formatDuration(elapsedSeconds)}</LargeTitle>
-                                            <Caption1 block>Обновление: каждую секунду</Caption1>
+                                            <Body1 block>Обновление: каждую секунду</Body1>
                                         </div>
 
                                         <div className="flex flex-col gap-2 sm:items-end sm:text-right">
-                                            <Caption1 block>Ориентировочная стоимость</Caption1>
+                                            <Body1 block>Ориентировочная стоимость</Body1>
                                             <Title1 block>{formatMoneyRub(estimate.totalRub)}</Title1>
-                                            <Caption1 block>{estimate.breakdown}</Caption1>
+                                            <Body1 block>{estimate.breakdown}</Body1>
                                         </div>
                                     </div>
                                 </div>
@@ -234,13 +222,13 @@ export const ActiveVisitPage = () => {
                             <HoverTiltCard className="order-1 lg:order-2 lg:col-span-4">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-2">
-                                        <DoorArrowRight20Regular />
+                                        <DoorArrowRight20Regular/>
                                         <Subtitle2Stronger>Действия</Subtitle2Stronger>
                                     </div>
-
+                                    <Divider/>
                                     <Button
                                         appearance="primary"
-                                        icon={<DoorArrowRight20Regular />}
+                                        icon={<DoorArrowRight20Regular/>}
                                         onClick={() => setConfirmOpen(true)}
                                         disabled={exitComplete}
                                     >
@@ -249,22 +237,16 @@ export const ActiveVisitPage = () => {
 
                                     <div className="flex flex-col gap-2">
                                         <div className="flex items-center justify-between gap-3">
-                                            <Caption1>Время входа</Caption1>
+                                            <Body1>Время входа</Body1>
                                             <Title3>
                                                 {formatTimeHHmm(demo.entryTimeLabel, new Date(demo.startedAtMs))}
                                             </Title3>
                                         </div>
                                         <div className="flex items-center justify-between gap-3">
-                                            <Caption1>Тип</Caption1>
+                                            <Body1>Тип</Body1>
                                             <Body1>{demo.billingType === "Hourly" ? "Почасовая" : "Поминутная"}</Body1>
                                         </div>
                                     </div>
-
-                                    <Divider />
-
-                                    <Caption1 block>
-                                        {exitComplete ? "Визит завершён (demo)" : "Списание и финальный расчёт будут подключены позже"}
-                                    </Caption1>
                                 </div>
                             </HoverTiltCard>
                         </div>
@@ -273,43 +255,43 @@ export const ActiveVisitPage = () => {
                             <HoverTiltCard className="lg:col-span-8">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-2">
-                                        <Info20Regular />
+                                        <Info20Regular/>
                                         <Subtitle2Stronger>Детали расчёта</Subtitle2Stronger>
                                     </div>
-
+                                    <Divider/>
                                     <div>
                                         <div className="flex flex-col gap-3">
                                             <div className="flex items-center justify-between gap-4 flex-wrap">
                                                 <div className="flex items-center gap-2">
-                                                    <Sticker20Regular />
-                                                    <Caption1 block>Тариф</Caption1>
+                                                    <Sticker20Regular/>
+                                                    <Body1 block>Тариф</Body1>
                                                 </div>
                                                 <Title3 block>{demo.tariffName}</Title3>
                                             </div>
 
-                                            <Divider />
+                                            <Divider/>
 
                                             <div className="flex items-center justify-between gap-4 flex-wrap">
                                                 <div className="flex items-center gap-2">
-                                                    <Money20Regular />
-                                                    <Caption1 block>Тип</Caption1>
+                                                    <Money20Regular/>
+                                                    <Body1 block>Тип</Body1>
                                                 </div>
                                                 <Title3 block>
                                                     {demo.billingType === "Hourly" ? "Почасовая" : "Поминутная"}
                                                 </Title3>
                                             </div>
 
-                                            <Divider />
+                                            <Divider/>
 
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-center gap-2">
-                                                    <Info20Regular />
-                                                    <Caption1 block>Расчёт</Caption1>
+                                                    <Info20Regular/>
+                                                    <Body1 block>Расчёт</Body1>
                                                 </div>
 
                                                 <div className="flex flex-col items-end gap-2 text-right">
                                                     <Title1 block>{formatMoneyRub(estimate.totalRub)}</Title1>
-                                                    <Caption1 block>{estimate.breakdown}</Caption1>
+                                                    <Body1 block>{estimate.breakdown}</Body1>
                                                 </div>
                                             </div>
                                         </div>
@@ -326,29 +308,30 @@ export const ActiveVisitPage = () => {
                             <HoverTiltCard className="!hidden lg:!block lg:col-span-4">
                                 <div className="flex flex-col gap-4">
                                     <div className="flex items-center gap-2">
-                                        <WeatherMoon20Regular />
+                                        <WeatherMoon20Regular/>
                                         <Subtitle2Stronger>Атмосфера</Subtitle2Stronger>
                                     </div>
 
                                     <Body2 block>
-                                        Декоративная панель для десктопа: потом сюда можно добавить подсказки, правила или мини-статус заведения.
+                                        Декоративная панель для десктопа: потом сюда можно добавить подсказки, правила
+                                        или мини-статус заведения.
                                     </Body2>
 
-                                    <Divider />
+                                    <Divider/>
 
                                     {demo.billingType === "Hourly" && progressToNextHour !== null ? (
                                         <div className="flex flex-col gap-2">
-                                            <Caption1 block>Прогресс до следующего часа</Caption1>
-                                            <ProgressBar value={progressToNextHour} />
-                                            <Caption1 block>
+                                            <Body1 block>Прогресс до следующего часа</Body1>
+                                            <ProgressBar value={progressToNextHour}/>
+                                            <Body1 block>
                                                 {elapsedMinutes % 60} мин из 60
-                                            </Caption1>
+                                            </Body1>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-2">
-                                            <Caption1 block>Статус визита</Caption1>
-                                            <ProgressBar />
-                                            <Caption1 block>Идёт в реальном времени</Caption1>
+                                            <Body1 block>Статус визита</Body1>
+                                            <ProgressBar/>
+                                            <Body1 block>Идёт в реальном времени</Body1>
                                         </div>
                                     )}
                                 </div>
@@ -360,39 +343,40 @@ export const ActiveVisitPage = () => {
                                 <DialogBody>
                                     <DialogTitle>
                                         <div className="flex items-center gap-2">
-                                            <Shield20Regular />
+                                            <Shield20Regular/>
                                             Завершить визит
                                         </div>
                                     </DialogTitle>
                                     <DialogContent>
                                         <div className="flex flex-col gap-4">
                                             <Body1 block>
-                                                Подтвердите выход — будет рассчитана финальная стоимость и списан баланс.
+                                                Подтвердите выход — будет рассчитана финальная стоимость и списан
+                                                баланс.
                                             </Body1>
-                                            <Caption1 block>
+                                            <Body1 block>
                                                 Сейчас это демо: показываем сумму, но ничего не списываем.
-                                            </Caption1>
+                                            </Body1>
 
                                             <Card>
                                                 <div className="flex flex-col gap-3">
                                                     <div className="flex items-center justify-between gap-3">
-                                                        <Caption1>Тариф</Caption1>
+                                                        <Body1>Тариф</Body1>
                                                         <Body1>{demo.tariffName}</Body1>
                                                     </div>
                                                     <div className="flex items-center justify-between gap-3">
-                                                        <Caption1>Длительность</Caption1>
+                                                        <Body1>Длительность</Body1>
                                                         <Body1>{formatDuration(elapsedSeconds)}</Body1>
                                                     </div>
 
-                                                    <Divider />
+                                                    <Divider/>
 
                                                     <div className="flex items-center justify-between gap-3">
-                                                        <Caption1 block>
+                                                        <Body1 block>
                                                             Итого к списанию
-                                                        </Caption1>
+                                                        </Body1>
                                                         <Title3>{formatMoneyRub(estimate.totalRub)}</Title3>
                                                     </div>
-                                                    <Caption1>{estimate.breakdown}</Caption1>
+                                                    <Body1>{estimate.breakdown}</Body1>
                                                 </div>
                                             </Card>
                                         </div>

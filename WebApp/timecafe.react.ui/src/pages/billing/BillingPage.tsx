@@ -21,7 +21,6 @@ import {
     Add20Regular,
     Warning20Filled,
     Gift20Regular,
-    Info20Regular,
     ChatRegular,
     CallRegular
 } from "@fluentui/react-icons";
@@ -41,7 +40,7 @@ import {DataTable} from "../../components/DataTable/DataTable";
 
 interface Transaction {
     id: string;
-    icon: string | React.ReactNode;
+    icon: string | React.ReactElement;
     title: string;
     sub: string;
     amount: number;
@@ -69,12 +68,12 @@ export const BalancePage = () => {
             renderCell: (item) => (
                 <div className="flex items-center gap-3">
                     <Avatar
-                        icon={item.icon}
+                        initials={typeof item.icon === 'string' ? item.icon : undefined}
+                        icon={typeof item.icon !== 'string' ? item.icon : undefined}
                         aria-label={item.title}
                         color="neutral"
                         size={32}
                         shape="circular"
-                        style={{backgroundColor: tokens.colorNeutralBackground1}}
                     />
                     <div className="flex flex-col">
                         <Subtitle2Stronger block>{item.title}</Subtitle2Stronger>
