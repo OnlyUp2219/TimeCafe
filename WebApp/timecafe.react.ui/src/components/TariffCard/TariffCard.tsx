@@ -6,7 +6,9 @@ import {
     Caption1,
     Divider,
     Tag,
+    Text,
     Title3,
+    Tooltip,
     tokens,
 } from "@fluentui/react-components";
 import type {FC} from "react";
@@ -98,9 +100,13 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
                     >
                         {selected ? "Выбран" : "Выбрать"}
                     </Button>
-                    <Button appearance="secondary" disabled>
-                        <span className="block truncate">Детали (скоро)</span>
-                    </Button>
+                    <Tooltip content="Детали (скоро)" relationship="label">
+                        <span>
+                            <Button appearance="secondary" disabled>
+                                <Text truncate wrap={false}>Детали (скоро)</Text>
+                            </Button>
+                        </span>
+                    </Tooltip>
                 </div>
             </div>
         </Card>

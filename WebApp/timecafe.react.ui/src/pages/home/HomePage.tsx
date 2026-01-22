@@ -1,4 +1,4 @@
-import {useMemo} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {
     Badge,
     Body2,
@@ -9,6 +9,7 @@ import {
     Subtitle2Stronger,
     Tag,
     Text,
+    Tooltip,
     Title3,
     tokens,
 } from "@fluentui/react-components";
@@ -26,6 +27,9 @@ import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
 import vortex from "../../assets/vvvortex.svg";
 import repeat from "../../assets/rrrepeat (2).svg";
 import surf from "../../assets/sssurf.svg";
+import {formatMoneyByN} from "../../utility/formatMoney";
+import {formatDurationSeconds} from "../../utility/formatDurationSeconds";
+import {calcVisitEstimate} from "../../utility/visitEstimate";
 
 export const HomePage = () => {
     const navigate = useNavigate();
@@ -33,6 +37,35 @@ export const HomePage = () => {
     const authEmail = useSelector((state: RootState) => state.auth.email);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const client = useSelector((state: RootState) => state.client.data);
+    const visitStatus = useSelector((state: RootState) => state.visit.status);
+    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
+
+    const [now, setNow] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (visitStatus !== "active" || !activeVisit) return;
+        const id = window.setInterval(() => setNow(Date.now()), 1000);
+        return () => window.clearInterval(id);
+    }, [activeVisit, visitStatus]);
+
+    const activeElapsedSeconds = useMemo(() => {
+        if (visitStatus !== "active" || !activeVisit) return 0;
+        return Math.max(0, Math.floor((now - activeVisit.startedAtMs) / 1000));
+    }, [activeVisit, now, visitStatus]);
+
+    const activeElapsedMinutes = useMemo(
+        () => Math.max(1, Math.ceil(activeElapsedSeconds / 60)),
+        [activeElapsedSeconds]
+    );
+
+    const activeEstimate = useMemo(() => {
+        if (visitStatus !== "active" || !activeVisit) return null;
+        return calcVisitEstimate(
+            activeElapsedMinutes,
+            activeVisit.tariff.billingType,
+            activeVisit.tariff.pricePerMinute
+        );
+    }, [activeElapsedMinutes, activeVisit, visitStatus]);
 
     const displayName = useMemo(() => {
         const firstName = client?.firstName?.trim();
@@ -47,8 +80,7 @@ export const HomePage = () => {
             balance: "3 500 ₽",
             balanceHint: "Доступно для оплаты визитов",
             visitDuration: "—:—",
-            visitEstimate: "— ₽",
-            visitHint: "Нет активного визита",
+            visitEstimate: "— Br",
             weekSpent: "1 240 ₽",
             weekSpentHint: "Расходы за 7 дней (demo)",
         }),
@@ -176,7 +208,9 @@ export const HomePage = () => {
                                         <Clock20Regular/>
                                         <Subtitle2Stronger>Визит</Subtitle2Stronger>
                                     </div>
-                                    <Tag size="small" appearance="outline">Нет визита</Tag>
+                                    <Tag size="small" appearance={visitStatus === "active" ? "brand" : "outline"}>
+                                        {visitStatus === "active" ? "Активен" : "Нет визита"}
+                                    </Tag>
                                 </div>
                                 <Divider className="divider grow-0"/>
                             </div>
@@ -184,27 +218,52 @@ export const HomePage = () => {
                             <div className="flex flex-row justify-between gap-4 flex-wrap">
                                 <div className="flex flex-col gap-1">
                                     <Caption1>Длительность</Caption1>
-                                    <Title3>{demo.visitDuration}</Title3>
+                                    <Title3>
+                                        {visitStatus === "active" && activeVisit
+                                            ? formatDurationSeconds(activeElapsedSeconds)
+                                            : demo.visitDuration}
+                                    </Title3>
                                 </div>
                                 <div className="flex flex-col gap-1 text-right">
                                     <Caption1>Оценка</Caption1>
-                                    <Title3>{demo.visitEstimate}</Title3>
+                                    <Title3>
+                                        {visitStatus === "active" && activeEstimate
+                                            ? formatMoneyByN(activeEstimate.total)
+                                            : demo.visitEstimate}
+                                    </Title3>
                                 </div>
                             </div>
 
                             <Caption1>
-                                {demo.visitHint}
+                                {visitStatus === "active" && activeVisit
+                                    ? "Визит идёт"
+                                    : "Нет активного визита"}
                             </Caption1>
 
                             <div className="flex flex-col gap-2 lg:flex-row">
-                                <Button appearance="primary" disabled>
-                                    Начать (скоро)
-                                </Button>
-                                <Button appearance="secondary" disabled>
-                                    <Text truncate wrap={false}>
-                                        История визитов (скоро)
-                                    </Text>
-                                </Button>
+                                <Tooltip
+                                    content={visitStatus === "active" ? "Перейти к активному визиту" : "Начать визит"}
+                                    relationship="label"
+                                >
+                                    <Button
+                                        appearance="primary"
+                                        onClick={() =>
+                                            navigate(visitStatus === "active" ? "/visit/active" : "/visit/start")
+                                        }
+                                    >
+                                        <Text truncate wrap={false}>
+                                            {visitStatus === "active" ? "Открыть" : "Начать"}
+                                        </Text>
+                                    </Button>
+                                </Tooltip>
+
+                                <Tooltip content="История визитов (скоро)" relationship="label">
+                                    <span>
+                                        <Button appearance="secondary" disabled>
+                                            <Text truncate wrap={false}>История визитов (скоро)</Text>
+                                        </Button>
+                                    </span>
+                                </Tooltip>
                             </div>
                         </HoverTiltCard>
 
