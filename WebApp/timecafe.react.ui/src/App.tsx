@@ -14,7 +14,7 @@ import {TariffSelectionPage} from "./pages/visits/TariffSelectionPage";
 import {ActiveVisitPage} from "./pages/visits/ActiveVisitPage";
 import {AuthLayout} from './layouts/AuthLayout/AuthLayuot';
 import {MainLayout} from './layouts/MainLayout/MainLayuot';
-import {BalancePage} from './pages/billing/BillingPage.tsx'
+import {BillingPage} from './pages/billing/BillingPage.tsx'
 
 export default function App() {
     return (
@@ -35,7 +35,7 @@ export default function App() {
                         <Route path="/personal-data" element={<PersonalDataPage/>}/>
                         <Route path="/visit/start" element={<TariffSelectionPage/>}/>
                         <Route path="/visit/active" element={<ActiveVisitPage/>}/>
-                        <Route path="/billing" element={<BalancePage/>}/>
+                        <Route path="/billing" element={<BillingPage/>}/>
                         <Route path="/login-test" element={<LoginPage/>}/>
 
                     </Route>
