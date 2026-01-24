@@ -4,7 +4,15 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     private const string Endpoint = "/account/change-password";
-    private const string LoginEndpoint = "/login-jwt";
+    private const string LoginEndpoint = "/login-jwt-v2";
+    private const string RefreshEndpoint = "/refresh-jwt-v2";
+
+    private static string ExtractCookieValue(IEnumerable<string> setCookies, string name)
+    {
+        var raw = setCookies.First(c => c.StartsWith(name + "=", StringComparison.OrdinalIgnoreCase));
+        var firstPart = raw.Split(';', 2)[0];
+        return firstPart.Substring(name.Length + 1);
+    }
 
     private async Task<(string email, string oldPassword, string accessToken, string refreshToken)> CreateUserAndLoginAsync()
     {
@@ -24,7 +32,8 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
 
         var json = JsonDocument.Parse(await loginResp.Content.ReadAsStringAsync()).RootElement;
         var accessToken = json.GetProperty("accessToken").GetString()!;
-        var refreshToken = json.GetProperty("refreshToken").GetString()!;
+        loginResp.Headers.TryGetValues("Set-Cookie", out var setCookies).Should().BeTrue();
+        var refreshToken = ExtractCookieValue(setCookies!, "refresh_token");
 
         return (email, oldPassword, accessToken, refreshToken);
     }
@@ -180,10 +189,13 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
 
         var loginDto = new { Email = email, Password = oldPassword };
         var loginResp1 = await Client.PostAsJsonAsync(LoginEndpoint, loginDto);
-        var refreshToken1 = JsonDocument.Parse(await loginResp1.Content.ReadAsStringAsync()).RootElement.GetProperty("refreshToken").GetString();
+        loginResp1.EnsureSuccessStatusCode();
+        loginResp1.Headers.TryGetValues("Set-Cookie", out var cookies1).Should().BeTrue();
+        var refreshToken1 = ExtractCookieValue(cookies1!, "refresh_token");
 
-        var refreshDto = new { RefreshToken = refreshToken1 };
-        var refreshResp = await Client.PostAsJsonAsync("/refresh-token-jwt", refreshDto);
+        var refreshRequest = new HttpRequestMessage(HttpMethod.Post, RefreshEndpoint);
+        refreshRequest.Headers.Add("Cookie", $"refresh_token={refreshToken1}");
+        var refreshResp = await Client.SendAsync(refreshRequest);
         refreshResp.EnsureSuccessStatusCode();
 
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
