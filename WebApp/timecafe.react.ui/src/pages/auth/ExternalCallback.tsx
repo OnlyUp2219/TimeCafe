@@ -1,8 +1,9 @@
 import {useDispatch} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {setAccessToken, setEmailConfirmed} from "../../store/authSlice.ts";
+import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice.ts";
 import {Spinner} from "@fluentui/react-components";
 import React, {useEffect} from "react";
+import {getJwtInfo} from "../../shared/auth/jwt";
 
 export const ExternalCallback = () => {
     const dispatch = useDispatch();
@@ -20,7 +21,13 @@ export const ExternalCallback = () => {
 
             if (access_token) {
                 dispatch(setAccessToken(access_token));
-                dispatch(setEmailConfirmed(email_confirmed));
+                const info = getJwtInfo(access_token);
+                if (info.userId) dispatch(setUserId(info.userId));
+                if (info.role) dispatch(setRole(info.role));
+                if (info.email) dispatch(setEmail(info.email));
+
+                const confirmed = email_confirmed === "true" || email_confirmed === "1";
+                dispatch(setEmailConfirmed(confirmed));
                 window.history.replaceState(null, "", window.location.pathname + window.location.search);
                 redirectedRef.current = true;
                 navigate("/home", {replace: true});

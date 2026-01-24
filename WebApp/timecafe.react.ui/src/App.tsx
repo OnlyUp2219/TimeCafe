@@ -21,6 +21,10 @@ import {store} from "./store";
 import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "./store/authSlice";
 import {getJwtInfo} from "./shared/auth/jwt";
 import {authApi} from "./shared/api/auth/authApi";
+import {PrivateRoute} from "./components/PrivateRoute/PrivateRoute";
+import {ExternalCallback} from "./pages/auth/ExternalCallback";
+import {EmailPendingPage} from "./pages/auth/EmailPendingPage";
+import {ConfirmEmailPage} from "./pages/auth/ConfirmEmailPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -67,15 +71,17 @@ const AppRoutes = () => {
                     <Route path="/register" element={<RegisterPage/>}/>
                     <Route path="/reset-password" element={<ResetPasswordPage/>}/>
                     <Route path="/confirm-reset" element={<ConfirmResetPage/>}/>
+                    <Route path="/external-callback" element={<ExternalCallback/>}/>
+                    <Route path="/email-pending" element={<EmailPendingPage/>}/>
+                    <Route path="/confirm-email" element={<ConfirmEmailPage/>}/>
                 </Route>
 
-                <Route element={<MainLayout/>}>
+                <Route element={<PrivateRoute><MainLayout/></PrivateRoute>}>
                     <Route path="/home" element={<HomePage/>}/>
                     <Route path="/personal-data" element={<PersonalDataPage/>}/>
                     <Route path="/visit/start" element={<TariffSelectionPage/>}/>
                     <Route path="/visit/active" element={<ActiveVisitPage/>}/>
                     <Route path="/billing" element={<BillingPage/>}/>
-                    <Route path="/login-test" element={<LoginPage/>}/>
                 </Route>
 
             </Routes>

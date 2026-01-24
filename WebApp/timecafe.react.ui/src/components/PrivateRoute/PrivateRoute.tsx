@@ -2,10 +2,9 @@ import {Navigate} from "react-router-dom";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
-import {store} from '../../store';
 import type {RootState} from "../../store";
 import {authApi} from "../../shared/api/auth/authApi";
-import {clearTokens, setAccessToken, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
+import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
 
 interface PrivateRouteProps {
@@ -33,9 +32,9 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
                         const info = getJwtInfo(token);
                         if (info.userId) dispatch(setUserId(info.userId));
                         if (info.role) dispatch(setRole(info.role));
+                        if (info.email) dispatch(setEmail(info.email));
                         dispatch(setEmailConfirmed(true));
-                        const st = store.getState();
-                        setAllowed(Boolean(st.auth.accessToken));
+                        setAllowed(true);
                     }
                 } catch {
                     setAllowed(false);

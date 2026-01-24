@@ -55,7 +55,7 @@ const savePhoneSession = (session: PhoneVerificationSessionV1) => {
     try {
         window.localStorage.setItem(PHONE_VERIFICATION_SESSION_KEY, JSON.stringify(session));
     } catch {
-        // ignore
+        void 0;
     }
 };
 
@@ -63,7 +63,7 @@ const clearPhoneSession = () => {
     try {
         window.localStorage.removeItem(PHONE_VERIFICATION_SESSION_KEY);
     } catch {
-        // ignore
+        void 0;
     }
 };
 

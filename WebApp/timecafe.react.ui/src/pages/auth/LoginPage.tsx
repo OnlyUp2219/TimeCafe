@@ -33,7 +33,9 @@ export const LoginPage = () => {
         try {
             const r = await authApi.loginJwtV2({email, password});
             if (r.emailConfirmed === false) {
-                showToast("Подтвердите email для входа", "warning");
+                dispatch(setEmail(email));
+                dispatch(setEmailConfirmed(false));
+                navigate("/email-pending", {replace: true});
                 return;
             }
 
@@ -96,7 +98,7 @@ export const LoginPage = () => {
                         onChange={setPassword}
                         disabled={isSubmitting}
                         onValidationChange={handlePasswordValidationChange}
-                        shouldValidate={submitted}
+                        shouldValidate={false}
                     />
 
                     <div className="flex items-center justify-between">

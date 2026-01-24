@@ -6,46 +6,86 @@ import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/
 import {authFormContainerClassName} from "../../layouts/authLayout";
 import {authApi} from "../../shared/api/auth/authApi";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {useDispatch} from "react-redux";
+import {setEmail, setEmailConfirmed} from "../../store/authSlice";
+import {normalizeUnknownError} from "../../shared/api/errors/normalize";
+import {isApiError} from "../../shared/api/errors/types";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
+    const dispatch = useDispatch();
 
-    const [email, setEmail] = useState("");
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const returnUrl = `${window.location.origin}/external-callback`;
+
+    const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [serverErrors, setServerErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; general?: string }>({});
 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitted(true);
+        setServerErrors({});
         if (errors.email || errors.password || errors.confirmPassword || !email || !password) return;
 
         setIsSubmitting(true);
         try {
-            await authApi.registerWithUsername({username: email, email, password});
-            showToast("Проверьте почту для подтверждения аккаунта", "success");
-            navigate("/login");
+            const r = await authApi.registerWithUsername({username: email, email, password});
+            dispatch(setEmail(email));
+            dispatch(setEmailConfirmed(false));
+            navigate("/email-pending", {replace: true, state: {mockLink: r.callbackUrl}});
         } catch (err: unknown) {
-            showToast(getUserMessageFromUnknown(err), "error", "Ошибка");
+            const apiErr = isApiError(err) ? err : normalizeUnknownError(err);
+            const fieldErrors: { email?: string; password?: string; confirmPassword?: string; general?: string } = {};
+
+            const appendError = (key: "email" | "password" | "confirmPassword" | "general", msg: string) => {
+                if (!msg) return;
+                const current = fieldErrors[key];
+                if (!current) {
+                    fieldErrors[key] = msg;
+                    return;
+                }
+                if (current.includes(msg)) return;
+                fieldErrors[key] = `${current} ${msg}`;
+            };
+
+            for (const item of apiErr.errors ?? []) {
+                const code = (item.code || "").toLowerCase();
+                const msg = item.message;
+
+                if (code.includes("duplicateemail") || code.includes("duplicateusername")) {
+                    appendError("email", msg);
+                    continue;
+                }
+
+                if (code.startsWith("password") || code.includes("password")) {
+                    appendError("password", msg);
+                    continue;
+                }
+            }
+
+            if (Object.keys(fieldErrors).length) {
+                setServerErrors(fieldErrors);
+            } else {
+                showToast(getUserMessageFromUnknown(err), "error", "Ошибка");
+            }
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleGoogleLogin = () => {
-        // TODO: STUB - интеграция Google OAuth (подключить бек)
-        // window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
-        showToast("Google OAuth еще не интегрирован", "warning");
+        window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleMicrosoftLogin = () => {
-        // TODO: STUB - интеграция Microsoft OAuth (подключить бек)
-        // window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
-        showToast("Microsoft OAuth еще не интегрирован", "warning");
+        window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleEmailValidationChange = useCallback((error: string) => {
@@ -83,10 +123,11 @@ export const RegisterPage = () => {
 
                     <EmailInput
                         value={email}
-                        onChange={setEmail}
+                            onChange={setEmailValue}
                         disabled={isSubmitting}
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}
+                        externalError={serverErrors.email}
                     />
 
                     <PasswordInput
@@ -96,6 +137,7 @@ export const RegisterPage = () => {
                         showRequirements={true}
                         onValidationChange={handlePasswordValidationChange}
                         shouldValidate={submitted}
+                        externalError={serverErrors.password}
                     />
 
                     <ConfirmPasswordInput
@@ -105,6 +147,7 @@ export const RegisterPage = () => {
                         disabled={isSubmitting}
                         onValidationChange={handleConfirmPasswordValidationChange}
                         shouldValidate={submitted}
+                        externalError={serverErrors.confirmPassword}
                     />
 
                     <Button

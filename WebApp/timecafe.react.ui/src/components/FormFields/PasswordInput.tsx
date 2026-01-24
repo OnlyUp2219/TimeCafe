@@ -13,6 +13,7 @@ interface PasswordInputProps {
     validate?: (password: string) => string;
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
+    externalError?: string;
 }
 
 const PASSWORD_REQUIREMENTS = [
@@ -30,7 +31,8 @@ export const PasswordInput = ({
                                   showRequirements = false,
                                   validate = defaultValidatePassword,
                                   onValidationChange,
-                                  shouldValidate = true
+                                  shouldValidate = true,
+                                  externalError,
                               }: PasswordInputProps) => {
     const metRequirements = PASSWORD_REQUIREMENTS.map(req => req.rule(value));
 
@@ -48,13 +50,16 @@ export const PasswordInput = ({
         onValidationChangeRef.current?.(errorMsg);
     }, [errorMsg]);
 
+    const displayError = shouldValidate ? (externalError || (!showRequirements ? errorMsg : "")) : "";
+    const showFieldError = Boolean(displayError);
+
     return (
         <>
             <Field
                 label={label}
                 required
-                validationState={shouldValidate && errorMsg && !showRequirements ? "error" : undefined}
-                validationMessage={shouldValidate && !showRequirements ? errorMsg : undefined}
+                validationState={showFieldError ? "error" : undefined}
+                validationMessage={showFieldError ? displayError : undefined}
             >
                 <Input
                     type="password"

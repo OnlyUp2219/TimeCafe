@@ -12,6 +12,7 @@ interface EmailInputProps {
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
     trailingElement?: ReactNode;
+    externalError?: string;
 }
 
 export const EmailInput = ({
@@ -23,6 +24,7 @@ export const EmailInput = ({
     onValidationChange,
     shouldValidate = true,
     trailingElement,
+    externalError,
 }: EmailInputProps) => {
     const [error, setError] = useState("");
 
@@ -32,12 +34,14 @@ export const EmailInput = ({
         onValidationChange?.(errorMsg);
     }, [value, validate, onValidationChange]);
 
+    const displayError = externalError || error;
+
     return (
         <Field
             label="Email"
             required
-            validationState={shouldValidate && error ? "error" : undefined}
-            validationMessage={shouldValidate ? error : undefined}
+            validationState={shouldValidate && displayError ? "error" : undefined}
+            validationMessage={shouldValidate ? displayError : undefined}
         >
             <div className="input-with-button">
                 <Input
