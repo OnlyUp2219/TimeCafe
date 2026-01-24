@@ -34,7 +34,7 @@ export async function withRateLimit<T>(
             headers: {windowSeconds, remaining, retryAfter},
             status: res.status
         };
-    } catch (error: any) {
+    } catch (error: unknown) {
         if (axios.isAxiosError(error) && error.response) {
             const headers = error.response.headers || {};
             const retryAfter = headers['retry-after']
@@ -52,7 +52,7 @@ export async function withRateLimit<T>(
                 };
             }
 
-            throw error.response.data || error;
+            throw error.response.data ?? error;
         }
         throw error;
     }

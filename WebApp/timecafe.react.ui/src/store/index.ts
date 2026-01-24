@@ -15,7 +15,11 @@ const rootReducer = combineReducers({
     billing: billingSlice,
 });
 
-const persistConfigure = {key: 'root', storage};
+const persistConfigure = {
+    key: "root-v2",
+    storage,
+    blacklist: ["auth"],
+};
 
 const persistedReducer = persistReducer(persistConfigure, rootReducer);
 
