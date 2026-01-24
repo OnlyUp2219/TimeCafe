@@ -1,6 +1,7 @@
 import type {AxiosError} from "axios";
 import {isAxiosError} from "axios";
 import type {ApiError, ApiErrorItem} from "./types";
+import {isApiError} from "./types";
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -149,6 +150,10 @@ export const normalizeAxiosError = (error: AxiosError): ApiError => {
 };
 
 export const normalizeUnknownError = (error: unknown): ApiError => {
+    if (isApiError(error)) {
+        return error;
+    }
+
     if (isAxiosError(error)) {
         return normalizeAxiosError(error);
     }

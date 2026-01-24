@@ -12,6 +12,7 @@ interface ConfirmPasswordInputProps {
     validate?: (confirmPassword: string, password: string) => string;
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
+    externalError?: string;
 }
 
 export const ConfirmPasswordInput = ({
@@ -23,7 +24,8 @@ export const ConfirmPasswordInput = ({
     label = "Повтор пароля",
     validate = defaultValidateConfirmPassword,
     onValidationChange,
-    shouldValidate = true
+    shouldValidate = true,
+    externalError,
 }: ConfirmPasswordInputProps) => {
     const errorMsg = useMemo(
         () => (shouldValidate ? validate(value, passwordValue) : ""),
@@ -39,12 +41,14 @@ export const ConfirmPasswordInput = ({
         onValidationChangeRef.current?.(errorMsg);
     }, [errorMsg]);
 
+    const displayError = shouldValidate ? (externalError || errorMsg) : "";
+
     return (
         <Field
             label={label}
             required
-            validationState={shouldValidate && errorMsg ? "error" : undefined}
-            validationMessage={shouldValidate ? errorMsg : undefined}
+            validationState={displayError ? "error" : undefined}
+            validationMessage={displayError || undefined}
         >
             <Input
                 type="password"
