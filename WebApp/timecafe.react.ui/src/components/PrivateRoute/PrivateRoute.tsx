@@ -1,10 +1,12 @@
 import {Navigate} from "react-router-dom";
-import {refreshAccessToken} from "../../api/auth.ts";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
 import {store} from '../../store';
 import type {RootState} from "../../store";
+import {authApi} from "../../shared/api/auth/authApi";
+import {clearTokens, setAccessToken, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
+import {getJwtInfo} from "../../shared/auth/jwt";
 
 interface PrivateRouteProps {
     children: JSX.Element;
@@ -15,18 +17,26 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
     const [allowed, setAllowed] = useState(false);
     const dispatch = useDispatch();
     const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-    const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
 
     useEffect(() => {
         const checkAuth = async () => {
-            // await new Promise(resolve => setTimeout(resolve, 1000));
-            if (accessToken && emailConfirmed) {
+            if (accessToken) {
                 setAllowed(true);
             } else {
                 try {
-                    await refreshAccessToken(dispatch);
-                    const st = store.getState();
-                    if (st.auth.accessToken && st.auth.emailConfirmed) setAllowed(true); else setAllowed(false);
+                    const token = await authApi.tryRefreshAccessToken();
+                    if (!token) {
+                        dispatch(clearTokens());
+                        setAllowed(false);
+                    } else {
+                        dispatch(setAccessToken(token));
+                        const info = getJwtInfo(token);
+                        if (info.userId) dispatch(setUserId(info.userId));
+                        if (info.role) dispatch(setRole(info.role));
+                        dispatch(setEmailConfirmed(true));
+                        const st = store.getState();
+                        setAllowed(Boolean(st.auth.accessToken));
+                    }
                 } catch {
                     setAllowed(false);
                 }
@@ -35,7 +45,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
         };
 
         checkAuth();
-    }, [dispatch /* accessToken */]);
+    }, [dispatch, accessToken]);
 
     if (loading) return <Spinner size={"huge"}/>;
 

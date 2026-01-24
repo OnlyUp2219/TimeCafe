@@ -1,23 +1,23 @@
-import {useState, useEffect, useRef, type FC} from "react";
+import {type FC, useEffect, useRef, useState} from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
+    Body1,
+    Button,
+    Caption1,
     Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
     DialogSurface,
     DialogTitle,
-    DialogBody,
-    DialogActions,
-    DialogContent,
-    Button,
-    Input,
     Field,
-    Body1,
-    Caption1,
+    Input,
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {SendPhoneConfirmation, VerifyPhoneConfirmation} from "../../api/auth";
-import type {PhoneCodeRequest} from "../../api/auth";
-import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
+import {authApi, type PhoneCodeRequest} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {handleVerificationError} from "../../shared/auth/phoneVerification";
 import {validatePhoneNumber} from "../../utility/validate";
 import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
 
@@ -106,8 +106,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const {countdown, isBlocked, sendRequest} = useRateLimitedRequest(
         'sms-verification',
         async () => {
-            const response = await SendPhoneConfirmation({phoneNumber, code: ""});
-            return response;
+            return await authApi.sendPhoneConfirmation({phoneNumber, code: ""});
         }
     );
 
@@ -176,8 +175,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetErrors();
 
         if (
-            currentPhoneNumberConfirmed === true &&
-            phoneNumber.trim() &&
+            currentPhoneNumberConfirmed && phoneNumber.trim() &&
             phoneNumber.trim() === currentPhoneNumber.trim()
         ) {
             setValidationError("Этот номер уже подтверждён.");
@@ -213,7 +211,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                 setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
                 return;
             }
-            setError(parseErrorMessage(err) || "Ошибка при отправке SMS. Попробуйте позже.");
+            setError(getUserMessageFromUnknown(err) || "Ошибка при отправке SMS. Попробуйте позже.");
         } finally {
             setLoading(false);
         }
@@ -254,7 +252,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                 captchaToken: captchaToken || undefined,
             };
 
-            await VerifyPhoneConfirmation(data);
+            await authApi.verifyPhoneConfirmation(data);
 
             resetVerificationState();
 
@@ -380,8 +378,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                     />
                                 </Field>
 
-                                {RECAPTCHA_SITE_KEY && (
-                                    <div style={{display: requiresCaptcha ? 'block' : 'none'}}>
+                                {RECAPTCHA_SITE_KEY && requiresCaptcha && (
+                                    <div>
                                         <ReCAPTCHA
                                             key={captchaKey}
                                             ref={recaptchaRef}

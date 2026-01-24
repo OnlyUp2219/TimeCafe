@@ -1,18 +1,21 @@
 import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {loginUser} from "../../api/auth.ts";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput} from "../../components/FormFields";
 import {useDispatch} from "react-redux";
 import {authFormContainerClassName} from "../../layouts/authLayout";
+import {authApi} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
+import {getJwtInfo} from "../../shared/auth/jwt";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
 
-    const [email, setEmail] = useState("");
+    const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,23 +31,21 @@ export const LoginPage = () => {
 
         setIsSubmitting(true);
         try {
-            const r = await loginUser({email, password}, dispatch);
-            if (r.emailNotConfirmed) {
+            const r = await authApi.loginJwtV2({email, password});
+            if (r.emailConfirmed === false) {
                 showToast("Подтвердите email для входа", "warning");
                 return;
             }
+
+            dispatch(setAccessToken(r.accessToken));
+            const info = getJwtInfo(r.accessToken);
+            if (info.userId) dispatch(setUserId(info.userId));
+            if (info.role) dispatch(setRole(info.role));
+            dispatch(setEmail(info.email ?? email));
+            dispatch(setEmailConfirmed(true));
             navigate("/home");
         } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as {
-                errors: Array<{ description: string }>
-            }).errors)) {
-                const message = (err as {
-                    errors: Array<{ description: string }>
-                }).errors.map(e => e.description).join(" ");
-                showToast(message, "error");
-            } else {
-                showToast("Ошибка входа. Проверьте данные", "error");
-            }
+            showToast(getUserMessageFromUnknown(err), "error", "Ошибка");
         } finally {
             setIsSubmitting(false);
         }
@@ -84,7 +85,7 @@ export const LoginPage = () => {
 
                     <EmailInput
                         value={email}
-                        onChange={setEmail}
+                        onChange={setEmailValue}
                         disabled={isSubmitting}
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}

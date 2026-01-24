@@ -9,13 +9,13 @@ import {
     Title2
 } from "@fluentui/react-components";
 import {LockClosedRegular} from "@fluentui/react-icons";
-import {changePassword} from "../../api/auth.ts";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../../store";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "../../store/authSlice.ts";
-import {parseErrorMessage} from "../../utility/errors.ts";
 import {ConfirmPasswordInput, PasswordInput} from "../FormFields";
+import {authApi} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;
@@ -87,7 +87,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
             if (mode === "ui") {
                 await new Promise((r) => setTimeout(r, 450));
             } else {
-                await changePassword({currentPassword, newPassword});
+                await authApi.changePassword({currentPassword, newPassword});
             }
 
             setSuccess(true);
@@ -103,7 +103,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                 }, 1500);
             }
         } catch (err: unknown) {
-            setError(parseErrorMessage(err) || "Ошибка при смене пароля. Проверьте текущий пароль.");
+            setError(getUserMessageFromUnknown(err) || "Ошибка при смене пароля. Проверьте текущий пароль.");
         } finally {
             setLoading(false);
         }

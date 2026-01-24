@@ -3,10 +3,11 @@ import {useState} from 'react';
 import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
 import {useSelector} from 'react-redux';
 import type {RootState} from '../../store';
-import {resendConfirmation} from '../../api/auth';
+import {authApi} from "../../shared/api/auth/authApi";
 import {useProgressToast} from '../ToastProgress/ToastProgress';
 import {useRateLimitedRequest} from '../../hooks/useRateLimitedRequest';
 import {MockCallbackLink} from '../MockCallbackLink/MockCallbackLink';
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 interface EmailPendingCardProps {
     showResend?: boolean
@@ -26,7 +27,7 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
     const [errors, setErrors] = useState<{ resend?: string; general?: string }>({});
 
     const resend = useRateLimitedRequest(`email_resend_${email}`, async () => {
-        const r = await resendConfirmation(email);
+        const r = await authApi.resendConfirmation(email);
         return {data: r.data, headers: r.headers, status: r.status};
     });
 
@@ -38,12 +39,8 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
             if (d?.callbackUrl && USE_MOCK_EMAIL) setInternalMockLink(d.callbackUrl);
             showToast(d?.message || 'Письмо отправлено', 'success', 'OK');
             setSuccessSent(true);
-        } catch (e: any) {
-            if (e?.errors?.email) {
-                setErrors({resend: e.errors.email});
-            } else {
-                setErrors({general: 'Ошибка повторной отправки'});
-            }
+        } catch (e: unknown) {
+            setErrors({general: getUserMessageFromUnknown(e) || 'Ошибка повторной отправки'});
         }
     };
 
