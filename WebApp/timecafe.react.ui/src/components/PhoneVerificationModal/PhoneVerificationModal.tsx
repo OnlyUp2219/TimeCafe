@@ -21,12 +21,60 @@ import {parseErrorMessage, handleVerificationError} from "../../utility/errors";
 import {validatePhoneNumber} from "../../utility/validate";
 import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
 
+type PhoneVerificationSessionV1 = {
+    open: boolean;
+    step: Step;
+    phoneNumber: string;
+    mode: "api" | "ui";
+    uiGeneratedCode?: string | null;
+};
+
+const PHONE_VERIFICATION_SESSION_KEY = "tc_phone_verification_session_v1";
+
+const loadPhoneSession = (): PhoneVerificationSessionV1 | null => {
+    try {
+        const raw = window.localStorage.getItem(PHONE_VERIFICATION_SESSION_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw) as PhoneVerificationSessionV1;
+        if (!parsed || typeof parsed !== "object") return null;
+        if (parsed.step !== "verify") return null;
+        if (parsed.mode !== "api" && parsed.mode !== "ui") return null;
+        return {
+            open: Boolean(parsed.open),
+            step: parsed.step,
+            phoneNumber: String(parsed.phoneNumber ?? ""),
+            mode: parsed.mode,
+            uiGeneratedCode: parsed.uiGeneratedCode ?? null,
+        };
+    } catch {
+        return null;
+    }
+};
+
+const savePhoneSession = (session: PhoneVerificationSessionV1) => {
+    try {
+        window.localStorage.setItem(PHONE_VERIFICATION_SESSION_KEY, JSON.stringify(session));
+    } catch {
+        // ignore
+    }
+};
+
+const clearPhoneSession = () => {
+    try {
+        window.localStorage.removeItem(PHONE_VERIFICATION_SESSION_KEY);
+    } catch {
+        // ignore
+    }
+};
+
 
 interface PhoneVerificationModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentPhoneNumber?: string;
+    currentPhoneNumberConfirmed?: boolean;
     onSuccess: (phoneNumber: string) => void;
+    mode?: "api" | "ui";
 }
 
 type Step = "input" | "verify";
@@ -35,7 +83,9 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             isOpen,
                                                                             onClose,
                                                                             currentPhoneNumber = "",
+                                                                            currentPhoneNumberConfirmed = false,
                                                                             onSuccess,
+                                                                            mode = "api",
                                                                         }) => {
     const [step, setStep] = useState<Step>("input");
     const [phoneNumber, setPhoneNumber] = useState(currentPhoneNumber);
@@ -48,6 +98,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [requiresCaptcha, setRequiresCaptcha] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [captchaKey, setCaptchaKey] = useState(0);
+    const [uiGeneratedCode, setUiGeneratedCode] = useState<string | null>(null);
 
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
@@ -82,16 +133,56 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     useEffect(() => {
-        if (isOpen) {
-            setPhoneNumber(currentPhoneNumber);
+        if (!isOpen) return;
+
+        const session = loadPhoneSession();
+        if (session?.open && session.mode === mode && session.phoneNumber.trim()) {
+            setPhoneNumber(session.phoneNumber);
             resetVerificationState();
             resetErrors();
-            setStep("input");
+            setStep("verify");
+            setUiGeneratedCode(mode === "ui" ? (session.uiGeneratedCode ?? null) : null);
+            return;
         }
-    }, [isOpen, currentPhoneNumber]);
+
+        setPhoneNumber(currentPhoneNumber);
+        resetVerificationState();
+        resetErrors();
+        setStep("input");
+        setUiGeneratedCode(null);
+    }, [isOpen, currentPhoneNumber, mode]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        if (step !== "verify") {
+            clearPhoneSession();
+            return;
+        }
+        savePhoneSession({
+            open: true,
+            step: "verify",
+            phoneNumber,
+            mode,
+            uiGeneratedCode: mode === "ui" ? uiGeneratedCode : null,
+        });
+    }, [isOpen, mode, phoneNumber, step, uiGeneratedCode]);
+
+    const handleClose = () => {
+        clearPhoneSession();
+        onClose();
+    };
 
     const handleSendCode = async () => {
         resetErrors();
+
+        if (
+            currentPhoneNumberConfirmed === true &&
+            phoneNumber.trim() &&
+            phoneNumber.trim() === currentPhoneNumber.trim()
+        ) {
+            setValidationError("Этот номер уже подтверждён.");
+            return;
+        }
 
         const validation = validatePhoneNumber(phoneNumber);
         if (validation) {
@@ -100,6 +191,13 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         }
 
         if (isBlocked) {
+            return;
+        }
+
+        if (mode === "ui") {
+            const code = String(Math.floor(100000 + Math.random() * 900000));
+            setUiGeneratedCode(code);
+            setStep("verify");
             return;
         }
 
@@ -124,6 +222,24 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const handleVerifyCode = async () => {
         resetErrors();
 
+        if (mode === "ui") {
+            const safeCode = (verificationCode || "").replace(/\D/g, "");
+            if (!uiGeneratedCode) {
+                setError("Сначала запросите код подтверждения");
+                return;
+            }
+            if (safeCode !== uiGeneratedCode) {
+                setError("Неверный код подтверждения");
+                return;
+            }
+
+            resetVerificationState();
+            setUiGeneratedCode(null);
+            onSuccess(phoneNumber);
+            handleClose();
+            return;
+        }
+
         if (requiresCaptcha && !captchaToken) {
             setError("Пройдите проверку капчи");
             return;
@@ -143,7 +259,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             resetVerificationState();
 
             onSuccess(phoneNumber);
-            onClose();
+            handleClose();
         } catch (err: unknown) {
             const {
                 errorMessage,
@@ -170,6 +286,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetVerificationState();
         resetErrors();
         resetCaptcha();
+        setUiGeneratedCode(null);
         await handleSendCode();
     };
 
@@ -177,6 +294,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setStep("input");
         setVerificationCode("");
         resetErrors();
+        setUiGeneratedCode(null);
     };
 
     const formatCountdown = (seconds: number): string => {
@@ -186,7 +304,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(_, data) => !data.open && onClose()}>
+        <Dialog open={isOpen} onOpenChange={(_, data) => !data.open && handleClose()}>
             <DialogSurface className="phone-verification-modal">
                 <DialogBody>
                     <DialogTitle
@@ -195,7 +313,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 appearance="subtle"
                                 aria-label="close"
                                 icon={<DismissRegular/>}
-                                onClick={onClose}
+                                onClick={handleClose}
                             />
                         }
                     >
@@ -204,7 +322,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                     <DialogContent>
                         {step === "input" ? (
                             <>
-                                <Body1>
+                                <Body1 block>
                                     Введите номер телефона, на который будет отправлен код подтверждения
                                 </Body1>
                                 <Field
@@ -228,9 +346,14 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                             </>
                         ) : (
                             <>
-                                <Body1>
+                                <Body1 block>
                                     Код отправлен на номер <strong>{phoneNumber}</strong>
                                 </Body1>
+                                {mode === "ui" && uiGeneratedCode && (
+                                    <Caption1 block>
+                                        UI-режим: код подтверждения — <strong>{uiGeneratedCode}</strong>
+                                    </Caption1>
+                                )}
                                 <Field
                                     label="Код подтверждения"
                                     required
@@ -238,8 +361,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                     validationState={error ? "error" : "none"}
                                     hint={
                                         remainingAttempts !== null && remainingAttempts > 0
-                                            ? `Введите 6-значный код из SMS (осталось попыток: ${remainingAttempts})`
-                                            : "Введите 6-значный код из SMS"
+                                            ? `Введите 6-значный код (осталось попыток: ${remainingAttempts})`
+                                            : "Введите 6-значный код"
                                     }
                                 >
                                     <Input
@@ -298,13 +421,17 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                     <DialogActions position="end">
                         {step === "input" ? (
                             <>
-                                <Button appearance="secondary" onClick={onClose} disabled={loading}>
+                                <Button appearance="secondary" onClick={handleClose} disabled={loading}>
                                     Отмена
                                 </Button>
                                 <Button
                                     appearance="primary"
                                     onClick={handleSendCode}
-                                    disabled={loading || !phoneNumber.trim() || isBlocked}
+                                    disabled={
+                                        loading ||
+                                        !phoneNumber.trim() ||
+                                        isBlocked
+                                    }
                                 >
                                     {loading ? <Spinner
                                         size="tiny"/> : countdown > 0 ? `Получить код (${formatCountdown(countdown)})` : "Получить код"}
@@ -322,7 +449,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Button
                                     appearance="primary"
                                     onClick={handleVerifyCode}
-                                    disabled={loading || verificationCode.length !== 6 || attemptsExhausted}
+                                    disabled={
+                                        loading ||
+                                        verificationCode.length !== 6 ||
+                                        attemptsExhausted
+                                    }
                                 >
                                     {loading ? <Spinner size="tiny"/> : "Подтвердить"}
                                 </Button>

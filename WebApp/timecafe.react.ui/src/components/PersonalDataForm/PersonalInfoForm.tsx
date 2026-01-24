@@ -1,8 +1,9 @@
-import {useState, type FC, createElement} from "react";
+import {useEffect, useState, type FC, createElement} from "react";
 import {Card, Field, Input, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, type FluentIcon} from "@fluentui/react-icons";
+import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {ClientInfo} from "../../types/client.ts";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
+import {DateInput, EmailInput} from "../FormFields";
 
 interface PersonalInfoFormProps {
     client: ClientInfo;
@@ -35,11 +36,29 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                                                 showDownloadButton = true,
                                                                 className,
                                                             }) => {
+    const normalizeDate = (value: unknown): Date | undefined => {
+        if (!value) return undefined;
+        if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
+        if (typeof value === "string" || typeof value === "number") {
+            const d = new Date(value);
+            return Number.isNaN(d.getTime()) ? undefined : d;
+        }
+        return undefined;
+    };
+
     const [email, setEmail] = useState(client.email);
     const [phone, setPhone] = useState(client.phoneNumber || "");
-    const [birthDate, setBirthDate] = useState<Date | undefined>(client.birthDate);
+    const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(client.birthDate));
     const [genderId, setGenderId] = useState<number | undefined>(client.genderId);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
+
+    useEffect(() => {
+        setEmail(client.email);
+        setPhone(client.phoneNumber || "");
+        setBirthDate(normalizeDate(client.birthDate));
+        setGenderId(client.genderId);
+    }, [client.clientId]);
+
 
     const handleSave = () => {
         const updated: ClientInfo = {
@@ -63,72 +82,71 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
             <Title2>Персональные данные</Title2>
             <div className="flex w-full gap-[12px] justify-stretch flex-wrap flex-row">
                 <div className="flex-1">
-                    <Field label="Электронная почта" className="w-full">
-                        <div className="input-with-button">
-                            <Input
-                                value={email}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
-                                    onChange?.({email: e.target.value});
-                                }}
-                                placeholder="Введите почту"
-                                className="w-full"
-                                type="email"
-                                disabled={readOnly || loading}
-                            />
+                    <EmailInput
+                        value={email}
+                        onChange={(value) => {
+                            setEmail(value);
+                            onChange?.({email: value});
+                        }}
+                        disabled={readOnly || loading}
+                        shouldValidate={false}
+                        trailingElement={
                             <Tag
                                 appearance="outline"
                                 icon={createElement(getStatusIcon(client.emailConfirmed))}
                                 className={`custom-tag ${getStatusClass(client.emailConfirmed)}`}
                             />
-                        </div>
-                    </Field>
+                        }
+                    />
 
                     <Field label="Телефон">
-                        <div className="input-with-button">
-                            <Input
-                                value={phone}
-                                onChange={(e) => {
-                                    setPhone(e.target.value);
-                                    onChange?.({phoneNumber: e.target.value});
-                                }}
-                                placeholder="Введите номер телефона"
-                                className="w-full"
-                                type="tel"
-                                disabled={readOnly || loading}
-                            />
-                            <Tag
-                                appearance="outline"
-                                icon={createElement(getStatusIcon(client.phoneNumberConfirmed))}
-                                className={`custom-tag ${getStatusClass(client.phoneNumberConfirmed)}`}
-                            />
-                            <Button
-                                appearance="subtle"
-                                size="small"
-                                onClick={() => setShowPhoneModal(true)}
-                                disabled={readOnly || loading}
-                            >
-                                {client.phoneNumberConfirmed ? "Изменить" : "Подтвердить"}
-                            </Button>
+                        <div className="flex flex-col gap-2">
+                            <div className="input-with-button">
+                                <Input
+                                    value={phone}
+                                    onChange={(_, data) => {
+                                        setPhone(data.value);
+                                        onChange?.({phoneNumber: data.value});
+                                    }}
+                                    placeholder="Введите номер телефона"
+                                    className="w-full"
+                                    type="tel"
+                                    disabled={readOnly || loading}
+                                />
+                                <Tag
+                                    appearance="outline"
+                                    icon={createElement(getStatusIcon(client.phoneNumberConfirmed))}
+                                    className={`custom-tag ${getStatusClass(client.phoneNumberConfirmed)}`}
+                                />
+                            </div>
+
+                            {!readOnly && (
+                                <div className="flex justify-end">
+                                    <Button
+                                        appearance="subtle"
+                                        size="small"
+                                        icon={<Edit20Regular />}
+                                        onClick={() => setShowPhoneModal(true)}
+                                        disabled={loading || !phone.trim()}
+                                    >
+                                        {client.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </Field>
                 </div>
 
                 <div className="flex-1">
-                    <Field label="Дата рождения">
-                        <Input
-                            value={birthDate ? birthDate.toISOString().split("T")[0] : ""}
-                            onChange={(e) => {
-                                const val = e.target.value ? new Date(e.target.value) : undefined;
-                                setBirthDate(val);
-                                onChange?.({birthDate: val});
-                            }}
-                            placeholder="Введите дату рождения"
-                            type="date"
-                            className="w-full"
-                            disabled={readOnly || loading}
-                        />
-                    </Field>
+                    <DateInput
+                        value={birthDate}
+                        onChange={(val) => {
+                            setBirthDate(val);
+                            onChange?.({birthDate: val});
+                        }}
+                        disabled={readOnly || loading}
+                        label="Дата рождения"
+                    />
 
                     <Field label="Пол">
                         <RadioGroup
@@ -153,8 +171,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
 
             <div className="flex gap-[12px] mt-[16px]">
                 {showDownloadButton && (
-                    <Button appearance="primary" disabled={loading || readOnly} onClick={() => {/* TODO: implement download */
-                    }}>
+                    <Button appearance="primary" disabled>
                         Скачать данные
                     </Button>
                 )}
@@ -167,7 +184,9 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
+                currentPhoneNumberConfirmed={client.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
+                mode="ui"
             />
         </Card>
     );

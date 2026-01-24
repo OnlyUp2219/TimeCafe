@@ -1,0 +1,43 @@
+/* Billing page shared styles (no inline styles, no makeStyles) */
+
+.tc-billing-panel {
+  background-image:
+    radial-gradient(
+      900px 480px at 20% 10%,
+      var(--colorBrandBackground2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      720px 420px at 90% 0%,
+      var(--colorPaletteLightGreenBackground2) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--colorNeutralBackground1) 0%,
+      var(--colorNeutralBackground2) 100%
+    );
+  border: 1px solid var(--colorNeutralStroke1);
+  box-shadow: var(--shadow16);
+}
+
+.tc-billing-debt-card {
+  background-color: var(--colorPaletteRedBackground1);
+  border-color: var(--colorPaletteRedBorder2);
+}
+
+.tc-billing-rest-card {
+  background: var(--colorBrandBackground2) !important;
+  border: 1px solid var(--colorBrandStroke1) !important;
+}
+
+.tc-billing-debt-badge {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  padding: 10px !important;
+}
+
+.tc-billing-debt-badge svg {
+  width: 20px !important;
+  height: 20px !important;
+}

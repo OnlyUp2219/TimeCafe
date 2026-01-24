@@ -5,7 +5,7 @@ import {
     ToastTitle,
     ToastBody,
     ProgressBar,
-    Text,
+    Body2,
     Link,
     useId, ToastTrigger,
 } from "@fluentui/react-components";
@@ -83,7 +83,7 @@ export const useProgressToast = () => {
                     {title ?? "Уведомление"}
                 </ToastTitle>
                 <ToastBody>
-                    <Text>{message}</Text>
+                    <Body2>{message}</Body2>
                     <ToastProgress onDownloadEnd={dismiss} timeout={timeout}/>
                 </ToastBody>
             </Toast>,
