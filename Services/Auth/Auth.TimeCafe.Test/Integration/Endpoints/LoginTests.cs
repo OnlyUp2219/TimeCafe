@@ -16,7 +16,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -50,7 +50,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "user@example.com", Password = "" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -84,7 +84,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "invalid-email", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -118,7 +118,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "confirmed@example.com", Password = "wrongpassword" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -148,7 +148,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "unconfirmed@example.com", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -163,6 +163,7 @@ public class LoginTests : BaseEndpointTest
 
             json.TryGetProperty("accessToken", out var _).Should().BeFalse();
             json.TryGetProperty("refreshToken", out var _).Should().BeFalse();
+            response.Headers.TryGetValues("Set-Cookie", out var _).Should().BeFalse();
         }
         catch (Exception)
         {
@@ -178,7 +179,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "confirmed@example.com", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -194,8 +195,9 @@ public class LoginTests : BaseEndpointTest
             json.TryGetProperty("accessToken", out var accessToken).Should().BeTrue();
             accessToken.GetString()!.Should().NotBeNullOrWhiteSpace();
 
-            json.TryGetProperty("refreshToken", out var refreshToken).Should().BeTrue();
-            refreshToken.GetString()!.Should().NotBeNullOrWhiteSpace();
+            json.TryGetProperty("refreshToken", out var _).Should().BeFalse();
+            response.Headers.TryGetValues("Set-Cookie", out var setCookies).Should().BeTrue();
+            setCookies!.Any(c => c.StartsWith("refresh_token=")).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -211,7 +213,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "CONFIRMED@EXAMPLE.COM", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -238,7 +240,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "   ", Password = "   " };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -265,7 +267,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = longEmail, Password = longPass };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -292,7 +294,7 @@ public class LoginTests : BaseEndpointTest
         var dto = new { Email = "confirmed@example.com", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt", dto);
+        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
