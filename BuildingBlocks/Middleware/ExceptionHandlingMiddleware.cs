@@ -15,6 +15,26 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             await HandleValidationExceptionAsync(context, ex);
         }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            _logger.LogDebug("Request was cancelled by the client");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            await HandleKnownExceptionAsync(context, code: "Unauthorized", statusCode: (int)HttpStatusCode.Unauthorized, message: ex.Message);
+        }
+        catch (System.Security.SecurityException ex)
+        {
+            await HandleKnownExceptionAsync(context, code: "Forbidden", statusCode: (int)HttpStatusCode.Forbidden, message: ex.Message);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            await HandleKnownExceptionAsync(context, code: "NotFound", statusCode: (int)HttpStatusCode.NotFound, message: ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            await HandleKnownExceptionAsync(context, code: "BadRequest", statusCode: (int)HttpStatusCode.BadRequest, message: ex.Message);
+        }
         catch (Exception ex)
         {
             await HandleExceptionAsync(context, ex);
@@ -26,21 +46,44 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         _logger.LogWarning("Validation error: {Errors}", string.Join(", ", exception.Errors.Select(e => e.ErrorMessage)));
 
         const string code = "ValidationError";
-        var status = (int)HttpStatusCode.UnprocessableEntity;
+        var statusCode = (int)HttpStatusCode.UnprocessableEntity;
         var errors = exception.Errors
             .Select(e => new { code = "Validation", message = e.ErrorMessage })
             .ToArray();
 
-        var payload = new
+        await WriteErrorAsync(context,
+            statusCode,
+            payload: new
+            {
+                code,
+                message = "Один или несколько ошибок валидации.",
+                statusCode,
+                errors
+            });
+    }
+
+    private async Task HandleKnownExceptionAsync(HttpContext context, string code, int statusCode, string? message)
+    {
+        await WriteErrorAsync(context,
+            statusCode,
+            payload: new
+            {
+                code,
+                message = string.IsNullOrWhiteSpace(message) ? "Произошла ошибка при обработке запроса" : message,
+                statusCode,
+                errors = (object?)null
+            });
+    }
+
+    private async Task WriteErrorAsync(HttpContext context, int statusCode, object payload)
+    {
+        if (context.Response.HasStarted)
         {
-            code,
-            message = "Один или несколько ошибок валидации.",
-            status,
-            errors
-        };
+            return;
+        }
 
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = status;
+        context.Response.StatusCode = statusCode;
         await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
     }
 
@@ -49,16 +92,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         _logger.LogError(exception, "Unhandled exception occurred");
 
         const string code = "InternalServerError";
-        var status = (int)HttpStatusCode.InternalServerError;
-        var payload = new
-        {
-            code,
-            message = "Внутренняя ошибка сервера.",
-            status
-        };
+        var statusCode = (int)HttpStatusCode.InternalServerError;
 
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = status;
-        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+        await WriteErrorAsync(context,
+            statusCode,
+            payload: new
+            {
+                code,
+                message = "Внутренняя ошибка сервера.",
+                statusCode,
+                errors = (object?)null
+            });
     }
 }
