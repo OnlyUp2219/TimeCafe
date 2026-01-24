@@ -4,6 +4,8 @@ import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
+import {authApi} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -24,21 +26,11 @@ export const RegisterPage = () => {
 
         setIsSubmitting(true);
         try {
-            // TODO: STUB - реальная регистрация (подключить бек)
-            // await registerUser({email, password}, dispatch);
+            await authApi.registerWithUsername({username: email, email, password});
             showToast("Проверьте почту для подтверждения аккаунта", "success");
             navigate("/login");
         } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as {
-                errors: Array<{ description: string }>
-            }).errors)) {
-                const message = (err as {
-                    errors: Array<{ description: string }>
-                }).errors.map(e => e.description).join(" ");
-                showToast(message, "error");
-            } else {
-                showToast("Ошибка регистрации. Попробуйте позже", "error");
-            }
+            showToast(getUserMessageFromUnknown(err), "error", "Ошибка");
         } finally {
             setIsSubmitting(false);
         }

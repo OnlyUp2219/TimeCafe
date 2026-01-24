@@ -27,12 +27,12 @@ interface EmailVerificationModalProps {
 type Step = "input" | "sent";
 
 export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
-    isOpen,
-    onClose,
-    currentEmail = "",
-    currentEmailConfirmed = false,
-    onSuccess,
-}) => {
+                                                                            isOpen,
+                                                                            onClose,
+                                                                            currentEmail = "",
+                                                                            currentEmailConfirmed = false,
+                                                                            onSuccess,
+                                                                        }) => {
     const [step, setStep] = useState<Step>("input");
     const [email, setEmail] = useState(currentEmail);
     const [loading, setLoading] = useState(false);
@@ -51,7 +51,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
         setError(null);
         setValidationError("");
 
-        if (currentEmailConfirmed === true && email.trim() && email.trim() === currentEmail.trim()) {
+        if (currentEmailConfirmed && email.trim() && email.trim() === currentEmail.trim()) {
             setValidationError("Этот email уже подтверждён.");
             return;
         }
@@ -80,7 +80,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
         setError(null);
         setValidationError("");
 
-        if (currentEmailConfirmed === true && email.trim() && email.trim() === currentEmail.trim()) {
+        if (currentEmailConfirmed && email.trim() && email.trim() === currentEmail.trim()) {
             setValidationError("Этот email уже подтверждён.");
             setStep("input");
             return;

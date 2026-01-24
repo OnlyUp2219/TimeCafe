@@ -17,7 +17,6 @@ import {
     DialogActions,
     DialogContent,
     ProgressBar,
-    tokens,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -32,7 +31,7 @@ import {useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "../../store";
-import {finishVisit, resetVisit} from "../../store/visitSlice";
+import {finishVisit} from "../../store/visitSlice";
 import type {BillingType} from "../../types/tariff";
 import {formatMoneyByN} from "../../utility/formatMoney";
 
@@ -40,6 +39,7 @@ import vortex from "../../assets/vvvortex.svg";
 import repeat from "../../assets/rrrepeat (2).svg";
 import surf from "../../assets/sssurf.svg";
 import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
+import "./visits.css";
 
 const clampMin = (value: number, min: number) => Math.max(min, value);
 
@@ -139,45 +139,34 @@ export const ActiveVisitPage = () => {
                     src={vortex}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-[10vw] -left-[10vw] w-[55vw] max-w-[680px] select-none"
-                    style={{opacity: 0.22}}
+                    className="absolute -top-[10vw] -left-[10vw] w-[55vw] max-w-[680px] select-none opacity-[0.22]"
                     draggable={false}
                 />
                 <img
                     src={repeat}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-[6vw] -right-[8vw] w-[45vw] max-w-[560px] select-none"
-                    style={{opacity: 0.22}}
+                    className="absolute -top-[6vw] -right-[8vw] w-[45vw] max-w-[560px] select-none opacity-[0.22]"
                     draggable={false}
                 />
                 <img
                     src={surf}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -bottom-[16vw] left-0 w-[100vw] max-w-none select-none"
-                    style={{opacity: 0.22}}
+                    className="absolute -bottom-[16vw] left-0 w-[100vw] max-w-none select-none opacity-[0.22]"
                     draggable={false}
                 />
                 <img
                     src={surf}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -bottom-[16vw] right-0 -scale-x-100 w-[100vw] max-w-none select-none"
-                    style={{opacity: 0.22}}
+                    className="absolute -bottom-[16vw] right-0 -scale-x-100 w-[100vw] max-w-none select-none opacity-[0.22]"
                     draggable={false}
                 />
             </div>
 
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-                <div
-                    className="rounded-3xl p-5 sm:p-8"
-                    style={{
-                        backgroundImage: `radial-gradient(900px 480px at 20% 10%, ${tokens.colorBrandBackground2} 0%, transparent 60%), radial-gradient(720px 420px at 90% 0%, ${tokens.colorPaletteLightGreenBackground2} 0%, transparent 55%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                        border: `1px solid ${tokens.colorNeutralStroke1}`,
-                        boxShadow: tokens.shadow16,
-                    }}
-                >
+                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">
                             <Title2 block>Вы в заведении</Title2>

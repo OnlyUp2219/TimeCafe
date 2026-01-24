@@ -1,80 +1,101 @@
 .personal-data-root {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: column;
-    height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  height: 100%;
 }
 
 .personal-data-section {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
 }
 
 .personal-data-photo {
-    max-width: 200px;
-    border-radius: 8px;
+  max-width: 200px;
+  border-radius: 8px;
 }
 
 .personal-data-actions {
-    display: flex;
-    gap: 12px;
+  display: flex;
+  gap: 12px;
 }
 
 .row {
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
 }
 
 .input-with-button {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .custom-tag {
-    margin: 0px !important;
-    padding-right: 0px !important;
+  margin: 0px !important;
+  padding-right: 0px !important;
 }
 
 .dark-green {
-    background: var(--colorStatusSuccessBackground1) !important;
-    color: var(--colorStatusSuccessForeground1) !important;
+  background: var(--colorStatusSuccessBackground1) !important;
+  color: var(--colorStatusSuccessForeground1) !important;
 }
 
 .pumpkin {
-    background: var(--colorStatusWarningBackground1) !important;
-    color: var(--colorStatusWarningForeground1) !important;
+  background: var(--colorStatusWarningBackground1) !important;
+  color: var(--colorStatusWarningForeground1) !important;
 }
 
 .beige {
-    background: var(--colorStatusNeutralBackground1) !important;
-    color: var(--colorStatusNeutralForeground1) !important;
+  background: var(--colorStatusNeutralBackground1) !important;
+  color: var(--colorStatusNeutralForeground1) !important;
 }
 
 .dark-red {
-    background: var(--colorStatusDangerBackground1) !important;
-    color: var(--colorStatusDangerForeground1) !important;
+  background: var(--colorStatusDangerBackground1) !important;
+  color: var(--colorStatusDangerForeground1) !important;
 }
 
 .dark-red-badge {
-    background: var(--colorStatusDangerBackground2) !important;
-    color: var(--colorStatusDangerForeground1) !important;
+  background: var(--colorStatusDangerBackground2) !important;
+  color: var(--colorStatusDangerForeground1) !important;
 }
 
 .brand-badge {
-    background: var(--colorBrandBackground2) !important;
-    color: var(--colorBrandForeground1) !important;
+  background: var(--colorBrandBackground2) !important;
+  color: var(--colorBrandForeground1) !important;
 }
 
 .dark-red-button {
-    background: var(--colorStatusDangerBackground3) !important;
-    border-color: var(--colorStatusDangerBorder1) !important;
+  background: var(--colorStatusDangerBackground3) !important;
+  border-color: var(--colorStatusDangerBorder1) !important;
 }
 
 .dark-red-button:hover {
-    background: var(--colorStatusDangerBackground2) !important;
-    color: var(--colorStatusDangerForeground1) !important;
+  background: var(--colorStatusDangerBackground2) !important;
+  color: var(--colorStatusDangerForeground1) !important;
+}
+
+.personal-data-gradient-card {
+  background-image:
+    radial-gradient(
+      900px 480px at 20% 10%,
+      var(--colorBrandBackground2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      720px 420px at 90% 0%,
+      var(--colorPaletteLightGreenBackground2) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--colorNeutralBackground1) 0%,
+      var(--colorNeutralBackground2) 100%
+    );
+  border: 1px solid var(--colorNeutralStroke1);
+  box-shadow: var(--shadow16);
 }

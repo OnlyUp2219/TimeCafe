@@ -14,7 +14,7 @@ import "./ToastProgress.css"
 
 type ToastIntent = "success" | "error" | "warning" | "info";
 
-export const getToastColors = (intent: ToastIntent) => {
+const getToastColors = (intent: ToastIntent) => {
     switch (intent) {
         case "error":
             return "toast-error";

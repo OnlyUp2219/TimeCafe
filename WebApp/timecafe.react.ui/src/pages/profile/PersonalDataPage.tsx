@@ -1,4 +1,4 @@
-import {Body2, Button, Card, Divider, Title2, tokens,} from "@fluentui/react-components";
+import {Body2, Button, Card, Divider, Title2} from "@fluentui/react-components";
 import {useCallback, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -11,8 +11,9 @@ import {PersonalDataMainForm} from "../../components/PersonalDataForm/PersonalDa
 import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
 import {EmailFormCard} from "../../components/PersonalDataForm/EmailFormCard";
 import {LogoutCard} from "../../components/PersonalDataForm/LogoutCard";
-import {logoutServer} from "../../api/auth.ts";
 import {LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
+import {authApi} from "../../shared/api/auth/authApi";
+import {clearTokens} from "../../store/authSlice";
 import blob3Url from "../../assets/ssshape_blob3.svg";
 import blob4Url from "../../assets/ssshape_blob4.svg";
 import squiggly1Url from "../../assets/sssquiggl_1.svg";
@@ -64,25 +65,21 @@ export const PersonalDataPage = () => {
         showToast("Загружен демо-профиль для теста UI.", "info", "Demo");
     }, [dispatch, showToast]);
 
-    const backgroundOpacity = client ? 0.08 : 0.10;
+    const backgroundOpacityClass = client ? "opacity-[0.08]" : "opacity-[0.1]";
 
     const [, setPhotoUrl] = useState<string | null | undefined>(undefined);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
 
     const handleLogout = useCallback(async () => {
-        await logoutServer(dispatch);
+        await authApi.logout();
+        dispatch(clearTokens());
         navigate("/login", {replace: true});
     }, [dispatch, navigate]);
 
     const content = !client ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
             <div
-                className="rounded-3xl p-6"
-                style={{
-                    backgroundImage: `radial-gradient(900px 480px at 20% 10%, ${tokens.colorBrandBackground2} 0%, transparent 60%), radial-gradient(720px 420px at 90% 0%, ${tokens.colorPaletteLightGreenBackground2} 0%, transparent 55%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                    border: `1px solid ${tokens.colorNeutralStroke1}`,
-                    boxShadow: tokens.shadow16,
-                }}
+                className="rounded-3xl p-6 personal-data-gradient-card"
             >
                 <Title2>Персональные данные</Title2>
                 <div>
@@ -99,12 +96,7 @@ export const PersonalDataPage = () => {
     ) : (
         <div className="mx-auto  w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10 ">
             <div
-                className="rounded-3xl p-5 sm:p-8"
-                style={{
-                    backgroundImage: `radial-gradient(900px 480px at 20% 10%, ${tokens.colorBrandBackground2} 0%, transparent 60%), radial-gradient(720px 420px at 90% 0%, ${tokens.colorPaletteLightGreenBackground2} 0%, transparent 55%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                    border: `1px solid ${tokens.colorNeutralStroke1}`,
-                    boxShadow: tokens.shadow16,
-                }}
+                className="rounded-3xl p-5 sm:p-8 personal-data-gradient-card"
             >
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -206,32 +198,28 @@ export const PersonalDataPage = () => {
                     src={blob3Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none"
-                    style={{opacity: backgroundOpacity}}
+                    className={`absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
                 <img
                     src={blob4Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -left-[12vw] top-[35vh] w-[55vw] max-w-[720px] -rotate-6 select-none"
-                    style={{opacity: backgroundOpacity}}
+                    className={`absolute -left-[12vw] top-[35vh] w-[55vw] max-w-[720px] -rotate-6 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
                 <img
                     src={squiggly1Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none"
-                    style={{opacity: backgroundOpacity}}
+                    className={`absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
                 <img
                     src={glitchUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -right-[12vw] top-[70vh] w-[60vw] max-w-[720px] select-none"
-                    style={{opacity: backgroundOpacity}}
+                    className={`absolute -right-[12vw] top-[70vh] w-[60vw] max-w-[720px] select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
             </div>

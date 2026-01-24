@@ -1,5 +1,4 @@
 import {
-    Badge,
     Button,
     Caption1,
     Card,
@@ -13,7 +12,6 @@ import {
     Tooltip,
     Title2,
     Title3,
-    tokens,
 } from "@fluentui/react-components";
 import {
     Carousel,
@@ -39,6 +37,7 @@ import repeatTriangleUrl from "../../assets/rrrepeat_triangle.svg";
 import vortexUrl from "../../assets/vvvortex.svg";
 import blob2Url from "../../assets/ssshape_blob2.svg";
 import blob4Url from "../../assets/ssshape_blob4.svg";
+import "./visits.css";
 
 type CalcResult = {
     total: number;
@@ -94,14 +93,6 @@ const TariffCarouselSection = ({
     selectedTariffId,
     onSelectTariff,
 }: TariffCarouselSectionProps) => {
-    const sliderPadding = useMemo(
-        () => ({
-            gap: tokens.spacingHorizontalL,
-            padding: `0 ${tokens.spacingHorizontalXXL}`,
-        }),
-        []
-    );
-
     return (
         <Card className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -121,7 +112,7 @@ const TariffCarouselSection = ({
                 whitespace
             >
                 <CarouselViewport>
-                    <CarouselSlider cardFocus style={sliderPadding}>
+                    <CarouselSlider cardFocus className="tc-carousel-slider">
                         {visibleTariffs.map((tariff, index) => (
                             <CarouselCard
                                 key={tariff.tariffId}
@@ -129,10 +120,11 @@ const TariffCarouselSection = ({
                                 aria-label={`${index + 1} из ${totalCount}`}
                             >
                                 <div
-                                    style={{
-                                        transform: index === activeIndex ? "scale(1)" : "scale(0.92)",
-                                        opacity: index === activeIndex ? 1 : 0.55,
-                                    }}
+                                    className={
+                                        index === activeIndex
+                                            ? "scale-100 opacity-100"
+                                            : "scale-[0.92] opacity-[0.55]"
+                                    }
                                 >
                                     <TariffCard
                                         tariff={tariff}
@@ -238,13 +230,7 @@ const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => 
                     <Body2 block>Выберите тариф и задайте параметры.</Body2>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        <div
-                            className="rounded-2xl p-4"
-                            style={{
-                                backgroundImage: `radial-gradient(640px 280px at 20% 0%, ${tokens.colorBrandBackground2} 0%, transparent 65%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                                border: `1px solid ${tokens.colorNeutralStroke1}`,
-                            }}
-                        >
+                        <div className="rounded-2xl p-4 tc-tariff-forecast-box">
                             <div className="flex items-end justify-between gap-3 flex-wrap">
                                 <div className="min-w-0">
                                     <Caption1>Ориентировочная сумма</Caption1>
@@ -387,45 +373,34 @@ export const TariffSelectionPage = () => {
                     src={repeatTriangleUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -top-[8vw] -left-[10vw] w-[60vw] max-w-[720px] -rotate-6 select-none"
-                    style={{opacity: 0.10}}
+                    className="absolute -top-[8vw] -left-[10vw] w-[60vw] max-w-[720px] -rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
                 <img
                     src={blob2Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -right-[14vw] top-[18vh] w-[55vw] max-w-[720px] rotate-6 select-none"
-                    style={{opacity: 0.10}}
+                    className="absolute -right-[14vw] top-[18vh] w-[55vw] max-w-[720px] rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
                 <img
                     src={blob4Url}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -left-[14vw] top-[70vh] w-[60vw] max-w-[760px] -rotate-6 select-none"
-                    style={{opacity: 0.10}}
+                    className="absolute -left-[14vw] top-[70vh] w-[60vw] max-w-[760px] -rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
                 <img
                     src={vortexUrl}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -right-[12vw] top-[72vh] w-[60vw] max-w-[720px] select-none lg:top-[56rem]"
-                    style={{opacity: 0.10}}
+                    className="absolute -right-[12vw] top-[72vh] w-[60vw] max-w-[720px] select-none lg:top-[56rem] opacity-[0.1]"
                     draggable={false}
                 />
             </div>
 
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-                <div
-                    className="rounded-3xl p-5 sm:p-8"
-                    style={{
-                        backgroundImage: `radial-gradient(900px 480px at 20% 10%, ${tokens.colorBrandBackground2} 0%, transparent 60%), radial-gradient(720px 420px at 90% 0%, ${tokens.colorPaletteLightGreenBackground2} 0%, transparent 55%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                        border: `1px solid ${tokens.colorNeutralStroke1}`,
-                        boxShadow: tokens.shadow16,
-                    }}
-                >
+                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">

@@ -1,0 +1,40 @@
+.tc-visits-panel {
+  background-image:
+    radial-gradient(
+      900px 480px at 20% 10%,
+      var(--colorBrandBackground2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      720px 420px at 90% 0%,
+      var(--colorPaletteLightGreenBackground2) 0%,
+      transparent 55%
+    ),
+    linear-gradient(
+      180deg,
+      var(--colorNeutralBackground1) 0%,
+      var(--colorNeutralBackground2) 100%
+    );
+  border: 1px solid var(--colorNeutralStroke1);
+  box-shadow: var(--shadow16);
+}
+
+.tc-carousel-slider {
+  gap: var(--spacingHorizontalL);
+  padding: 0 var(--spacingHorizontalXXL);
+}
+
+.tc-tariff-forecast-box {
+  background-image:
+    radial-gradient(
+      640px 280px at 20% 0%,
+      var(--colorBrandBackground2) 0%,
+      transparent 65%
+    ),
+    linear-gradient(
+      180deg,
+      var(--colorNeutralBackground1) 0%,
+      var(--colorNeutralBackground2) 100%
+    );
+  border: 1px solid var(--colorNeutralStroke1);
+}
