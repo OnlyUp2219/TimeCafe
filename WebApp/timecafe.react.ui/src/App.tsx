@@ -1,63 +1,43 @@
 // App.tsx
-import {BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
-import {lazy} from 'react';
+import {BrowserRouter, Routes, Route} from 'react-router-dom';
+
 import './App.css';
 import "./api/interceptors.ts"
-
-const LoginPage = lazy(() => import('./pages/LoginPage').then(module => ({default: module.LoginPage})));
-const SignPage = lazy(() => import('./pages/SignPage').then(module => ({default: module.SignPage})));
-const Home = lazy(() => import('./pages/Home').then(module => ({default: module.Home})));
-const AuthLayout = lazy(() => import('./layouts/AuthLayout/AuthLayuot').then(module => ({default: module.AuthLayout})));
-const MainLayout = lazy(() => import('./layouts/MainLayout/MainLayuot').then(module => ({default: module.MainLayout})));
-const PersonalData = lazy(() => import('./pages/PersonalData').then(module => ({default: module.PersonalData})));
-const ResetPassword = lazy(() => import('./pages/resetPassword/ResetPassword').then(module => ({default: module.ResetPassword})));
-const ResetPasswordEmail = lazy(() => import('./pages/resetPassword/ResetPasswordEmail').then(module => ({default: module.ResetPasswordEmail})));
-const PrivateRoute = lazy(() => import('./components/PrivateRoute/PrivateRoute').then(module => ({default: module.PrivateRoute})));
-const ExternalCallback = lazy(() => import('./pages/ExternalCallback').then(module => ({default: module.ExternalCallback})));
-const RateLimiter = lazy(() => import('./pages/RateLimitTestPage.tsx').then(module => ({default: module.RateLimitTestPage})));
-const ConfirmEmailPage = lazy(() => import('./pages/ConfirmEmailPage').then(module => ({default: module.default})));
+import {LoginPage} from './pages/auth/LoginPage';
+import {RegisterPage} from './pages/auth/RegisterPage';
+import {ResetPasswordPage} from './pages/auth/ResetPasswordPage';
+import {ConfirmResetPage} from './pages/auth/ConfirmResetPage';
+import {LandingPage} from './pages/public/LandingPage';
+import {HomePage} from './pages/home/HomePage';
+import {PersonalDataPage} from "./pages/profile/PersonalDataPage";
+import {TariffSelectionPage} from "./pages/visits/TariffSelectionPage";
+import {ActiveVisitPage} from "./pages/visits/ActiveVisitPage";
+import {AuthLayout} from './layouts/AuthLayout/AuthLayuot';
+import {MainLayout} from './layouts/MainLayout/MainLayuot';
+import {BillingPage} from './pages/billing/BillingPage.tsx'
 
 export default function App() {
     return (
         <div className="app_root">
             <BrowserRouter>
                 <Routes>
+                    <Route path="/" element={<LandingPage/>}/>
+
                     <Route element={<AuthLayout/>}>
-                        <Route path="sign" element={<SignPage/>}/>
-                        <Route path="login" element={<LoginPage/>}/>
-                        <Route path={"resetPassword"} element={<ResetPassword/>}/>
-                        <Route path={"resetPasswordEmail"} element={<ResetPasswordEmail/>}/>
-                        <Route path="external-callback" element={<ExternalCallback/>}/>
-                        <Route path="confirm-email" element={<ConfirmEmailPage/>}/>
+                        <Route path="/login" element={<LoginPage/>}/>
+                        <Route path="/register" element={<RegisterPage/>}/>
+                        <Route path="/reset-password" element={<ResetPasswordPage/>}/>
+                        <Route path="/confirm-reset" element={<ConfirmResetPage/>}/>
                     </Route>
 
                     <Route element={<MainLayout/>}>
-                        <Route
-                            path="home"
-                            element={
-                                <PrivateRoute>
-                                    <Home/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="personal-data"
-                            element={
-                                <PrivateRoute>
-                                    <PersonalData/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route
-                            path="rate-limiter"
-                            element={
-                                <PrivateRoute>
-                                    <RateLimiter/>
-                                </PrivateRoute>
-                            }
-                        />
-                        <Route path="/" element={<Navigate to="/home" replace/>}/>
-                        <Route path="*" element={<Navigate to="/home" replace/>}/>
+                        <Route path="/home" element={<HomePage/>}/>
+                        <Route path="/personal-data" element={<PersonalDataPage/>}/>
+                        <Route path="/visit/start" element={<TariffSelectionPage/>}/>
+                        <Route path="/visit/active" element={<ActiveVisitPage/>}/>
+                        <Route path="/billing" element={<BillingPage/>}/>
+                        <Route path="/login-test" element={<LoginPage/>}/>
+
                     </Route>
 
                 </Routes>

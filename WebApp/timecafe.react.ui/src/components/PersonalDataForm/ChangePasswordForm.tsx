@@ -1,22 +1,21 @@
-import {useState} from "react";
+import {useCallback, useState} from "react";
 import type {FC} from "react";
 import {
     Button,
-    Field,
-    Input,
     Card,
     MessageBar,
     MessageBarBody,
     MessageBarTitle,
     Title2
 } from "@fluentui/react-components";
+import {LockClosedRegular} from "@fluentui/react-icons";
 import {changePassword} from "../../api/auth.ts";
 import {useDispatch} from "react-redux";
 import type {AppDispatch} from "../../store";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "../../store/authSlice.ts";
-import {validatePassword, validateConfirmPassword} from "../../utility/validate.ts";
 import {parseErrorMessage} from "../../utility/errors.ts";
+import {ConfirmPasswordInput, PasswordInput} from "../FormFields";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;
@@ -25,6 +24,9 @@ export interface ChangePasswordFormProps {
     onCancel?: () => void;
     showCancelButton?: boolean;
     className?: string;
+    wrapInCard?: boolean;
+    showTitle?: boolean;
+    mode?: "api" | "ui";
 }
 
 export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
@@ -34,6 +36,9 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                                                                     onCancel,
                                                                     showCancelButton = false,
                                                                     className,
+                                                                    wrapInCard = true,
+                                                                    showTitle = true,
+                                                                    mode = "api",
                                                                 }) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -41,47 +46,57 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
-    
-    const [currentPasswordError, setCurrentPasswordError] = useState("");
-    const [newPasswordError, setNewPasswordError] = useState("");
-    const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+    const [submitted, setSubmitted] = useState(false);
+    const [errors, setErrors] = useState({currentPassword: "", newPassword: "", confirmPassword: ""});
 
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
+    const validateCurrentPassword = useCallback((pwd: string) => (pwd.trim() ? "" : "Введите текущий пароль."), []);
+    const handleCurrentPasswordValidation = useCallback((err: string) => {
+        setErrors((prev) => ({...prev, currentPassword: err}));
+    }, []);
+    const handleNewPasswordValidation = useCallback((err: string) => {
+        setErrors((prev) => ({...prev, newPassword: err}));
+    }, []);
+    const handleConfirmPasswordValidation = useCallback((err: string) => {
+        setErrors((prev) => ({...prev, confirmPassword: err}));
+    }, []);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitted(true);
         setError(null);
         setSuccess(false);
-        setCurrentPasswordError("");
-        setNewPasswordError("");
-        setConfirmPasswordError("");
 
-        if (!currentPassword.trim()) {
-            setCurrentPasswordError("Введите текущий пароль.");
-            return;
-        }
-
-        const newPasswordValidation = validatePassword(newPassword);
-        if (newPasswordValidation) {
-            setNewPasswordError(newPasswordValidation);
-            return;
-        }
-
-        const confirmPasswordValidation = validateConfirmPassword(confirmPassword, newPassword);
-        if (confirmPasswordValidation) {
-            setConfirmPasswordError(confirmPasswordValidation);
+        if (
+            !currentPassword.trim() ||
+            !newPassword.trim() ||
+            !confirmPassword.trim() ||
+            errors.currentPassword ||
+            errors.newPassword ||
+            errors.confirmPassword
+        ) {
             return;
         }
 
         setLoading(true);
+
         try {
-            await changePassword({currentPassword, newPassword});
+            if (mode === "ui") {
+                await new Promise((r) => setTimeout(r, 450));
+            } else {
+                await changePassword({currentPassword, newPassword});
+            }
+
             setSuccess(true);
             onSuccess?.();
+
             if (autoClearTokensOnSuccess) {
                 dispatch(clearTokens());
             }
+
             if (redirectToLoginOnSuccess) {
                 setTimeout(() => {
                     navigate("/login");
@@ -94,9 +109,16 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         }
     };
 
-    return (
-        <Card className={className}>
-            <Title2>Смена пароля</Title2>
+    const body = (
+        <>
+            {showTitle && (
+                <Title2 block className="!flex gap-2">
+                    <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
+                        <LockClosedRegular />
+                    </div>
+                    Смена пароля
+                </Title2>
+            )}
             {error && (
                 <MessageBar intent="error">
                     <MessageBarBody>
@@ -113,58 +135,41 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     </MessageBarBody>
                 </MessageBar>
             )}
-            <form onSubmit={handleSubmit} className="flex flex-col gap-[16px] mt-[8px]">
-                <Field 
-                    label="Текущий пароль" 
-                    required
-                    validationMessage={currentPasswordError || undefined}
-                    validationState={currentPasswordError ? "error" : "none"}
-                >
-                    <Input
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => {
-                            setCurrentPassword(e.target.value);
-                            setCurrentPasswordError("");
-                        }}
-                        placeholder="Введите текущий пароль"
-                        disabled={loading || success}
-                    />
-                </Field>
-                <Field 
-                    label="Новый пароль" 
-                    required
-                    validationMessage={newPasswordError || undefined}
-                    validationState={newPasswordError ? "error" : "none"}
-                >
-                    <Input
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => {
-                            setNewPassword(e.target.value);
-                            setNewPasswordError("");
-                        }}
-                        placeholder="Введите новый пароль"
-                        disabled={loading || success}
-                    />
-                </Field>
-                <Field 
-                    label="Подтвердите новый пароль" 
-                    required
-                    validationMessage={confirmPasswordError || undefined}
-                    validationState={confirmPasswordError ? "error" : "none"}
-                >
-                    <Input
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                            setConfirmPasswordError("");
-                        }}
-                        placeholder="Введите новый пароль ещё раз"
-                        disabled={loading || success}
-                    />
-                </Field>
+
+            <form onSubmit={handleSubmit} className={showTitle ? "flex flex-col gap-[12px] mt-[8px]" : "flex flex-col gap-[12px]"}>
+                <PasswordInput
+                    value={currentPassword}
+                    onChange={setCurrentPassword}
+                    disabled={loading || success}
+                    label="Текущий пароль"
+                    placeholder="Введите текущий пароль"
+                    shouldValidate={submitted}
+                    validate={validateCurrentPassword}
+                    onValidationChange={handleCurrentPasswordValidation}
+                />
+
+                <PasswordInput
+                    value={newPassword}
+                    onChange={setNewPassword}
+                    disabled={loading || success}
+                    label="Новый пароль"
+                    placeholder="Введите новый пароль"
+                    shouldValidate={submitted}
+                    showRequirements
+                    onValidationChange={handleNewPasswordValidation}
+                />
+
+                <ConfirmPasswordInput
+                    value={confirmPassword}
+                    onChange={setConfirmPassword}
+                    passwordValue={newPassword}
+                    disabled={loading || success}
+                    label="Подтвердите новый пароль"
+                    placeholder="Введите новый пароль ещё раз"
+                    shouldValidate={submitted}
+                    onValidationChange={handleConfirmPasswordValidation}
+                />
+
                 <div className="flex gap-[12px]">
                     <Button appearance="primary" type="submit" disabled={loading || success}>
                         {loading ? "Сохранение..." : "Сменить пароль"}
@@ -176,6 +181,16 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     )}
                 </div>
             </form>
+        </>
+    );
+
+    if (!wrapInCard) {
+        return <div className={className}>{body}</div>;
+    }
+
+    return (
+        <Card className={className}>
+            {body}
         </Card>
     );
 };

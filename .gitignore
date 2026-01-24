@@ -388,3 +388,5 @@ secrets.local.*
 !README.md
 # Allow markdown in specific documentation folders if needed
 # !docs/**/*.md
+
+FluentUI/

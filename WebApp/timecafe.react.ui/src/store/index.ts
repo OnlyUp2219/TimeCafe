@@ -4,11 +4,15 @@ import uiSlice from "./uiSlice.ts";
 import storage from "redux-persist/lib/storage";
 import authSlice from "./authSlice.ts";
 import clientSlice from "./clientSlice";
+import visitSlice from "./visitSlice";
+import billingSlice from "./billingSlice";
 
 const rootReducer = combineReducers({
     ui: uiSlice,
     auth: authSlice,
     client: clientSlice,
+    visit: visitSlice,
+    billing: billingSlice,
 });
 
 const persistConfigure = {key: 'root', storage};
