@@ -58,5 +58,4 @@ const visitSlice = createSlice({
 
 export const {setSelectedTariffId, clearSelectedTariffId, startVisit, finishVisit, resetVisit} = visitSlice.actions;
 
-export default (state: VisitState | undefined, action: unknown) =>
-    visitSlice.reducer((state ?? initialVisitState) as VisitState, action);
+export default visitSlice.reducer;

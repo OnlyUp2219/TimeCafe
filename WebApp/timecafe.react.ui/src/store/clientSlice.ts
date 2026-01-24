@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
-import type { ClientInfo } from '../types/client';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import type {PayloadAction} from '@reduxjs/toolkit';
+import type {ClientInfo} from '../types/client';
+import type {RootState} from './index';
 // import axios from 'axios';
 
 export interface ClientState {
@@ -19,12 +20,12 @@ const initialState: ClientState = {
 export const updateClientProfile = createAsyncThunk<
   ClientInfo,
   Partial<ClientInfo>,
-  { rejectValue: string }
+  { state: RootState; rejectValue: string }
 >(
   'client/updateProfile',
   async (patch, { getState, rejectWithValue }) => {
     try {
-      const state: any = getState();
+      const state = getState();
       const existing: ClientInfo | null = state.client?.data;
       if (!existing) {
         return rejectWithValue('Нет загруженных данных клиента');
@@ -45,8 +46,9 @@ export const updateClientProfile = createAsyncThunk<
       // return res.data as ClientInfo;
 
       return merged;
-    } catch (e: any) {
-      return rejectWithValue(e?.message || 'Ошибка сохранения профиля');
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Ошибка сохранения профиля';
+      return rejectWithValue(message);
     }
   }
 );
