@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	<TargetFramework>net9.0</TargetFramework>
@@ -13,10 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="Bogus" Version="35.6.4" />
-	<PackageReference Include="MediatR" Version="13.0.0" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-	<PackageReference Include="StackExchange.Redis" Version="2.9.32" />
+	<PackageReference Include="Bogus" />
+	<PackageReference Include="MediatR" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" />
+	<PackageReference Include="StackExchange.Redis" />
   </ItemGroup>
 
   <ItemGroup>
