@@ -1,19 +1,17 @@
-using Yarp.ReverseProxy.Transforms;
-
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-    .AddTransforms(transformContext =>
-    {
-        transformContext.AddRequestHeader("X-Custom-Header", "YarpProxy");
+builder.Services.AddSerilogConfiguration(builder.Configuration);
+builder.Host.UseSerilog();
 
-        transformContext.AddPathPrefix("/api/v1/");
-    });
+builder.Services.AddYarpProxy(builder.Configuration);
+builder.Services.AddScalarConfiguration();
+
 
 var app = builder.Build();
 
 app.MapReverseProxy();
+
+app.UseScalarConfiguration();
 
 app.MapGet("/", () => "Hello World!");
 
