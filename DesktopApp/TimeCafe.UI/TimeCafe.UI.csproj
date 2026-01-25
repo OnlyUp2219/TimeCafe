@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
@@ -115,36 +115,36 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="AutoMapper" Version="15.1.0" />
-	<PackageReference Include="Bogus" Version="35.6.4" />
-	<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" Version="0.1.250618-build.2154" />
-	<PackageReference Include="CommunityToolkit.Labs.WinUI.OpacityMaskView" Version="0.1.250618-build.2154" />
-	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-	<PackageReference Include="CommunityToolkit.WinUI" Version="7.1.2" />
-	<PackageReference Include="CommunityToolkit.WinUI.Animations" Version="8.2.250402" />
-	<PackageReference Include="CommunityToolkit.WinUI.Behaviors" Version="8.2.250402" />
-	<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" Version="8.2.250402" />
-	<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.250402" />
-	<PackageReference Include="CommunityToolkit.WinUI.Helpers" Version="8.2.250402" />
-	<PackageReference Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
-	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
-	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.10" />
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+	<PackageReference Include="AutoMapper" />
+	<PackageReference Include="Bogus" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.Controls.DataTable" />
+	<PackageReference Include="CommunityToolkit.Labs.WinUI.OpacityMaskView" />
+	<PackageReference Include="CommunityToolkit.Mvvm" />
+	<PackageReference Include="CommunityToolkit.WinUI" />
+	<PackageReference Include="CommunityToolkit.WinUI.Animations" />
+	<PackageReference Include="CommunityToolkit.WinUI.Behaviors" />
+	<PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+	<PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+	<PackageReference Include="CommunityToolkit.WinUI.Helpers" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Animations" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls" />
+	<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
-	<PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
-	<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
-	<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
-	<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-	<PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-	<PackageReference Include="WinUIEx" Version="2.9.0" />
+	<PackageReference Include="Microsoft.Extensions.Hosting" />
+	<PackageReference Include="Microsoft.Web.WebView2" />
+	<PackageReference Include="Microsoft.WindowsAppSDK" />
+	<PackageReference Include="Microsoft.Xaml.Behaviors.WinUI.Managed" />
+	<PackageReference Include="Serilog.Sinks.Console" />
+	<PackageReference Include="Serilog.Sinks.File" />
+	<PackageReference Include="WinUIEx" />
   </ItemGroup>
 
   <ItemGroup>
