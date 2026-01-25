@@ -78,6 +78,16 @@ app.MapGet("/test-publish", async (IPublishEndpoint pub) =>
     return Results.Ok("Событие отправлено!");
 });
 
+app.MapGet("/test-yarp", async (IPublishEndpoint pub) =>
+{
+    var user = new ApplicationUser()
+    {
+        Id = Guid.NewGuid(),
+        Email = $"klimenkokov{Guid.NewGuid()}@gmail.com"
+    };
+    return Results.Ok(user);
+});
+
 await app.RunAsync();
 
 public partial class Program { }
