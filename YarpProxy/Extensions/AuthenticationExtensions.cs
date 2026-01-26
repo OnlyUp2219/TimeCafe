@@ -1,0 +1,58 @@
+namespace YarpProxy.Extensions;
+
+public static class AuthenticationExtensions
+{
+    public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+
+
+        var jwtSection = configuration.GetSection("Jwt");
+        if (!jwtSection.Exists())
+            throw new InvalidOperationException("Jwt configuration section is missing.");
+
+        var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+        var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
+        var keyBytes = Encoding.UTF8.GetBytes(signingKey);
+
+        services
+             .AddAuthentication(options =>
+             {
+                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+             })
+             .AddJwtBearer(options =>
+             {
+                 options.RequireHttpsMetadata = true;
+                 options.SaveToken = true;
+                 options.TokenValidationParameters = new TokenValidationParameters
+                 {
+                     ValidateIssuer = true,
+                     ValidateAudience = true,
+                     ValidateIssuerSigningKey = true,
+                     ValidIssuer = issuer,
+                     ValidAudience = audience,
+                     IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                     ClockSkew = TimeSpan.FromMinutes(1)
+                 };
+#if (DEBUG)
+                 {
+                     options.Events = new JwtBearerEvents
+                     {
+                         OnMessageReceived = context =>
+                         {
+                             context.Token = context.Request.Cookies["Access-Token"];
+                             return Task.CompletedTask;
+                         }
+                     };
+                 }
+#endif
+
+             });
+
+        services.AddAuthorizationBuilder()
+            .AddPolicy("DefaultUser", policy => policy.RequireAuthenticatedUser())
+            .AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
+
+        return services;
+    }
+}
