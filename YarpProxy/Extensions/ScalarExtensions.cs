@@ -28,6 +28,12 @@ public static class ScalarExtensions
                    .WithTheme(ScalarTheme.DeepSpace)
                    .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
                    .WithOpenApiRoutePattern("/openapi/{documentName}.json");
+
+                 options.AddDocument(
+                documentName: "auth",
+                title: "TimeCafe Auth API",
+                routePattern: "/openapi/auth.json",
+                isDefault: true);
         });
 
         return app;
