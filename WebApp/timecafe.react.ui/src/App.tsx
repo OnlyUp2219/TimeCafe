@@ -76,7 +76,7 @@ const AppRoutes = () => {
                     <Route path="/confirm-email" element={<ConfirmEmailPage/>}/>
                 </Route>
 
-                <Route element={<PrivateRoute><MainLayout/></PrivateRoute>}>
+                <Route element={<MainLayout/>}>
                     <Route path="/home" element={<HomePage/>}/>
                     <Route path="/personal-data" element={<PersonalDataPage/>}/>
                     <Route path="/visit/start" element={<TariffSelectionPage/>}/>

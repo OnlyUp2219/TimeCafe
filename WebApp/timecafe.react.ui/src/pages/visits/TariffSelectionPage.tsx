@@ -86,13 +86,13 @@ type TariffCarouselSectionProps = {
 };
 
 const TariffCarouselSection = ({
-    visibleTariffs,
-    totalCount,
-    activeIndex,
-    onActiveIndexChange,
-    selectedTariffId,
-    onSelectTariff,
-}: TariffCarouselSectionProps) => {
+                                   visibleTariffs,
+                                   totalCount,
+                                   activeIndex,
+                                   onActiveIndexChange,
+                                   selectedTariffId,
+                                   onSelectTariff,
+                               }: TariffCarouselSectionProps) => {
     return (
         <Card className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -248,7 +248,7 @@ const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => 
                                             : `${calc.chargedHours} ч (за ${calc.chargedMinutes} мин)`}
                                     </Title3>
                                 </div>
-                                <div className="text-right">
+                                <div>
                                     <Caption1>Ставка</Caption1>
                                     <Title3 block>
                                         {selectedTariff.billingType === "PerMinute"
