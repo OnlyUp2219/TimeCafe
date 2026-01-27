@@ -9,6 +9,7 @@ import {authApi} from "../../shared/api/auth/authApi";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
+import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -21,7 +22,7 @@ export const LoginPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
+    const apiBase = getApiBaseUrl();
     const returnUrl = `${window.location.origin}/external-callback`;
 
     const handleSubmit = async (e: React.FormEvent) => {

@@ -10,13 +10,14 @@ import {useDispatch} from "react-redux";
 import {setEmail, setEmailConfirmed} from "../../store/authSlice";
 import {normalizeUnknownError} from "../../shared/api/errors/normalize";
 import {isApiError} from "../../shared/api/errors/types";
+import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
+    const apiBase = getApiBaseUrl();
     const returnUrl = `${window.location.origin}/external-callback`;
 
     const [email, setEmailValue] = useState("");
