@@ -6,6 +6,19 @@ public class ResetPassword : ICarterModule
     {
         var group = app.MapGroup("").WithTags("ResetPassword");
 
+        group.MapPost("/resetPassword", async (
+            [FromBody] ResetPasswordRequest request,
+            [FromServices] ISender sender) =>
+        {
+            var command = new ResetPasswordCommand(request.Email, request.ResetCode, request.NewPassword);
+            var result = await sender.Send(command);
+
+            return result.ToHttpResultV2(onSuccess: _ => Results.Ok(new { message = result.Message }));
+        })
+        .WithName("ResetPassword")
+        .WithSummary("Сброс пароля по коду из письма")
+        .WithDescription("Принимает email, resetCode (Base64Url) и новый пароль. Сбрасывает пароль через Identity reset token.");
+
         group.MapPost("/forgot-password-link-mock", async (
             [FromBody] ResetPasswordEmailRequest request,
             [FromServices] ISender sender) =>

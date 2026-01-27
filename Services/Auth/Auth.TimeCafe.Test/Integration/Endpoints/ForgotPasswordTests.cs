@@ -26,7 +26,7 @@ public class ForgotPasswordTests : BaseEndpointTest
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var doc = JsonDocument.Parse(json).RootElement;
             doc.TryGetProperty("callbackUrl", out _).Should().BeTrue();
-            doc.GetProperty("callbackUrl").GetString()!.Should().Contain("/resetPassword?email=exists@example.com&code=");
+            doc.GetProperty("callbackUrl").GetString()!.Should().Contain("/confirm-reset?email=exists@example.com&code=");
         }
         catch (Exception)
         {
