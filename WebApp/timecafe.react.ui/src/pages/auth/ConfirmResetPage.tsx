@@ -1,9 +1,10 @@
-import {Button, Input, Field, Link, Body2, Caption1, Title3} from '@fluentui/react-components';
+import {Button, Link, Body2, Caption1, Title3} from '@fluentui/react-components';
 import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
+import {authApi} from "../../shared/api/auth/authApi";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();
@@ -12,24 +13,21 @@ export const ConfirmResetPage = () => {
 
     const searchParams = new URLSearchParams(location.search);
     const email = searchParams.get("email") || "";
-    const token = searchParams.get("token") || "";
-    const [code, setCode] = useState("");
+    const resetCode = searchParams.get("code") || "";
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [errors, setErrors] = useState({code: "", newPassword: "", confirmPassword: ""});
+    const [errors, setErrors] = useState({newPassword: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
-        if (!email || !token) {
+        if (!email || !resetCode) {
             navigate("/login", {replace: true});
         }
-    }, [email, token, navigate, location]);
+    }, [email, resetCode, navigate, location]);
 
     const validate = () => {
-        const codeError = !code ? "Код обязателен" : "";
-        setErrors(prev => ({...prev, code: codeError}));
-        return !codeError && !errors.newPassword && !errors.confirmPassword;
+        return !errors.newPassword && !errors.confirmPassword;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +37,7 @@ export const ConfirmResetPage = () => {
 
         setIsSubmitting(true);
         try {
-            // TODO: STUB - подтверждение кода и изменение пароля (подключить бек)
-            // await confirmReset({email, code, newPassword});
+            await authApi.resetPassword({email, resetCode, newPassword});
             showToast("Пароль успешно изменен", "success");
             navigate("/login");
         } catch (err: unknown) {
@@ -67,7 +64,7 @@ export const ConfirmResetPage = () => {
         setErrors(prev => ({...prev, confirmPassword: error}));
     }, []);
 
-    if (!email || !token) {
+    if (!email || !resetCode) {
         return null;
     }
 
@@ -93,22 +90,6 @@ export const ConfirmResetPage = () => {
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <Field
-                            label="Код из письма"
-                            required
-                            validationState={errors.code ? "error" : undefined}
-                            validationMessage={errors.code}
-                        >
-                            <Input
-                                type="text"
-                                value={code}
-                                onChange={(_, data) => setCode(data.value)}
-                                placeholder="Введите код"
-                                disabled={isSubmitting}
-                                className="w-full"
-                            />
-                        </Field>
-
                         <PasswordInput
                             value={newPassword}
                             onChange={setNewPassword}

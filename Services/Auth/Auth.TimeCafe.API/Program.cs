@@ -67,6 +67,9 @@ app.MapCarter();
 
 app.MapControllers();
 
+app.MapGet("/health", () => Results.Ok("OK"))
+    .AllowAnonymous();
+
 app.MapGet("/test-publish", async (IPublishEndpoint pub) =>
 {
     await pub.Publish(new UserRegisteredEvent

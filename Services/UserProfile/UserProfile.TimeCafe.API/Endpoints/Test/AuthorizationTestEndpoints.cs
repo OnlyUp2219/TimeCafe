@@ -132,7 +132,7 @@ public class AuthorizationTestEndpoints : ICarterModule
         .WithName("TestPublicAuthenticated")
         .WithSummary("Требует только JWT токен без проверки разрешений");
 
-        group.MapGet("/whoami", async (HttpContext ctx, IPermissionService permissionService) =>
+        group.MapGet("/whoami", async (HttpContext ctx, [FromServices] IPermissionService permissionService) =>
         {
             var userId = ctx.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var roles = ctx.User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToArray();
