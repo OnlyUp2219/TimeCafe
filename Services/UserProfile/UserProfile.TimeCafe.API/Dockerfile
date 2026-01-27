@@ -9,6 +9,9 @@ ENV ASPNETCORE_URLS=http://+:8002
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
+# Central package versions (required for restore)
+COPY ["Directory.Packages.props", "./"]
+
 # Copy BuildingBlocks
 COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
 
