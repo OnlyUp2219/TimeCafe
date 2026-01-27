@@ -18,5 +18,6 @@ app.MapReverseProxy();
 app.UseScalarConfiguration();
 
 app.MapGet("/", () => "Hello World!");
+app.MapGet("/health", () => Results.Ok("OK"));
 
 app.Run();
