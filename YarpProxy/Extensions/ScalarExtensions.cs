@@ -17,10 +17,6 @@ public static class ScalarExtensions
 
     public static WebApplication UseScalarConfiguration(this WebApplication app)
     {
-        if (!app.Environment.IsDevelopment())
-        {
-            return app;
-        }
 
         app.MapScalarApiReference(options =>
         {

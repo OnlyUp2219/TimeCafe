@@ -1,4 +1,4 @@
-import {Button, Link, Body2, Caption1, Title3} from '@fluentui/react-components';
+import {Button, Body2, Title3} from '@fluentui/react-components';
 import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
@@ -41,16 +41,22 @@ export const ConfirmResetPage = () => {
             showToast("Пароль успешно изменен", "success");
             navigate("/login");
         } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'errors' in err && Array.isArray((err as {
-                errors: Array<{ description: string }>
-            }).errors)) {
-                const message = (err as {
-                    errors: Array<{ description: string }>
-                }).errors.map(e => e.description).join(" ");
-                showToast(message, "error");
-            } else {
-                showToast("Ошибка. Попробуйте позже", "error");
+            if (err && typeof err === "object" && "message" in err && typeof (err as { message?: unknown }).message === "string") {
+                showToast((err as { message: string }).message, "error");
+                return;
             }
+
+            if (err && typeof err === "object" && "errors" in err && Array.isArray((err as { errors?: unknown }).errors)) {
+                const items = (err as { errors: Array<{ message?: string; description?: string }> }).errors;
+                const message = items
+                    .map(e => e.message || e.description)
+                    .filter(Boolean)
+                    .join(" ");
+                showToast(message || "Ошибка. Попробуйте позже", "error");
+                return;
+            }
+
+            showToast("Ошибка. Попробуйте позже", "error");
         } finally {
             setIsSubmitting(false);
         }
@@ -117,17 +123,17 @@ export const ConfirmResetPage = () => {
                         >
                             {isSubmitting ? "Восстановление..." : "Восстановить пароль"}
                         </Button>
-                    </form>
 
-                    <div>
-                        <Caption1>
-                            <Link
-                                onClick={() => navigate("/login")}
-                            >
-                                Вернуться к входу
-                            </Link>
-                        </Caption1>
-                    </div>
+                        <Button
+                            appearance="secondary"
+                            type="button"
+                            disabled={isSubmitting}
+                            className="w-full mt-2"
+                            onClick={() => navigate("/login")}
+                        >
+                            Вернуться к входу
+                        </Button>
+                    </form>
                 </div>
             </div>
         </div>

@@ -1,5 +1,5 @@
 import { Input, Field } from '@fluentui/react-components';
-import { useState, useEffect } from 'react';
+import {useEffect, useMemo, useRef} from 'react';
 import { validateEmail as defaultValidateEmail } from '../../utility/validate';
 import type { ReactNode } from 'react';
 
@@ -26,15 +26,18 @@ export const EmailInput = ({
     trailingElement,
     externalError,
 }: EmailInputProps) => {
-    const [error, setError] = useState("");
+    const errorMsg = useMemo(() => validate(value), [validate, value]);
+
+    const onValidationChangeRef = useRef(onValidationChange);
+    useEffect(() => {
+        onValidationChangeRef.current = onValidationChange;
+    }, [onValidationChange]);
 
     useEffect(() => {
-        const errorMsg = validate(value);
-        setError(errorMsg);
-        onValidationChange?.(errorMsg);
-    }, [value, validate, onValidationChange]);
+        onValidationChangeRef.current?.(errorMsg);
+    }, [errorMsg]);
 
-    const displayError = externalError || error;
+    const displayError = externalError || errorMsg;
 
     return (
         <Field

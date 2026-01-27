@@ -1,5 +1,6 @@
 import axios, {AxiosHeaders, type AxiosHeaderValue, type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig} from "axios";
 import {normalizeAxiosError} from "./errors/normalize";
+import {getApiBaseUrl} from "./apiBaseUrl";
 
 type GetAccessToken = () => string | null;
 type SetAccessToken = (token: string | null) => void;
@@ -17,7 +18,7 @@ export interface HttpClientConfig {
     handlers?: HttpClientAuthHandlers;
 }
 
-const defaultBaseURL = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
+const defaultBaseURL = getApiBaseUrl();
 
 export const rawHttpClient: AxiosInstance = axios.create({
     baseURL: defaultBaseURL,

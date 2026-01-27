@@ -21,7 +21,6 @@ import {store} from "./store";
 import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "./store/authSlice";
 import {getJwtInfo} from "./shared/auth/jwt";
 import {authApi} from "./shared/api/auth/authApi";
-import {PrivateRoute} from "./components/PrivateRoute/PrivateRoute";
 import {ExternalCallback} from "./pages/auth/ExternalCallback";
 import {EmailPendingPage} from "./pages/auth/EmailPendingPage";
 import {ConfirmEmailPage} from "./pages/auth/ConfirmEmailPage";

@@ -1,5 +1,5 @@
 import {Field, Input} from "@fluentui/react-components";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef} from "react";
 
 interface DateInputProps {
     value?: Date;
@@ -32,20 +32,24 @@ export const DateInput = ({
                               required = false,
                           }: DateInputProps) => {
     const inputValue = useMemo(() => (value ? formatDateForInput(value) : ""), [value]);
-    const [error, setError] = useState("");
 
-    useEffect(() => {
-        const errorMsg = validate ? validate(value) : "";
-        setError(errorMsg);
-        onValidationChange?.(errorMsg);
-    }, [value, validate, onValidationChange]);
+        const errorMsg = useMemo(() => (validate ? validate(value) : ""), [validate, value]);
+
+        const onValidationChangeRef = useRef(onValidationChange);
+        useEffect(() => {
+            onValidationChangeRef.current = onValidationChange;
+        }, [onValidationChange]);
+
+        useEffect(() => {
+            onValidationChangeRef.current?.(errorMsg);
+        }, [errorMsg]);
 
     return (
         <Field
             label={label}
             required={required}
-            validationState={shouldValidate && error ? "error" : undefined}
-            validationMessage={shouldValidate ? error : undefined}
+            validationState={shouldValidate && errorMsg ? "error" : undefined}
+            validationMessage={shouldValidate ? errorMsg : undefined}
         >
             <Input
                 type="date"
