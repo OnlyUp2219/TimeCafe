@@ -15,7 +15,7 @@ axios.interceptors.response.use(
         });
         if (!originalRequest) return Promise.reject(error);
 
-        if (originalRequest.url?.includes("/refresh-jwt-v2") || originalRequest._manualRefresh) {
+        if (originalRequest.url?.includes("/auth/refresh-jwt-v2") || originalRequest._manualRefresh) {
             return Promise.reject(error);
         }
 

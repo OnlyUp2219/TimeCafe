@@ -42,14 +42,14 @@ export interface VerifyPhoneResponse {
     requiresCaptcha?: boolean;
 }
 
-const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
+const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
 const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
 const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
 export async function registerUser(data: RegisterRequest, dispatch: AppDispatch): Promise<{ callbackUrl?: string }> {
     try {
         const endpoint = USE_MOCK_EMAIL ? "/registerWithUsername-mock" : "/registerWithUsername";
-        const res = await axios.post(`${apiBase}${endpoint}`, data, {
+        const res = await axios.post(`${apiBase}/auth${endpoint}`, data, {
             headers: {"Content-Type": "application/json"},
         });
         dispatch(setEmail(data.email));
@@ -68,7 +68,7 @@ export async function registerUser(data: RegisterRequest, dispatch: AppDispatch)
 
 export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Promise<{ emailNotConfirmed?: boolean }> {
     try {
-        const res = await axios.post(`${apiBase}/login-jwt-v2`, data, {
+        const res = await axios.post(`${apiBase}/auth/login-jwt-v2`, data, {
             headers: {"Content-Type": "application/json"},
             withCredentials: true
         });
@@ -100,7 +100,7 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
 export async function refreshAccessToken(dispatch: AppDispatch): Promise<void> {
     try {
         console.log("[refreshAccessToken] document.cookie перед запросом:", document.cookie);
-        const res = await axios.post(`${apiBase}/refresh-jwt-v2`, {}, {
+        const res = await axios.post(`${apiBase}/auth/refresh-jwt-v2`, {}, {
             headers: {"Content-Type": "application/json"},
             withCredentials: true
         });
@@ -126,7 +126,7 @@ export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<R
     const endpoint = USE_MOCK_EMAIL ? "/forgot-password-link-mock" : "/forgot-password-link";
 
     return withRateLimit(() =>
-        axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}${endpoint}`, data, {
+        axios.post<{ message?: string; callbackUrl?: string }>(`${apiBase}/auth${endpoint}`, data, {
             headers: {"Content-Type": "application/json"},
         })
     );
@@ -134,7 +134,7 @@ export async function forgotPassword(data: ResetPasswordEmailRequest): Promise<R
 
 export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
     try {
-        await axios.post(`${apiBase}/resetPassword`, data, {
+        await axios.post(`${apiBase}/auth/resetPassword`, data, {
             headers: {"Content-Type": "application/json"},
         });
     } catch (error) {
@@ -153,7 +153,7 @@ export async function changePassword(data: ChangePasswordRequest): Promise<void>
     const state = store.getState();
     const accessToken = state.auth?.accessToken;
     try {
-        await axios.post(`${apiBase}/account/change-password`, data, {
+        await axios.post(`${apiBase}/auth/account/change-password`, data, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
@@ -173,7 +173,7 @@ export async function changePassword(data: ChangePasswordRequest): Promise<void>
 
 export async function logoutServer(dispatch: AppDispatch): Promise<void> {
     try {
-        await axios.post(`${apiBase}/logout`, null, { withCredentials: true });
+        await axios.post(`${apiBase}/auth/logout`, null, { withCredentials: true });
     } catch {
         void 0;
     } finally {
@@ -187,7 +187,7 @@ export async function SendPhoneConfirmation(data: PhoneCodeRequest): Promise<Rat
     const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
 
     return withRateLimit(() =>
-        axios.post<void>(`${apiBase}${endpoint}`, data, {
+        axios.post<void>(`${apiBase}/auth${endpoint}`, data, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
@@ -201,7 +201,7 @@ export async function VerifyPhoneConfirmation(data: PhoneCodeRequest): Promise<V
     const accessToken = state.auth?.accessToken;
     const endpoint = USE_MOCK_SMS ? "/twilio/verifySMS-mock" : "/twilio/verifySMS";
     try {
-        const response = await axios.post(`${apiBase}${endpoint}`, data, {
+        const response = await axios.post(`${apiBase}/auth${endpoint}`, data, {
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${accessToken}`
@@ -223,12 +223,12 @@ export async function resendConfirmation(email: string): Promise<RateLimitedResp
     callbackUrl?: string
 }>> {
     const endpoint = USE_MOCK_EMAIL ? "/email/resend-mock" : "/email/resend";
-    return withRateLimit(() => axios.post(`${apiBase}${endpoint}`, {email}, {headers: {"Content-Type": "application/json"}}));
+    return withRateLimit(() => axios.post(`${apiBase}/auth${endpoint}`, {email}, {headers: {"Content-Type": "application/json"}}));
 }
 
 export async function confirmEmail(userId: string, token: string): Promise<{ message?: string; error?: string }> {
     try {
-        const res = await axios.post(`${apiBase}/email/confirm`, {
+        const res = await axios.post(`${apiBase}/auth/email/confirm`, {
             userId,
             token
         }, {headers: {"Content-Type": "application/json"}});

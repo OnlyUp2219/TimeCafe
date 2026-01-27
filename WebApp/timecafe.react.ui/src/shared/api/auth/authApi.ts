@@ -52,9 +52,11 @@ export interface LoginJwtV2Response {
 const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
 const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
+const AUTH_PREFIX = "/auth";
+
 const loginJwtV2 = async (data: LoginRequest): Promise<LoginJwtV2Response> => {
     try {
-        const res = await httpClient.post<LoginJwtV2Response>("/login-jwt-v2", data);
+        const res = await httpClient.post<LoginJwtV2Response>(`${AUTH_PREFIX}/login-jwt-v2`, data);
         return res.data;
     } catch (e) {
         throw normalizeUnknownError(e);
@@ -64,7 +66,7 @@ const loginJwtV2 = async (data: LoginRequest): Promise<LoginJwtV2Response> => {
 const registerWithUsername = async (data: RegisterRequest): Promise<{ callbackUrl?: string }> => {
     try {
         const endpoint = USE_MOCK_EMAIL ? "/registerWithUsername-mock" : "/registerWithUsername";
-        const res = await httpClient.post<{ callbackUrl?: string }>(endpoint, data);
+        const res = await httpClient.post<{ callbackUrl?: string }>(`${AUTH_PREFIX}${endpoint}`, data);
         return res.data;
     } catch (e) {
         throw normalizeUnknownError(e);
@@ -73,7 +75,7 @@ const registerWithUsername = async (data: RegisterRequest): Promise<{ callbackUr
 
 const tryRefreshAccessToken = async (): Promise<string | null> => {
     try {
-        const res = await rawHttpClient.post<{ accessToken: string }>("/refresh-jwt-v2", {}, {
+        const res = await rawHttpClient.post<{ accessToken: string }>(`${AUTH_PREFIX}/refresh-jwt-v2`, {}, {
             _manualRefresh: true,
         });
         const token = res.data?.accessToken;
@@ -85,7 +87,7 @@ const tryRefreshAccessToken = async (): Promise<string | null> => {
 
 const logout = async (): Promise<void> => {
     try {
-        await rawHttpClient.post("/logout", null, {
+        await rawHttpClient.post(`${AUTH_PREFIX}/logout`, null, {
             _manualRefresh: true,
         });
     } catch {
@@ -95,12 +97,12 @@ const logout = async (): Promise<void> => {
 
 const forgotPasswordLink = async (data: ResetPasswordEmailRequest): Promise<RateLimitedResponse<{ message?: string; callbackUrl?: string }>> => {
     const endpoint = USE_MOCK_EMAIL ? "/forgot-password-link-mock" : "/forgot-password-link";
-    return withRateLimit(() => httpClient.post<{ message?: string; callbackUrl?: string }>(endpoint, data));
+    return withRateLimit(() => httpClient.post<{ message?: string; callbackUrl?: string }>(`${AUTH_PREFIX}${endpoint}`, data));
 };
 
 const resetPassword = async (data: ResetPasswordRequest): Promise<void> => {
     try {
-        await httpClient.post("/resetPassword", data);
+        await httpClient.post(`${AUTH_PREFIX}/resetPassword`, data);
     } catch (e) {
         throw normalizeUnknownError(e);
     }
@@ -108,7 +110,7 @@ const resetPassword = async (data: ResetPasswordRequest): Promise<void> => {
 
 const changePassword = async (data: ChangePasswordRequest): Promise<void> => {
     try {
-        await httpClient.post("/account/change-password", data);
+        await httpClient.post(`${AUTH_PREFIX}/account/change-password`, data);
     } catch (e) {
         throw normalizeUnknownError(e);
     }
@@ -116,13 +118,13 @@ const changePassword = async (data: ChangePasswordRequest): Promise<void> => {
 
 const sendPhoneConfirmation = async (data: PhoneCodeRequest): Promise<RateLimitedResponse<void>> => {
     const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
-    return withRateLimit(() => httpClient.post<void>(endpoint, data));
+    return withRateLimit(() => httpClient.post<void>(`${AUTH_PREFIX}${endpoint}`, data));
 };
 
 const verifyPhoneConfirmation = async (data: PhoneCodeRequest): Promise<VerifyPhoneResponse> => {
     const endpoint = USE_MOCK_SMS ? "/twilio/verifySMS-mock" : "/twilio/verifySMS";
     try {
-        const res = await httpClient.post<VerifyPhoneResponse>(endpoint, data);
+        const res = await httpClient.post<VerifyPhoneResponse>(`${AUTH_PREFIX}${endpoint}`, data);
         return res.data;
     } catch (e) {
         throw normalizeUnknownError(e);
@@ -131,12 +133,12 @@ const verifyPhoneConfirmation = async (data: PhoneCodeRequest): Promise<VerifyPh
 
 const resendConfirmation = async (email: string): Promise<RateLimitedResponse<{ message?: string; callbackUrl?: string }>> => {
     const endpoint = USE_MOCK_EMAIL ? "/email/resend-mock" : "/email/resend";
-    return withRateLimit(() => httpClient.post(endpoint, {email}));
+    return withRateLimit(() => httpClient.post(`${AUTH_PREFIX}${endpoint}`, {email}));
 };
 
 const confirmEmail = async (userId: string, token: string): Promise<{ message?: string; error?: string }> => {
     try {
-        const res = await httpClient.post<{ message?: string; error?: string }>("/email/confirm", {userId, token});
+        const res = await httpClient.post<{ message?: string; error?: string }>(`${AUTH_PREFIX}/email/confirm`, {userId, token});
         return res.data;
     } catch (e) {
         const err = normalizeUnknownError(e);
