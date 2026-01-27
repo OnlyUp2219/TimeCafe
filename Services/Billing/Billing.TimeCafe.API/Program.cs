@@ -57,6 +57,9 @@ app.UseSwaggerDevelopment();
 app.MapCarter();
 app.MapControllers();
 
+app.MapGet("/health", () => Results.Ok("OK"))
+    .AllowAnonymous();
+
 await app.RunAsync();
 
 public partial class Program { }

@@ -17,6 +17,8 @@ import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
+import {authApi} from "../../shared/api/auth/authApi";
+import {MockCallbackLink} from "../../components/MockCallbackLink/MockCallbackLink";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -28,6 +30,7 @@ export const ResetPasswordPage = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [sentEmail, setSentEmail] = useState("");
     const [submitted, setSubmitted] = useState(false);
+    const [callbackUrl, setCallbackUrl] = useState<string | undefined>(undefined);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,8 +39,8 @@ export const ResetPasswordPage = () => {
 
         setIsSubmitting(true);
         try {
-            // TODO: STUB - отправка кода восстановления (подключить бек)
-            // await sendResetCode({email});
+            const res = await authApi.forgotPasswordLink({email});
+            setCallbackUrl(res.callbackUrl);
             setSentEmail(email);
             setOpenDialog(true);
         } catch (err: unknown) {
@@ -60,6 +63,12 @@ export const ResetPasswordPage = () => {
         window.open("https://mail.google.com", "_blank");
     };
 
+    const handleOpenCallbackUrl = () => {
+        if (callbackUrl) {
+            window.open(callbackUrl, "_blank");
+        }
+    };
+
     const handleGoToLogin = () => {
         navigate("/login", {replace: true});
     };
@@ -80,14 +89,24 @@ export const ResetPasswordPage = () => {
                             <Body2 block className="mb-3">Мы отправили письмо на
                                 почту <strong>{sentEmail}</strong></Body2>
                             <Body2 block>Перейдите на почту и нажмите ссылку для сброса пароля</Body2>
+                            <MockCallbackLink url={callbackUrl}/>
                         </DialogContent>
                         <DialogActions>
+                            {callbackUrl ? (
+                                <Button
+                                    appearance="primary"
+                                    onClick={handleOpenCallbackUrl}
+                                >
+                                    Открыть ссылку
+                                </Button>
+                            ) : (
                             <Button
                                 appearance="primary"
                                 onClick={handleGoToEmail}
                             >
                                 На почту
                             </Button>
+                            )}
                             <Button
                                 appearance="secondary"
                                 onClick={handleGoToLogin}
