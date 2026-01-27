@@ -1,9 +1,9 @@
 import axios from 'axios';
 import {withRateLimit, type RateLimitedResponse} from '../utility/rateLimitHelper.ts';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7057';
-const TEST_ENDPOINT_1 = `${API_BASE}/api/test-rate-limit`;
-const TEST_ENDPOINT_2 = `${API_BASE}/api/test-rate-limit2`;
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://localhost:7268';
+const TEST_ENDPOINT_1 = `${API_BASE}/auth/api/test-rate-limit`;
+const TEST_ENDPOINT_2 = `${API_BASE}/auth/api/test-rate-limit2`;
 
 export interface RateLimitResponse {
     success: boolean;

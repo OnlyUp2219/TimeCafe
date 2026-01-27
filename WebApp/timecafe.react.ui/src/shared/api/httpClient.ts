@@ -17,7 +17,7 @@ export interface HttpClientConfig {
     handlers?: HttpClientAuthHandlers;
 }
 
-const defaultBaseURL = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7057";
+const defaultBaseURL = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
 
 export const rawHttpClient: AxiosInstance = axios.create({
     baseURL: defaultBaseURL,

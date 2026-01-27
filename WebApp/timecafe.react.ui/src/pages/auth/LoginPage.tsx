@@ -21,7 +21,7 @@ export const LoginPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
     const returnUrl = `${window.location.origin}/external-callback`;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -54,11 +54,11 @@ export const LoginPage = () => {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        window.location.href = `${apiBase}/auth/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleMicrosoftLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
+        window.location.href = `${apiBase}/auth/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleEmailValidationChange = useCallback((error: string) => {

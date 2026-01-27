@@ -16,7 +16,7 @@ export const RegisterPage = () => {
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
 
-    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const apiBase = import.meta.env.VITE_API_BASE_URL ?? "https://localhost:7268";
     const returnUrl = `${window.location.origin}/external-callback`;
 
     const [email, setEmailValue] = useState("");
@@ -81,11 +81,11 @@ export const RegisterPage = () => {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
+        window.location.href = `${apiBase}/auth/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleMicrosoftLogin = () => {
-        window.location.href = `${apiBase}/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
+        window.location.href = `${apiBase}/auth/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleEmailValidationChange = useCallback((error: string) => {
