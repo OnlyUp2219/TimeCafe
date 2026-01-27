@@ -52,7 +52,7 @@ public class ForgotPasswordCommandHandler(
 
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/resetPassword?email={request.Email}&code={encodedToken}";
+        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-reset?email={request.Email}&code={encodedToken}";
 
         if (request.SendEmail)
         {
