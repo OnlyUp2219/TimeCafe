@@ -19,6 +19,7 @@ public static class AuthenticationExtensions
              .AddAuthentication(options =>
              {
                  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
              })
              .AddJwtBearer(options =>
              {
@@ -40,7 +41,14 @@ public static class AuthenticationExtensions
                      {
                          OnMessageReceived = context =>
                          {
-                             context.Token = context.Request.Cookies["Access-Token"];
+                             if (string.IsNullOrWhiteSpace(context.Token))
+                             {
+                                 var cookieToken = context.Request.Cookies["Access-Token"];
+                                 if (!string.IsNullOrWhiteSpace(cookieToken))
+                                 {
+                                     context.Token = cookieToken;
+                                 }
+                             }
                              return Task.CompletedTask;
                          }
                      };
