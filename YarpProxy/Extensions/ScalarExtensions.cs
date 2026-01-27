@@ -29,11 +29,29 @@ public static class ScalarExtensions
                    .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
                    .WithOpenApiRoutePattern("/openapi/{documentName}.json");
 
-                 options.AddDocument(
-                documentName: "auth",
-                title: "TimeCafe Auth API",
-                routePattern: "/openapi/auth.json",
-                isDefault: true);
+            options.AddDocument(
+           documentName: "auth",
+           title: "TimeCafe Auth API",
+           routePattern: "/openapi/auth.json",
+           isDefault: true);
+
+            options.AddDocument(
+                documentName: "userprofile",
+                title: "TimeCafe UserProfile API",
+                routePattern: "/openapi/userprofile.json",
+                isDefault: false);
+
+            options.AddDocument(
+                documentName: "venue",
+                title: "TimeCafe Venue API",
+                routePattern: "/openapi/venue.json",
+                isDefault: false);
+
+            options.AddDocument(
+                documentName: "billing",
+                title: "TimeCafe Billing API",
+                routePattern: "/openapi/billing.json",
+                isDefault: false);
         });
 
         return app;
