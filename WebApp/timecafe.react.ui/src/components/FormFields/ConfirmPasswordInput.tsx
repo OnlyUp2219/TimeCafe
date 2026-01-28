@@ -9,6 +9,7 @@ interface ConfirmPasswordInputProps {
     disabled?: boolean;
     placeholder?: string;
     label?: string;
+    autoComplete?: string;
     validate?: (confirmPassword: string, password: string) => string;
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
@@ -22,6 +23,7 @@ export const ConfirmPasswordInput = ({
     disabled = false,
     placeholder = "Повторите пароль",
     label = "Повтор пароля",
+    autoComplete = "current-password",
     validate = defaultValidateConfirmPassword,
     onValidationChange,
     shouldValidate = true,
@@ -55,6 +57,7 @@ export const ConfirmPasswordInput = ({
                 value={value}
                 onChange={(_, data) => onChange(data.value)}
                 placeholder={placeholder}
+                autoComplete={autoComplete}
                 disabled={disabled}
                 className="w-full"
             />

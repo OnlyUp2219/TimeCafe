@@ -1,7 +1,7 @@
 import {
-    Button,
     Body2,
     Title3,
+    Badge,
     Dialog,
     DialogContent,
     DialogBody,
@@ -9,6 +9,7 @@ import {
     DialogTitle,
     DialogActions
 } from '@fluentui/react-components';
+import {Spinner} from '@fluentui/react-components';
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";
@@ -17,6 +18,7 @@ import {EmailInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
 import {authApi} from "../../shared/api/auth/authApi";
 import {MockCallbackLink} from "../../components/MockCallbackLink/MockCallbackLink";
+import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -29,6 +31,7 @@ export const ResetPasswordPage = () => {
     const [sentEmail, setSentEmail] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [callbackUrl, setCallbackUrl] = useState<string | undefined>(undefined);
+    const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === 'true';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,39 +97,47 @@ export const ResetPasswordPage = () => {
                 <DialogSurface>
                     <DialogBody>
                         <DialogTitle>
-                            <div>
-                                <MailCheckmark20Filled style={{color: '#107C10'}}/>
-                                Письмо отправлено
+                            <div className="flex items-center gap-2">
+                                <Badge appearance="tint" shape="rounded" size="extra-large" className="dark-green">
+                                    <MailCheckmark20Filled />
+                                </Badge>
+                                <span>Письмо отправлено</span>
                             </div>
                         </DialogTitle>
                         <DialogContent>
                             <Body2 block className="mb-3">Мы отправили письмо на
                                 почту <strong>{sentEmail}</strong></Body2>
                             <Body2 block>Перейдите на почту и нажмите ссылку для сброса пароля</Body2>
-                            <MockCallbackLink url={callbackUrl}/>
+                            {USE_MOCK_EMAIL && callbackUrl && <MockCallbackLink url={callbackUrl}/>}
                         </DialogContent>
-                        <DialogActions>
-                            {callbackUrl ? (
-                                <Button
-                                    appearance="primary"
-                                    onClick={handleOpenCallbackUrl}
-                                >
-                                    Открыть ссылку
-                                </Button>
-                            ) : (
-                            <Button
-                                appearance="primary"
-                                onClick={handleGoToEmail}
-                            >
-                                На почту
-                            </Button>
-                            )}
-                            <Button
-                                appearance="secondary"
-                                onClick={handleGoToLogin}
-                            >
-                                К входу
-                            </Button>
+                        <DialogActions className="w-full">
+                            <div className="grid w-full grid-cols-1 gap-[12px] sm:grid-cols-2">
+                                {USE_MOCK_EMAIL && callbackUrl && (
+                                    <TooltipButton
+                                        appearance="primary"
+                                        onClick={handleOpenCallbackUrl}
+                                        tooltip="Открыть ссылку сброса пароля (mock)"
+                                        label="Открыть ссылку"
+                                        className="w-full order-1 sm:order-2"
+                                    />
+                                )}
+
+                                <TooltipButton
+                                    appearance={USE_MOCK_EMAIL && callbackUrl ? "secondary" : "primary"}
+                                    onClick={handleGoToEmail}
+                                    tooltip="Открыть почту"
+                                    label="На почту"
+                                    className={USE_MOCK_EMAIL && callbackUrl ? "w-full order-2 sm:order-1" : "w-full order-1 sm:order-2"}
+                                />
+
+                                <TooltipButton
+                                    appearance="secondary"
+                                    onClick={handleGoToLogin}
+                                    tooltip="Перейти на страницу входа"
+                                    label="К входу"
+                                    className={USE_MOCK_EMAIL && callbackUrl ? "w-full order-3 sm:order-3" : "w-full order-2 sm:order-1"}
+                                />
+                            </div>
                         </DialogActions>
                     </DialogBody>
                 </DialogSurface>
@@ -159,24 +170,27 @@ export const ResetPasswordPage = () => {
                                 shouldValidate={submitted}
                             />
 
-                            <Button
-                                appearance="primary"
-                                type="submit"
-                                disabled={isSubmitting || openDialog}
-                                className="w-full mt-4"
-                            >
-                                {isSubmitting ? "Отправка..." : "Отправить код"}
-                            </Button>
+                            <div className="grid grid-cols-1 gap-[12px] mt-4 sm:grid-cols-2">
+                                <TooltipButton
+                                    appearance="primary"
+                                    type="submit"
+                                    disabled={isSubmitting || openDialog}
+                                    className="w-full order-1 sm:order-2"
+                                    icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                                    tooltip="Отправить письмо для сброса"
+                                    label="Отправить код"
+                                />
 
-                            <Button
-                                appearance="secondary"
-                                type="button"
-                                disabled={isSubmitting || openDialog}
-                                className="w-full mt-2"
-                                onClick={() => navigate("/login")}
-                            >
-                                Вернуться к входу
-                            </Button>
+                                <TooltipButton
+                                    appearance="secondary"
+                                    type="button"
+                                    disabled={isSubmitting || openDialog}
+                                    className="w-full order-2 sm:order-1"
+                                    onClick={() => navigate("/login")}
+                                    tooltip="Вернуться на страницу входа"
+                                    label="Вернуться к входу"
+                                />
+                            </div>
                         </form>
                     </div>
                 </div>

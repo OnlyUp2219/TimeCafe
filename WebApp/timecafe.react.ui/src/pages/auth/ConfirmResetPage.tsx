@@ -1,10 +1,11 @@
-import {Button, Body2, Title3} from '@fluentui/react-components';
+import {Body2, Title3, Spinner} from '@fluentui/react-components';
 import {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
 import {authFormContainerClassName} from "../../layouts/authLayout";
 import {authApi} from "../../shared/api/auth/authApi";
+import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();
@@ -115,24 +116,27 @@ export const ConfirmResetPage = () => {
                             shouldValidate={submitted}
                         />
 
-                        <Button
-                            appearance="primary"
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="w-full mt-4"
-                        >
-                            {isSubmitting ? "Восстановление..." : "Восстановить пароль"}
-                        </Button>
+                        <div className="grid grid-cols-1 gap-[12px] mt-4 sm:grid-cols-2">
+                            <TooltipButton
+                                appearance="primary"
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full order-1 sm:order-2"
+                                icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                                tooltip="Сохранить новый пароль"
+                                label="Восстановить пароль"
+                            />
 
-                        <Button
-                            appearance="secondary"
-                            type="button"
-                            disabled={isSubmitting}
-                            className="w-full mt-2"
-                            onClick={() => navigate("/login")}
-                        >
-                            Вернуться к входу
-                        </Button>
+                            <TooltipButton
+                                appearance="secondary"
+                                type="button"
+                                disabled={isSubmitting}
+                                className="w-full order-2 sm:order-1"
+                                onClick={() => navigate("/login")}
+                                tooltip="Вернуться на страницу входа"
+                                label="Вернуться к входу"
+                            />
+                        </div>
                     </form>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
+import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
@@ -10,6 +10,7 @@ import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageF
 import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
 import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
+import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -111,36 +112,37 @@ export const LoginPage = () => {
                         </Link>
                     </div>
 
-                    <Button
+                    <TooltipButton
                         appearance="primary"
                         type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                    >
-                        {isSubmitting ? "Вход..." : "Войти"}
-                    </Button>
+                        icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                        tooltip="Войти"
+                        label="Войти"
+                    />
 
                     <Divider appearance="brand" className="divider grow-0">или продолжить с</Divider>
 
                     <div>
                         <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2">
-                            <Button
+                            <TooltipButton
                                 appearance="secondary"
                                 onClick={handleGoogleLogin}
                                 disabled={isSubmitting}
-                            >
-                                <i className="icons8-google"/>
-                                Google
-                            </Button>
+                                icon={<i className="icons8-google"/>}
+                                tooltip="Войти через Google"
+                                label="Google"
+                            />
 
-                            <Button
+                            <TooltipButton
                                 appearance="secondary"
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}
-                            >
-                                <i className="icons8-microsoft"/>
-                                Microsoft
-                            </Button>
+                                icon={<i className="icons8-microsoft"/>}
+                                tooltip="Войти через Microsoft"
+                                label="Microsoft"
+                            />
                         </div>
                     </div>
 
@@ -158,9 +160,9 @@ export const LoginPage = () => {
             </div>
 
             {/* Hero Section - Right Side (Desktop Only) */}
-                        <div id="Right Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-right bg-cover bg-no-repeat">
-                                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-                        </div>
+            <div id="Right Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-right bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            </div>
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import {Button, Link, Body2, Caption1, Title3, Divider} from '@fluentui/react-components';
+import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
 import {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
@@ -11,6 +11,7 @@ import {setEmail, setEmailConfirmed} from "../../store/authSlice";
 import {normalizeUnknownError} from "../../shared/api/errors/normalize";
 import {isApiError} from "../../shared/api/errors/types";
 import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
+import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -115,7 +116,7 @@ export const RegisterPage = () => {
             {/* Register Form */}
             <div id="Form"
                  className={authFormContainerClassName}>
-                <div className="flex flex-col w-full max-w-md gap-[12px]">
+                <form onSubmit={handleSubmit} autoComplete="off" className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
                         <Title3 block>Создать аккаунт</Title3>
@@ -129,6 +130,7 @@ export const RegisterPage = () => {
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}
                         externalError={serverErrors.email}
+                        autoComplete="off"
                     />
 
                     <PasswordInput
@@ -139,6 +141,7 @@ export const RegisterPage = () => {
                         onValidationChange={handlePasswordValidationChange}
                         shouldValidate={submitted}
                         externalError={serverErrors.password}
+                        autoComplete="new-password"
                     />
 
                     <ConfirmPasswordInput
@@ -149,38 +152,41 @@ export const RegisterPage = () => {
                         onValidationChange={handleConfirmPasswordValidationChange}
                         shouldValidate={submitted}
                         externalError={serverErrors.confirmPassword}
+                        autoComplete="new-password"
                     />
 
-                    <Button
+                    <TooltipButton
                         appearance="primary"
-                        onClick={handleSubmit}
+                        type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                    >
-                        {isSubmitting ? "Регистрация..." : "Зарегистрироваться"}
-                    </Button>
+                        icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                        tooltip="Зарегистрироваться"
+                        label="Зарегистрироваться"
+                    />
 
                     <Divider appearance="brand" className="divider grow-0">или продолжить с</Divider>
 
                     <div>
                         <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2">
-                            <Button
+                            <TooltipButton
                                 appearance="secondary"
                                 onClick={handleGoogleLogin}
                                 disabled={isSubmitting}
-                            >
-                                <i className="icons8-google"/>
-                                Google
-                            </Button>
+                                icon={<i className="icons8-google"/>}
+                                tooltip="Зарегистрироваться через Google"
+                                label="Google"
+                            />
 
-                            <Button
+                            <TooltipButton
+                            
                                 appearance="secondary"
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}
-                            >
-                                <i className="icons8-microsoft"/>
-                                Microsoft
-                            </Button>
+                                icon={<i className="icons8-microsoft"/>}
+                                tooltip="Зарегистрироваться через Microsoft"
+                                label="Microsoft"
+                            />
                         </div>
                     </div>
 
@@ -194,7 +200,7 @@ export const RegisterPage = () => {
                             </Link>
                         </Caption1>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );

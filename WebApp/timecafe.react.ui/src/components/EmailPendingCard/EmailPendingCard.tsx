@@ -1,4 +1,4 @@
-import {Card, Subtitle1, Field, Input, Button, MessageBar} from '@fluentui/react-components';
+import {Badge, Subtitle1, Field, Input, MessageBar} from '@fluentui/react-components';
 import {useState} from 'react';
 import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
 import {useSelector} from 'react-redux';
@@ -8,6 +8,7 @@ import {useProgressToast} from '../ToastProgress/ToastProgress';
 import {useRateLimitedRequest} from '../../hooks/useRateLimitedRequest';
 import {MockCallbackLink} from '../MockCallbackLink/MockCallbackLink';
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {TooltipButton} from "../TooltipButton/TooltipButton";
 
 interface EmailPendingCardProps {
     showResend?: boolean
@@ -52,13 +53,15 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
 
     const showAttemptsHint = resend.remaining > 0 && !resend.isBlocked;
 
+    const canOpenMockLink = Boolean(internalMockLink) && USE_MOCK_EMAIL;
+
     return (
-        <Card className="auth_card email-pending_card">
+        <div className="w-full">
             {ToasterElement}
             <div className="email-pending_card__header" aria-live="polite">
-                <div className="email-pending_card__icon">
+                <Badge appearance="tint" shape="rounded" size="extra-large" className="dark-green">
                     {successSent ? <MailCheckmark24Regular/> : <Mail24Regular/>}
-                </div>
+                </Badge>
                 <Subtitle1 align="center" className="font-semibold">Подтвердите email</Subtitle1>
                 <p className="email-pending_card__text">
                     Мы отправили письмо на <span className="font-medium">{email}</span>.<br/>
@@ -74,7 +77,7 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
                 <Input value={email} readOnly/>
             </Field>
 
-            {internalMockLink && USE_MOCK_EMAIL && (
+            {canOpenMockLink && (
                 <div className="email-pending_card__mocklink">
                     <MockCallbackLink url={internalMockLink}/>
                 </div>
@@ -86,19 +89,36 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
                 </MessageBar>
             )}
 
-            <div className="button-action">
-                {onGoToLogin && (
-                    <Button as="a" appearance="outline" onClick={onGoToLogin} icon={<Person24Regular/>}>
-                        Перейти к входу
-                    </Button>
+            <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2">
+                {canOpenMockLink && (
+                    <TooltipButton
+                        appearance="primary"
+                        onClick={() => window.open(internalMockLink, "_blank")}
+                        tooltip="Открыть mock-ссылку из письма"
+                        label="Открыть ссылку"
+                        className="w-full order-1 sm:order-2"
+                    />
                 )}
-                <Button appearance="primary"
-                        disabled={resend.isLoading || resend.isBlocked}
-                        onClick={handleResend}
-                >
-                    {buttonLabel}
-                </Button>
+
+                {onGoToLogin && (
+                    <TooltipButton
+                        appearance="secondary"
+                        onClick={onGoToLogin}
+                        icon={<Person24Regular/>}
+                        tooltip="Перейти на страницу входа"
+                        label="Перейти к входу"
+                        className={canOpenMockLink ? "w-full order-2 sm:order-1" : "w-full"}
+                    />
+                )}
+                <TooltipButton
+                    appearance="primary"
+                    disabled={resend.isLoading || resend.isBlocked}
+                    onClick={handleResend}
+                    tooltip={resend.isBlocked ? "Подождите перед повторной отправкой" : "Отправить письмо ещё раз"}
+                    label={buttonLabel}
+                    className={canOpenMockLink ? "w-full order-3 sm:order-3" : "w-full"}
+                />
             </div>
-        </Card>
+        </div>
     );
 }
