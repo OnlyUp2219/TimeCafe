@@ -9,6 +9,7 @@ interface PasswordInputProps {
     disabled?: boolean;
     placeholder?: string;
     label?: string;
+    autoComplete?: string;
     showRequirements?: boolean;
     validate?: (password: string) => string;
     onValidationChange?: (error: string) => void;
@@ -28,6 +29,7 @@ export const PasswordInput = ({
                                   disabled = false,
                                   placeholder = "Введите пароль",
                                   label = "Пароль",
+                                  autoComplete = "current-password",
                                   showRequirements = false,
                                   validate = defaultValidatePassword,
                                   onValidationChange,
@@ -66,6 +68,7 @@ export const PasswordInput = ({
                     value={value}
                     onChange={(_, data) => onChange(data.value)}
                     placeholder={placeholder}
+                    autoComplete={autoComplete}
                     disabled={disabled}
                     className="w-full"
                 />

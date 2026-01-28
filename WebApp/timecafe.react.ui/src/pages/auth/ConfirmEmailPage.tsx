@@ -1,9 +1,11 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {Button, Card, Spinner, Subtitle1} from "@fluentui/react-components";
+import {Spinner, Subtitle1} from "@fluentui/react-components";
 import {useDispatch} from "react-redux";
 import {authApi} from "../../shared/api/auth/authApi";
 import {setEmailConfirmed} from "../../store/authSlice";
+import {authFormContainerClassName} from "../../layouts/authLayout";
+import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
 type ViewState =
     | {status: "loading"}
@@ -22,8 +24,12 @@ export const ConfirmEmailPage = () => {
     }, [searchParams]);
 
     const [state, setState] = useState<ViewState>({status: "loading"});
+    const didConfirmRef = useRef(false);
 
     useEffect(() => {
+        if (didConfirmRef.current) return;
+        didConfirmRef.current = true;
+
         const run = async () => {
             if (!userId || !token) {
                 setState({status: "error", message: "Некорректная ссылка подтверждения"});
@@ -44,38 +50,58 @@ export const ConfirmEmailPage = () => {
     }, [dispatch, token, userId]);
 
     return (
-        <div className="flex items-center justify-center">
-            <Card className="auth_card">
-                {state.status === "loading" && (
-                    <div className="flex flex-col items-center gap-3">
-                        <Spinner size="huge" />
-                        <Subtitle1>Подтверждаем почту…</Subtitle1>
-                    </div>
-                )}
+        <div
+            className="!grid grid-cols-1 items-center justify-center
+             sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
+            <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            </div>
 
-                {state.status === "success" && (
-                    <div className="flex flex-col items-center gap-3">
-                        <Subtitle1>{state.message}</Subtitle1>
-                        <Button appearance="primary" onClick={() => navigate("/login", {replace: true})}>
-                            Перейти ко входу
-                        </Button>
-                    </div>
-                )}
-
-                {state.status === "error" && (
-                    <div className="flex flex-col items-center gap-3">
-                        <Subtitle1>{state.message}</Subtitle1>
-                        <div className="flex gap-2">
-                            <Button appearance="primary" onClick={() => navigate("/email-pending", {replace: true})}>
-                                Отправить письмо ещё раз
-                            </Button>
-                            <Button appearance="secondary" onClick={() => navigate("/login", {replace: true})}>
-                                Вход
-                            </Button>
+            <div id="Form" className={authFormContainerClassName}>
+                <div className="flex flex-col w-full max-w-md gap-[12px]">
+                    {state.status === "loading" && (
+                        <div className="flex flex-col items-center gap-[12px]">
+                            <Spinner size="huge" />
+                            <Subtitle1>Подтверждаем почту…</Subtitle1>
                         </div>
-                    </div>
-                )}
-            </Card>
+                    )}
+
+                    {state.status === "success" && (
+                        <div className="flex flex-col items-center gap-[12px]">
+                            <Subtitle1>{state.message}</Subtitle1>
+                            <TooltipButton
+                                appearance="primary"
+                                onClick={() => navigate("/login", {replace: true})}
+                                tooltip="Перейти на страницу входа"
+                                label="Перейти ко входу"
+                                className="w-full sm:w-auto"
+                            />
+                        </div>
+                    )}
+
+                    {state.status === "error" && (
+                        <div className="flex flex-col items-center gap-[12px]">
+                            <Subtitle1>{state.message}</Subtitle1>
+                            <div className="grid grid-cols-1 gap-[12px] w-full sm:grid-cols-2">
+                                <TooltipButton
+                                    appearance="primary"
+                                    onClick={() => navigate("/email-pending", {replace: true})}
+                                    tooltip="Повторно отправить письмо подтверждения"
+                                    label="Отправить ещё раз"
+                                    className="w-full"
+                                />
+                                <TooltipButton
+                                    appearance="secondary"
+                                    onClick={() => navigate("/login", {replace: true})}
+                                    tooltip="Перейти на страницу входа"
+                                    label="Вход"
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

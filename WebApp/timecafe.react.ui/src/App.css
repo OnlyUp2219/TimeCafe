@@ -82,6 +82,12 @@
   background-size: 100%;
 }
 
+.dark-green {
+  background: var(--colorStatusSuccessBackground1) !important;
+  color: var(--colorStatusSuccessForeground1) !important;
+  border-color: var(--colorPaletteGreenBorder1) !important;
+}
+
 .auth-layout {
   justify-content: center;
   align-items: center;

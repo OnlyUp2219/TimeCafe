@@ -8,6 +8,7 @@ interface EmailInputProps {
     onChange: (value: string) => void;
     disabled?: boolean;
     placeholder?: string;
+    autoComplete?: string;
     validate?: (email: string) => string;
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
@@ -20,6 +21,7 @@ export const EmailInput = ({
     onChange,
     disabled = false,
     placeholder = "example@timecafe.ru",
+    autoComplete = "email",
     validate = defaultValidateEmail,
     onValidationChange,
     shouldValidate = true,
@@ -52,6 +54,7 @@ export const EmailInput = ({
                     value={value}
                     onChange={(_, data) => onChange(data.value)}
                     placeholder={placeholder}
+                    autoComplete={autoComplete}
                     disabled={disabled}
                     className="w-full"
                 />
