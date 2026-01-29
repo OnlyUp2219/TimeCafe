@@ -36,7 +36,7 @@ export const HomePage = () => {
 
     const authEmail = useSelector((state: RootState) => state.auth.email);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
-    const client = useSelector((state: RootState) => state.client.data);
+    const profile = useSelector((state: RootState) => state.profile.data);
     const visitStatus = useSelector((state: RootState) => state.visit.status);
     const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
 
@@ -68,12 +68,12 @@ export const HomePage = () => {
     }, [activeElapsedMinutes, activeVisit, visitStatus]);
 
     const displayName = useMemo(() => {
-        const firstName = client?.firstName?.trim();
+        const firstName = profile?.firstName?.trim();
         if (firstName) return firstName;
         const email = authEmail?.trim();
         if (email) return email;
         return "";
-    }, [authEmail, client?.firstName]);
+    }, [authEmail, profile?.firstName]);
 
     const demo = useMemo(
         () => ({
@@ -158,8 +158,8 @@ export const HomePage = () => {
                                     <Tag appearance={emailConfirmed ? "brand" : "outline"}>
                                         {emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
                                     </Tag>
-                                    <Tag appearance={client?.phoneNumberConfirmed ? "brand" : "outline"}>
-                                        {client?.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
+                                    <Tag appearance={profile?.phoneNumberConfirmed ? "brand" : "outline"}>
+                                        {profile?.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
                                     </Tag>
                                 </div>
                             </div>
@@ -299,24 +299,24 @@ export const HomePage = () => {
                                         <PersonRegular/>
                                         <Subtitle2Stronger>Профиль</Subtitle2Stronger>
                                     </div>
-                                    <Tag appearance={client ? "brand" : "outline"}>
-                                        {client ? "Заполнен" : "Не заполнен"}
+                                    <Tag appearance={profile ? "brand" : "outline"}>
+                                        {profile ? "Заполнен" : "Не заполнен"}
                                     </Tag>
                                 </div>
                                 <Divider className="divider grow-0"/>
                             </div>
 
-                            {client ? (
+                            {profile ? (
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <div className="flex flex-col gap-1 min-w-0">
                                         <Caption1>ФИО</Caption1>
-                                        <Title3>{`${client.lastName} ${client.firstName}${client.middleName ? ` ${client.middleName}` : ""}`}</Title3>
+                                        <Title3>{`${profile.lastName} ${profile.firstName}${profile.middleName ? ` ${profile.middleName}` : ""}`}</Title3>
                                     </div>
                                     <div className="flex flex-col gap-1 sm:text-right min-w-0">
                                         <Caption1>Контакты</Caption1>
-                                        <Body2>{client.email}</Body2>
+                                        <Body2>{profile.email ?? "—"}</Body2>
                                         <Caption1>
-                                            {client.phoneNumber ?? "Телефон не указан"}
+                                            {profile.phoneNumber ?? "Телефон не указан"}
                                         </Caption1>
                                     </div>
                                 </div>

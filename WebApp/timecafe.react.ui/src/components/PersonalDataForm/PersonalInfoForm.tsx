@@ -1,14 +1,14 @@
 import {useEffect, useState, type FC, createElement} from "react";
 import {Card, Field, Input, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
-import type {ClientInfo} from "../../types/client.ts";
+import type {Gender, Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {DateInput, EmailInput} from "../FormFields";
 
 interface PersonalInfoFormProps {
-    client: ClientInfo;
-    onChange?: (changed: Partial<ClientInfo>) => void;
-    onSave?: (data: ClientInfo) => void;
+    profile: Profile;
+    onChange?: (changed: Partial<Profile>) => void;
+    onSave?: (data: Profile) => void;
     loading?: boolean;
     readOnly?: boolean;
     showDownloadButton?: boolean;
@@ -28,7 +28,7 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
 };
 
 export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
-                                                                client,
+                                                                profile,
                                                                 onChange,
                                                                 onSave,
                                                                 loading = false,
@@ -46,27 +46,34 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
         return undefined;
     };
 
-    const [email, setEmail] = useState(client.email);
-    const [phone, setPhone] = useState(client.phoneNumber || "");
-    const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(client.birthDate));
-    const [genderId, setGenderId] = useState<number | undefined>(client.genderId);
+    const [email, setEmail] = useState(profile.email);
+    const [phone, setPhone] = useState(profile.phoneNumber || "");
+    const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(profile.birthDate));
+    const [genderId, setGenderId] = useState<number | undefined>(profile.gender);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
 
     useEffect(() => {
-        setEmail(client.email);
-        setPhone(client.phoneNumber || "");
-        setBirthDate(normalizeDate(client.birthDate));
-        setGenderId(client.genderId);
-    }, [client.clientId]);
+        setEmail(profile.email);
+        setPhone(profile.phoneNumber || "");
+        setBirthDate(normalizeDate(profile.birthDate));
+        setGenderId(profile.gender);
+    }, [profile.email, profile.phoneNumber, profile.birthDate, profile.gender]);
+
+    const toIsoStringOrUndefined = (value: Date | undefined): string | undefined => {
+        if (!value) return undefined;
+        const t = value.getTime();
+        if (Number.isNaN(t)) return undefined;
+        return value.toISOString();
+    };
 
 
     const handleSave = () => {
-        const updated: ClientInfo = {
-            ...client,
+        const updated: Profile = {
+            ...profile,
             email,
             phoneNumber: phone,
-            birthDate,
-            genderId,
+            birthDate: toIsoStringOrUndefined(birthDate),
+            gender: ((genderId ?? 0) as Gender),
         };
         onSave?.(updated);
         onChange?.(updated);
@@ -83,7 +90,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
             <div className="flex w-full gap-[12px] justify-stretch flex-wrap flex-row">
                 <div className="flex-1">
                     <EmailInput
-                        value={email}
+                        value={email ?? ""}
                         onChange={(value) => {
                             setEmail(value);
                             onChange?.({email: value});
@@ -93,8 +100,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         trailingElement={
                             <Tag
                                 appearance="outline"
-                                icon={createElement(getStatusIcon(client.emailConfirmed))}
-                                className={`custom-tag ${getStatusClass(client.emailConfirmed)}`}
+                                        icon={createElement(getStatusIcon(profile.emailConfirmed))}
+                                        className={`custom-tag ${getStatusClass(profile.emailConfirmed)}`}
                             />
                         }
                     />
@@ -115,8 +122,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 />
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(client.phoneNumberConfirmed))}
-                                    className={`custom-tag ${getStatusClass(client.phoneNumberConfirmed)}`}
+                                    icon={createElement(getStatusIcon(profile.phoneNumberConfirmed))}
+                                    className={`custom-tag ${getStatusClass(profile.phoneNumberConfirmed)}`}
                                 />
                             </div>
 
@@ -129,7 +136,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                         onClick={() => setShowPhoneModal(true)}
                                         disabled={loading || !phone.trim()}
                                     >
-                                        {client.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
+                                        {profile.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
                                     </Button>
                                 </div>
                             )}
@@ -142,7 +149,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         value={birthDate}
                         onChange={(val) => {
                             setBirthDate(val);
-                            onChange?.({birthDate: val});
+                            onChange?.({birthDate: toIsoStringOrUndefined(val)});
                         }}
                         disabled={readOnly || loading}
                         label="Дата рождения"
@@ -154,7 +161,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                             onChange={(_, data) => {
                                 const g = data.value ? parseInt(data.value, 10) : undefined;
                                 setGenderId(g);
-                                onChange?.({genderId: g});
+                                onChange?.({gender: ((g ?? 0) as Gender)});
                             }}
                         >
                             <Radio value="1" label="Мужчина"/>
@@ -165,8 +172,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 </div>
             </div>
 
-            {client.accessCardNumber && (
-                <Body2 className="mt-[8px]"><strong>Номер карты доступа:</strong> {client.accessCardNumber}</Body2>
+            {profile.accessCardNumber && (
+                <Body2 className="mt-[8px]"><strong>Номер карты доступа:</strong> {profile.accessCardNumber}</Body2>
             )}
 
             <div className="flex gap-[12px] mt-[16px]">
@@ -184,7 +191,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
-                currentPhoneNumberConfirmed={client.phoneNumberConfirmed === true}
+                currentPhoneNumberConfirmed={profile.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
                 mode="ui"
             />

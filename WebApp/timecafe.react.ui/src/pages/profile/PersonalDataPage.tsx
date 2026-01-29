@@ -4,8 +4,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "../../store";
 import {ChangePasswordForm} from "../../components/PersonalDataForm/ChangePasswordForm";
-import type {ClientInfo} from "../../types/client";
-import {setClient, updateClientProfile} from "../../store/clientSlice";
+import type {Profile} from "../../types/profile";
+import {setProfile, updateProfile} from "../../store/profileSlice";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress";
 import {PersonalDataMainForm} from "../../components/PersonalDataForm/PersonalDataMainForm";
 import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
@@ -23,22 +23,22 @@ import "./PersonalData.css";
 export const PersonalDataPage = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch<AppDispatch>();
-    const client = useSelector((state: RootState) => state.client.data);
-    const saving = useSelector((state: RootState) => state.client.saving);
-    const saveError = useSelector((state: RootState) => state.client.error);
+    const profile = useSelector((state: RootState) => state.profile.data);
+    const saving = useSelector((state: RootState) => state.profile.saving);
+    const saveError = useSelector((state: RootState) => state.profile.error);
 
     const {showToast, ToasterElement} = useProgressToast();
 
     const savePatch = useCallback(
-        async (patch: Partial<ClientInfo>, successMessage: string): Promise<boolean> => {
-            const action = await dispatch(updateClientProfile(patch));
-            if (updateClientProfile.fulfilled.match(action)) {
+        async (patch: Partial<Profile>, successMessage: string): Promise<boolean> => {
+            const action = await dispatch(updateProfile(patch));
+            if (updateProfile.fulfilled.match(action)) {
                 showToast(successMessage, "success", "Готово");
                 return true;
             }
 
             const message =
-                (updateClientProfile.rejected.match(action) && (action.payload as string | undefined)) ||
+                (updateProfile.rejected.match(action) && (action.payload as string | undefined)) ||
                 "Не удалось сохранить профиль.";
             showToast(message, "error", "Ошибка");
             return false;
@@ -47,8 +47,7 @@ export const PersonalDataPage = () => {
     );
 
     const loadDemoProfile = useCallback(() => {
-        const demo: ClientInfo = {
-            clientId: 1,
+        const demo: Profile = {
             firstName: "Иван",
             lastName: "Иванов",
             middleName: "Иванович",
@@ -56,16 +55,19 @@ export const PersonalDataPage = () => {
             emailConfirmed: true,
             phoneNumber: "+375291234567",
             phoneNumberConfirmed: true,
-            birthDate: new Date("1999-01-15"),
-            genderId: 1,
+            birthDate: "1999-01-15",
+            gender: 1,
             accessCardNumber: "TC-000001",
+            photoUrl: undefined,
+            profileStatus: 0,
+            banReason: undefined,
         };
 
-        dispatch(setClient(demo));
+        dispatch(setProfile(demo));
         showToast("Загружен демо-профиль для теста UI.", "info", "Demo");
     }, [dispatch, showToast]);
 
-    const backgroundOpacityClass = client ? "opacity-[0.08]" : "opacity-[0.1]";
+    const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
 
     const [, setPhotoUrl] = useState<string | null | undefined>(undefined);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -76,7 +78,7 @@ export const PersonalDataPage = () => {
         navigate("/login", {replace: true});
     }, [dispatch, navigate]);
 
-    const content = !client ? (
+    const content = !profile ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
             <div
                 className="rounded-3xl p-6 personal-data-gradient-card"
@@ -120,7 +122,7 @@ export const PersonalDataPage = () => {
                     <div className="flex flex-col gap-4">
                         <>
                             <PersonalDataMainForm
-                                client={client}
+                                profile={profile}
                                 loading={saving}
                                 onPhotoUrlChange={(url) => setPhotoUrl(url)}
                                 onSave={(patch) => {
@@ -130,7 +132,7 @@ export const PersonalDataPage = () => {
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
                                 <PhoneFormCard
-                                    client={client}
+                                    profile={profile}
                                     loading={saving}
                                     onSave={(patch) => {
                                         void savePatch(patch, "Телефон сохранён.");
@@ -138,7 +140,7 @@ export const PersonalDataPage = () => {
                                 />
 
                                 <EmailFormCard
-                                    client={client}
+                                    profile={profile}
                                     loading={saving}
                                     onSave={(patch) => {
                                         void savePatch(patch, "Почта сохранена.");

@@ -1,14 +1,14 @@
 import {createElement, useEffect, useState, type FC} from "react";
 import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, MailRegular, type FluentIcon} from "@fluentui/react-icons";
-import type {ClientInfo} from "../../types/client.ts";
+import type {Profile} from "../../types/profile";
 import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
 
 export interface EmailFormCardProps {
-    client: ClientInfo;
+    profile: Profile;
     loading?: boolean;
     className?: string;
-    onSave?: (patch: Partial<ClientInfo>) => void;
+    onSave?: (patch: Partial<Profile>) => void;
 }
 
 const getStatusClass = (confirmed?: boolean | null): string => {
@@ -23,13 +23,13 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
     return DismissFilled;
 };
 
-export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, className, onSave}) => {
-    const [email, setEmail] = useState(client.email);
+export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false, className, onSave}) => {
+    const [email, setEmail] = useState(profile.email);
     const [showEmailModal, setShowEmailModal] = useState(false);
 
     useEffect(() => {
-        setEmail(client.email);
-    }, [client.clientId, client.email]);
+        setEmail(profile.email);
+    }, [profile.email]);
 
     const handleEmailVerified = (verifiedEmail: string) => {
         setEmail(verifiedEmail);
@@ -58,13 +58,13 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
                                 </Body1Strong>
                             </Tooltip>
                             <Tooltip
-                                content={client.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
+                                content={profile.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
                                 relationship="description"
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(client.emailConfirmed))}
-                                    className={`custom-tag ${getStatusClass(client.emailConfirmed)}`}
+                                    icon={createElement(getStatusIcon(profile.emailConfirmed))}
+                                    className={`custom-tag ${getStatusClass(profile.emailConfirmed)}`}
                                 />
                             </Tooltip>
                         </div>
@@ -74,7 +74,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
                             onClick={() => setShowEmailModal(true)}
                             disabled={loading}
                         >
-                            {client.emailConfirmed ? "Изменить" : "Подтвердить"}
+                            {profile.emailConfirmed ? "Изменить" : "Подтвердить"}
                         </Button>
                     </div>
                 </div>
@@ -84,7 +84,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({client, loading = false, 
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
                 currentEmail={email}
-                currentEmailConfirmed={client.emailConfirmed === true}
+                currentEmailConfirmed={profile.emailConfirmed === true}
                 onSuccess={handleEmailVerified}
             />
         </Card>

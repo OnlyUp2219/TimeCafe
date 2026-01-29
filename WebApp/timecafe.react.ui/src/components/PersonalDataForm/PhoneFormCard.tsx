@@ -1,7 +1,7 @@
 import {createElement, useEffect, useState, type FC} from "react";
 import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
-import type {ClientInfo} from "../../types/client.ts";
+import type {Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 
 type PhoneVerificationSessionV1 = {
@@ -35,10 +35,10 @@ const loadPhoneSession = (): PhoneVerificationSessionV1 | null => {
 };
 
 export interface PhoneFormCardProps {
-    client: ClientInfo;
+    profile: Profile;
     loading?: boolean;
     className?: string;
-    onSave?: (patch: Partial<ClientInfo>) => void;
+    onSave?: (patch: Partial<Profile>) => void;
 }
 
 const getStatusClass = (confirmed?: boolean | null): string => {
@@ -53,10 +53,10 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
     return DismissFilled;
 };
 
-export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, className, onSave}) => {
+export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false, className, onSave}) => {
     const [showPhoneModal, setShowPhoneModal] = useState(false);
 
-    const phone = client.phoneNumber || "";
+    const phone = profile.phoneNumber || "";
 
     useEffect(() => {
         const session = loadPhoneSession();
@@ -91,13 +91,13 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, 
                                 </Body1Strong>
                             </Tooltip>
                             <Tooltip
-                                content={client.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
+                                content={profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
                                 relationship="description"
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(client.phoneNumberConfirmed))}
-                                    className={`custom-tag ${getStatusClass(client.phoneNumberConfirmed)}`}
+                                    icon={createElement(getStatusIcon(profile.phoneNumberConfirmed))}
+                                    className={`custom-tag ${getStatusClass(profile.phoneNumberConfirmed)}`}
                                 />
                             </Tooltip>
                         </div>
@@ -108,7 +108,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, 
                             onClick={() => setShowPhoneModal(true)}
                             disabled={loading}
                         >
-                            {client.phoneNumberConfirmed ? "Изменить" : "Подтвердить"}
+                            {profile.phoneNumberConfirmed ? "Изменить" : "Подтвердить"}
                         </Button>
                     </div>
                 </div>
@@ -117,8 +117,8 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({client, loading = false, 
             <PhoneVerificationModal
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
-                currentPhoneNumber={client.phoneNumber || ""}
-                currentPhoneNumberConfirmed={client.phoneNumberConfirmed === true}
+                currentPhoneNumber={profile.phoneNumber || ""}
+                currentPhoneNumberConfirmed={profile.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
                 mode="ui"
             />

@@ -1,15 +1,15 @@
 import {useEffect, useState, type FC} from "react";
 import {Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
 import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
-import type {ClientInfo} from "../../types/client.ts";
+import type {Profile} from "../../types/profile";
 import {DateInput} from "../FormFields";
 import {ProfilePhotoCard} from "../ProfilePhotoCard/ProfilePhotoCard";
 
 export interface PersonalDataMainFormProps {
-    client: ClientInfo;
+    profile: Profile;
     loading?: boolean;
     className?: string;
-    onSave?: (patch: Partial<ClientInfo>) => void;
+    onSave?: (patch: Partial<Profile>) => void;
     onPhotoUrlChange?: (url: string | null) => void;
 }
 
@@ -30,29 +30,39 @@ const normalizeGenderId = (value: unknown): 0 | 1 | 2 => {
 };
 
 export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
-                                                                        client,
+                                                                        profile,
                                                                         loading = false,
                                                                         className,
                                                                         onSave,
                                                                         onPhotoUrlChange,
                                                                     }) => {
 
-    const [firstName, setFirstName] = useState(client.firstName ?? "");
-    const [lastName, setLastName] = useState(client.lastName ?? "");
-    const [middleName, setMiddleName] = useState(client.middleName ?? "");
-    const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(client.birthDate));
-    const [genderId, setGenderId] = useState<0 | 1 | 2>(() => normalizeGenderId(client.genderId));
+    const [firstName, setFirstName] = useState(profile.firstName ?? "");
+    const [lastName, setLastName] = useState(profile.lastName ?? "");
+    const [middleName, setMiddleName] = useState(profile.middleName ?? "");
+    const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(profile.birthDate));
+    const [genderId, setGenderId] = useState<0 | 1 | 2>(() => normalizeGenderId(profile.gender));
     const [mode, setMode] = useState<"view" | "edit">("view");
 
     useEffect(() => {
-        setFirstName(client.firstName ?? "");
-        setLastName(client.lastName ?? "");
-        setMiddleName(client.middleName ?? "");
-        setBirthDate(normalizeDate(client.birthDate));
-        setGenderId(normalizeGenderId(client.genderId));
-    }, [client.clientId, client.firstName, client.lastName, client.middleName, client.birthDate, client.genderId]);
+        setFirstName(profile.firstName ?? "");
+        setLastName(profile.lastName ?? "");
+        setMiddleName(profile.middleName ?? "");
+        setBirthDate(normalizeDate(profile.birthDate));
+        setGenderId(normalizeGenderId(profile.gender));
+    }, [profile.firstName, profile.lastName, profile.middleName, profile.birthDate, profile.gender]);
 
-    const displayName = `${client.lastName ?? ""} ${client.firstName ?? ""}${client.middleName ? ` ${client.middleName}` : ""}`.trim() || client.email;
+    const toIsoStringOrUndefined = (value: Date | undefined): string | undefined => {
+        if (!value) return undefined;
+        const t = value.getTime();
+        if (Number.isNaN(t)) return undefined;
+        return value.toISOString();
+    };
+
+    const displayName =
+        `${profile.lastName ?? ""} ${profile.firstName ?? ""}${profile.middleName ? ` ${profile.middleName}` : ""}`.trim() ||
+        profile.email ||
+        "";
 
     const fullName = `${lastName} ${firstName}${middleName ? ` ${middleName}` : ""}`.trim();
     const genderText = genderId === 1 ? "Мужчина" : genderId === 2 ? "Женщина" : "Не указан";
@@ -63,18 +73,18 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             middleName: middleName.trim() || undefined,
-            birthDate,
-            genderId,
+            birthDate: toIsoStringOrUndefined(birthDate),
+            gender: genderId,
         });
         setMode("view");
     };
 
     const handleCancel = () => {
-        setFirstName(client.firstName ?? "");
-        setLastName(client.lastName ?? "");
-        setMiddleName(client.middleName ?? "");
-        setBirthDate(normalizeDate(client.birthDate));
-        setGenderId(normalizeGenderId(client.genderId));
+        setFirstName(profile.firstName ?? "");
+        setLastName(profile.lastName ?? "");
+        setMiddleName(profile.middleName ?? "");
+        setBirthDate(normalizeDate(profile.birthDate));
+        setGenderId(normalizeGenderId(profile.gender));
         setMode("view");
     };
 
@@ -99,7 +109,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 asCard={false}
                                 showTitle={false}
                                 variant="view"
-                                initialPhotoUrl={client.photo ?? null}
+                                initialPhotoUrl={profile.photoUrl ?? null}
                             />
 
                             <div className="flex flex-col gap-1">
@@ -108,7 +118,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 <Text>Дата рождения: {birthDateText}</Text>
                                 <Text>
                                     Номер карты
-                                    доступа: {client.phoneNumberConfirmed === true ? (client.accessCardNumber ?? "—") : "—"}
+                                    доступа: {profile.phoneNumberConfirmed === true ? (profile.accessCardNumber ?? "—") : "—"}
                                 </Text>
                             </div>
                         </div>
@@ -134,7 +144,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 showTitle={false}
                                 variant="edit"
                                 disabled={loading}
-                                initialPhotoUrl={client.photo ?? null}
+                                initialPhotoUrl={profile.photoUrl ?? null}
                             />
                         </div>
 
@@ -179,7 +189,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             <div>
                                 <Text>
                                     Номер карты
-                                    доступа: {client.phoneNumberConfirmed === true ? (client.accessCardNumber ?? "—") : "—"}
+                                    доступа: {profile.phoneNumberConfirmed === true ? (profile.accessCardNumber ?? "—") : "—"}
                                 </Text>
                             </div>
 
