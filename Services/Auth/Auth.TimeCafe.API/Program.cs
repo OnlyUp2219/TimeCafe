@@ -44,7 +44,7 @@ builder.Services.AddCorsConfiguration(corsPolicyName);
 builder.Services.AddCarter();
 
 // MassTransit with RabbitMQ
-builder.Services.AddRabbitMqMessaging(builder.Configuration);
+builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 

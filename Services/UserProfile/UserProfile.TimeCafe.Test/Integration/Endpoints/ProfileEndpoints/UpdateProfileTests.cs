@@ -17,9 +17,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
-            gender = (byte)Gender.Female,
-            profileStatus = (byte)ProfileStatus.Completed,
-            banReason = (string?)null
+            gender = (byte)Gender.Female
         };
 
         // Act
@@ -56,9 +54,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
-            gender = (byte)Gender.NotSpecified,
-            profileStatus = (byte)ProfileStatus.Pending,
-            banReason = (string?)null
+            gender = (byte)Gender.NotSpecified
         };
 
         // Act
@@ -93,9 +89,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
-            gender = (byte)Gender.NotSpecified,
-            profileStatus = (byte)ProfileStatus.Pending,
-            banReason = (string?)null
+            gender = (byte)Gender.NotSpecified
         };
 
         // Act

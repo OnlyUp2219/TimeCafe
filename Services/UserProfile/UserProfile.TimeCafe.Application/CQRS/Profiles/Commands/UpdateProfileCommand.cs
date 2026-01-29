@@ -41,9 +41,6 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 
         RuleFor(x => x.User.Gender)
             .IsInEnum().WithMessage("Пол указан некорректно");
-
-        RuleFor(x => x.User.ProfileStatus)
-            .IsInEnum().WithMessage("Статус профиля указан некорректно");
     }
 }
 
@@ -58,6 +55,20 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
             var existing = await _repositories.GetProfileByIdAsync(request.User.UserId, cancellationToken);
             if (existing == null)
                 return UpdateProfileResult.ProfileNotFound();
+
+            if (existing.ProfileStatus == ProfileStatus.Banned)
+            {
+                request.User.ProfileStatus = ProfileStatus.Banned;
+                request.User.BanReason = existing.BanReason;
+            }
+            else
+            {
+                var isCompleted =
+                    !string.IsNullOrWhiteSpace(request.User.FirstName)
+                    && !string.IsNullOrWhiteSpace(request.User.LastName);
+
+                request.User.ProfileStatus = isCompleted ? ProfileStatus.Completed : ProfileStatus.Pending;
+            }
 
             var updated = await _repositories.UpdateProfileAsync(request.User, cancellationToken);
 

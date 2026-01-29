@@ -10,7 +10,7 @@ var corsPolicyName = builder.Configuration["CORS:PolicyName"]
 builder.Services.AddCorsConfiguration(corsPolicyName);
 
 // MassTransit with RabbitMQ
-builder.Services.AddRabbitMqMessaging(builder.Configuration);
+builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
 
 // Redis
 builder.Services.AddRedis(builder.Configuration);
