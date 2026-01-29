@@ -1,3 +1,4 @@
+
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record RegisterUserCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<RegisterUserResult>;
@@ -36,11 +37,13 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 public class RegisterUserCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
-    IOptions<PostmarkOptions> postmarkOptions) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+    IOptions<PostmarkOptions> postmarkOptions,
+    IPublishEndpoint publishEndpoint) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
@@ -57,6 +60,12 @@ public class RegisterUserCommandHandler(
             List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
             return RegisterUserResult.Error(errs);
         }
+
+        await _publishEndpoint.Publish(new UserRegisteredEvent
+        {
+            UserId = user.Id,
+            Email = user.Email ?? string.Empty
+        }, cancellationToken);
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

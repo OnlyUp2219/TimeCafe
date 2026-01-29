@@ -4,8 +4,23 @@ namespace UserProfile.TimeCafe.API.Extensions;
 
 public static class MassTransitExtensions
 {
-    public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
+        if (environment.IsEnvironment("Testing"))
+        {
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserRegisteredConsumer>();
+
+                x.UsingInMemory((context, cfg) =>
+                {
+                    cfg.ConfigureEndpoints(context);
+                });
+            });
+
+            return services;
+        }
+
         var rabbitMqSection = configuration.GetSection("RabbitMQ");
         if (!rabbitMqSection.Exists())
             throw new InvalidOperationException("RabbitMQ configuration section is missing.");
@@ -23,6 +38,8 @@ public static class MassTransitExtensions
                     h.Username(rabbitMqSection["Username"]!);
                     h.Password(rabbitMqSection["Password"]!);
                 });
+
+                cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
 
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
                 cfg.Publish<VisitCompletedEvent>(p =>

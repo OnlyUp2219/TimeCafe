@@ -8,9 +8,7 @@ public record UpdateProfileDto(
     string? AccessCardNumber,
     string? PhotoUrl,
     DateOnly? BirthDate,
-    Gender Gender,
-    ProfileStatus ProfileStatus,
-    string? BanReason);
+    Gender Gender);
 
 public class UpdateProfileDtoExample : IExamplesProvider<UpdateProfileDto>
 {
@@ -24,9 +22,7 @@ public class UpdateProfileDtoExample : IExamplesProvider<UpdateProfileDto>
             AccessCardNumber: "CARD-001",
             PhotoUrl: "https://example.com/photos/user123.jpg",
             BirthDate: new DateOnly(1990, 5, 15),
-            Gender: Gender.Male,
-            ProfileStatus: ProfileStatus.Completed,
-            BanReason: null
+            Gender: Gender.Male
         );
     }
 }

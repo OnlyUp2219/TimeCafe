@@ -34,3 +34,5 @@ global using Serilog;
 
 global using Swashbuckle.AspNetCore.Filters;
 global using Swashbuckle.AspNetCore.SwaggerGen;
+
+global using BuildingBlocks.Events;

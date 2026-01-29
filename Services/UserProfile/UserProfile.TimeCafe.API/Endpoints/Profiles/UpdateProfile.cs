@@ -18,8 +18,7 @@ public class UpdateProfile : ICarterModule
                 PhotoUrl = dto.PhotoUrl,
                 BirthDate = dto.BirthDate,
                 Gender = dto.Gender,
-                ProfileStatus = dto.ProfileStatus,
-                BanReason = dto.BanReason
+                ProfileStatus = ProfileStatus.Pending
             };
             var command = new UpdateProfileCommand(profile);
             var result = await sender.Send(command);
