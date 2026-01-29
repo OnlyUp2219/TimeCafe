@@ -1,17 +1,17 @@
-import type {ClientInfo} from "../types/client";
+import type {Profile} from "../types/profile";
 
 export type ProfileUiStatus = "Pending" | "Completed";
 
-export const isNameCompleted = (client: ClientInfo | null): boolean => {
-    if (!client) return false;
-    return Boolean(client.firstName?.trim()) && Boolean(client.lastName?.trim());
+export const isNameCompleted = (profile: Profile | null): boolean => {
+    if (!profile) return false;
+    return Boolean(profile.firstName?.trim()) && Boolean(profile.lastName?.trim());
 };
 
-export const isPhoneCompleted = (client: ClientInfo | null): boolean => {
-    if (!client) return false;
-    return Boolean(client.phoneNumber?.trim()) && client.phoneNumberConfirmed === true;
+export const isPhoneCompleted = (profile: Profile | null): boolean => {
+    if (!profile) return false;
+    return Boolean(profile.phoneNumber?.trim());
 };
 
-export const getProfileUiStatus = (client: ClientInfo | null): ProfileUiStatus => {
-    return isNameCompleted(client) && isPhoneCompleted(client) ? "Completed" : "Pending";
+export const getProfileUiStatus = (profile: Profile | null): ProfileUiStatus => {
+    return isNameCompleted(profile) ? "Completed" : "Pending";
 };
