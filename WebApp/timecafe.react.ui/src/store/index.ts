@@ -3,14 +3,14 @@ import {persistReducer, persistStore} from "redux-persist";
 import uiSlice from "./uiSlice.ts";
 import storage from "redux-persist/lib/storage";
 import authSlice from "./authSlice.ts";
-import clientSlice from "./clientSlice";
+import profileSlice from "./profileSlice";
 import visitSlice from "./visitSlice";
 import billingSlice from "./billingSlice";
 
 const rootReducer = combineReducers({
     ui: uiSlice,
     auth: authSlice,
-    client: clientSlice,
+    profile: profileSlice,
     visit: visitSlice,
     billing: billingSlice,
 });
