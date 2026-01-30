@@ -63,14 +63,14 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapCarter();
-
-app.MapControllers();
+var authGroup = app.MapGroup("/auth");
+authGroup.MapCarter();
+authGroup.MapControllers();
 
 app.MapGet("/health", () => Results.Ok("OK"))
     .AllowAnonymous();
 
-app.MapGet("/test-publish", async (IPublishEndpoint pub) =>
+authGroup.MapGet("/test-publish", async (IPublishEndpoint pub) =>
 {
     await pub.Publish(new UserRegisteredEvent
     {
@@ -81,7 +81,7 @@ app.MapGet("/test-publish", async (IPublishEndpoint pub) =>
     return Results.Ok("Событие отправлено!");
 });
 
-app.MapGet("/test-yarp", async (IPublishEndpoint pub) =>
+authGroup.MapGet("/test-yarp", async (IPublishEndpoint pub) =>
 {
     var user = new ApplicationUser()
     {

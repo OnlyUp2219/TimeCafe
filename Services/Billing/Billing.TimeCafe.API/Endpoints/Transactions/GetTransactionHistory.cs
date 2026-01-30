@@ -4,7 +4,7 @@ public class GetTransactionHistory : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/billing/transactions/history/{userId}", async (
+        app.MapGet("/transactions/history/{userId}", async (
             [FromServices] ISender sender,
             [AsParameters] GetTransactionHistoryDto dto) =>
         {

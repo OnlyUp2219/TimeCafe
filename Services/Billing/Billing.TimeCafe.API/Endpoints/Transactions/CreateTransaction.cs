@@ -4,7 +4,7 @@ public class CreateTransaction : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/billing/transactions", async (
+        app.MapPost("/transactions", async (
             [FromServices] ISender sender,
             [FromBody] AdjustBalanceDto dto) =>
         {

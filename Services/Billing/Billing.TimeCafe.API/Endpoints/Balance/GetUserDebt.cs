@@ -6,7 +6,7 @@ public class GetUserDebt : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/billing/debt/{userId}", async (
+        app.MapGet("/debt/{userId}", async (
             [FromServices] ISender sender,
             [AsParameters] GetUserDebtDto dto) =>
         {

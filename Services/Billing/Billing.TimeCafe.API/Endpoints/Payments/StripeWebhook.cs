@@ -4,7 +4,7 @@ public class StripeWebhook : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/billing/payments/webhook/stripe", async (
+        app.MapPost("/payments/webhook/stripe", async (
             [FromServices] ISender sender,
             [FromBody] StripeWebhookPayload payload,
             HttpRequest request) =>

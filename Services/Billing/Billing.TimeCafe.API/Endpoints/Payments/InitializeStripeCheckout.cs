@@ -4,7 +4,7 @@ public class InitializeStripeCheckout : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/billing/payments/initialize-checkout", async (
+        app.MapPost("/payments/initialize-checkout", async (
             [FromServices] ISender sender,
             [FromBody] InitializeCheckoutDto dto) =>
         {

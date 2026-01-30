@@ -47,7 +47,8 @@ app.UseCors(corsPolicyName);
 app.UseSwaggerDevelopment();
 
 // Endpoints
-app.MapCarter();
+var userProfileGroup = app.MapGroup("/userprofile");
+userProfileGroup.MapCarter();
 
 app.MapGet("/health", () => Results.Ok("OK"))
     .AllowAnonymous();
