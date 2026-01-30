@@ -5,10 +5,10 @@ public class TestPhotoProfile : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/S3/test/user/{userId}/photo", async (
-            string userId,
-            ISender sender,
-            IUserRepositories userRepo,
-            IProfilePhotoStorage photoStorage,
+            [FromRoute] string userId,
+            [FromServices] ISender sender,
+            [FromServices] IUserRepositories userRepo,
+            [FromServices] IProfilePhotoStorage photoStorage,
             CancellationToken ct) =>
         {
             var guidUserId = Guid.Parse(userId);
@@ -61,6 +61,7 @@ public class TestPhotoProfile : ICarterModule
 
             return Results.File(photoDto.Stream, photoDto.ContentType, enableRangeProcessing: true);
         })
+            .RequireAuthorization()
         .WithTags("ProfilePhoto")
         .WithName("TestUserPhoto")
         .WithSummary("Тестовый эндпоинт: создать пользователя и получить фото")
