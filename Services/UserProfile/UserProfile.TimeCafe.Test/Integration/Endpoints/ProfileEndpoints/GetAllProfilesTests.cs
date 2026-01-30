@@ -12,7 +12,7 @@ public class GetAllProfilesTests(IntegrationApiFactory factory) : BaseEndpointTe
         await SeedProfileAsync(userId2, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
 
         // Act
-        var response = await Client.GetAsync("/profiles");
+        var response = await Client.GetAsync("/userprofile/profiles");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -34,7 +34,7 @@ public class GetAllProfilesTests(IntegrationApiFactory factory) : BaseEndpointTe
     public async Task Endpoint_GetAllProfiles_Should_Return200_WhenNoProfiles()
     {
         // Act
-        var response = await Client.GetAsync("/profiles");
+        var response = await Client.GetAsync("/userprofile/profiles");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

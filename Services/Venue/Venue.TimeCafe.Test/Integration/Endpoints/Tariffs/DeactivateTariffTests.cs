@@ -9,7 +9,7 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
         var name = TestData.NewTariffs.NewTariff1Name;
         var tariff = await SeedTariffAsync(name, TestData.NewTariffs.NewTariff1Price, isActive: true);
 
-        var response = await Client.PostAsync($"/tariffs/{tariff.TariffId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -29,7 +29,7 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -49,7 +49,7 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/tariffs/{invalidId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{invalidId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -69,9 +69,9 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
         var name2 = TestData.NewTariffs.NewTariff2Name;
         var tariff = await SeedTariffAsync(name2, TestData.NewTariffs.NewTariff2Price, isActive: true);
 
-        await Client.PostAsync($"/tariffs/{tariff.TariffId}/deactivate", null);
+        await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/deactivate", null);
 
-        var response = await Client.GetAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

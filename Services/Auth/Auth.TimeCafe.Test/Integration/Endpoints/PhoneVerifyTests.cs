@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    private const string Endpoint = "/twilio/verifySMS-mock";
+    private const string Endpoint = "/auth/twilio/verifySMS-mock";
 
     private async Task<string> GenerateMockCodeAsync(string accessToken, string phone)
     {
@@ -10,7 +10,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
-        var resp = await client.PostAsJsonAsync("/twilio/generateSMS-mock", dto);
+        var resp = await client.PostAsJsonAsync("/auth/twilio/generateSMS-mock", dto);
         resp.EnsureSuccessStatusCode();
         var json = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()).RootElement;
         return json.GetProperty("token").GetString()!;

@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class PhoneGenerateTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    private const string Endpoint = "/twilio/generateSMS-mock";
+    private const string Endpoint = "/auth/twilio/generateSMS-mock";
 
     [Fact]
     public async Task Endpoint_GenerateSmsMock_Should_ReturnUnauthorized_WhenNoToken()

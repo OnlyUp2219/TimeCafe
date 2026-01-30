@@ -7,7 +7,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         var theme = await SeedThemeAsync("Тестовая тема");
 
-        var response = await Client.GetAsync($"/themes/{theme.ThemeId}");
+        var response = await Client.GetAsync($"/venue/themes/{theme.ThemeId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -27,7 +27,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Fact]
     public async Task Endpoint_GetThemeById_Should_Return404_WhenThemeNotFound()
     {
-        var response = await Client.GetAsync($"/themes/{TestData.NonExistingIds.NonExistingThemeId}");
+        var response = await Client.GetAsync($"/venue/themes/{TestData.NonExistingIds.NonExistingThemeId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -50,7 +50,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     [InlineData("00000000-0000-0000-0000-000000000000")]
     public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
     {
-        var response = await Client.GetAsync($"/themes/{invalidId}");
+        var response = await Client.GetAsync($"/venue/themes/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -69,7 +69,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Fact]
     public async Task Endpoint_GetThemeById_Should_Return200_WhenThemeIdIsEmpty()
     {
-        var response = await Client.GetAsync($"/themes/");
+        var response = await Client.GetAsync($"/venue/themes/");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -90,7 +90,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Полная тема");
 
-        var response = await Client.GetAsync($"/themes/{theme.ThemeId}");
+        var response = await Client.GetAsync($"/venue/themes/{theme.ThemeId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

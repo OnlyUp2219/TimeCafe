@@ -11,7 +11,7 @@ public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
-        var response = await client.PostAsJsonAsync("/registerWithUsername-mock", dto);
+        var response = await client.PostAsJsonAsync("/auth/registerWithUsername-mock", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -41,7 +41,7 @@ public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
-        var response = await client.PostAsJsonAsync("/registerWithUsername-mock", dto);
+        var response = await client.PostAsJsonAsync("/auth/registerWithUsername-mock", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -69,10 +69,10 @@ public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
-        var first = await client.PostAsJsonAsync("/registerWithUsername-mock", dto);
+        var first = await client.PostAsJsonAsync("/auth/registerWithUsername-mock", dto);
         first.EnsureSuccessStatusCode();
 
-        var second = await client.PostAsJsonAsync("/registerWithUsername-mock", dto);
+        var second = await client.PostAsJsonAsync("/auth/registerWithUsername-mock", dto);
         var jsonString = await second.Content.ReadAsStringAsync();
 
         // Assert
@@ -107,7 +107,7 @@ public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest
 
         // Act
         using var client = CreateClientWithDisabledRateLimiter();
-        var response = await client.PostAsJsonAsync("/registerWithUsername-mock", dto);
+        var response = await client.PostAsJsonAsync("/auth/registerWithUsername-mock", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

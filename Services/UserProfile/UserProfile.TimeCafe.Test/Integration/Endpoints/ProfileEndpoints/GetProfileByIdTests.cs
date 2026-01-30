@@ -9,7 +9,7 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         var userId = TestData.ExistingUsers.User1Id;
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{userId}");
+        var response = await Client.GetAsync($"/userprofile/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -38,7 +38,7 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         var userId = TestData.NonExistingUsers.UserId1;
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{userId}");
+        var response = await Client.GetAsync($"/userprofile/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -63,7 +63,7 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         var invalidId = TestData.InvalidIds.NotAGuid;
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{invalidId}");
+        var response = await Client.GetAsync($"/userprofile/profiles/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

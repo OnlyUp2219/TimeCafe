@@ -15,7 +15,7 @@ public class LoginV2Tests : BaseEndpointTest
         var dto = new { Email = "v2_unconfirmed@example.com", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
+        var response = await Client.PostAsJsonAsync("/auth/login-jwt-v2", dto);
         var body = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -43,7 +43,7 @@ public class LoginV2Tests : BaseEndpointTest
         var dto = new { Email = "v2_confirmed@example.com", Password = "password123" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/login-jwt-v2", dto);
+        var response = await Client.PostAsJsonAsync("/auth/login-jwt-v2", dto);
         var body = await response.Content.ReadAsStringAsync();
 
         // Assert

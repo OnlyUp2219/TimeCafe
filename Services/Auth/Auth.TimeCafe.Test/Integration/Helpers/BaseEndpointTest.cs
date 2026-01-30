@@ -63,7 +63,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         await userManager.CreateAsync(user, "P@ssw0rd!");
 
         var loginDto = new { Email = email, Password = "P@ssw0rd!" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
         loginResp.EnsureSuccessStatusCode();
         var json = JsonDocument.Parse(await loginResp.Content.ReadAsStringAsync()).RootElement;
         var token = json.GetProperty("accessToken").GetString()!;

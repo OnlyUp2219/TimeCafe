@@ -8,7 +8,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
 
-        var response = await Client.GetAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -30,7 +30,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -48,7 +48,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/promotions//");
+        var response = await Client.GetAsync($"/venue/promotions//");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -59,7 +59,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/promotions/{invalidId}");
+        var response = await Client.GetAsync($"/venue/promotions/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -78,7 +78,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent);
 
-        var response = await Client.GetAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

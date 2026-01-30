@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class ForgotPasswordTests : BaseEndpointTest
 {
-    private const string Endpoint = "/forgot-password-link-mock";
+    private const string Endpoint = "/auth/forgot-password-link-mock";
 
     public ForgotPasswordTests(IntegrationApiFactory factory) : base(factory)
     {

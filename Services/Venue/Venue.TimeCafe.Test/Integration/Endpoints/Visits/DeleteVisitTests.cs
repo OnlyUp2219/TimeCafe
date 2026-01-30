@@ -8,7 +8,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         await ClearDatabaseAndCacheAsync();
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId);
 
-        var response = await Client.DeleteAsync($"/visits/{visit.VisitId}");
+        var response = await Client.DeleteAsync($"/venue/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -28,7 +28,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/visits/{TestData.NonExistingIds.NonExistingVisitIdString}");
+        var response = await Client.DeleteAsync($"/venue/visits/{TestData.NonExistingIds.NonExistingVisitIdString}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -47,10 +47,10 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         await ClearDatabaseAndCacheAsync();
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId);
 
-        var deleteResponse = await Client.DeleteAsync($"/visits/{visit.VisitId}");
+        var deleteResponse = await Client.DeleteAsync($"/venue/visits/{visit.VisitId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getResponse = await Client.GetAsync($"/visits/{visit.VisitId}");
+        var getResponse = await Client.GetAsync($"/venue/visits/{visit.VisitId}");
         var jsonString = await getResponse.Content.ReadAsStringAsync();
         try
         {
@@ -70,7 +70,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/visits/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/visits/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -90,9 +90,9 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var visit1 = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId);
         var visit2 = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId);
 
-        await Client.DeleteAsync($"/visits/{visit1.VisitId}");
+        await Client.DeleteAsync($"/venue/visits/{visit1.VisitId}");
 
-        var response = await Client.GetAsync($"/visits/{visit2.VisitId}");
+        var response = await Client.GetAsync($"/venue/visits/{visit2.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

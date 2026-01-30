@@ -10,7 +10,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, isActive: false);
         await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute, isActive: true);
 
-        var response = await Client.GetAsync("/tariffs/active");
+        var response = await Client.GetAsync("/venue/tariffs/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -35,7 +35,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, isActive: false);
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, isActive: false);
 
-        var response = await Client.GetAsync("/tariffs/active");
+        var response = await Client.GetAsync("/venue/tariffs/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -59,7 +59,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, isActive: true);
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, isActive: false);
 
-        var response = await Client.GetAsync("/tariffs/active");
+        var response = await Client.GetAsync("/venue/tariffs/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

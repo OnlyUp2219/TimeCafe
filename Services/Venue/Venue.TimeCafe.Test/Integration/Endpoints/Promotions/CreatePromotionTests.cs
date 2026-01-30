@@ -16,7 +16,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -49,7 +49,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -77,7 +77,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -107,7 +107,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -134,7 +134,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -161,7 +161,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/promotions", payload);
+        var response = await Client.PostAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

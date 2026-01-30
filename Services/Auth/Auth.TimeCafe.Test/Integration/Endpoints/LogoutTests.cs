@@ -12,12 +12,12 @@ public class LogoutTests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
         var loginBody = await loginResp.Content.ReadAsStringAsync();
 
         // Act
         var refreshToken = ExtractCookieValue(loginResp, "refresh_token");
-        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         logoutRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
         var response = await Client.SendAsync(logoutRequest);
         var body = await response.Content.ReadAsStringAsync();
@@ -44,7 +44,7 @@ public class LogoutTests : BaseEndpointTest
     public async Task Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMissing()
     {
         // Arrange
-        var response = await Client.PostAsync("/logout", new StringContent(string.Empty));
+        var response = await Client.PostAsync("/auth/logout", new StringContent(string.Empty));
         var body = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -69,15 +69,15 @@ public class LogoutTests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
         loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var refreshToken = ExtractCookieValue(loginResp, "refresh_token");
-        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         logoutRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
         (await Client.SendAsync(logoutRequest)).StatusCode.Should().Be(HttpStatusCode.OK);
 
         // Act
-        var secondRequest = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        var secondRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         secondRequest.Headers.Add("Cookie", $"refresh_token={refreshToken}");
         var secondResponse = await Client.SendAsync(secondRequest);
         var body = await secondResponse.Content.ReadAsStringAsync();
@@ -101,7 +101,7 @@ public class LogoutTests : BaseEndpointTest
     public async Task Endpoint_Logout_Should_ReturnOkWithRevokedFalse_WhenCookieMalformed()
     {
         // Arrange
-        var request = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         request.Headers.Add("Cookie", "refresh_token=!!!@@@###");
 
         // Act

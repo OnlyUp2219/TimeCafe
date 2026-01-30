@@ -9,7 +9,7 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var userId = TestData.ExistingUsers.User3Id;
 
         // Act
-        var response = await Client.DeleteAsync($"/profiles/{userId}");
+        var response = await Client.DeleteAsync($"/userprofile/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -38,7 +38,7 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var userId = TestData.NonExistingUsers.UserId1;
 
         // Act
-        var response = await Client.DeleteAsync($"/profiles/{userId}");
+        var response = await Client.DeleteAsync($"/userprofile/profiles/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -63,7 +63,7 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var invalidId = TestData.InvalidIds.NotAGuid;
 
         // Act
-        var response = await Client.DeleteAsync($"/profiles/{invalidId}");
+        var response = await Client.DeleteAsync($"/userprofile/profiles/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

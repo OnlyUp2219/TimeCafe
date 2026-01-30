@@ -9,7 +9,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
         var payload = new { visitId = visit.VisitId };
 
-        var response = await Client.PostAsJsonAsync("/visits/end", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -32,7 +32,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         await ClearDatabaseAndCacheAsync();
         var payload = new { visitId = TestData.NonExistingIds.NonExistingVisitIdString };
 
-        var response = await Client.PostAsJsonAsync("/visits/end", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -54,7 +54,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         await ClearDatabaseAndCacheAsync();
         var payload = new { visitId = invalidId };
 
-        var response = await Client.PostAsJsonAsync("/visits/end", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -74,7 +74,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId, isActive: true);
         var payload = new { visitId = visit.VisitId };
 
-        var response = await Client.PostAsJsonAsync("/visits/end", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

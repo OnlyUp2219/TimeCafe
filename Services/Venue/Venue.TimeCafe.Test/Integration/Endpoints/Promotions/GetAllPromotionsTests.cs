@@ -10,7 +10,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent);
 
-        var response = await Client.GetAsync("/promotions");
+        var response = await Client.GetAsync("/venue/promotions");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -32,7 +32,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync("/promotions");
+        var response = await Client.GetAsync("/venue/promotions");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -55,7 +55,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, (int)TestData.NewPromotions.NewPromotion1DiscountPercent);
 
-        var response = await Client.GetAsync("/promotions");
+        var response = await Client.GetAsync("/venue/promotions");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

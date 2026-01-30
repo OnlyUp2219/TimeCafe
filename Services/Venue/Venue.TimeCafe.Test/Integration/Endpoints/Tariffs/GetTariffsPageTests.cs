@@ -10,7 +10,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
         await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
-        var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=10");
+        var response = await Client.GetAsync("/venue/tariffs/page?pageNumber=1&pageSize=10");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -33,7 +33,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=10");
+        var response = await Client.GetAsync("/venue/tariffs/page?pageNumber=1&pageSize=10");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -61,7 +61,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
             await SeedTariffAsync($"{TestData.NewTariffs.NewTariff1Name} {i}", i * 10m);
         }
 
-        var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=2");
+        var response = await Client.GetAsync("/venue/tariffs/page?pageNumber=1&pageSize=2");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -85,7 +85,7 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
         await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
-        var response = await Client.GetAsync("/tariffs/page?pageNumber=1&pageSize=2");
+        var response = await Client.GetAsync("/venue/tariffs/page?pageNumber=1&pageSize=2");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

@@ -10,7 +10,7 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent, isActive: true);
 
-        var response = await Client.GetAsync("/promotions/active");
+        var response = await Client.GetAsync("/venue/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -35,7 +35,7 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
         await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, (int)TestData.NewPromotions.NewPromotion1DiscountPercent, isActive: false);
         await SeedPromotionAsync(TestData.NewPromotions.NewPromotion2Name, (int)TestData.NewPromotions.NewPromotion2DiscountPercent, isActive: false);
 
-        var response = await Client.GetAsync("/promotions/active");
+        var response = await Client.GetAsync("/venue/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -59,7 +59,7 @@ public class GetActivePromotionsTests(IntegrationApiFactory factory) : BaseEndpo
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
 
-        var response = await Client.GetAsync("/promotions/active");
+        var response = await Client.GetAsync("/venue/promotions/active");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

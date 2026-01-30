@@ -11,7 +11,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         await SeedThemeAsync($"Тема 2 {guid}");
         await SeedThemeAsync($"Тема 3 {guid}");
 
-        var response = await Client.GetAsync("/themes");
+        var response = await Client.GetAsync("/venue/themes");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -39,7 +39,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
     public async Task Endpoint_GetAllThemes_Should_Return200_WhenNoThemesExist()
     {
         await ClearDatabaseAndCacheAsync();
-        var response = await Client.GetAsync("/themes");
+        var response = await Client.GetAsync("/venue/themes");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -62,7 +62,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Специальная тема");
 
-        var response = await Client.GetAsync("/themes");
+        var response = await Client.GetAsync("/venue/themes");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

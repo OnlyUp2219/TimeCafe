@@ -10,7 +10,7 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         var price = TestData.NewTariffs.NewTariff1Price;
         var tariff = await SeedTariffAsync(name, 15m);
 
-        var response = await Client.GetAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -33,7 +33,7 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         await ClearDatabaseAndCacheAsync();
 
         var nonExistingId = TestData.NonExistingIds.NonExistingTariffIdString;
-        var response = await Client.GetAsync($"/tariffs/{nonExistingId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{nonExistingId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -54,7 +54,7 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/tariffs/{invalidId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -74,7 +74,7 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         var detailName = TestData.NewTariffs.NewTariff2Name;
         var tariff = await SeedTariffAsync(detailName, 25m);
 
-        var response = await Client.GetAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

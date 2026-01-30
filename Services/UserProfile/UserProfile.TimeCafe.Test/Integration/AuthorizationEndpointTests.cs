@@ -33,7 +33,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/admin-only");
+        var response = await _client.GetAsync("/userprofile/test/auth/admin-only");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -50,7 +50,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/admin-only");
+        var response = await _client.GetAsync("/userprofile/test/auth/admin-only");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -64,7 +64,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = "none";
 
         // Act
-        var response = await _client.GetAsync("/test/auth/admin-only");
+        var response = await _client.GetAsync("/userprofile/test/auth/admin-only");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -78,7 +78,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/client-or-admin");
+        var response = await _client.GetAsync("/userprofile/test/auth/client-or-admin");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -92,7 +92,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/client-or-admin");
+        var response = await _client.GetAsync("/userprofile/test/auth/client-or-admin");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -106,7 +106,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.GuestRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/client-or-admin");
+        var response = await _client.GetAsync("/userprofile/test/auth/client-or-admin");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -120,7 +120,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/multi-permission");
+        var response = await _client.GetAsync("/userprofile/test/auth/multi-permission");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -136,7 +136,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = "partial";
 
         // Act
-        var response = await _client.GetAsync("/test/auth/multi-permission");
+        var response = await _client.GetAsync("/userprofile/test/auth/multi-permission");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -150,7 +150,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync($"/test/auth/profile/{_clientUserId}");
+        var response = await _client.GetAsync($"/userprofile/test/auth/profile/{_clientUserId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -167,7 +167,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.GetAsync($"/test/auth/profile/{_clientUserId}");
+        var response = await _client.GetAsync($"/userprofile/test/auth/profile/{_clientUserId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -186,7 +186,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync($"/test/auth/profile/{_otherUserId}");
+        var response = await _client.GetAsync($"/userprofile/test/auth/profile/{_otherUserId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -200,7 +200,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.PutAsync($"/test/auth/profile/{_clientUserId}", null);
+        var response = await _client.PutAsync($"/userprofile/test/auth/profile/{_clientUserId}", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -216,7 +216,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.PutAsync($"/test/auth/profile/{_clientUserId}", null);
+        var response = await _client.PutAsync($"/userprofile/test/auth/profile/{_clientUserId}", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -232,7 +232,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.PutAsync($"/test/auth/profile/{_otherUserId}", null);
+        var response = await _client.PutAsync($"/userprofile/test/auth/profile/{_otherUserId}", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -246,7 +246,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.PostAsync("/test/auth/admin-create", null);
+        var response = await _client.PostAsync("/userprofile/test/auth/admin-create", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -260,7 +260,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.PostAsync("/test/auth/admin-create", null);
+        var response = await _client.PostAsync("/userprofile/test/auth/admin-create", null);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -274,7 +274,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.AdminRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/whoami");
+        var response = await _client.GetAsync("/userprofile/test/auth/whoami");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -293,7 +293,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.ClientRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/whoami");
+        var response = await _client.GetAsync("/userprofile/test/auth/whoami");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -313,7 +313,7 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         TestAuthHandler.CurrentRole = Auth.GuestRole;
 
         // Act
-        var response = await _client.GetAsync("/test/auth/public-authenticated");
+        var response = await _client.GetAsync("/userprofile/test/auth/public-authenticated");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);

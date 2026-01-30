@@ -3,9 +3,9 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
-    private const string Endpoint = "/account/change-password";
-    private const string LoginEndpoint = "/login-jwt-v2";
-    private const string RefreshEndpoint = "/refresh-jwt-v2";
+    private const string Endpoint = "/auth/account/change-password";
+    private const string LoginEndpoint = "/auth/login-jwt-v2";
+    private const string RefreshEndpoint = "/auth/refresh-jwt-v2";
 
     private static string ExtractCookieValue(IEnumerable<string> setCookies, string name)
     {
@@ -226,7 +226,7 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
         // Arrange
         var (_, oldPassword, accessToken, refreshToken) = await CreateUserAndLoginAsync();
 
-        var logoutMsg = new HttpRequestMessage(HttpMethod.Post, "/logout");
+        var logoutMsg = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");
         logoutMsg.Headers.Add("Cookie", $"refresh_token={refreshToken}");
         await Client.SendAsync(logoutMsg);
 

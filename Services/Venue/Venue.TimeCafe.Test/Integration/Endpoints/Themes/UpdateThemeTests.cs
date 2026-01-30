@@ -14,7 +14,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = "{\"primary\":\"#00FF00\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -46,7 +46,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = "{}"
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -74,7 +74,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = "{\"primary\":\"#FF0000\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -106,7 +106,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = (string?)null
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -134,7 +134,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = "{\"new\":\"colors\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -165,7 +165,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             Colors = "{}"
         };
 
-        var response = await Client.PutAsJsonAsync("/themes", dto);
+        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

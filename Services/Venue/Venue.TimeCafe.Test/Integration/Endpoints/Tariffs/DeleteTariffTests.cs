@@ -9,7 +9,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var name = TestData.NewTariffs.NewTariff1Name;
         var tariff = await SeedTariffAsync(name, TestData.NewTariffs.NewTariff1Price);
 
-        var response = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -29,7 +29,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -49,10 +49,10 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var delName = TestData.NewTariffs.NewTariff2Name;
         var tariff = await SeedTariffAsync(delName, TestData.NewTariffs.NewTariff2Price);
 
-        var deleteResponse = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
+        var deleteResponse = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getResponse = await Client.GetAsync($"/tariffs/{tariff.TariffId}");
+        var getResponse = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await getResponse.Content.ReadAsStringAsync();
         try
         {
@@ -72,7 +72,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/tariffs/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -92,9 +92,9 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var tariff1 = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var tariff2 = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
-        await Client.DeleteAsync($"/tariffs/{tariff1.TariffId}");
+        await Client.DeleteAsync($"/venue/tariffs/{tariff1.TariffId}");
 
-        var response = await Client.GetAsync($"/tariffs/{tariff2.TariffId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{tariff2.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -121,7 +121,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var msgName = TestData.NewTariffs.NewTariff1Name;
         var tariff = await SeedTariffAsync(msgName, TestData.NewTariffs.NewTariff1Price);
 
-        var response = await Client.DeleteAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

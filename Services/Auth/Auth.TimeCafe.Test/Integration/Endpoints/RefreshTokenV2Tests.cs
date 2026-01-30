@@ -21,7 +21,7 @@ public class RefreshTokenV2Tests : BaseEndpointTest
         var request = new StringContent(string.Empty);
 
         // Act
-        var response = await Client.PostAsync("/refresh-jwt-v2", request);
+        var response = await Client.PostAsync("/auth/refresh-jwt-v2", request);
         var body = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -41,13 +41,13 @@ public class RefreshTokenV2Tests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "v2_refresh@example.com", Password = "P@ssw0rd!" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
         loginResp.EnsureSuccessStatusCode();
         loginResp.Headers.TryGetValues("Set-Cookie", out var initialCookies).Should().BeTrue();
         var oldRefresh = ExtractCookieValue(initialCookies!, "refresh_token");
 
         // Act
-        var refreshRequest = new HttpRequestMessage(HttpMethod.Post, "/refresh-jwt-v2");
+        var refreshRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-jwt-v2");
         refreshRequest.Headers.Add("Cookie", $"refresh_token={oldRefresh}");
         var refreshResp = await Client.SendAsync(refreshRequest);
         var body = await refreshResp.Content.ReadAsStringAsync();
@@ -76,18 +76,18 @@ public class RefreshTokenV2Tests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "v2_refresh@example.com", Password = "P@ssw0rd!" };
-        var loginResp = await Client.PostAsJsonAsync("/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
         loginResp.EnsureSuccessStatusCode();
         loginResp.Headers.TryGetValues("Set-Cookie", out var initialCookies).Should().BeTrue();
         var oldRefresh = ExtractCookieValue(initialCookies!, "refresh_token");
-        var firstRefreshRequest = new HttpRequestMessage(HttpMethod.Post, "/refresh-jwt-v2");
+        var firstRefreshRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-jwt-v2");
         firstRefreshRequest.Headers.Add("Cookie", $"refresh_token={oldRefresh}");
         var firstRefresh = await Client.SendAsync(firstRefreshRequest);
         firstRefresh.EnsureSuccessStatusCode();
         firstRefresh.Headers.TryGetValues("Set-Cookie", out var newCookies).Should().BeTrue();
         var newRefresh = ExtractCookieValue(newCookies!, "refresh_token");
         newRefresh.Should().NotBe(oldRefresh);
-        var manualRequest = new HttpRequestMessage(HttpMethod.Post, "/refresh-jwt-v2");
+        var manualRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/refresh-jwt-v2");
         manualRequest.Headers.Add("Cookie", $"refresh_token={oldRefresh}");
 
         // Act

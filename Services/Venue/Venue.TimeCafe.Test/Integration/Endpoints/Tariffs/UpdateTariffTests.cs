@@ -21,7 +21,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/tariffs", payload);
+        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -55,7 +55,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/tariffs", payload);
+        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -85,7 +85,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = tariff.IsActive,
         };
 
-        var response = await Client.PutAsJsonAsync("/tariffs", payload);
+        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -122,7 +122,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/tariffs", payload);
+        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -155,7 +155,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/tariffs", payload);
+        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

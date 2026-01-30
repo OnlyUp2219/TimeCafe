@@ -9,13 +9,13 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
         var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.TestInfo, createdBy = (string?)null };
-        var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
+        var createResponse = await Client.PostAsJsonAsync("/userprofile/infos", createDto);
         createResponse.EnsureSuccessStatusCode();
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
 
         // Act
-        var response = await Client.GetAsync($"/infos/{infoId}");
+        var response = await Client.GetAsync($"/userprofile/infos/{infoId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -40,7 +40,7 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Act
         var randomGuid = Guid.NewGuid();
-        var response = await Client.GetAsync($"/infos/{randomGuid}");
+        var response = await Client.GetAsync($"/userprofile/infos/{randomGuid}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

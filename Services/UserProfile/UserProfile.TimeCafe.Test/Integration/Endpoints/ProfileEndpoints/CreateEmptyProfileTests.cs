@@ -9,7 +9,7 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         var userId = TestData.NewProfiles.NewUser1Id;
 
         // Act
-        var response = await Client.PostAsync($"/profiles/empty/{userId}", null);
+        var response = await Client.PostAsync($"/userprofile/profiles/empty/{userId}", null);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -34,7 +34,7 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         var userId = TestData.ExistingUsers.User1Id;
 
         // Act
-        var response = await Client.PostAsync($"/profiles/empty/{userId}", null);
+        var response = await Client.PostAsync($"/userprofile/profiles/empty/{userId}", null);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -59,7 +59,7 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         var invalidId = TestData.InvalidIds.NotAGuid;
 
         // Act
-        var response = await Client.PostAsync($"/profiles/empty/{invalidId}", null);
+        var response = await Client.PostAsync($"/userprofile/profiles/empty/{invalidId}", null);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

@@ -13,11 +13,11 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         var createDto1 = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.FirstInfo, createdBy = (string?)null };
         var createDto2 = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.SecondInfo, createdBy = (string?)null };
 
-        await Client.PostAsJsonAsync("/infos", createDto1);
-        await Client.PostAsJsonAsync("/infos", createDto2);
+        await Client.PostAsJsonAsync("/userprofile/infos", createDto1);
+        await Client.PostAsJsonAsync("/userprofile/infos", createDto2);
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{userId}/infos");
+        var response = await Client.GetAsync($"/userprofile/profiles/{userId}/infos");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -46,7 +46,7 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{userId}/infos");
+        var response = await Client.GetAsync($"/userprofile/profiles/{userId}/infos");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -72,7 +72,7 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         var nonExistentUserId = NonExistingUsers.UserId1;
 
         // Act
-        var response = await Client.GetAsync($"/profiles/{nonExistentUserId}/infos");
+        var response = await Client.GetAsync($"/userprofile/profiles/{nonExistentUserId}/infos");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

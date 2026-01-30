@@ -21,7 +21,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{userId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -56,7 +56,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.PngContentType);
         content.Add(fileContent, "file", TestData.PhotoTestData.TestFileNamePng);
 
-        var uploadResponse = await Client.PostAsync($"/S3/image/{userId}", content);
+        var uploadResponse = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         uploadResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         // Verify S3 object exists via HEAD/metadata
@@ -67,7 +67,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         objectExists.Should().BeTrue("объект должен существовать в S3 после загрузки");
 
         // Act: запрашиваем обратно фото из S3 через API
-        var getResponse = await Client.GetAsync($"/S3/image/{userId}");
+        var getResponse = await Client.GetAsync($"/userprofile/S3/image/{userId}");
 
         // Assert: статус OK, корректный content-type и непустое тело
         getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -89,7 +89,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{invalidUserId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{invalidUserId}", content);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -116,7 +116,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         using var content = new MultipartFormDataContent();
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{userId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -147,7 +147,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", "test.file");
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{userId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -179,7 +179,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", TestData.PhotoTestData.LargeFileName);
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{userId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -202,7 +202,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Arrange & Act
         var invalidUserId = Guid.NewGuid();
-        var response = await Client.GetAsync($"/S3/image/{invalidUserId}");
+        var response = await Client.GetAsync($"/userprofile/S3/image/{invalidUserId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -220,10 +220,10 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
         uploadContent.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
-        await Client.PostAsync($"/S3/image/{userId}", uploadContent);
+        await Client.PostAsync($"/userprofile/S3/image/{userId}", uploadContent);
 
         // Act - Delete the photo
-        var response = await Client.DeleteAsync($"/S3/image/{userId}");
+        var response = await Client.DeleteAsync($"/userprofile/S3/image/{userId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NoContent);
@@ -234,7 +234,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
     {
         // Act
         var invalidUserId = Guid.NewGuid();
-        var response = await Client.DeleteAsync($"/S3/image/{invalidUserId}");
+        var response = await Client.DeleteAsync($"/userprofile/S3/image/{invalidUserId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -265,13 +265,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
 
         // Act
-        var uploadResponse = await Client.PostAsync($"/S3/image/{userId}", content);
+        var uploadResponse = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
         var jsonString = await uploadResponse.Content.ReadAsStringAsync();
         var json = JsonDocument.Parse(jsonString).RootElement;
         var photoUrl = json.GetProperty("url").GetString();
 
         // Verify profile was updated
-        var profileResponse = await Client.GetAsync($"/profiles/{userId}");
+        var profileResponse = await Client.GetAsync($"/userprofile/profiles/{userId}");
         var profileJson = await profileResponse.Content.ReadAsStringAsync();
         var profileData = JsonDocument.Parse(profileJson).RootElement;
 
@@ -292,13 +292,13 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         var fileContent = new ByteArrayContent([1, 2, 3, 4, 5]);
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(TestData.PhotoTestData.JpegContentType);
         uploadContent.Add(fileContent, "file", TestData.PhotoTestData.TestFileName);
-        await Client.PostAsync($"/S3/image/{userId}", uploadContent);
+        await Client.PostAsync($"/userprofile/S3/image/{userId}", uploadContent);
 
         // Act - Delete photo
-        var deleteResponse = await Client.DeleteAsync($"/S3/image/{userId}");
+        var deleteResponse = await Client.DeleteAsync($"/userprofile/S3/image/{userId}");
 
         // Verify profile photoUrl is cleared
-        var profileResponse = await Client.GetAsync($"/profiles/{userId}");
+        var profileResponse = await Client.GetAsync($"/userprofile/profiles/{userId}");
         var profileJson = await profileResponse.Content.ReadAsStringAsync();
         var profileData = JsonDocument.Parse(profileJson).RootElement;
 
@@ -325,7 +325,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         content.Add(fileContent, "file", $"test.{extension}");
 
         // Act
-        var response = await Client.PostAsync($"/S3/image/{userId}", content);
+        var response = await Client.PostAsync($"/userprofile/S3/image/{userId}", content);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);

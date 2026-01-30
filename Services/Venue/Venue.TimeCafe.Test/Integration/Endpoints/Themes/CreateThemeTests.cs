@@ -9,7 +9,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = TestData.NewThemes.NewTheme1Name, Emoji = TestData.NewThemes.NewTheme1Emoji, Colors = TestData.NewThemes.NewTheme1Colors };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -39,7 +39,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = "", Emoji = "🎨", Colors = (string?)null };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -68,7 +68,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = longName, Emoji = "🎨", Colors = (string?)null };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -93,7 +93,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = TestData.DefaultValues.DefaultThemeName, Emoji = (string?)null, Colors = "{}" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -119,7 +119,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = maxLengthName, Emoji = "✓", Colors = "{}" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -144,7 +144,7 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var dto = new { Name = "Тема с проверкой ID", Emoji = "🆔", Colors = "{}" };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/themes", dto);
+        var response = await Client.PostAsJsonAsync("/venue/themes", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

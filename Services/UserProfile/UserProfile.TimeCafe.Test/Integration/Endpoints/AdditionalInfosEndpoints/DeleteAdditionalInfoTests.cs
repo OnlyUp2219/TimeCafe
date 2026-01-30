@@ -9,7 +9,7 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var infoId = TestData.AdditionalInfoData.Info1Id;
 
         // Act
-        var response = await Client.DeleteAsync($"/infos/{infoId}");
+        var response = await Client.DeleteAsync($"/userprofile/infos/{infoId}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -22,7 +22,7 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var nonExistentInfoId = TestData.NonExistingUsers.UserId1;
 
         // Act
-        var response = await Client.DeleteAsync($"/infos/{nonExistentInfoId}");
+        var response = await Client.DeleteAsync($"/userprofile/infos/{nonExistentInfoId}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -39,7 +39,7 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var invalidGuid = TestData.InvalidIds.NotAGuid;
 
         // Act
-        var response = await Client.DeleteAsync($"/infos/{invalidGuid}");
+        var response = await Client.DeleteAsync($"/userprofile/infos/{invalidGuid}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
