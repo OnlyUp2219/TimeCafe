@@ -9,3 +9,16 @@ services:
   venue-service:
     labels:
       - "com.microsoft.visualstudio.debuggee=true"
+
+  yarp-proxy:
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      profile-service:
+        condition: service_started
+      venue-service:
+        condition: service_started
+      billing-service:
+        condition: service_started
