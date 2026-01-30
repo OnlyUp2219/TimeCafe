@@ -133,6 +133,11 @@ const profileSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase('persist/REHYDRATE' as never, (state) => {
+        state.loading = false;
+        state.saving = false;
+        state.error = null;
+      })
       .addCase(fetchProfileByUserId.pending, (state) => {
         state.loading = true;
         state.error = null;

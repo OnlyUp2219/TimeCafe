@@ -6,6 +6,7 @@ interface ImportMetaEnv {
     readonly VITE_USE_MOCK_EMAIL?: string;
     readonly VITE_RECAPTCHA_SITE_KEY?: string;
     readonly VITE_FAKE_SIGN_AUTO_FILL?: string;
+    readonly VITE_HTTP_TIMEOUT_MS?: string;
 }
 
 interface ImportMeta {

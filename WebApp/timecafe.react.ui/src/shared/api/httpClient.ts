@@ -19,10 +19,16 @@ export interface HttpClientConfig {
 }
 
 const defaultBaseURL = getApiBaseUrl();
+const defaultTimeoutMs = (() => {
+    const raw = import.meta.env.VITE_HTTP_TIMEOUT_MS as string | undefined;
+    const parsed = raw ? Number(raw) : NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 15000;
+})();
 
 export const rawHttpClient: AxiosInstance = axios.create({
     baseURL: defaultBaseURL,
     withCredentials: true,
+    timeout: defaultTimeoutMs,
     headers: {
         "Content-Type": "application/json",
     },
@@ -31,6 +37,7 @@ export const rawHttpClient: AxiosInstance = axios.create({
 export const httpClient: AxiosInstance = axios.create({
     baseURL: defaultBaseURL,
     withCredentials: true,
+    timeout: defaultTimeoutMs,
     headers: {
         "Content-Type": "application/json",
     },
