@@ -24,6 +24,7 @@ import {authApi} from "./shared/api/auth/authApi";
 import {ExternalCallback} from "./pages/auth/ExternalCallback";
 import {EmailPendingPage} from "./pages/auth/EmailPendingPage";
 import {ConfirmEmailPage} from "./pages/auth/ConfirmEmailPage";
+import {PrivateRoute} from "./components/PrivateRoute/PrivateRoute";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -75,7 +76,7 @@ const AppRoutes = () => {
                     <Route path="/confirm-email" element={<ConfirmEmailPage/>}/>
                 </Route>
 
-                <Route element={<MainLayout/>}>
+                <Route element={<PrivateRoute><MainLayout/></PrivateRoute>}>
                     <Route path="/home" element={<HomePage/>}/>
                     <Route path="/personal-data" element={<PersonalDataPage/>}/>
                     <Route path="/visit/start" element={<TariffSelectionPage/>}/>
