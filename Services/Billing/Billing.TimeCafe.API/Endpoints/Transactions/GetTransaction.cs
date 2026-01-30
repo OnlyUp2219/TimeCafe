@@ -4,7 +4,7 @@ public class GetTransaction : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/billing/transactions/{transactionId}", async (
+        app.MapGet("/transactions/{transactionId}", async (
             [FromServices] ISender sender,
             [AsParameters] GetTransactionDto dto) =>
         {

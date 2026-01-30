@@ -54,8 +54,9 @@ app.UseAuthorization();
 
 app.UseSwaggerDevelopment();
 
-app.MapCarter();
-app.MapControllers();
+var billingGroup = app.MapGroup("/billing");
+billingGroup.MapCarter();
+billingGroup.MapControllers();
 
 app.MapGet("/health", () => Results.Ok("OK"))
     .AllowAnonymous();

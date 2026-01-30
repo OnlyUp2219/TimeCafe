@@ -4,7 +4,7 @@ public class InitializeStripePayment : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/api/billing/payments/initialize", async (
+        app.MapPost("/payments/initialize", async (
             [FromServices] ISender sender,
             [FromBody] InitializePaymentDto dto) =>
         {

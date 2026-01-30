@@ -4,7 +4,7 @@ public class GetBalance : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/billing/balance/{userId}", async (
+        app.MapGet("/balance/{userId}", async (
             [FromServices] ISender sender,
             [AsParameters] GetBalanceDto dto) =>
         {

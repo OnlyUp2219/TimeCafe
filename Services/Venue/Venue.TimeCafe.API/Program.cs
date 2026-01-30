@@ -45,8 +45,9 @@ app.UseCors(corsPolicyName);
 
 app.UseSwaggerDevelopment();
 
-app.MapCarter();
-app.MapControllers();
+var venueGroup = app.MapGroup("/venue");
+venueGroup.MapCarter();
+venueGroup.MapControllers();
 
 app.MapGet("/health", () => Results.Ok("OK"))
     .AllowAnonymous();
