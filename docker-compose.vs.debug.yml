@@ -11,6 +11,7 @@ services:
       - "com.microsoft.visualstudio.debuggee=true"
 
   yarp-proxy:
+    entrypoint: ["dotnet", "/app/bin/Debug/net9.0/YarpProxy.dll"]
     depends_on:
       elasticsearch:
         condition: service_healthy

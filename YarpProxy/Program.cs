@@ -1,5 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddSpaCorsConfiguration();
+
 builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
@@ -9,6 +11,8 @@ builder.Services.AddScalarConfiguration();
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
 
 var app = builder.Build();
+
+app.UseSpaCorsConfiguration();
 
 app.UseAuthentication();
 app.UseAuthorization();
