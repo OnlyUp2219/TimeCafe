@@ -9,7 +9,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         var userId = TestData.NewVisits.NewVisit1UserId;
         var visit = await SeedVisitAsync(userId);
 
-        var response = await Client.GetAsync($"/visits/{visit.VisitId}");
+        var response = await Client.GetAsync($"/venue/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -31,7 +31,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         await ClearDatabaseAndCacheAsync();
 
         var nonExistingId = TestData.NonExistingIds.NonExistingVisitId;
-        var response = await Client.GetAsync($"/visits/{nonExistingId}");
+        var response = await Client.GetAsync($"/venue/visits/{nonExistingId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -51,7 +51,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/visits/{invalidId}");
+        var response = await Client.GetAsync($"/venue/visits/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -71,7 +71,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         var userId = TestData.NewVisits.NewVisit2UserId;
         var visit = await SeedVisitAsync(userId);
 
-        var response = await Client.GetAsync($"/visits/{visit.VisitId}");
+        var response = await Client.GetAsync($"/venue/visits/{visit.VisitId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

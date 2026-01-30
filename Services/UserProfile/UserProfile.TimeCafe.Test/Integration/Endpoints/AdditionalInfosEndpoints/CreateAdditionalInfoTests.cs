@@ -11,7 +11,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var dto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.NewInfo, createdBy = (string?)null };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/infos", dto);
+        var response = await Client.PostAsJsonAsync("/userprofile/infos", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -42,7 +42,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var dto = new { userId = nonExistentUserId, infoText = TestData.AdditionalInfoData.NewInfoText, createdBy = (string?)null };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/infos", dto);
+        var response = await Client.PostAsJsonAsync("/userprofile/infos", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -61,7 +61,7 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var dto = new { userId = userId.ToString(), infoText = "", createdBy = (string?)null };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/infos", dto);
+        var response = await Client.PostAsJsonAsync("/userprofile/infos", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

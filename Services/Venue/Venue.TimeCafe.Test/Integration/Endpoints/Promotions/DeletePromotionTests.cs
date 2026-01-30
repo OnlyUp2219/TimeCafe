@@ -8,7 +8,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
 
-        var response = await Client.DeleteAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.DeleteAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -28,7 +28,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}");
+        var response = await Client.DeleteAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -47,10 +47,10 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent);
 
-        var deleteResponse = await Client.DeleteAsync($"/promotions/{promotion.PromotionId}");
+        var deleteResponse = await Client.DeleteAsync($"/venue/promotions/{promotion.PromotionId}");
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var getResponse = await Client.GetAsync($"/promotions/{promotion.PromotionId}");
+        var getResponse = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await getResponse.Content.ReadAsStringAsync();
         try
         {
@@ -68,7 +68,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/promotions//");
+        var response = await Client.DeleteAsync($"/venue/promotions//");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -79,7 +79,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/promotions/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/promotions/{invalidId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -99,9 +99,9 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         var promotion1 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var promotion2 = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent);
 
-        await Client.DeleteAsync($"/promotions/{promotion1.PromotionId}");
+        await Client.DeleteAsync($"/venue/promotions/{promotion1.PromotionId}");
 
-        var response = await Client.GetAsync($"/promotions/{promotion2.PromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{promotion2.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -122,7 +122,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync("Акция с сообщением", 10);
 
-        var response = await Client.DeleteAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.DeleteAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

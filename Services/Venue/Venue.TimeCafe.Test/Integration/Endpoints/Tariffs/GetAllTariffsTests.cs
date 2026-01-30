@@ -10,7 +10,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
         await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
 
-        var response = await Client.GetAsync("/tariffs");
+        var response = await Client.GetAsync("/venue/tariffs");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -31,7 +31,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_GetAllTariffs_Should_Return200_WhenNoTariffsExist()
     {
         await ClearDatabaseAndCacheAsync();
-        var response = await Client.GetAsync("/tariffs");
+        var response = await Client.GetAsync("/venue/tariffs");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -54,7 +54,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         await ClearDatabaseAndCacheAsync();
         var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
-        var response = await Client.GetAsync("/tariffs");
+        var response = await Client.GetAsync("/venue/tariffs");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

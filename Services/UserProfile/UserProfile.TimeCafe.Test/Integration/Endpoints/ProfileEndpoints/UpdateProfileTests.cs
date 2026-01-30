@@ -21,7 +21,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/profiles", dto);
+        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -58,7 +58,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/profiles", dto);
+        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -93,7 +93,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/profiles", dto);
+        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

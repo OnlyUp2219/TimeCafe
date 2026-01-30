@@ -13,7 +13,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             tariffId = tariff.TariffId
         };
 
-        var response = await Client.PostAsJsonAsync("/visits", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -43,7 +43,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             tariffId = tariff.TariffId
         };
 
-        var response = await Client.PostAsJsonAsync("/visits", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -69,7 +69,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             tariffId = invalidTariffId
         };
 
-        var response = await Client.PostAsJsonAsync("/visits", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -93,7 +93,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
             tariffId = tariff.TariffId
         };
 
-        var response = await Client.PostAsJsonAsync("/visits", payload);
+        var response = await Client.PostAsJsonAsync("/venue/visits", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

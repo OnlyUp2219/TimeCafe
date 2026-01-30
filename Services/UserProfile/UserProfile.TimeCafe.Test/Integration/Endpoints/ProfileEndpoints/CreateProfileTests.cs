@@ -10,7 +10,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var dto = new { userId = userId.ToString(), firstName = TestData.TestProfiles.CreateTestFirstName, lastName = TestData.TestProfiles.CreateTestLastName, gender = (byte)Gender.Female };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/profiles", dto);
+        var response = await Client.PostAsJsonAsync("/userprofile/profiles", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -38,7 +38,7 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var dto = new { userId = Guid.NewGuid().ToString(), firstName = "", lastName = "", gender = (byte)Gender.NotSpecified };
 
         // Act
-        var response = await Client.PostAsJsonAsync("/profiles", dto);
+        var response = await Client.PostAsJsonAsync("/userprofile/profiles", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

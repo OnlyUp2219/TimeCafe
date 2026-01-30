@@ -12,7 +12,7 @@ public class GetTotalPagesTests(IntegrationApiFactory factory) : BaseEndpointTes
         await SeedProfileAsync(userId2, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
 
         // Act
-        var response = await Client.GetAsync("/profiles/total");
+        var response = await Client.GetAsync("/userprofile/profiles/total");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -34,7 +34,7 @@ public class GetTotalPagesTests(IntegrationApiFactory factory) : BaseEndpointTes
     public async Task Endpoint_GetTotalPages_Should_Return200_WithZero()
     {
         // Act (не создаём профили)
-        var response = await Client.GetAsync("/profiles/total");
+        var response = await Client.GetAsync("/userprofile/profiles/total");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

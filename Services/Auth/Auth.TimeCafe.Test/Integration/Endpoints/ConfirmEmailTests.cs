@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class EmailConfirmationTests : BaseEndpointTest
 {
-    private const string Endpoint = "/email/confirm";
+    private const string Endpoint = "/auth/email/confirm";
 
     public EmailConfirmationTests(IntegrationApiFactory factory) : base(factory)
     {

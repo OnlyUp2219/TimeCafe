@@ -10,7 +10,7 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
         var price = TestData.NewTariffs.NewTariff1Price;
         var tariff = await SeedTariffAsync(name, price, isActive: false);
 
-        var response = await Client.PostAsync($"/tariffs/{tariff.TariffId}/activate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -30,7 +30,7 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/activate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -50,7 +50,7 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/tariffs/{invalidId}/activate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{invalidId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -71,9 +71,9 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
         var price2 = TestData.NewTariffs.NewTariff2Price;
         var tariff = await SeedTariffAsync(name2, price2, isActive: false);
 
-        await Client.PostAsync($"/tariffs/{tariff.TariffId}/activate", null);
+        await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/activate", null);
 
-        var response = await Client.GetAsync($"/tariffs/{tariff.TariffId}");
+        var response = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

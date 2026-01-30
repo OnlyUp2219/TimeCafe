@@ -18,7 +18,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = promotion.IsActive
         };
 
-        var response = await Client.PutAsJsonAsync("/promotions", payload);
+        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -50,7 +50,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/promotions", payload);
+        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -79,7 +79,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = promotion.IsActive
         };
 
-        var response = await Client.PutAsJsonAsync("/promotions", payload);
+        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -114,7 +114,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/promotions", payload);
+        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -145,7 +145,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/promotions", payload);
+        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

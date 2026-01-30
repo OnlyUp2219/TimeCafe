@@ -8,7 +8,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: false);
 
-        var response = await Client.PostAsync($"/promotions/{promotion.PromotionId}/activate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -28,7 +28,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/activate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -46,7 +46,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions//activate", null);
+        var response = await Client.PostAsync($"/venue/promotions//activate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -57,7 +57,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions/{invalidId}/activate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{invalidId}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -76,9 +76,9 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: false);
 
-        await Client.PostAsync($"/promotions/{promotion.PromotionId}/activate", null);
+        await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/activate", null);
 
-        var response = await Client.GetAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

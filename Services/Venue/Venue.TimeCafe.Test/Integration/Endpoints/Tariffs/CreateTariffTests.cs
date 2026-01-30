@@ -17,7 +17,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -51,7 +51,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -80,7 +80,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -111,7 +111,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -139,7 +139,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -170,7 +170,7 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = true
         };
 
-        var response = await Client.PostAsJsonAsync("/tariffs", payload);
+        var response = await Client.PostAsJsonAsync("/venue/tariffs", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

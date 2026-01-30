@@ -10,7 +10,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, BillingType.Hourly);
         await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute, BillingType.PerMinute);
 
-        var response = await Client.GetAsync("/tariffs/billing-type/2");
+        var response = await Client.GetAsync("/venue/tariffs/billing-type/2");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -33,7 +33,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         await ClearDatabaseAndCacheAsync();
         await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, BillingType.PerMinute);
 
-        var response = await Client.GetAsync("/tariffs/billing-type/1");
+        var response = await Client.GetAsync("/venue/tariffs/billing-type/1");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -57,7 +57,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, BillingType.PerMinute);
         await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, BillingType.Hourly);
 
-        var response = await Client.GetAsync("/tariffs/billing-type/2");
+        var response = await Client.GetAsync("/venue/tariffs/billing-type/2");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

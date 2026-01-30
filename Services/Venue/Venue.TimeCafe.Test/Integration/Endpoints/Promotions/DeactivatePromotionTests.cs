@@ -8,7 +8,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
 
-        var response = await Client.PostAsync($"/promotions/{promotion.PromotionId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -28,7 +28,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -46,7 +46,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions//deactivate", null);
+        var response = await Client.PostAsync($"/venue/promotions//deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -57,7 +57,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/promotions/{invalidId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{invalidId}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -76,9 +76,9 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true);
 
-        await Client.PostAsync($"/promotions/{promotion.PromotionId}/deactivate", null);
+        await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/deactivate", null);
 
-        var response = await Client.GetAsync($"/promotions/{promotion.PromotionId}");
+        var response = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

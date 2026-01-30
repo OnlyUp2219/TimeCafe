@@ -11,7 +11,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
 
         // Create info first
         var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.OriginalInfo, createdBy = (string?)null };
-        var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
+        var createResponse = await Client.PostAsJsonAsync("/userprofile/infos", createDto);
         createResponse.EnsureSuccessStatusCode();
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
@@ -20,7 +20,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = TestData.TestInfoTexts.UpdatedInfo, createdBy = (string?)null };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/infos", updateDto);
+        var response = await Client.PutAsJsonAsync("/userprofile/infos", updateDto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -47,7 +47,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var dto = new { infoId = nonExistentInfoId, userId = TestData.ExistingUsers.User1Id, infoText = TestData.AdditionalInfoData.UpdatedInfoText, createdBy = (string?)null };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/infos", dto);
+        var response = await Client.PutAsJsonAsync("/userprofile/infos", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -65,14 +65,14 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         await SeedProfileAsync(userId, TestData.TestProfiles.TestFirstName, TestData.TestProfiles.TestLastName);
 
         var createDto = new { userId = userId.ToString(), infoText = TestData.TestInfoTexts.OriginalInfo, createdBy = (string?)null };
-        var createResponse = await Client.PostAsJsonAsync("/infos", createDto);
+        var createResponse = await Client.PostAsJsonAsync("/userprofile/infos", createDto);
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
 
         var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = "", createdBy = (string?)null };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/infos", updateDto);
+        var response = await Client.PutAsJsonAsync("/userprofile/infos", updateDto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

@@ -9,7 +9,7 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
         var userId = TestData.NewVisits.NewVisit1UserId;
         await SeedVisitAsync(userId, isActive: true);
 
-        var response = await Client.GetAsync($"/visits/has-active/{userId}");
+        var response = await Client.GetAsync($"/venue/visits/has-active/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -32,7 +32,7 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
         var userId = TestData.NewVisits.NewVisit1UserId;
         await SeedVisitAsync(userId, isActive: false);
 
-        var response = await Client.GetAsync($"/visits/has-active/{userId}");
+        var response = await Client.GetAsync($"/venue/visits/has-active/{userId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -53,7 +53,7 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/visits/has-active/{TestData.DefaultValues.DefaultUserId}");
+        var response = await Client.GetAsync($"/venue/visits/has-active/{TestData.DefaultValues.DefaultUserId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 
 public class EmailResendTests : BaseEndpointTest
 {
-    private const string EndpointMock = "/email/resend-mock";
+    private const string EndpointMock = "/auth/email/resend-mock";
 
     public EmailResendTests(IntegrationApiFactory factory) : base(factory)
     {
