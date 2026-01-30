@@ -101,6 +101,7 @@ services:
 
   # Microservices
   auth-service:
+    image: timecafe-auth-service
     build:
       context: .
       dockerfile: ./Services/Auth/Auth.TimeCafe.API/Dockerfile
@@ -154,6 +155,7 @@ services:
       start_period: 10s
 
   profile-service:
+    image: timecafe-profile-service
     build:
       context: .
       dockerfile: ./Services/UserProfile/UserProfile.TimeCafe.API/Dockerfile
@@ -195,6 +197,7 @@ services:
       start_period: 10s
 
   venue-service:
+    image: timecafe-venue-service
     build:
       context: .
       dockerfile: ./Services/Venue/Venue.TimeCafe.API/Dockerfile
@@ -227,6 +230,7 @@ services:
       start_period: 10s
 
   billing-service:
+    image: timecafe-billing-service
     build:
       context: .
       dockerfile: ./Services/Billing/Billing.TimeCafe.API/Dockerfile
@@ -264,6 +268,7 @@ services:
       start_period: 10s
 
   yarp-proxy:
+    image: timecafe-yarp-proxy
     build:
       context: .
       dockerfile: ./YarpProxy/Dockerfile
