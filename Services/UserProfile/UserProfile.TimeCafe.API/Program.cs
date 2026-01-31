@@ -1,6 +1,8 @@
-using BuildingBlocks.Authorization;
-
 var builder = WebApplication.CreateBuilder(args);
+
+var sharedSettingsPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "appsettings.shared.json"));
+builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
 
 // Serilog
 builder.Services.AddSerilogConfiguration(builder.Configuration);
@@ -27,6 +29,15 @@ builder.Services.AddUserProfilePersistence();
 
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddUserProfileCqrs();
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddPermissionAuthorizationDev();
+}
+else
+{
+    // TODO : Register real IPermissionService here
+}
 
 // S3 storage (photos)
 builder.Services.AddS3(builder.Configuration);
