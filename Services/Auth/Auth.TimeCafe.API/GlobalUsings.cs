@@ -15,7 +15,7 @@ global using Auth.TimeCafe.Infrastructure.Permissions;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Infrastructure.Services.Email;
 global using Auth.TimeCafe.Infrastructure.Services.Phone;
-
+global using Microsoft.OpenApi.Models;
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;

@@ -15,6 +15,7 @@ global using Billing.TimeCafe.Infrastructure.Data;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 
+global using Microsoft.OpenApi.Models;
 global using Carter;
 
 global using MassTransit;
@@ -26,7 +27,7 @@ global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.OpenApi.Any;
-global using Microsoft.OpenApi.Models;
+
 
 global using Scalar.AspNetCore;
 

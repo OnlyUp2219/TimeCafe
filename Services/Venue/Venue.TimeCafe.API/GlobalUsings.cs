@@ -12,6 +12,8 @@ global using Microsoft.EntityFrameworkCore;
 
 global using Scalar.AspNetCore;
 
+global using Microsoft.OpenApi.Models;
+
 global using Serilog;
 
 global using Swashbuckle.AspNetCore.Filters;

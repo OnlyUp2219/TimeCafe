@@ -1,3 +1,5 @@
+using BuildingBlocks.Authorization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Serilog
@@ -8,6 +10,8 @@ builder.Host.UseSerilog();
 var corsPolicyName = builder.Configuration["CORS:PolicyName"]
     ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
 builder.Services.AddCorsConfiguration(corsPolicyName);
+
+builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
@@ -42,6 +46,9 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 await app.ApplyMigrationsAsync();
 
 app.UseCors(corsPolicyName);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Swagger (Development only)
 app.UseSwaggerDevelopment();

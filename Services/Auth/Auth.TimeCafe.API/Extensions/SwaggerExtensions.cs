@@ -9,6 +9,31 @@ public static class SwaggerExtensions
             c.SwaggerDoc("v1", new() { Title = "TimeCafe Auth API", Version = "v1" });
             c.EnableAnnotations();
             c.ExampleFilters();
+
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
         services.AddSwaggerExamples();
         services.AddSwaggerExamplesFromAssemblyOf<RegisterDtoExample>();
