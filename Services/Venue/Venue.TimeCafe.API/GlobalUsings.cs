@@ -1,6 +1,10 @@
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 
+global using BuildingBlocks.Authorization;
+
+global using Venue.TimeCafe.Application.DependencyInjection;
+
 global using Carter;
 
 global using MassTransit;

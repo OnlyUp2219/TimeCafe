@@ -1,8 +1,10 @@
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using BuildingBlocks.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var sharedSettingsPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", "appsettings.shared.json"));
+builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
 
 builder.Services.AddSpaCorsConfiguration();
 
@@ -13,6 +15,16 @@ builder.Services.AddYarpProxy(builder.Configuration);
 builder.Services.AddScalarConfiguration();
 
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
+// Register permission authorization in proxy so YARP can evaluate permission-based policies on routes.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddPermissionAuthorizationDev();
+}
+else
+{
+    // TODO : Register real IPermissionService here
+}
+
 
 var app = builder.Build();
 

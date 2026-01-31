@@ -8,14 +8,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
     networks:
       - timecafe-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -59,7 +59,7 @@ services:
     image: docker.elastic.co/kibana/kibana:9.2.3
     container_name: timecafe-kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
     ports:
       - "5601:5601"
     depends_on:
@@ -107,31 +107,31 @@ services:
       dockerfile: ./Services/Auth/Auth.TimeCafe.API/Dockerfile
     container_name: timecafe-auth-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8001
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=AuthDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
-      - Redis__ConnectionString=redis:6379
-      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-      - JWT__Secret=${JWT_SECRET}
-      - JWT__Issuer=${JWT_ISSUER:-TimeCafe}
-      - JWT__Audience=${JWT_AUDIENCE:-TimeCafeAPI}
-      - JWT__AccessTokenExpirationMinutes=${JWT_ACCESS_TOKEN_EXPIRATION:-15}
-      - JWT__RefreshTokenExpirationDays=${JWT_REFRESH_TOKEN_EXPIRATION:-7}
+      - Jwt__SigningKey=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__AccessTokenExpirationMinutes=${JWT_ACCESS_TOKEN_EXPIRATION}
+      - Jwt__RefreshTokenExpirationDays=${JWT_REFRESH_TOKEN_EXPIRATION}
+      - CORS__PolicyName=${AUTH_CORS_POLICY}
       - Authentication__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Authentication__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
       - Authentication__Microsoft__ClientId=${MICROSOFT_CLIENT_ID}
       - Authentication__Microsoft__ClientSecret=${MICROSOFT_CLIENT_SECRET}
       - GoogleRecaptcha__SecretKey=${GOOGLE_RECAPTCHA_SECRET}
-      - Captcha__MockEnabled=true
+      - Captcha__MockEnabled=${CAPTCHA_MOCK_ENABLED}
       - Twilio__AccountSid=${TWILIO_ACCOUNT_SID}
       - Twilio__AuthToken=${TWILIO_AUTH_TOKEN}
       - Twilio__TwilioPhoneNumber=${TWILIO_PHONE_NUMBER}
       - Postmark__ServerToken=${POSTMARK_SERVER_TOKEN}
       - Postmark__FromEmail=${POSTMARK_FROM_EMAIL}
-      - Postmark__MessageStream=outbound
-      - Postmark__FrontendBaseUrl=http://127.0.0.1:9301
+      - Postmark__MessageStream=${POSTMARK_MESSAGE_STREAM}
+      - Postmark__FrontendBaseUrl=${FRONTEND_BASE_URL}
     ports:
       - "8001:8001"
     depends_on:
@@ -161,22 +161,26 @@ services:
       dockerfile: ./Services/UserProfile/UserProfile.TimeCafe.API/Dockerfile
     container_name: timecafe-profile-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8002
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=ProfileDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
-      - Redis__ConnectionString=redis:6379
-      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${PROFILE_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Jwt__SigningKey=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - CORS__PolicyName=${USERPROFILE_CORS_POLICY}
       - S3__AccessKey=${S3_ACCESS_KEY}
       - S3__SecretKey=${S3_SECRET_KEY}
       - S3__ServiceUrl=${S3_SERVICE_URL}
       - S3__BucketName=${S3_BUCKET_NAME}
       - Sightengine__ApiUser=${SIGHTENGINE_API_USER}
       - Sightengine__ApiSecret=${SIGHTENGINE_API_SECRET}
-      - Sightengine__ApiUrl=https://api.sightengine.com/1.0/check.json
-      - Sightengine__Models=nudity-2.1,wad,gore,offensive
-      - Photo__MaxSizeBytes=${PHOTO_MAX_SIZE:-5242880}
+      - Sightengine__ApiUrl=${SIGHTENGINE_API_URL}
+      - Sightengine__Models=${SIGHTENGINE_MODELS}
+      - Photo__MaxSizeBytes=${PHOTO_MAX_SIZE}
     ports:
       - "8002:8002"
     depends_on:
@@ -203,13 +207,17 @@ services:
       dockerfile: ./Services/Venue/Venue.TimeCafe.API/Dockerfile
     container_name: timecafe-venue-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8003
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=VenueDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
-      - Redis__ConnectionString=redis:6379
-      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${VENUE_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Jwt__SigningKey=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - CORS__PolicyName=${VENUE_CORS_POLICY}
     ports:
       - "8003:8003"
     depends_on:
@@ -236,18 +244,22 @@ services:
       dockerfile: ./Services/Billing/Billing.TimeCafe.API/Dockerfile
     container_name: timecafe-billing-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT:-Production}
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8004
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=BillingDB;Username=${POSTGRES_USER:-admin};Password=${POSTGRES_PASSWORD:-Admin123!}
-      - Redis__ConnectionString=redis:6379
-      - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${BILLING_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD}
-      - Robokassa__MerchantLogin=${ROBOKASSA_MERCHANT_LOGIN}
-      - Robokassa__Password1=${ROBOKASSA_PASSWORD1}
-      - Robokassa__Password2=${ROBOKASSA_PASSWORD2}
-      - Robokassa__TestMode=${ROBOKASSA_TEST_MODE:-true}
-      - Robokassa__PaymentUrl=https://auth.robokassa.ru/Merchant/Index.aspx
+      - Jwt__SigningKey=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - CORS__PolicyName=${BILLING_CORS_POLICY}
+      - Stripe__PublishableKey=${STRIPE_PUBLISHABLE_KEY}
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
+      - Stripe__DefaultCurrency=${STRIPE_DEFAULT_CURRENCY}
+      - Stripe__DefaultReturnUrl=${STRIPE_DEFAULT_RETURN_URL}
     ports:
       - "8004:8004"
     depends_on:
@@ -274,12 +286,12 @@ services:
       dockerfile: ./YarpProxy/Dockerfile
     container_name: timecafe-yarp-proxy
     environment:
-      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8000
-      - Jwt__Issuer=${JWT_ISSUER:-TimeCafe}
-      - Jwt__Audience=${JWT_AUDIENCE:-TimeCafeAPI}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
       - Jwt__SigningKey=${JWT_SECRET}
-      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=http://elasticsearch:9200
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8000:8000"
     depends_on:

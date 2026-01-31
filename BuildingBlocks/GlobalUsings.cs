@@ -16,3 +16,8 @@ global using System.Diagnostics;
 global using System.Net;
 global using System.Text.Json;
 global using System.Text.Json.Serialization;
+global using Microsoft.AspNetCore.Authentication.JwtBearer;
+
+global using Microsoft.IdentityModel.Tokens;
+global using System.Security.Claims;
+global using System.Text;

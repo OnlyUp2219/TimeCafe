@@ -1,7 +1,8 @@
-using BuildingBlocks.Authorization;
-using Venue.TimeCafe.Application.DependencyInjection;
-
 var builder = WebApplication.CreateBuilder(args);
+
+var sharedSettingsPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "appsettings.shared.json"));
+builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
 
 // Serilog
 builder.Services.AddSerilogConfiguration(builder.Configuration);
