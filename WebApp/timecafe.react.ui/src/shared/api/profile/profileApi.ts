@@ -3,12 +3,12 @@ import type {Profile} from "../../../types/profile";
 
 export class ProfileApi {
     static async getProfileByUserId(userId: string): Promise<Profile> {
-        const res = await httpClient.get<Profile>(`/profiles/${userId}`);
+        const res = await httpClient.get<Profile>(`/userprofile/profiles/${userId}`);
         return res.data;
     }
 
     static async createEmptyProfile(userId: string): Promise<void> {
-        await httpClient.post(`/profiles/empty/${userId}`);
+        await httpClient.post(`/userprofile/profiles/empty/${userId}`);
     }
 
     static async updateProfile(profile: {
@@ -21,7 +21,7 @@ export class ProfileApi {
         birthDate?: string | null;
         gender: number;
     }): Promise<Profile> {
-        const res = await httpClient.put<{ message: string; profile: Profile }>("/profiles", profile);
+        const res = await httpClient.put<{ message: string; profile: Profile }>("/userprofile/profiles", profile);
         return res.data.profile;
     }
 }

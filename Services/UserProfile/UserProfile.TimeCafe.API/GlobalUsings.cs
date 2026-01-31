@@ -14,6 +14,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Options;
 
 global using Scalar.AspNetCore;
+global using Microsoft.OpenApi.Models;
 
 global using Serilog;
 
