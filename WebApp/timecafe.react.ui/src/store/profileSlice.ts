@@ -32,9 +32,21 @@ const createEmptyProfile = (): Profile => ({
 });
 
 const getStatusCode = (error: unknown): number | null => {
-  const anyError = error as { response?: { status?: unknown } };
-  const status = anyError?.response?.status;
-  return typeof status === 'number' ? status : null;
+  const anyError = error as { response?: { status?: unknown }; statusCode?: unknown };
+
+  const statusFromAxios = anyError?.response?.status;
+  if (typeof statusFromAxios === 'number') return statusFromAxios;
+
+  const statusFromApiError = anyError?.statusCode;
+  if (typeof statusFromApiError === 'number') return statusFromApiError;
+
+  return null;
+};
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  const anyError = error as { message?: unknown };
+  const msg = anyError?.message;
+  return typeof msg === 'string' && msg.trim() ? msg : fallback;
 };
 
 const initialState: ProfileState = {
@@ -58,13 +70,11 @@ export const fetchProfileByUserId = createAsyncThunk<
         await ProfileApi.createEmptyProfile(userId);
         return await ProfileApi.getProfileByUserId(userId);
       } catch (inner: unknown) {
-        const message = inner instanceof Error ? inner.message : 'Ошибка загрузки профиля';
-        return rejectWithValue(message);
+        return rejectWithValue(getErrorMessage(inner, 'Ошибка загрузки профиля'));
       }
     }
 
-    const message = e instanceof Error ? e.message : 'Ошибка загрузки профиля';
-    return rejectWithValue(message);
+    return rejectWithValue(getErrorMessage(e, 'Ошибка загрузки профиля'));
   }
 });
 

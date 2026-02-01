@@ -125,7 +125,7 @@ export const ProfileCompletionGate: FC = () => {
 
     return (
         <Dialog open={mustCompleteProfile} modalType="alert">
-            <DialogSurface className="w-[calc(100vw-32px)] max-w-[640px]">
+            <DialogSurface>
                 <DialogBody>
                     <DialogTitle>Заполните профиль</DialogTitle>
 
@@ -167,7 +167,7 @@ export const ProfileCompletionGate: FC = () => {
                         ) : !profile && profileError ? (
                             <div className="flex flex-col gap-3">
                                 <Body1>
-                                    Не удалось загрузить профиль. Проверьте, что API доступен, и повторите попытку.
+                                    Не удалось загрузить профиль. Повторите попытку позже.
                                 </Body1>
                                 <Caption1>{profileError}</Caption1>
 
