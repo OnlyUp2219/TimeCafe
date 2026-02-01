@@ -35,9 +35,22 @@ RUN dotnet build "UserProfile.TimeCafe.API.csproj" -c Release -o /app/build
 FROM build AS publish
 RUN dotnet publish "UserProfile.TimeCafe.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
+FROM build AS publish-debug
+RUN dotnet publish "UserProfile.TimeCafe.API.csproj" -c Debug -o /app/publish /p:UseAppHost=false
+
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Health check  
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:8002/health || exit 1
+
+ENTRYPOINT ["dotnet", "UserProfile.TimeCafe.API.dll"]
+
+FROM base AS debug
+WORKDIR /app
+COPY --from=publish-debug /app/publish .
 
 # Health check  
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

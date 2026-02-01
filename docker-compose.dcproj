@@ -16,6 +16,8 @@
     <ServiceProjectReference Include="Services\Auth\Auth.TimeCafe.API\Auth.TimeCafe.API.csproj" />
     <ServiceProjectReference Include="Services\UserProfile\UserProfile.TimeCafe.API\UserProfile.TimeCafe.API.csproj" />
     <ServiceProjectReference Include="Services\Venue\Venue.TimeCafe.API\Venue.TimeCafe.API.csproj" />
+    <ServiceProjectReference Include="Services\Billing\Billing.TimeCafe.API\Billing.TimeCafe.API.csproj" />
+    <ServiceProjectReference Include="YarpProxy\YarpProxy.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="docker-compose.yml" />
