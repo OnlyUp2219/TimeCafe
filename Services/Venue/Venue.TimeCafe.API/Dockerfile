@@ -27,8 +27,8 @@ COPY ["Services/Venue/Venue.TimeCafe.Domain/Venue.TimeCafe.Domain.csproj", "Serv
 COPY ["Services/Venue/Venue.TimeCafe.Infrastructure/Venue.TimeCafe.Infrastructure.csproj", "Services/Venue/Venue.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet restore "Services/Venue/Venue.TimeCafe.API/Venue.TimeCafe.API.csproj"
 
 # Copy all source files
@@ -38,13 +38,13 @@ COPY ["Services/Venue/", "Services/Venue/"]
 WORKDIR "/src/Services/Venue/Venue.TimeCafe.API"
 
 FROM build AS publish
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "Venue.TimeCafe.API.csproj" -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM build AS publish-debug
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "Venue.TimeCafe.API.csproj" -c Debug --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
@@ -56,5 +56,7 @@ ENTRYPOINT ["dotnet", "Venue.TimeCafe.API.dll"]
 FROM base AS debug
 WORKDIR /app
 COPY --from=publish-debug /app/publish .
+
+HEALTHCHECK NONE
 
 ENTRYPOINT ["dotnet", "Venue.TimeCafe.API.dll"]

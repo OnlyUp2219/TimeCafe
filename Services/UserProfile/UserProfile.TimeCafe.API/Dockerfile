@@ -27,8 +27,8 @@ COPY ["Services/UserProfile/UserProfile.TimeCafe.Domain/UserProfile.TimeCafe.Dom
 COPY ["Services/UserProfile/UserProfile.TimeCafe.Infrastructure/UserProfile.TimeCafe.Infrastructure.csproj", "Services/UserProfile/UserProfile.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet restore "Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj"
 
 # Copy all source files
@@ -38,13 +38,13 @@ COPY ["Services/UserProfile/", "Services/UserProfile/"]
 WORKDIR "/src/Services/UserProfile/UserProfile.TimeCafe.API"
 
 FROM build AS publish
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "UserProfile.TimeCafe.API.csproj" -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM build AS publish-debug
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "UserProfile.TimeCafe.API.csproj" -c Debug --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
@@ -56,5 +56,7 @@ ENTRYPOINT ["dotnet", "UserProfile.TimeCafe.API.dll"]
 FROM base AS debug
 WORKDIR /app
 COPY --from=publish-debug /app/publish .
+
+HEALTHCHECK NONE
 
 ENTRYPOINT ["dotnet", "UserProfile.TimeCafe.API.dll"]

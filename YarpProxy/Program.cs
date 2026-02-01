@@ -16,7 +16,7 @@ builder.Services.AddScalarConfiguration();
 
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
 // Register permission authorization in proxy so YARP can evaluate permission-based policies on routes.
-if (builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Docker"))
 {
     builder.Services.AddPermissionAuthorizationDev();
 }

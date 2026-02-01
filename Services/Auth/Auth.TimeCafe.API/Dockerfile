@@ -27,8 +27,8 @@ COPY ["Services/Auth/Auth.TimeCafe.Domain/Auth.TimeCafe.Domain.csproj", "Service
 COPY ["Services/Auth/Auth.TimeCafe.Infrastructure/Auth.TimeCafe.Infrastructure.csproj", "Services/Auth/Auth.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet restore "Services/Auth/Auth.TimeCafe.API/Auth.TimeCafe.API.csproj"
 
 # Copy all source files
@@ -38,13 +38,13 @@ COPY ["Services/Auth/", "Services/Auth/"]
 WORKDIR "/src/Services/Auth/Auth.TimeCafe.API"
 
 FROM build AS publish
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "Auth.TimeCafe.API.csproj" -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM build AS publish-debug
-RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
-    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
     dotnet publish "Auth.TimeCafe.API.csproj" -c Debug --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
@@ -56,5 +56,7 @@ ENTRYPOINT ["dotnet", "Auth.TimeCafe.API.dll"]
 FROM base AS debug
 WORKDIR /app
 COPY --from=publish-debug /app/publish .
+
+HEALTHCHECK NONE
 
 ENTRYPOINT ["dotnet", "Auth.TimeCafe.API.dll"]
