@@ -1,17 +1,31 @@
 name: TimeCafe
 services:
   auth-service:
+    build:
+      target: debug
     labels:
       - "com.microsoft.visualstudio.debuggee=true"
   profile-service:
+    build:
+      target: debug
     labels:
       - "com.microsoft.visualstudio.debuggee=true"
   venue-service:
+    build:
+      target: debug
+    labels:
+      - "com.microsoft.visualstudio.debuggee=true"
+  billing-service:
+    build:
+      target: debug
     labels:
       - "com.microsoft.visualstudio.debuggee=true"
 
   yarp-proxy:
-    entrypoint: ["dotnet", "/app/bin/Debug/net9.0/YarpProxy.dll"]
+    build:
+      target: debug
+    labels:
+      - "com.microsoft.visualstudio.debuggee=true"
     depends_on:
       elasticsearch:
         condition: service_healthy

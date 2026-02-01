@@ -1,9 +1,6 @@
 const normalizeBaseUrl = (url: string): string => {
-    const trimmed = url.trim().replace(/\/+$/, "");
-
-    // Локально YARP обычно слушает HTTP на :8000. Если кто-то задал https://localhost:8000
-    // (без TLS), браузер/axios упадут с ERR_SSL_PROTOCOL_ERROR.
-    const yarpHttpsWithoutTls = /^https:\/\/(localhost|127\.0\.0\.1):8000$/i;
+    const trimmed = url.trim().replace(/\/+$/, "")
+    const yarpHttpsWithoutTls = /^https:\/\/(localhost|127\.0\.0\.1):8010$/i;
     if (yarpHttpsWithoutTls.test(trimmed)) {
         return trimmed.replace(/^https:/i, "http:");
     }

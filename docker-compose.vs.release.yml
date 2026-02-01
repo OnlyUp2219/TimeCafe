@@ -9,3 +9,10 @@ services:
   venue-service:
     labels:
       - "com.microsoft.visualstudio.debuggee=false"
+  billing-service:
+    labels:
+      - "com.microsoft.visualstudio.debuggee=false"
+
+  yarp-proxy:
+    labels:
+      - "com.microsoft.visualstudio.debuggee=false"
