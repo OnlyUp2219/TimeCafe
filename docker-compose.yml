@@ -132,6 +132,7 @@ services:
       - Postmark__FromEmail=${POSTMARK_FROM_EMAIL}
       - Postmark__MessageStream=${POSTMARK_MESSAGE_STREAM}
       - Postmark__FrontendBaseUrl=${FRONTEND_BASE_URL}
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8001:8001"
     depends_on:
@@ -181,6 +182,7 @@ services:
       - Sightengine__ApiUrl=${SIGHTENGINE_API_URL}
       - Sightengine__Models=${SIGHTENGINE_MODELS}
       - Photo__MaxSizeBytes=${PHOTO_MAX_SIZE}
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8002:8002"
     depends_on:
@@ -218,6 +220,7 @@ services:
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
       - CORS__PolicyName=${VENUE_CORS_POLICY}
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8003:8003"
     depends_on:
@@ -260,6 +263,7 @@ services:
       - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
       - Stripe__DefaultCurrency=${STRIPE_DEFAULT_CURRENCY}
       - Stripe__DefaultReturnUrl=${STRIPE_DEFAULT_RETURN_URL}
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8004:8004"
     depends_on:

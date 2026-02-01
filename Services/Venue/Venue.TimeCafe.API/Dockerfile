@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.7
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 RUN apt-get update \
@@ -5,6 +6,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 EXPOSE 8003
 ENV ASPNETCORE_URLS=http://+:8003
+
+# Health check (shared for final/debug)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD curl --fail http://localhost:8003/health || exit 1
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
@@ -22,38 +27,34 @@ COPY ["Services/Venue/Venue.TimeCafe.Domain/Venue.TimeCafe.Domain.csproj", "Serv
 COPY ["Services/Venue/Venue.TimeCafe.Infrastructure/Venue.TimeCafe.Infrastructure.csproj", "Services/Venue/Venue.TimeCafe.Infrastructure/"]
 
 # Restore dependencies
-RUN dotnet restore "Services/Venue/Venue.TimeCafe.API/Venue.TimeCafe.API.csproj"
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+    dotnet restore "Services/Venue/Venue.TimeCafe.API/Venue.TimeCafe.API.csproj"
 
 # Copy all source files
 COPY ["BuildingBlocks/", "BuildingBlocks/"]
 COPY ["Services/Venue/", "Services/Venue/"]
 
-# Build
 WORKDIR "/src/Services/Venue/Venue.TimeCafe.API"
-RUN dotnet build "Venue.TimeCafe.API.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Venue.TimeCafe.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+    dotnet publish "Venue.TimeCafe.API.csproj" -c Release --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM build AS publish-debug
-RUN dotnet publish "Venue.TimeCafe.API.csproj" -c Debug -o /app/publish /p:UseAppHost=false
+RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages \
+    --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet \
+    dotnet publish "Venue.TimeCafe.API.csproj" -c Debug --no-restore -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl --fail http://localhost:8003/health || exit 1
 
 ENTRYPOINT ["dotnet", "Venue.TimeCafe.API.dll"]
 
 FROM base AS debug
 WORKDIR /app
 COPY --from=publish-debug /app/publish .
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD curl --fail http://localhost:8003/health || exit 1
 
 ENTRYPOINT ["dotnet", "Venue.TimeCafe.API.dll"]
