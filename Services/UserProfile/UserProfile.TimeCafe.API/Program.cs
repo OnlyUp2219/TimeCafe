@@ -71,6 +71,7 @@ userProfileGroup.MapCarter();
 app.MapGet("/health", () => Results.Ok("OK"))
     .AllowAnonymous();
 
+
 await app.RunAsync();
 
 public partial class Program { }
