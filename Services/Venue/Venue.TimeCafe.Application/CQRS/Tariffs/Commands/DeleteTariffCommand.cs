@@ -51,9 +51,9 @@ public class DeleteTariffCommandHandler(ITariffRepository repository) : IRequest
 
             return DeleteTariffResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteTariffResult.DeleteFailed();
+            throw new CqrsResultException(DeleteTariffResult.DeleteFailed(), ex);
         }
     }
 }

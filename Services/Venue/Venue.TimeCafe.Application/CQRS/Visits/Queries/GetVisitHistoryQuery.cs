@@ -48,9 +48,9 @@ public class GetVisitHistoryQueryHandler(IVisitRepository repository) : IRequest
             var visits = await _repository.GetVisitHistoryByUserAsync(userId, request.PageNumber, request.PageSize);
             return GetVisitHistoryResult.GetSuccess(visits);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetVisitHistoryResult.GetFailed();
+            throw new CqrsResultException(GetVisitHistoryResult.GetFailed(), ex);
         }
     }
 }

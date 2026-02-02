@@ -90,9 +90,9 @@ public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepo
 
             return UpdateTariffResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdateTariffResult.UpdateFailed();
+            throw new CqrsResultException(UpdateTariffResult.UpdateFailed(), ex);
         }
     }
 }

@@ -55,7 +55,7 @@ public class UpdateProfileCommandTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Handler_UpdateProfile_Should_ReturnUpdateFailed_WhenExceptionOccurs()
+    public async Task Handler_UpdateProfile_Should_ThrowCqrsResultException_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.Parse(ExistingUsers.User2Id);
@@ -67,13 +67,15 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         var handler = new UpdateProfileCommandHandler(Repository);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => handler.Handle(command, CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdateProfileFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Не удалось обновить профиль");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdateProfileFailed");
+        ex.Result.StatusCode.Should().Be(500);
+        ex.Result.Message.Should().Be("Не удалось обновить профиль");
     }
 
     [Fact]

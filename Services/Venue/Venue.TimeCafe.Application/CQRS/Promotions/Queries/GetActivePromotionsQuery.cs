@@ -28,9 +28,9 @@ public class GetActivePromotionsQueryHandler(IPromotionRepository repository) : 
             var promotions = await _repository.GetActiveAsync();
             return GetActivePromotionsResult.GetSuccess(promotions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetActivePromotionsResult.GetFailed();
+            throw new CqrsResultException(GetActivePromotionsResult.GetFailed(), ex);
         }
     }
 }

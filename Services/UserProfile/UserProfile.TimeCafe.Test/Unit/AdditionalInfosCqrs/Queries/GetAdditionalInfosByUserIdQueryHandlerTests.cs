@@ -83,7 +83,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Should_Return_Failed_On_Exception()
+    public async Task Handle_Should_ThrowCqrsResultException_On_Exception()
     {
         var userId = Guid.Parse(ExistingUsers.User1Id);
         var repoMock = new Mock<IAdditionalInfoRepository>();
@@ -93,10 +93,12 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             .ThrowsAsync(new Exception("db"));
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetAdditionalInfosFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetAdditionalInfosFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 }

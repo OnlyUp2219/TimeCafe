@@ -47,9 +47,9 @@ public class GetProfileByIdQueryHandler(IUserRepositories repository) : IRequest
 
             return GetProfileByIdResult.GetSuccess(profile);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetProfileByIdResult.GetFailed();
+            throw new CqrsResultException(GetProfileByIdResult.GetFailed(), ex);
         }
     }
 }

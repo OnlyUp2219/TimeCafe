@@ -77,9 +77,9 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
 
             return UpdateProfileResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdateProfileResult.UpdateFailed();
+            throw new CqrsResultException(UpdateProfileResult.UpdateFailed(), ex);
         }
     }
 }

@@ -48,9 +48,9 @@ public class GetVisitByIdQueryHandler(IVisitRepository repository) : IRequestHan
 
             return GetVisitByIdResult.GetSuccess(visit);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetVisitByIdResult.GetFailed();
+            throw new CqrsResultException(GetVisitByIdResult.GetFailed(), ex);
         }
     }
 }

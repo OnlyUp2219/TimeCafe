@@ -40,7 +40,7 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Handler_GetTotalPages_Should_ReturnGetFailed_WhenExceptionOccurs()
+    public async Task Handler_GetTotalPages_Should_ThrowCqrsResultException_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -48,12 +48,14 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         var handler = new GetTotalPagesQueryHandler(Repository);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => handler.Handle(query, CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetTotalPagesFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Не удалось получить общее количество");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetTotalPagesFailed");
+        ex.Result.StatusCode.Should().Be(500);
+        ex.Result.Message.Should().Be("Не удалось получить общее количество");
     }
 }

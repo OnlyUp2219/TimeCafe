@@ -50,9 +50,9 @@ public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository re
 
             return GetAdditionalInfosByUserIdResult.GetSuccess(infos);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetAdditionalInfosByUserIdResult.GetFailed();
+            throw new CqrsResultException(GetAdditionalInfosByUserIdResult.GetFailed(), ex);
         }
     }
 }

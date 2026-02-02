@@ -51,9 +51,9 @@ public class ActivateTariffCommandHandler(ITariffRepository repository) : IReque
 
             return ActivateTariffResult.ActivateSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return ActivateTariffResult.ActivateFailed();
+            throw new CqrsResultException(ActivateTariffResult.ActivateFailed(), ex);
         }
     }
 }

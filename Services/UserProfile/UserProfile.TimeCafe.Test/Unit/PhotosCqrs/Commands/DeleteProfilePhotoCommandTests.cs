@@ -86,7 +86,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Handler_DeletePhoto_Should_ReturnFailed_WhenExceptionOccurs()
+    public async Task Handler_DeletePhoto_Should_ThrowCqrsResultException_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -101,13 +101,15 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => handler.Handle(command, CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PhotoDeleteFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Ошибка удаления фото");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("PhotoDeleteFailed");
+        ex.Result.StatusCode.Should().Be(500);
+        ex.Result.Message.Should().Be("Ошибка удаления фото");
     }
 
     [Fact]

@@ -28,9 +28,9 @@ public class GetTariffsByBillingTypeQueryHandler(ITariffRepository repository) :
             var tariffs = await _repository.GetByBillingTypeAsync(request.BillingType);
             return GetTariffsByBillingTypeResult.GetSuccess(tariffs);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetTariffsByBillingTypeResult.GetFailed();
+            throw new CqrsResultException(GetTariffsByBillingTypeResult.GetFailed(), ex);
         }
     }
 }

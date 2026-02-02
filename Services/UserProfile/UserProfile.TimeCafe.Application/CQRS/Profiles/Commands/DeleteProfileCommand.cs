@@ -48,9 +48,9 @@ public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : I
             await _userRepositories.DeleteProfileAsync(userId, cancellationToken);
             return DeleteProfileResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteProfileResult.DeleteFailed();
+            throw new CqrsResultException(DeleteProfileResult.DeleteFailed(), ex);
         }
     }
 }

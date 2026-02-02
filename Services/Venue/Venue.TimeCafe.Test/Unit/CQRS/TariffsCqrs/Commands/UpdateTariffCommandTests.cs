@@ -96,7 +96,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryThrowsException()
     {
         var tariffId = TestData.DefaultValues.DefaultTariffId;
         var tariffDto = new TariffWithThemeDto
@@ -118,15 +118,17 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariffDto);
         TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>())).ThrowsAsync(new Exception("Update failed"));
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdateTariffFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdateTariffFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new UpdateTariffCommand(
@@ -140,11 +142,13 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdateTariffFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdateTariffFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

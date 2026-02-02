@@ -51,9 +51,9 @@ public class DeleteVisitCommandHandler(IVisitRepository repository) : IRequestHa
 
             return DeleteVisitResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteVisitResult.DeleteFailed();
+            throw new CqrsResultException(DeleteVisitResult.DeleteFailed(), ex);
         }
     }
 }

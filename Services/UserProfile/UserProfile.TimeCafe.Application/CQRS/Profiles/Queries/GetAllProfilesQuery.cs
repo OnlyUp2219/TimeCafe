@@ -37,9 +37,9 @@ public class GetAllProfilesQueryHandler(IUserRepositories userRepositories) : IR
             var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
             return GetAllProfilesResult.GetSuccess(nonNullProfiles);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetAllProfilesResult.GetFailed();
+            throw new CqrsResultException(GetAllProfilesResult.GetFailed(), ex);
         }
     }
 }

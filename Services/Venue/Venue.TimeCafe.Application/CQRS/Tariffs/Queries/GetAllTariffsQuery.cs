@@ -35,9 +35,9 @@ public class GetAllTariffsQueryHandler(ITariffRepository repository) : IRequestH
             var tariffs = await _repository.GetAllAsync();
             return GetAllTariffsResult.GetSuccess(tariffs);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetAllTariffsResult.GetFailed();
+            throw new CqrsResultException(GetAllTariffsResult.GetFailed(), ex);
         }
     }
 }

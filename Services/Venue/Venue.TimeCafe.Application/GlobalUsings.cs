@@ -2,6 +2,7 @@ global using AutoMapper;
 
 global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Events;
+global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Extensions;
 
 global using FluentValidation;

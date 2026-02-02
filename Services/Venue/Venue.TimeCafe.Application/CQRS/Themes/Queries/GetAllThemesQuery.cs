@@ -35,9 +35,9 @@ public class GetAllThemesQueryHandler(IThemeRepository repository) : IRequestHan
             var themes = await _repository.GetAllAsync();
             return GetAllThemesResult.GetSuccess(themes);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetAllThemesResult.GetFailed();
+            throw new CqrsResultException(GetAllThemesResult.GetFailed(), ex);
         }
     }
 }

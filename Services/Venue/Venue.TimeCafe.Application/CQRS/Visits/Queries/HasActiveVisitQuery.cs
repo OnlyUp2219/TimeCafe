@@ -40,9 +40,9 @@ public class HasActiveVisitQueryHandler(IVisitRepository repository) : IRequestH
             var hasActiveVisit = await _repository.HasActiveVisitAsync(userId);
             return HasActiveVisitResult.CheckSuccess(hasActiveVisit);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return HasActiveVisitResult.CheckFailed();
+            throw new CqrsResultException(HasActiveVisitResult.CheckFailed(), ex);
         }
     }
 }

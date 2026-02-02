@@ -57,18 +57,20 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
         var command = new ActivatePromotionCommand(promotionId.ToString());
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ActivatePromotionFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("ActivatePromotionFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

@@ -40,18 +40,20 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion2Id;
         var query = new GetPromotionByIdQuery(promotionId.ToString());
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => _handler.Handle(query, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetPromotionFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetPromotionFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

@@ -7,6 +7,7 @@ global using Billing.TimeCafe.Domain.Models;
 global using Billing.TimeCafe.Domain.Repositories;
 
 global using BuildingBlocks.Behaviors;
+global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Extensions;
 
 global using FluentValidation;

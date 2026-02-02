@@ -70,9 +70,9 @@ public class CreateProfileCommandHandler(IUserRepositories repository) : IReques
 
             return CreateProfileResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateProfileResult.CreateFailed();
+            throw new CqrsResultException(CreateProfileResult.CreateFailed(), ex);
         }
     }
 }

@@ -71,9 +71,9 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IR
 
             return CreatePromotionResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreatePromotionResult.CreateFailed();
+            throw new CqrsResultException(CreatePromotionResult.CreateFailed(), ex);
         }
     }
 }

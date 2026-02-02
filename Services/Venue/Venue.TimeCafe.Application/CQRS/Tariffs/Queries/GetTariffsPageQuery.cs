@@ -44,9 +44,9 @@ public class GetTariffsPageQueryHandler(ITariffRepository repository) : IRequest
 
             return GetTariffsPageResult.GetSuccess(tariffs, totalCount);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetTariffsPageResult.GetFailed();
+            throw new CqrsResultException(GetTariffsPageResult.GetFailed(), ex);
         }
     }
 }

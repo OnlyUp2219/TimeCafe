@@ -28,9 +28,9 @@ public class GetActivePromotionsByDateQueryHandler(IPromotionRepository reposito
             var promotions = await _repository.GetActiveByDateAsync(request.Date);
             return GetActivePromotionsByDateResult.GetSuccess(promotions);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetActivePromotionsByDateResult.GetFailed();
+            throw new CqrsResultException(GetActivePromotionsByDateResult.GetFailed(), ex);
         }
     }
 }

@@ -41,7 +41,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenRepositoryFails()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryFails()
     {
         var command = new CreateTariffCommand(
             TestData.NewTariffs.NewTariff1Name,
@@ -53,15 +53,17 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new InvalidOperationException("Database error"));
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateTariffFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("CreateTariffFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var command = new CreateTariffCommand(
             TestData.NewTariffs.NewTariff1Name,
@@ -73,11 +75,13 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateTariffFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("CreateTariffFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

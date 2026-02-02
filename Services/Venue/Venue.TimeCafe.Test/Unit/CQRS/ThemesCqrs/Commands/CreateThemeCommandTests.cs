@@ -40,17 +40,19 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
         ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateThemeFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("CreateThemeFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

@@ -66,9 +66,9 @@ public class CreateVisitCommandHandler(IVisitRepository repository, ITariffRepos
 
             return CreateVisitResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateVisitResult.CreateFailed();
+            throw new CqrsResultException(CreateVisitResult.CreateFailed(), ex);
         }
     }
 }

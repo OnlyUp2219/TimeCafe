@@ -36,9 +36,9 @@ public class GetActiveTariffsQueryHandler(ITariffRepository repository) : IReque
             var tariffs = await _repository.GetActiveAsync();
             return GetActiveTariffsResult.GetSuccess(tariffs);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetActiveTariffsResult.GetFailed();
+            throw new CqrsResultException(GetActiveTariffsResult.GetFailed(), ex);
         }
     }
 }

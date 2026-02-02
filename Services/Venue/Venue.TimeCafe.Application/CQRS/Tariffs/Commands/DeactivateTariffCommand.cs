@@ -51,9 +51,9 @@ public class DeactivateTariffCommandHandler(ITariffRepository repository) : IReq
 
             return DeactivateTariffResult.DeactivateSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeactivateTariffResult.DeactivateFailed();
+            throw new CqrsResultException(DeactivateTariffResult.DeactivateFailed(), ex);
         }
     }
 }

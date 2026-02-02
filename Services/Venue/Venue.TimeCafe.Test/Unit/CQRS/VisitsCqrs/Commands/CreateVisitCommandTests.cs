@@ -62,7 +62,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
@@ -70,11 +70,13 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>())).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateVisitFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("CreateVisitFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Fact]

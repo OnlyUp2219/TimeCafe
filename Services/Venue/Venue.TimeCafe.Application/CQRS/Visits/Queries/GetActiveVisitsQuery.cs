@@ -36,9 +36,9 @@ public class GetActiveVisitsQueryHandler(IVisitRepository repository) : IRequest
             var visits = await _repository.GetActiveVisitsAsync();
             return GetActiveVisitsResult.GetSuccess(visits);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetActiveVisitsResult.GetFailed();
+            throw new CqrsResultException(GetActiveVisitsResult.GetFailed(), ex);
         }
     }
 }

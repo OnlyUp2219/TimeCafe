@@ -51,9 +51,9 @@ public class DeleteThemeCommandHandler(IThemeRepository repository) : IRequestHa
 
             return DeleteThemeResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteThemeResult.DeleteFailed();
+            throw new CqrsResultException(DeleteThemeResult.DeleteFailed(), ex);
         }
     }
 }

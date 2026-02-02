@@ -48,9 +48,9 @@ public class GetPromotionByIdQueryHandler(IPromotionRepository repository) : IRe
 
             return GetPromotionByIdResult.GetSuccess(promotion);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetPromotionByIdResult.GetFailed();
+            throw new CqrsResultException(GetPromotionByIdResult.GetFailed(), ex);
         }
     }
 }

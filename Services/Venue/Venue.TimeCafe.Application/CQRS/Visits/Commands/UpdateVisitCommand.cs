@@ -90,9 +90,9 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, ITariffRepos
 
             return UpdateVisitResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdateVisitResult.UpdateFailed();
+            throw new CqrsResultException(UpdateVisitResult.UpdateFailed(), ex);
         }
     }
 }
