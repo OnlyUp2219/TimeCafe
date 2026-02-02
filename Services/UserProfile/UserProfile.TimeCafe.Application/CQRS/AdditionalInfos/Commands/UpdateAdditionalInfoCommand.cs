@@ -75,9 +75,9 @@ public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
 
             return UpdateAdditionalInfoResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdateAdditionalInfoResult.UpdateFailed();
+            throw new CqrsResultException(UpdateAdditionalInfoResult.UpdateFailed(), ex);
         }
     }
 }

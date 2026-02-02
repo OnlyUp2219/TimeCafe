@@ -84,7 +84,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_Should_Return_Failed_When_Exception()
+    public async Task Handle_Should_ThrowCqrsResultException_When_Exception()
     {
         // Arrange
         var repoMock = new Mock<IAdditionalInfoRepository>();
@@ -102,10 +102,12 @@ public class CreateAdditionalInfoCommandHandlerTests
         var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
 
         // Act
-        var result = await handler.Handle(new CreateAdditionalInfoCommand(ExistingUsers.User1Id, "Txt"), CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => handler.Handle(new CreateAdditionalInfoCommand(ExistingUsers.User1Id, "Txt"), CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateAdditionalInfoFailed");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("CreateAdditionalInfoFailed");
     }
 }

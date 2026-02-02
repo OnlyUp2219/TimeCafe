@@ -5,10 +5,13 @@ global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Domain.Permissions;
 
 global using BuildingBlocks.Behaviors;
-global using BuildingBlocks.Extensions;
-global using MassTransit;
-global using FluentValidation;
 global using BuildingBlocks.Events;
+global using BuildingBlocks.Exceptions;
+global using BuildingBlocks.Extensions;
+
+global using FluentValidation;
+
+global using MassTransit;
 
 global using MediatR;
 

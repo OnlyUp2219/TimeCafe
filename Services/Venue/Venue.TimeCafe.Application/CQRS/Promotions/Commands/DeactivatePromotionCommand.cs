@@ -52,9 +52,9 @@ public class DeactivatePromotionCommandHandler(IPromotionRepository repository) 
 
             return DeactivatePromotionResult.DeactivateSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeactivatePromotionResult.DeactivateFailed();
+            throw new CqrsResultException(DeactivatePromotionResult.DeactivateFailed(), ex);
         }
     }
 }

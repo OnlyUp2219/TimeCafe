@@ -86,9 +86,9 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
 
             return UpdateThemeResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdateThemeResult.UpdateFailed();
+            throw new CqrsResultException(UpdateThemeResult.UpdateFailed(), ex);
         }
     }
 }

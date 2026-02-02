@@ -53,7 +53,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenUpdateFails()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenUpdateFails()
     {
         var promotionId = TestData.ExistingPromotions.Promotion2Id;
         var validFrom = TestData.DateTimeData.GetValidFromDate();
@@ -70,15 +70,17 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
         PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>())).ThrowsAsync(new Exception("Update failed"));
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdatePromotionFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdatePromotionFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion3Id;
         var validFrom = TestData.DateTimeData.GetValidFromDate();
@@ -87,11 +89,13 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdatePromotionFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdatePromotionFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

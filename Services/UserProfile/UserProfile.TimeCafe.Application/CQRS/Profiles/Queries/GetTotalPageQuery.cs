@@ -36,9 +36,9 @@ public class GetTotalPagesQueryHandler(IUserRepositories repositories) : IReques
             var totalCount = await _repositories.GetTotalPageAsync(cancellationToken);
             return GetTotalPagesResult.GetSuccess(totalCount);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetTotalPagesResult.GetFailed();
+            throw new CqrsResultException(GetTotalPagesResult.GetFailed(), ex);
         }
     }
 }

@@ -48,9 +48,9 @@ public class GetThemeByIdQueryHandler(IThemeRepository repository) : IRequestHan
 
             return GetThemeByIdResult.GetSuccess(theme);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetThemeByIdResult.GetFailed();
+            throw new CqrsResultException(GetThemeByIdResult.GetFailed(), ex);
         }
     }
 }

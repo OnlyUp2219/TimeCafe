@@ -51,9 +51,9 @@ public class ActivatePromotionCommandHandler(IPromotionRepository repository) : 
 
             return ActivatePromotionResult.ActivateSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return ActivatePromotionResult.ActivateFailed();
+            throw new CqrsResultException(ActivatePromotionResult.ActivateFailed(), ex);
         }
     }
 }

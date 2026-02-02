@@ -46,9 +46,9 @@ public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
 
             return DeleteAdditionalInfoResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteAdditionalInfoResult.DeleteFailed();
+            throw new CqrsResultException(DeleteAdditionalInfoResult.DeleteFailed(), ex);
         }
     }
 }

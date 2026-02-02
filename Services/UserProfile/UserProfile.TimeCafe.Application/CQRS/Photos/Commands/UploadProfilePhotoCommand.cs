@@ -110,9 +110,9 @@ public class UploadProfilePhotoCommandHandler(
                 moderationStream.Dispose();
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UploadProfilePhotoResult.Failed();
+            throw new CqrsResultException(UploadProfilePhotoResult.Failed(), ex);
         }
     }
 }

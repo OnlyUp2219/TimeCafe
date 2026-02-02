@@ -8,6 +8,8 @@ global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Test.Integration.Endpoints;
 global using Auth.TimeCafe.Test.Integration.Helpers;
 
+global using BuildingBlocks.Exceptions;
+
 global using FluentAssertions;
 
 global using Microsoft.AspNetCore.Hosting;

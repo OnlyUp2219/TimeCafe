@@ -53,9 +53,9 @@ public class CreateThemeCommandHandler(IThemeRepository repository) : IRequestHa
 
             return CreateThemeResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateThemeResult.CreateFailed();
+            throw new CqrsResultException(CreateThemeResult.CreateFailed(), ex);
         }
     }
 }

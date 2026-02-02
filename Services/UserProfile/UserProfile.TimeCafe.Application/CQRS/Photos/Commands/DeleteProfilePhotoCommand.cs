@@ -49,9 +49,9 @@ public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUse
 
             return DeleteProfilePhotoResult.Ok();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeleteProfilePhotoResult.Failed();
+            throw new CqrsResultException(DeleteProfilePhotoResult.Failed(), ex);
         }
     }
 }

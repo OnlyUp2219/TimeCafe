@@ -77,9 +77,9 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IR
 
             return UpdatePromotionResult.UpdateSuccess(updated);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return UpdatePromotionResult.UpdateFailed();
+            throw new CqrsResultException(UpdatePromotionResult.UpdateFailed(), ex);
         }
     }
 }

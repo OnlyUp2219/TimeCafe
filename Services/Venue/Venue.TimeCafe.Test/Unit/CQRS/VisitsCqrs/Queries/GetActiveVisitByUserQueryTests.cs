@@ -48,18 +48,20 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var query = new GetActiveVisitByUserQuery(userId.ToString());
 
         VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(query, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetActiveVisitFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetActiveVisitFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

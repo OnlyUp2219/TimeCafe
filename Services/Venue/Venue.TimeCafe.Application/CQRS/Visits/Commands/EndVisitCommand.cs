@@ -86,9 +86,9 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
 
             return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return EndVisitResult.EndFailed();
+            throw new CqrsResultException(EndVisitResult.EndFailed(), ex);
         }
     }
 }

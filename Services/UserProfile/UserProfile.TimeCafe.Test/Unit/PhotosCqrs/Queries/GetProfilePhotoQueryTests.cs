@@ -56,7 +56,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Handler_GetPhoto_Should_ReturnFailed_WhenExceptionOccurs()
+    public async Task Handler_GetPhoto_Should_ThrowCqrsResultException_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -67,13 +67,15 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => handler.Handle(query, CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PhotoGetFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Ошибка получения фото");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("PhotoGetFailed");
+        ex.Result.StatusCode.Should().Be(500);
+        ex.Result.Message.Should().Be("Ошибка получения фото");
     }
 
     [Fact]

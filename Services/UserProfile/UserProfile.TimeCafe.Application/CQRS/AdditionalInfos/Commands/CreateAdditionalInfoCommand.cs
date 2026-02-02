@@ -66,9 +66,9 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
 
             return CreateAdditionalInfoResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateAdditionalInfoResult.CreateFailed();
+            throw new CqrsResultException(CreateAdditionalInfoResult.CreateFailed(), ex);
         }
     }
 }

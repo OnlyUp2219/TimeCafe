@@ -2,6 +2,8 @@ global using System.Net;
 global using System.Net.Http.Json;
 global using System.Text.Json;
 
+global using BuildingBlocks.Exceptions;
+
 global using Billing.TimeCafe.API;
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
 global using Billing.TimeCafe.Application.CQRS.Balances.Queries;

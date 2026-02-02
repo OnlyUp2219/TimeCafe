@@ -44,16 +44,18 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var query = new GetAllThemesQuery();
 
         ThemeRepositoryMock.Setup(r => r.GetAllAsync()).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(query, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetThemesFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetThemesFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 }

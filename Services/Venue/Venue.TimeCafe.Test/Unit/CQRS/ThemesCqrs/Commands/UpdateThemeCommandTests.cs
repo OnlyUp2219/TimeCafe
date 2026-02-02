@@ -40,7 +40,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenRepositoryThrowsException()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryThrowsException()
     {
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
@@ -48,25 +48,29 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
         ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>())).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdateThemeFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdateThemeFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Fact]
-    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
+    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
 
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => _handler.Handle(command, CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UpdateThemeFailed");
-        result.StatusCode.Should().Be(500);
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("UpdateThemeFailed");
+        ex.Result.StatusCode.Should().Be(500);
     }
 
     [Theory]

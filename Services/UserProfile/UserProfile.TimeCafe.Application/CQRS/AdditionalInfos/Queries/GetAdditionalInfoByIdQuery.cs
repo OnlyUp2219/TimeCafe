@@ -47,9 +47,9 @@ public class GetAdditionalInfoByIdQueryHandler(IAdditionalInfoRepository reposit
 
             return GetAdditionalInfoByIdResult.GetSuccess(info);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetAdditionalInfoByIdResult.GetFailed();
+            throw new CqrsResultException(GetAdditionalInfoByIdResult.GetFailed(), ex);
         }
     }
 }

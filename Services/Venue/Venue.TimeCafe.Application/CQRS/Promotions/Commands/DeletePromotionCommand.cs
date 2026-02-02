@@ -51,9 +51,9 @@ public class DeletePromotionCommandHandler(IPromotionRepository repository) : IR
 
             return DeletePromotionResult.DeleteSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return DeletePromotionResult.DeleteFailed();
+            throw new CqrsResultException(DeletePromotionResult.DeleteFailed(), ex);
         }
     }
 }

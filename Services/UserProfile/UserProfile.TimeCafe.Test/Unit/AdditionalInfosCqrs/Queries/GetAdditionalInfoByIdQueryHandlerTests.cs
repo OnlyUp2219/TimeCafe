@@ -50,16 +50,18 @@ public class GetAdditionalInfoByIdQueryHandlerTests
         result.Code.Should().Be("AdditionalInfoNotFound");
     }
     [Fact]
-    public async Task Handle_Should_Return_Failed_On_Exception()
+    public async Task Handle_Should_ThrowCqrsResultException_On_Exception()
     {
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("boom"));
         var handler = new GetAdditionalInfoByIdQueryHandler(repoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfoByIdQuery(infoId.ToString()), CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
+            () => handler.Handle(new GetAdditionalInfoByIdQuery(infoId.ToString()), CancellationToken.None));
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetAdditionalInfoFailed");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetAdditionalInfoFailed");
     }
 }

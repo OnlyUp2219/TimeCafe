@@ -45,9 +45,9 @@ public class GetProfilePhotoQueryHandler(IProfilePhotoStorage storage) : IReques
 
             return GetProfilePhotoResult.Ok(data.Stream, data.ContentType);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetProfilePhotoResult.Failed();
+            throw new CqrsResultException(GetProfilePhotoResult.Failed(), ex);
         }
     }
 }

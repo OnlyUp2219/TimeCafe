@@ -1,5 +1,7 @@
 global using AutoMapper;
 
+global using BuildingBlocks.Exceptions;
+
 global using FluentAssertions;
 
 global using MassTransit;

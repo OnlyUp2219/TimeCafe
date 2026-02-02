@@ -45,7 +45,7 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Handler_GetAllProfiles_Should_ReturnGetFailed_WhenExceptionOccurs()
+    public async Task Handler_GetAllProfiles_Should_ThrowCqrsResultException_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -53,12 +53,14 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         var handler = new GetAllProfilesQueryHandler(Repository);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var ex = await Assert.ThrowsAsync<CqrsResultException>(
+            () => handler.Handle(query, CancellationToken.None));
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("GetAllProfilesFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Не удалось получить профили");
+        ex.Result.Should().NotBeNull();
+        ex.Result!.Success.Should().BeFalse();
+        ex.Result.Code.Should().Be("GetAllProfilesFailed");
+        ex.Result.StatusCode.Should().Be(500);
+        ex.Result.Message.Should().Be("Не удалось получить профили");
     }
 }

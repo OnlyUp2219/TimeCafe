@@ -48,9 +48,9 @@ public class GetActiveVisitByUserQueryHandler(IVisitRepository repository) : IRe
 
             return GetActiveVisitByUserResult.GetSuccess(visit);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetActiveVisitByUserResult.GetFailed();
+            throw new CqrsResultException(GetActiveVisitByUserResult.GetFailed(), ex);
         }
     }
 }

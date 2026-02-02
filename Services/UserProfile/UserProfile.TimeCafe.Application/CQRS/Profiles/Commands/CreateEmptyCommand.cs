@@ -48,9 +48,9 @@ public class CreateEmptyCommandHandler(IUserRepositories repositories) : IReques
             await _repositories.CreateEmptyAsync(userId, cancellationToken);
             return CreateEmptyResult.CreateSuccess();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateEmptyResult.CreateFailed();
+            throw new CqrsResultException(CreateEmptyResult.CreateFailed(), ex);
         }
     }
 }

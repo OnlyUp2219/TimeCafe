@@ -48,9 +48,9 @@ public class GetTariffByIdQueryHandler(ITariffRepository repository) : IRequestH
 
             return GetTariffByIdResult.GetSuccess(tariff);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetTariffByIdResult.GetFailed();
+            throw new CqrsResultException(GetTariffByIdResult.GetFailed(), ex);
         }
     }
 }

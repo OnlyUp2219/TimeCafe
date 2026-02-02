@@ -85,9 +85,9 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
 
             return CreateTariffResult.CreateSuccess(created);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return CreateTariffResult.CreateFailed();
+            throw new CqrsResultException(CreateTariffResult.CreateFailed(), ex);
         }
     }
 }

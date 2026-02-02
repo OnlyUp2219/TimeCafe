@@ -48,9 +48,9 @@ public class GetProfilesPageQueryHandler(IUserRepositories repositories) : IRequ
 
             return GetProfilesPageResult.GetSuccess(nonNullProfiles, request.PageNumber, request.PageSize, totalCount);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return GetProfilesPageResult.GetFailed();
+            throw new CqrsResultException(GetProfilesPageResult.GetFailed(), ex);
         }
     }
 }
