@@ -11,6 +11,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             await _next(context);
         }
+        catch (Exceptions.CqrsResultException ex)
+        {
+            await HandleCqrsResultExceptionAsync(context, ex);
+        }
         catch (ValidationException ex)
         {
             await HandleValidationExceptionAsync(context, ex);
@@ -39,6 +43,31 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         {
             await HandleExceptionAsync(context, ex);
         }
+    }
+
+    private async Task HandleCqrsResultExceptionAsync(HttpContext context, Exceptions.CqrsResultException exception)
+    {
+        var result = exception.Result;
+        if (result is null)
+        {
+            await HandleExceptionAsync(context, exception.InnerException ?? exception);
+            return;
+        }
+
+        var statusCode = result.StatusCode ?? (int)HttpStatusCode.InternalServerError;
+        var errors = result.Errors
+            ?.Select(e => new { code = e.Code, message = e.Description })
+            .ToArray();
+
+        await WriteErrorAsync(context,
+            statusCode,
+            payload: new
+            {
+                code = result.Code ?? "InternalServerError",
+                message = string.IsNullOrWhiteSpace(result.Message) ? "Внутренняя ошибка сервера." : result.Message,
+                statusCode,
+                errors
+            });
     }
 
     private async Task HandleValidationExceptionAsync(HttpContext context, ValidationException exception)

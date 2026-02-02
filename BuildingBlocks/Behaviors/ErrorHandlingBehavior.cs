@@ -11,8 +11,13 @@ public class ErrorHandlingBehavior<TRequest, TResponse>(ILogger<ErrorHandlingBeh
         {
             return await next();
         }
-        catch (FluentValidation.ValidationException)
+        catch (ValidationException)
         {
+            throw;
+        }
+        catch (Exceptions.CqrsResultException ex)
+        {
+            _logger.LogError(ex.InnerException ?? ex, "Unhandled exception for {RequestName}. Code={Code}", typeof(TRequest).Name, ex.Result?.Code);
             throw;
         }
         catch (Exception ex)
