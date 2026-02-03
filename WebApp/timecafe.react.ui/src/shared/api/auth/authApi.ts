@@ -54,6 +54,8 @@ const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === "true";
 
 const AUTH_PREFIX = "/auth";
 
+let refreshAccessTokenInFlight: Promise<string | null> | null = null;
+
 const loginJwtV2 = async (data: LoginRequest): Promise<LoginJwtV2Response> => {
     try {
         const res = await httpClient.post<LoginJwtV2Response>(`${AUTH_PREFIX}/login-jwt-v2`, data);
@@ -74,14 +76,22 @@ const registerWithUsername = async (data: RegisterRequest): Promise<{ callbackUr
 };
 
 const tryRefreshAccessToken = async (): Promise<string | null> => {
+    refreshAccessTokenInFlight ??= (async () => {
+        try {
+            const res = await rawHttpClient.post<{ accessToken: string }>(`${AUTH_PREFIX}/refresh-jwt-v2`, {}, {
+                _manualRefresh: true,
+            });
+            const token = res.data?.accessToken;
+            return token || null;
+        } catch {
+            return null;
+        }
+    })();
+
     try {
-        const res = await rawHttpClient.post<{ accessToken: string }>(`${AUTH_PREFIX}/refresh-jwt-v2`, {}, {
-            _manualRefresh: true,
-        });
-        const token = res.data?.accessToken;
-        return token || null;
-    } catch {
-        return null;
+        return await refreshAccessTokenInFlight;
+    } finally {
+        refreshAccessTokenInFlight = null;
     }
 };
 

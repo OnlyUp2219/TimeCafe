@@ -83,7 +83,7 @@ export async function loginUser(data: LoginRequest, dispatch: AppDispatch): Prom
         const tokens = res.data as { accessToken: string };
         dispatch(setAccessToken(tokens.accessToken));
         dispatch(setEmail(data.email));
-        dispatch(setEmailConfirmed(true));
+        dispatch(setEmailConfirmed(typeof res.data.emailConfirmed === "boolean" ? res.data.emailConfirmed : false));
         return {};
     } catch (error) {
         if (axios.isAxiosError(error)) {

@@ -16,7 +16,7 @@ const rootReducer = combineReducers({
 });
 
 const persistConfigure = {
-    key: "root-v2",
+    key: "root-v3",
     storage,
     blacklist: ["auth"],
 };

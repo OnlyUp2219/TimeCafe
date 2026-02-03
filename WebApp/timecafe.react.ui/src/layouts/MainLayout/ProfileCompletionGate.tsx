@@ -1,7 +1,7 @@
 import type {FC} from "react";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
+import type {AppDispatch, RootState} from "../../store";
 import {useNavigate} from "react-router-dom";
 import {
     Body1,
@@ -22,12 +22,15 @@ import {
 import {fetchProfileByUserId, resetProfile, updateProfile} from "../../store/profileSlice";
 import {isNameCompleted} from "../../utility/profileCompletion";
 import {getJwtInfo} from "../../shared/auth/jwt";
-import {clearTokens, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
-import {DateInput} from "../../components/FormFields";
+import {clearTokens, setEmail, setRole, setUserId} from "../../store/authSlice";
+import {DateInput, PhoneInput} from "../../components/FormFields";
 import {Gender} from "../../types/profile";
+import {PhoneVerificationModal} from "../../components/PhoneVerificationModal/PhoneVerificationModal";
+import {validatePhoneNumber} from "../../utility/validate";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 export const ProfileCompletionGate: FC = () => {
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -65,10 +68,6 @@ export const ProfileCompletionGate: FC = () => {
         if (derivedAuthInfo?.userId) dispatch(setUserId(derivedAuthInfo.userId) as never);
         if (derivedAuthInfo?.role) dispatch(setRole(derivedAuthInfo.role) as never);
         if (derivedAuthInfo?.email) dispatch(setEmail(derivedAuthInfo.email) as never);
-
-        if (derivedAuthInfo) {
-            dispatch(setEmailConfirmed(true) as never);
-        }
     }, [accessToken, derivedAuthInfo, dispatch, userId]);
 
     useEffect(() => {
@@ -123,20 +122,46 @@ export const ProfileCompletionGate: FC = () => {
         return () => window.clearTimeout(timer);
     }, [profileLoading]);
 
-    const mustCompleteProfile = useMemo(() => {
-        if (!accessToken) return false;
-        if (!effectiveUserId) return true;
-        if (profileLoading) return true;
-        if (!profile) return true;
-        if (profileLoadedUserId !== effectiveUserId) return true;
-        return !isNameCompleted(profile);
-    }, [accessToken, effectiveUserId, profile, profileLoadedUserId, profileLoading]);
-
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [middleName, setMiddleName] = useState("");
     const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
     const [genderId, setGenderId] = useState<0 | 1 | 2>(Gender.NotSpecified);
+    const [phoneDraft, setPhoneDraft] = useState("");
+    const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const [phoneAutoSend, setPhoneAutoSend] = useState(false);
+    const [phoneSendError, setPhoneSendError] = useState<string | null>(null);
+    const [saveError, setSaveError] = useState<string | null>(null);
+    const phoneVerifiedRecentlyRef = useRef<{ phone: string; at: number } | null>(null);
+
+    const isProfileForCurrentUser = useMemo(() => {
+        if (!profile) return false;
+        if (!effectiveUserId) return false;
+        return profileLoadedUserId === effectiveUserId;
+    }, [effectiveUserId, profile, profileLoadedUserId]);
+
+    const gateDecisionReady = useMemo(() => {
+        if (!accessToken) return false;
+        if (!effectiveUserId) return true;
+        if (profileLoading) return false;
+        if (profileError && !profile) return true;
+        return isProfileForCurrentUser;
+    }, [accessToken, effectiveUserId, isProfileForCurrentUser, profile, profileError, profileLoading]);
+
+    const mustCompleteProfile = useMemo(() => {
+        if (!accessToken) return false;
+        if (!gateDecisionReady) return false;
+        if (!effectiveUserId) return true;
+        if (profileError && !profile) return true;
+        if (!isProfileForCurrentUser) return false;
+        if (!profile) return false;
+        if (!isNameCompleted(profile)) return true;
+
+        const trimmedPhone = phoneDraft.trim();
+        if (trimmedPhone && phoneSendError) return true;
+
+        return false;
+    }, [accessToken, effectiveUserId, gateDecisionReady, isProfileForCurrentUser, phoneDraft, phoneSendError, profile, profileError]);
 
     const normalizeDate = (value: unknown): Date | undefined => {
         if (!value) return undefined;
@@ -162,169 +187,235 @@ export const ProfileCompletionGate: FC = () => {
         setLastName(profile.lastName ?? "");
         setMiddleName(profile.middleName ?? "");
         setBirthDate(normalizeDate(profile.birthDate));
+        setPhoneDraft((profile.phoneNumber ?? "").trim());
+        setSaveError(null);
+        setPhoneSendError(null);
         const g = profile.gender;
         setGenderId(g === Gender.Male || g === Gender.Female ? g : Gender.NotSpecified);
     }, [profile?.firstName, profile?.lastName, profile?.middleName, profile]);
 
     const canSave = Boolean(firstName.trim()) && Boolean(lastName.trim()) && !profileSaving && !profileLoading;
 
+    const retryLoadProfile = useCallback(() => {
+        setLoadingTimedOut(false);
+        requestedProfileUserIdRef.current = null;
+        void dispatch(resetProfile() as never);
+        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
+    }, [dispatch, effectiveUserId]);
+
+    const renderDialogContent = () => {
+        if (!effectiveUserId) {
+            return (
+                <div className="flex flex-col gap-3">
+                    <Body1>Не удалось определить пользователя из сессии.</Body1>
+                    <Caption1>Попробуйте перезайти в систему.</Caption1>
+
+                    <Button appearance="primary" onClick={handleLogout}>
+                        На страницу входа
+                    </Button>
+                </div>
+            );
+        }
+
+        if (loadingTimedOut) {
+            return (
+                <div className="flex flex-col gap-3">
+                    <Body1>Загрузка профиля заняла слишком много времени.</Body1>
+                    <Caption1>Проверьте доступность API и повторите попытку.</Caption1>
+
+                    <Button appearance="primary" onClick={retryLoadProfile}>
+                        Повторить
+                    </Button>
+                </div>
+            );
+        }
+
+        if (profileLoading) {
+            return (
+                <div className="flex items-center gap-3">
+                    <Spinner size="small" />
+                    <Body1>Загружаем профиль…</Body1>
+                </div>
+            );
+        }
+
+        if (!profile && profileError) {
+            return (
+                <div className="flex flex-col gap-3">
+                    <Body1>Не удалось загрузить профиль. Повторите попытку позже.</Body1>
+                    <Caption1>{profileError}</Caption1>
+
+                    <Button appearance="primary" onClick={retryLoadProfile}>
+                        Повторить
+                    </Button>
+                </div>
+            );
+        }
+
+        if (!profile) {
+            return (
+                <div className="flex items-center gap-3">
+                    <Spinner size="small" />
+                    <Body1>Подготавливаем профиль…</Body1>
+                </div>
+            );
+        }
+
+        return (
+            <div className="flex flex-col gap-3">
+                <Body1>
+                    Это обязательный шаг. Для сохранения нужны обязательные поля (имя и фамилия), остальные данные
+                    желательно заполнить сейчас.
+                </Body1>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Фамилия" required>
+                        <Input value={lastName} onChange={(_, d) => setLastName(d.value)} />
+                    </Field>
+                    <Field label="Имя" required>
+                        <Input value={firstName} onChange={(_, d) => setFirstName(d.value)} />
+                    </Field>
+                    <Field label="Отчество">
+                        <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)} />
+                    </Field>
+
+                    <DateInput
+                        value={birthDate}
+                        onChange={setBirthDate}
+                        disabled={profileSaving || profileLoading}
+                        label="Дата рождения"
+                        required={false}
+                    />
+                </div>
+
+                <Field label="Пол">
+                    <RadioGroup
+                        value={String(genderId)}
+                        disabled={profileSaving || profileLoading}
+                        onChange={(_, data) => {
+                            const next = Number.parseInt(data.value, 10);
+                            setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
+                        }}
+                    >
+                        <Radio value="0" label="Не указан" />
+                        <Radio value="1" label="Мужчина" />
+                        <Radio value="2" label="Женщина" />
+                    </RadioGroup>
+                </Field>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <Field label="Email">
+                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled />
+                    </Field>
+
+                    <PhoneInput
+                        value={phoneDraft}
+                        onChange={(value) => {
+                            setPhoneDraft(value);
+                            setSaveError(null);
+                        }}
+                        disabled={profileSaving || profileLoading}
+                        label="Телефон"
+                        required={false}
+                        validateOnBlur
+                        onValidationChange={(err) => setPhoneSendError(err ? err : null)}
+                    />
+                </div>
+
+                {saveError ? <Caption1 className="text-red-600">{saveError}</Caption1> : null}
+            </div>
+        );
+    };
+
     return (
-        <Dialog open={mustCompleteProfile} modalType="alert">
-            <DialogSurface>
-                <DialogBody>
-                    <DialogTitle>Заполните профиль</DialogTitle>
+        <>
+            <Dialog open={mustCompleteProfile} modalType="modal">
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>Заполните профиль</DialogTitle>
 
-                    <DialogContent>
-                        {!effectiveUserId ? (
-                            <div className="flex flex-col gap-3">
-                                <Body1>Не удалось определить пользователя из сессии.</Body1>
-                                <Caption1>Попробуйте перезайти в систему.</Caption1>
+                        <DialogContent>
+                            {renderDialogContent()}
+                        </DialogContent>
 
-                                <Button
-                                    appearance="primary"
-                                    onClick={handleLogout}
-                                >
-                                    На страницу входа
-                                </Button>
-                            </div>
-                        ) : loadingTimedOut ? (
-                            <div className="flex flex-col gap-3">
-                                <Body1>Загрузка профиля заняла слишком много времени.</Body1>
-                                <Caption1>Проверьте доступность API и повторите попытку.</Caption1>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={handleLogout}>
+                                Выйти
+                            </Button>
+                            <Button
+                                appearance="primary"
+                                disabled={!canSave}
+                                onClick={async () => {
+                                    setPhoneSendError(null);
+                                    setSaveError(null);
 
-                                <Button
-                                    appearance="primary"
-                                    onClick={() => {
-                                        setLoadingTimedOut(false);
+                                    try {
+                                        await dispatch(
+                                            updateProfile({
+                                                firstName: firstName.trim(),
+                                                lastName: lastName.trim(),
+                                                middleName: middleName.trim() || undefined,
+                                                birthDate: toDateOnlyStringOrUndefined(birthDate),
+                                                gender: genderId,
+                                            })
+                                        ).unwrap();
+
                                         requestedProfileUserIdRef.current = null;
-                                        void dispatch(resetProfile() as never);
-                                        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
-                                    }}
-                                >
-                                    Повторить
-                                </Button>
-                            </div>
-                        ) : profileLoading ? (
-                            <div className="flex items-center gap-3">
-                                <Spinner size="small" />
-                                <Body1>Загружаем профиль…</Body1>
-                            </div>
-                        ) : !profile && profileError ? (
-                            <div className="flex flex-col gap-3">
-                                <Body1>
-                                    Не удалось загрузить профиль. Повторите попытку позже.
-                                </Body1>
-                                <Caption1>{profileError}</Caption1>
+                                        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}));
 
-                                <Button
-                                    appearance="primary"
-                                    onClick={() => {
-                                        requestedProfileUserIdRef.current = null;
-                                        void dispatch(resetProfile() as never);
-                                        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
-                                    }}
-                                >
-                                    Повторить
-                                </Button>
-                            </div>
-                        ) : !profile ? (
-                            <div className="flex items-center gap-3">
-                                <Spinner size="small" />
-                                <Body1>Подготавливаем профиль…</Body1>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col gap-3">
-                                <Body1>
-                                    Это обязательный шаг. Для сохранения нужны обязательные поля (имя и фамилия), остальные
-                                    данные желательно заполнить сейчас.
-                                </Body1>
+                                        const nextPhone = phoneDraft.trim();
+                                        const currentPhone = (profile?.phoneNumber ?? "").trim();
+                                        const currentPhoneConfirmed = profile?.phoneNumberConfirmed === true;
+                                        const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !currentPhoneConfirmed);
 
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <Field label="Фамилия" required>
-                                        <Input value={lastName} onChange={(_, d) => setLastName(d.value)} />
-                                    </Field>
-                                    <Field label="Имя" required>
-                                        <Input value={firstName} onChange={(_, d) => setFirstName(d.value)} />
-                                    </Field>
-                                    <Field label="Отчество">
-                                        <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)} />
-                                    </Field>
+                                        if (phoneNeedsVerification) {
+                                            const validation = validatePhoneNumber(nextPhone);
+                                            if (validation) {
+                                                setPhoneSendError(validation);
+                                                return;
+                                            }
 
-                                    <DateInput
-                                        value={birthDate}
-                                        onChange={setBirthDate}
-                                        disabled={profileSaving || profileLoading}
-                                        label="Дата рождения"
-                                        required={false}
-                                    />
-                                </div>
+                                            const recently = phoneVerifiedRecentlyRef.current;
+                                            if (recently && recently.phone === nextPhone && Date.now() - recently.at < 30_000) return;
 
-                                <Field label="Пол">
-                                    <RadioGroup
-                                        value={String(genderId)}
-                                        disabled={profileSaving || profileLoading}
-                                        onChange={(_, data) => {
-                                            const next = Number.parseInt(data.value, 10);
-                                            setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
-                                        }}
-                                    >
-                                        <Radio value="0" label="Не указан" />
-                                        <Radio value="1" label="Мужчина" />
-                                        <Radio value="2" label="Женщина" />
-                                    </RadioGroup>
-                                </Field>
+                                            if (showPhoneModal) return;
 
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <Field label="Email">
-                                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled />
-                                    </Field>
-                                    <Field label="Телефон">
-                                        <Input value={(profile.phoneNumber ?? "").trim()} disabled />
-                                    </Field>
-                                    <Field label="Номер карты доступа (СКУД)">
-                                        <Input
-                                            value={profile.accessCardNumber ?? ""}
-                                            placeholder="Выдаётся системой"
-                                            disabled
-                                        />
-                                    </Field>
-                                </div>
-                                <Caption1>
-                                    СКУД (номер карты доступа) выдаётся только сервером после подтверждения телефона.
-                                </Caption1>
-                            </div>
-                        )}
-                    </DialogContent>
+                                            setPhoneAutoSend(true);
+                                            setShowPhoneModal(true);
+                                        }
+                                    } catch (err: unknown) {
+                                        setSaveError(getUserMessageFromUnknown(err) || "Не удалось сохранить профиль.");
+                                    }
+                                }}
+                            >
+                                Сохранить
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
 
-                    <DialogActions>
-                        <Button appearance="secondary" onClick={handleLogout}>
-                            Выйти
-                        </Button>
-                        <Button
-                            appearance="primary"
-                            disabled={!canSave}
-                            onClick={async () => {
-                                const action = await dispatch(
-                                    updateProfile({
-                                        firstName: firstName.trim(),
-                                        lastName: lastName.trim(),
-                                        middleName: middleName.trim() || undefined,
-                                        birthDate: toDateOnlyStringOrUndefined(birthDate),
-                                        gender: genderId,
-                                    }) as never
-                                );
-                                if (updateProfile.fulfilled.match(action)) {
-                                    requestedProfileUserIdRef.current = null;
-                                    void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
-                                }
-                            }}
-                        >
-                            Сохранить
-                        </Button>
-                    </DialogActions>
-                </DialogBody>
-            </DialogSurface>
-        </Dialog>
+            <PhoneVerificationModal
+                isOpen={showPhoneModal}
+                onClose={() => {
+                    setShowPhoneModal(false);
+                    setPhoneAutoSend(false);
+                }}
+                currentPhoneNumber={phoneDraft.trim()}
+                currentPhoneNumberConfirmed={profile?.phoneNumberConfirmed === true}
+                mode="api"
+                autoSendCodeOnOpen={phoneAutoSend}
+                onSuccess={async (verifiedPhone: string) => {
+                    setShowPhoneModal(false);
+                    setPhoneAutoSend(false);
+                    setPhoneDraft(verifiedPhone);
+                    phoneVerifiedRecentlyRef.current = { phone: verifiedPhone, at: Date.now() };
+                    requestedProfileUserIdRef.current = null;
+                    void dispatch(resetProfile() as never);
+                    void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
+                }}
+            />
+        </>
     );
 };
 

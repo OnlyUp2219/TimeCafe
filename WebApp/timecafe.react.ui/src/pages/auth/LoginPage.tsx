@@ -46,7 +46,7 @@ export const LoginPage = () => {
             if (info.userId) dispatch(setUserId(info.userId));
             if (info.role) dispatch(setRole(info.role));
             dispatch(setEmail(info.email ?? email));
-            dispatch(setEmailConfirmed(true));
+            dispatch(setEmailConfirmed(typeof r.emailConfirmed === "boolean" ? r.emailConfirmed : false));
             navigate("/home");
         } catch (err: unknown) {
             showToast(getUserMessageFromUnknown(err), "error", "Ошибка");

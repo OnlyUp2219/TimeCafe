@@ -62,6 +62,7 @@
 .dark-red-badge {
   background: var(--colorStatusDangerBackground2) !important;
   color: var(--colorStatusDangerForeground1) !important;
+  border-color: var(--colorStatusDangerBorder1) !important;
 }
 
 .brand-badge {

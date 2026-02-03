@@ -1,5 +1,5 @@
 import type {FC} from "react";
-import {Body2, Button, Card, Title2, tokens} from "@fluentui/react-components";
+import {Badge, Body2, Button, Card, Title2, tokens} from "@fluentui/react-components";
 import {ArrowExitFilled, ArrowExitRegular} from "@fluentui/react-icons";
 
 export interface LogoutCardProps {
@@ -17,11 +17,10 @@ export const LogoutCard: FC<LogoutCardProps> = ({className, onLogout}) => {
         >
             <div className="flex h-full flex-col gap-2 justify-between">
                 <div>
-                    <Title2 block className="!flex gap-2">
-                        <div
-                            className="flex items-center gap-2 w-10 h-10 justify-center dark-red-badge rounded-full ">
-                            <ArrowExitRegular/>
-                        </div>
+                    <Title2 block className="!flex items-center gap-2">
+                        <Badge appearance="tint" shape="rounded" size="extra-large" className="dark-red-badge">
+                            <ArrowExitRegular className="size-5" />
+                        </Badge>
                         Выйти из аккаунта
                     </Title2>
 
@@ -35,7 +34,7 @@ export const LogoutCard: FC<LogoutCardProps> = ({className, onLogout}) => {
                         appearance="primary"
                         onClick={onLogout}
                         className="dark-red-button w-full sm:w-auto "
-                        icon={<ArrowExitFilled/>}
+                        icon={<ArrowExitFilled className="size-5" />}
                     >
                         Выйти
                     </Button>

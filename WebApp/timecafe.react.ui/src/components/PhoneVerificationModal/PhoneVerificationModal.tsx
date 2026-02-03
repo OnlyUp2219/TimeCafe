@@ -20,6 +20,7 @@ import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageF
 import {handleVerificationError} from "../../shared/auth/phoneVerification";
 import {validatePhoneNumber} from "../../utility/validate";
 import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
+import {PhoneInput} from "../FormFields";
 
 type PhoneVerificationSessionV1 = {
     open: boolean;
@@ -75,6 +76,7 @@ interface PhoneVerificationModalProps {
     currentPhoneNumberConfirmed?: boolean;
     onSuccess: (phoneNumber: string) => void;
     mode?: "api" | "ui";
+    autoSendCodeOnOpen?: boolean;
 }
 
 type Step = "input" | "verify";
@@ -86,6 +88,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             currentPhoneNumberConfirmed = false,
                                                                             onSuccess,
                                                                             mode = "api",
+                                                                            autoSendCodeOnOpen = false,
                                                                         }) => {
     const [step, setStep] = useState<Step>("input");
     const [phoneNumber, setPhoneNumber] = useState(currentPhoneNumber);
@@ -99,6 +102,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [captchaKey, setCaptchaKey] = useState(0);
     const [uiGeneratedCode, setUiGeneratedCode] = useState<string | null>(null);
+    const [autoSendRequested, setAutoSendRequested] = useState(false);
+    const autoSendOnceRef = useRef(false);
 
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
@@ -134,6 +139,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     useEffect(() => {
         if (!isOpen) return;
 
+        autoSendOnceRef.current = false;
+
         const session = loadPhoneSession();
         if (session?.open && session.mode === mode && session.phoneNumber.trim()) {
             setPhoneNumber(session.phoneNumber);
@@ -141,6 +148,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             resetErrors();
             setStep("verify");
             setUiGeneratedCode(mode === "ui" ? (session.uiGeneratedCode ?? null) : null);
+            setAutoSendRequested(false);
             return;
         }
 
@@ -149,7 +157,26 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetErrors();
         setStep("input");
         setUiGeneratedCode(null);
+        setAutoSendRequested(autoSendCodeOnOpen && Boolean(currentPhoneNumber.trim()));
     }, [isOpen, currentPhoneNumber, mode]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        if (!autoSendRequested) return;
+        if (step !== "input") {
+            setAutoSendRequested(false);
+            return;
+        }
+
+        if (autoSendOnceRef.current) {
+            setAutoSendRequested(false);
+            return;
+        }
+        autoSendOnceRef.current = true;
+
+        setAutoSendRequested(false);
+        void handleSendCode();
+    }, [autoSendRequested, isOpen, step]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -323,24 +350,20 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Body1 block>
                                     Введите номер телефона, на который будет отправлен код подтверждения
                                 </Body1>
-                                <Field
+                                <PhoneInput
                                     label="Номер телефона"
                                     required
-                                    validationMessage={validationError || error || undefined}
-                                    validationState={validationError || error ? "error" : "none"}
-                                >
-                                    <Input
-                                        type="tel"
-                                        value={phoneNumber}
-                                        onChange={(e) => {
-                                            setPhoneNumber(e.target.value);
-                                            setValidationError("");
-                                            setError(null);
-                                        }}
-                                        placeholder="+7 (999) 123-45-67"
-                                        disabled={loading}
-                                    />
-                                </Field>
+                                    value={phoneNumber}
+                                    onChange={(value) => {
+                                        setPhoneNumber(value);
+                                        setValidationError("");
+                                        setError(null);
+                                    }}
+                                    placeholder="+7 (999) 123-45-67"
+                                    disabled={loading}
+                                    validateOnBlur
+                                    externalError={validationError || error || undefined}
+                                />
                             </>
                         ) : (
                             <>
