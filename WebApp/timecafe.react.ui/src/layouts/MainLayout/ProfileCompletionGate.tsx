@@ -101,15 +101,13 @@ export const ProfileCompletionGate: FC = () => {
 
     useEffect(() => {
         if (!effectiveUserId) return;
-        if (profileLoadedUserId && profileLoadedUserId !== effectiveUserId) return;
-        if (profile) return;
         if (profileLoading) return;
         if (profileError) return;
         if (requestedProfileUserIdRef.current === effectiveUserId) return;
 
         requestedProfileUserIdRef.current = effectiveUserId;
         void dispatch(fetchProfileByUserId({userId: effectiveUserId}) as never);
-    }, [dispatch, effectiveUserId, profile, profileError, profileLoading, profileLoadedUserId]);
+    }, [dispatch, effectiveUserId, profileError, profileLoading]);
 
     const [loadingTimedOut, setLoadingTimedOut] = useState(false);
     useEffect(() => {
@@ -130,8 +128,9 @@ export const ProfileCompletionGate: FC = () => {
         if (!effectiveUserId) return true;
         if (profileLoading) return true;
         if (!profile) return true;
+        if (profileLoadedUserId !== effectiveUserId) return true;
         return !isNameCompleted(profile);
-    }, [accessToken, effectiveUserId, profile, profileLoading]);
+    }, [accessToken, effectiveUserId, profile, profileLoadedUserId, profileLoading]);
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");

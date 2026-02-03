@@ -148,6 +148,7 @@ const profileSlice = createSlice({
   reducers: {
     setProfile(state, action: PayloadAction<Profile>) {
       state.data = action.payload;
+      state.loadedUserId = null;
     },
     resetProfile(state) {
       state.data = null;
