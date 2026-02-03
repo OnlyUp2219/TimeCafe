@@ -1,4 +1,15 @@
-import {Body2, Button, Card, Divider, Title2} from "@fluentui/react-components";
+import {
+    Badge,
+    Body2,
+    Button,
+    Card,
+    Divider,
+    MessageBar,
+    MessageBarActions,
+    MessageBarBody,
+    MessageBarTitle,
+    Title2,
+} from "@fluentui/react-components";
 import {useCallback, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -12,6 +23,7 @@ import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
 import {EmailFormCard} from "../../components/PersonalDataForm/EmailFormCard";
 import {LogoutCard} from "../../components/PersonalDataForm/LogoutCard";
 import {LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
+import {DismissRegular} from "@fluentui/react-icons";
 import {authApi} from "../../shared/api/auth/authApi";
 import {clearTokens} from "../../store/authSlice";
 import blob3Url from "../../assets/ssshape_blob3.svg";
@@ -25,15 +37,17 @@ export const PersonalDataPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const profile = useSelector((state: RootState) => state.profile.data);
     const saving = useSelector((state: RootState) => state.profile.saving);
-    const saveError = useSelector((state: RootState) => state.profile.error);
 
     const {showToast, ToasterElement} = useProgressToast();
+
+    const [lastSaveError, setLastSaveError] = useState<string | null>(null);
 
     const savePatch = useCallback(
         async (patch: Partial<Profile>, successMessage: string): Promise<boolean> => {
             const action = await dispatch(updateProfile(patch));
             if (updateProfile.fulfilled.match(action)) {
                 showToast(successMessage, "success", "Готово");
+                setLastSaveError(null);
                 return true;
             }
 
@@ -41,6 +55,7 @@ export const PersonalDataPage = () => {
                 (updateProfile.rejected.match(action) && (action.payload as string | undefined)) ||
                 "Не удалось сохранить профиль.";
             showToast(message, "error", "Ошибка");
+            setLastSaveError(message);
             return false;
         },
         [dispatch, showToast]
@@ -113,10 +128,23 @@ export const PersonalDataPage = () => {
 
                     <Divider/>
 
-                    {saveError && (
-                        <div>
-                            Последняя ошибка сохранения: {saveError}
-                        </div>
+                    {lastSaveError && (
+                        <MessageBar intent="error">
+                            <MessageBarBody>
+                                <MessageBarTitle>Последняя ошибка сохранения</MessageBarTitle>
+                                {lastSaveError}
+                            </MessageBarBody>
+                            <MessageBarActions
+                                containerAction={
+                                    <Button
+                                        appearance="transparent"
+                                        aria-label="Закрыть"
+                                        icon={<DismissRegular className="size-5" />}
+                                        onClick={() => setLastSaveError(null)}
+                                    />
+                                }
+                            />
+                        </MessageBar>
                     )}
 
                     <div className="flex flex-col gap-4">
@@ -148,11 +176,11 @@ export const PersonalDataPage = () => {
                                 />
 
                                 <Card className="sm:col-span-2 lg:col-span-1">
-                                    <Title2 block className="!flex gap-2">
-                                        <div
-                                            className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
-                                            <LockClosedRegular/>
-                                        </div>
+                                    <Title2 block className="!flex items-center gap-2">
+                                        <Badge appearance="tint" shape="rounded" size="extra-large"
+                                               className="brand-badge">
+                                            <LockClosedRegular className="size-5"/>
+                                        </Badge>
                                         Смена пароля
                                     </Title2>
                                     <Body2 className="!line-clamp-2">
@@ -162,7 +190,7 @@ export const PersonalDataPage = () => {
                                     <div
                                         className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center sm:justify-end " : "w-full"}>
                                         {!showPasswordForm ? (
-                                            <Button appearance="primary" icon={<PasswordFilled/>}
+                                            <Button appearance="primary" icon={<PasswordFilled className="size-5" />}
                                                     onClick={() => setShowPasswordForm(true)}>
                                                 Сменить пароль
                                             </Button>

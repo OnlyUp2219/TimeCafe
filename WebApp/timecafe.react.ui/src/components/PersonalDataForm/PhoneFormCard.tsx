@@ -1,5 +1,5 @@
 import {createElement, useEffect, useState, type FC} from "react";
-import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
+import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
@@ -55,12 +55,17 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false, className, onSave}) => {
     const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const [phoneModalMode, setPhoneModalMode] = useState<"api" | "ui">("ui");
 
     const phone = profile.phoneNumber || "";
+    const hasPhone = Boolean(phone.trim());
+    const confirmedForUi: boolean | null = hasPhone ? (profile.phoneNumberConfirmed ?? null) : null;
+    const actionLabel = !hasPhone ? "Заполнить" : profile.phoneNumberConfirmed ? "Изменить" : "Подтвердить";
 
     useEffect(() => {
         const session = loadPhoneSession();
         if (session?.open && session.step === "verify") {
+            setPhoneModalMode(session.mode);
             setShowPhoneModal(true);
         }
     }, []);
@@ -71,10 +76,10 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
 
     return (
         <Card className={className}>
-            <Title2 block className="!flex gap-2">
-                <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
-                    <PhoneRegular />
-                </div>
+            <Title2 block className="!flex items-center gap-2">
+                <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                    <PhoneRegular className="size-5" />
+                </Badge>
                 Телефон
             </Title2>
             <Body2 className="!line-clamp-2">
@@ -91,13 +96,13 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
                                 </Body1Strong>
                             </Tooltip>
                             <Tooltip
-                                content={profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
+                                content={!hasPhone ? "Телефон не указан" : (profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
                                 relationship="description"
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(profile.phoneNumberConfirmed))}
-                                    className={`custom-tag ${getStatusClass(profile.phoneNumberConfirmed)}`}
+                                    icon={createElement(getStatusIcon(confirmedForUi))}
+                                    className={`custom-tag ${getStatusClass(confirmedForUi)}`}
                                 />
                             </Tooltip>
                         </div>
@@ -108,7 +113,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
                             onClick={() => setShowPhoneModal(true)}
                             disabled={loading}
                         >
-                            {profile.phoneNumberConfirmed ? "Изменить" : "Подтвердить"}
+                            {actionLabel}
                         </Button>
                     </div>
                 </div>
@@ -120,7 +125,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
                 currentPhoneNumber={profile.phoneNumber || ""}
                 currentPhoneNumberConfirmed={profile.phoneNumberConfirmed === true}
                 onSuccess={handlePhoneVerified}
-                mode="ui"
+                mode={phoneModalMode}
             />
         </Card>
     );

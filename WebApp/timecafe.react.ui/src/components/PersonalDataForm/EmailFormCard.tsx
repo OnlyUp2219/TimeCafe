@@ -1,8 +1,10 @@
 import {createElement, useEffect, useState, type FC} from "react";
-import {Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
+import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, MailRegular, type FluentIcon} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
+import {useSelector} from "react-redux";
+import type {RootState} from "../../store";
 
 export interface EmailFormCardProps {
     profile: Profile;
@@ -24,12 +26,22 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
 };
 
 export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false, className, onSave}) => {
+    const authEmail = useSelector((state: RootState) => state.auth.email);
     const [email, setEmail] = useState(profile.email);
     const [showEmailModal, setShowEmailModal] = useState(false);
 
     useEffect(() => {
         setEmail(profile.email);
     }, [profile.email]);
+
+    const profileEmail = (email ?? "").trim();
+    const fallbackEmail = (authEmail ?? "").trim();
+    const effectiveEmail = profileEmail || fallbackEmail;
+    const hasEmail = Boolean(effectiveEmail);
+    const effectiveConfirmed: boolean | null =
+        !hasEmail ? null : profileEmail ? (profile.emailConfirmed ?? null) : null;
+    const actionLabel =
+        !hasEmail ? "Заполнить" : effectiveConfirmed === true ? "Изменить" : "Подтвердить";
 
     const handleEmailVerified = (verifiedEmail: string) => {
         setEmail(verifiedEmail);
@@ -38,10 +50,10 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false,
 
     return (
         <Card className={className}>
-            <Title2 block className="!flex gap-2">
-                <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
-                    <MailRegular />
-                </div>
+            <Title2 block className="!flex items-center gap-2">
+                <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                    <MailRegular className="size-5" />
+                </Badge>
                 Почта
             </Title2>
             <Body2 className="!line-clamp-2">
@@ -52,19 +64,19 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false,
                 <div className="flex flex-col gap-2">
                     <div className="flex flex-col sm:items-center sm:flex-row justify-between gap-2 min-w-0">
                         <div className="flex items-center gap-2 min-w-0">
-                            <Tooltip content={`Почта: ${email || "не указан"}`} relationship="label">
+                            <Tooltip content={`Почта: ${effectiveEmail || "не указан"}`} relationship="label">
                                 <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
-                                    {email || "—"}
+                                    {effectiveEmail || "—"}
                                 </Body1Strong>
                             </Tooltip>
                             <Tooltip
-                                content={profile.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
+                                content={!hasEmail ? "Почта не указана" : (effectiveConfirmed === true ? "Email подтверждён" : "Email не подтверждён")}
                                 relationship="description"
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(profile.emailConfirmed))}
-                                    className={`custom-tag ${getStatusClass(profile.emailConfirmed)}`}
+                                    icon={createElement(getStatusIcon(effectiveConfirmed))}
+                                    className={`custom-tag ${getStatusClass(effectiveConfirmed)}`}
                                 />
                             </Tooltip>
                         </div>
@@ -74,7 +86,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false,
                             onClick={() => setShowEmailModal(true)}
                             disabled={loading}
                         >
-                            {profile.emailConfirmed ? "Изменить" : "Подтвердить"}
+                            {actionLabel}
                         </Button>
                     </div>
                 </div>
@@ -83,8 +95,8 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false,
             <EmailVerificationModal
                 isOpen={showEmailModal}
                 onClose={() => setShowEmailModal(false)}
-                currentEmail={email}
-                currentEmailConfirmed={profile.emailConfirmed === true}
+                currentEmail={effectiveEmail}
+                currentEmailConfirmed={effectiveConfirmed === true}
                 onSuccess={handleEmailVerified}
             />
         </Card>

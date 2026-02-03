@@ -1,5 +1,5 @@
 import {useEffect, useState, type FC} from "react";
-import {Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
+import {Badge, Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
 import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {DateInput} from "../FormFields";
@@ -92,10 +92,10 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
     return (
         <Card className={className}>
-            <Title2 block className="!flex gap-2">
-                <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
-                    <PersonRegular/>
-                </div>
+            <Title2 block className="!flex items-center gap-2">
+                <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                    <PersonRegular className="size-5" />
+                </Badge>
                 Персональные данные
             </Title2>
 

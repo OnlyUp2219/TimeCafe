@@ -1,9 +1,9 @@
 import {useEffect, useState, type FC, createElement} from "react";
-import {Card, Field, Input, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
+import {Card, Field, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {Gender, Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
-import {DateInput, EmailInput} from "../FormFields";
+import {DateInput, EmailInput, PhoneInput} from "../FormFields";
 
 interface PersonalInfoFormProps {
     profile: Profile;
@@ -106,42 +106,40 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         }
                     />
 
-                    <Field label="Телефон">
-                        <div className="flex flex-col gap-2">
-                            <div className="input-with-button">
-                                <Input
-                                    value={phone}
-                                    onChange={(_, data) => {
-                                        setPhone(data.value);
-                                        onChange?.({phoneNumber: data.value});
-                                    }}
-                                    placeholder="Введите номер телефона"
-                                    className="w-full"
-                                    type="tel"
-                                    disabled={readOnly || loading}
-                                />
+                    <div className="flex flex-col gap-2">
+                        <PhoneInput
+                            value={phone}
+                            onChange={(value) => {
+                                setPhone(value);
+                                onChange?.({phoneNumber: value});
+                            }}
+                            disabled={readOnly || loading}
+                            required={false}
+                            shouldValidate={false}
+                            validateOnBlur
+                            trailingElement={
                                 <Tag
                                     appearance="outline"
                                     icon={createElement(getStatusIcon(profile.phoneNumberConfirmed))}
                                     className={`custom-tag ${getStatusClass(profile.phoneNumberConfirmed)}`}
                                 />
-                            </div>
+                            }
+                        />
 
-                            {!readOnly && (
-                                <div className="flex justify-end">
-                                    <Button
-                                        appearance="subtle"
-                                        size="small"
-                                        icon={<Edit20Regular />}
-                                        onClick={() => setShowPhoneModal(true)}
-                                        disabled={loading || !phone.trim()}
-                                    >
-                                        {profile.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </Field>
+                        {!readOnly && (
+                            <div className="flex justify-end">
+                                <Button
+                                    appearance="subtle"
+                                    size="small"
+                                    icon={<Edit20Regular />}
+                                    onClick={() => setShowPhoneModal(true)}
+                                    disabled={loading || !phone.trim()}
+                                >
+                                    {profile.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <div className="flex-1">

@@ -1,6 +1,7 @@
 import {useCallback, useState} from "react";
 import type {FC} from "react";
 import {
+    Badge,
     Button,
     Card,
     MessageBar,
@@ -112,10 +113,10 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
     const body = (
         <>
             {showTitle && (
-                <Title2 block className="!flex gap-2">
-                    <div className="flex items-center gap-2 w-10 h-10 justify-center brand-badge rounded-full">
-                        <LockClosedRegular />
-                    </div>
+                <Title2 block className="!flex items-center gap-2">
+                    <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                        <LockClosedRegular className="size-5" />
+                    </Badge>
                     Смена пароля
                 </Title2>
             )}
