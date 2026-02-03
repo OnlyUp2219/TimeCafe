@@ -5,7 +5,6 @@ public record UpdateProfileDto(
     string FirstName,
     string LastName,
     string? MiddleName,
-    string? AccessCardNumber,
     string? PhotoUrl,
     DateOnly? BirthDate,
     Gender Gender);
@@ -19,7 +18,6 @@ public class UpdateProfileDtoExample : IExamplesProvider<UpdateProfileDto>
             FirstName: "Иван",
             LastName: "Петров",
             MiddleName: "Иванович",
-            AccessCardNumber: "CARD-001",
             PhotoUrl: "https://example.com/photos/user123.jpg",
             BirthDate: new DateOnly(1990, 5, 15),
             Gender: Gender.Male

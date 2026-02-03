@@ -56,6 +56,8 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
             if (existing == null)
                 return UpdateProfileResult.ProfileNotFound();
 
+            request.User.AccessCardNumber = existing.AccessCardNumber;
+
             if (existing.ProfileStatus == ProfileStatus.Banned)
             {
                 request.User.ProfileStatus = ProfileStatus.Banned;

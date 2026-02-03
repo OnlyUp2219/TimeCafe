@@ -15,12 +15,16 @@ import {
     DialogTitle,
     Field,
     Input,
+    Radio,
+    RadioGroup,
     Spinner,
 } from "@fluentui/react-components";
 import {fetchProfileByUserId, resetProfile, updateProfile} from "../../store/profileSlice";
 import {isNameCompleted} from "../../utility/profileCompletion";
 import {getJwtInfo} from "../../shared/auth/jwt";
 import {clearTokens, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
+import {DateInput} from "../../components/FormFields";
+import {Gender} from "../../types/profile";
 
 export const ProfileCompletionGate: FC = () => {
     const dispatch = useDispatch();
@@ -38,6 +42,7 @@ export const ProfileCompletionGate: FC = () => {
     const profileLoading = useSelector((state: RootState) => state.profile.loading);
     const profileSaving = useSelector((state: RootState) => state.profile.saving);
     const profileError = useSelector((state: RootState) => state.profile.error);
+    const profileLoadedUserId = useSelector((state: RootState) => state.profile.loadedUserId);
 
     const requestedProfileUserIdRef = useRef<string | null>(null);
 
@@ -67,18 +72,36 @@ export const ProfileCompletionGate: FC = () => {
     }, [accessToken, derivedAuthInfo, dispatch, userId]);
 
     useEffect(() => {
+        if (!accessToken) {
+            requestedProfileUserIdRef.current = null;
+            void dispatch(resetProfile() as never);
+            return;
+        }
+
         if (!effectiveUserId) {
             requestedProfileUserIdRef.current = null;
             return;
         }
 
+        if (profile && !profileLoadedUserId) {
+            requestedProfileUserIdRef.current = null;
+            void dispatch(resetProfile() as never);
+            return;
+        }
+
+        if (profileLoadedUserId && profileLoadedUserId !== effectiveUserId) {
+            requestedProfileUserIdRef.current = null;
+            void dispatch(resetProfile() as never);
+        }
+
         if (requestedProfileUserIdRef.current !== effectiveUserId) {
             requestedProfileUserIdRef.current = null;
         }
-    }, [effectiveUserId]);
+    }, [accessToken, dispatch, effectiveUserId, profile, profileLoadedUserId]);
 
     useEffect(() => {
         if (!effectiveUserId) return;
+        if (profileLoadedUserId && profileLoadedUserId !== effectiveUserId) return;
         if (profile) return;
         if (profileLoading) return;
         if (profileError) return;
@@ -86,7 +109,7 @@ export const ProfileCompletionGate: FC = () => {
 
         requestedProfileUserIdRef.current = effectiveUserId;
         void dispatch(fetchProfileByUserId({userId: effectiveUserId}) as never);
-    }, [dispatch, effectiveUserId, profile, profileError, profileLoading]);
+    }, [dispatch, effectiveUserId, profile, profileError, profileLoading, profileLoadedUserId]);
 
     const [loadingTimedOut, setLoadingTimedOut] = useState(false);
     useEffect(() => {
@@ -113,12 +136,35 @@ export const ProfileCompletionGate: FC = () => {
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [middleName, setMiddleName] = useState("");
+    const [birthDate, setBirthDate] = useState<Date | undefined>(undefined);
+    const [genderId, setGenderId] = useState<0 | 1 | 2>(Gender.NotSpecified);
+
+    const normalizeDate = (value: unknown): Date | undefined => {
+        if (!value) return undefined;
+        if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
+        if (typeof value === "string" || typeof value === "number") {
+            const d = new Date(value);
+            return Number.isNaN(d.getTime()) ? undefined : d;
+        }
+        return undefined;
+    };
+
+    const toDateOnlyStringOrUndefined = (value: Date | undefined): string | undefined => {
+        if (!value) return undefined;
+        const yyyy = value.getFullYear();
+        const mm = String(value.getMonth() + 1).padStart(2, "0");
+        const dd = String(value.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+    };
 
     useEffect(() => {
         if (!profile) return;
         setFirstName(profile.firstName ?? "");
         setLastName(profile.lastName ?? "");
         setMiddleName(profile.middleName ?? "");
+        setBirthDate(normalizeDate(profile.birthDate));
+        const g = profile.gender;
+        setGenderId(g === Gender.Male || g === Gender.Female ? g : Gender.NotSpecified);
     }, [profile?.firstName, profile?.lastName, profile?.middleName, profile]);
 
     const canSave = Boolean(firstName.trim()) && Boolean(lastName.trim()) && !profileSaving && !profileLoading;
@@ -189,7 +235,10 @@ export const ProfileCompletionGate: FC = () => {
                             </div>
                         ) : (
                             <div className="flex flex-col gap-3">
-                                <Body1>Это обязательный шаг. Укажите как минимум имя и фамилию.</Body1>
+                                <Body1>
+                                    Это обязательный шаг. Для сохранения нужны обязательные поля (имя и фамилия), остальные
+                                    данные желательно заполнить сейчас.
+                                </Body1>
 
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                     <Field label="Фамилия" required>
@@ -201,7 +250,49 @@ export const ProfileCompletionGate: FC = () => {
                                     <Field label="Отчество">
                                         <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)} />
                                     </Field>
+
+                                    <DateInput
+                                        value={birthDate}
+                                        onChange={setBirthDate}
+                                        disabled={profileSaving || profileLoading}
+                                        label="Дата рождения"
+                                        required={false}
+                                    />
                                 </div>
+
+                                <Field label="Пол">
+                                    <RadioGroup
+                                        value={String(genderId)}
+                                        disabled={profileSaving || profileLoading}
+                                        onChange={(_, data) => {
+                                            const next = Number.parseInt(data.value, 10);
+                                            setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
+                                        }}
+                                    >
+                                        <Radio value="0" label="Не указан" />
+                                        <Radio value="1" label="Мужчина" />
+                                        <Radio value="2" label="Женщина" />
+                                    </RadioGroup>
+                                </Field>
+
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    <Field label="Email">
+                                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled />
+                                    </Field>
+                                    <Field label="Телефон">
+                                        <Input value={(profile.phoneNumber ?? "").trim()} disabled />
+                                    </Field>
+                                    <Field label="Номер карты доступа (СКУД)">
+                                        <Input
+                                            value={profile.accessCardNumber ?? ""}
+                                            placeholder="Выдаётся системой"
+                                            disabled
+                                        />
+                                    </Field>
+                                </div>
+                                <Caption1>
+                                    СКУД (номер карты доступа) выдаётся только сервером после подтверждения телефона.
+                                </Caption1>
                             </div>
                         )}
                     </DialogContent>
@@ -219,6 +310,8 @@ export const ProfileCompletionGate: FC = () => {
                                         firstName: firstName.trim(),
                                         lastName: lastName.trim(),
                                         middleName: middleName.trim() || undefined,
+                                        birthDate: toDateOnlyStringOrUndefined(birthDate),
+                                        gender: genderId,
                                     }) as never
                                 );
                                 if (updateProfile.fulfilled.match(action)) {

@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.API.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var sharedSettingsPath = Path.GetFullPath(
@@ -49,6 +51,11 @@ builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerati
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfiguration(builder.Configuration);
 builder.Services.AddCarter();
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter());
+});
 
 var app = builder.Build();
 

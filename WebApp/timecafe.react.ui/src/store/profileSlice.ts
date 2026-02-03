@@ -3,12 +3,14 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from './index';
 import { Gender, ProfileStatus, type Profile } from '../types/profile';
 import { ProfileApi } from '../shared/api/profile/profileApi';
+import { clearTokens } from './authSlice';
 
 export interface ProfileState {
   data: Profile | null;
   loading: boolean;
   saving: boolean;
   error: string | null;
+  loadedUserId: string | null;
 }
 
 const createEmptyProfile = (): Profile => ({
@@ -54,6 +56,7 @@ const initialState: ProfileState = {
   loading: false,
   saving: false,
   error: null,
+  loadedUserId: null,
 };
 
 export const fetchProfileByUserId = createAsyncThunk<
@@ -85,9 +88,17 @@ const isUpdatableViaProfileApi = (patch: Partial<Profile>): boolean => {
     Object.prototype.hasOwnProperty.call(patch, 'middleName') ||
     Object.prototype.hasOwnProperty.call(patch, 'gender') ||
     Object.prototype.hasOwnProperty.call(patch, 'birthDate') ||
-    Object.prototype.hasOwnProperty.call(patch, 'photoUrl') ||
-    Object.prototype.hasOwnProperty.call(patch, 'accessCardNumber')
+    Object.prototype.hasOwnProperty.call(patch, 'photoUrl')
   );
+};
+
+const normalizeBirthDateForApi = (value: string | undefined): string | null => {
+  const trimmed = (value ?? '').trim();
+  if (!trimmed) return null;
+
+  const m = /^\d{4}-\d{2}-\d{2}/.exec(trimmed);
+  if (!m) return null;
+  return trimmed.slice(0, 10);
 };
 
 export const updateProfile = createAsyncThunk<
@@ -98,14 +109,19 @@ export const updateProfile = createAsyncThunk<
   try {
     const state = getState();
     const existing = state.profile?.data ?? createEmptyProfile();
-    const merged: Profile = { ...existing, ...patch };
+    const sanitizedPatch: Partial<Profile> = { ...patch };
+    if (Object.prototype.hasOwnProperty.call(sanitizedPatch, 'accessCardNumber')) {
+      delete (sanitizedPatch as { accessCardNumber?: unknown }).accessCardNumber;
+    }
+
+    const merged: Profile = { ...existing, ...sanitizedPatch };
 
     const userId = state.auth.userId;
     if (!userId) {
       return rejectWithValue('Не найден userId пользователя');
     }
 
-    if (!isUpdatableViaProfileApi(patch)) {
+    if (!isUpdatableViaProfileApi(sanitizedPatch)) {
       return merged;
     }
 
@@ -114,9 +130,8 @@ export const updateProfile = createAsyncThunk<
       firstName: merged.firstName ?? '',
       lastName: merged.lastName ?? '',
       middleName: merged.middleName ?? null,
-      accessCardNumber: merged.accessCardNumber ?? null,
       photoUrl: merged.photoUrl ?? null,
-      birthDate: merged.birthDate ?? null,
+      birthDate: normalizeBirthDateForApi(merged.birthDate),
       gender: merged.gender ?? Gender.NotSpecified,
     });
 
@@ -139,6 +154,7 @@ const profileSlice = createSlice({
       state.loading = false;
       state.saving = false;
       state.error = null;
+      state.loadedUserId = null;
     },
   },
   extraReducers: (builder) => {
@@ -148,6 +164,13 @@ const profileSlice = createSlice({
         state.saving = false;
         state.error = null;
       })
+      .addCase(clearTokens, (state) => {
+        state.data = null;
+        state.loading = false;
+        state.saving = false;
+        state.error = null;
+        state.loadedUserId = null;
+      })
       .addCase(fetchProfileByUserId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -155,6 +178,7 @@ const profileSlice = createSlice({
       .addCase(fetchProfileByUserId.fulfilled, (state, action) => {
         state.loading = false;
         state.data = action.payload;
+        state.loadedUserId = action.meta.arg.userId;
       })
       .addCase(fetchProfileByUserId.rejected, (state, action) => {
         state.loading = false;

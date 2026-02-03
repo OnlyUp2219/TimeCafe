@@ -16,7 +16,6 @@ export class ProfileApi {
         firstName: string;
         lastName: string;
         middleName?: string | null;
-        accessCardNumber?: string | null;
         photoUrl?: string | null;
         birthDate?: string | null;
         gender: number;

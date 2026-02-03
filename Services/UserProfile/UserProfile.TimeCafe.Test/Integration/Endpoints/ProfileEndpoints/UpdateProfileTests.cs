@@ -14,7 +14,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             firstName = TestData.ExistingUsers.User2FirstName,
             lastName = TestData.UpdateData.UpdatedLastName2,
             middleName = TestData.UpdateData.UpdatedMiddleName,
-            accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
             gender = (byte)Gender.Female
@@ -51,7 +50,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             firstName = "Test",
             lastName = "User",
             middleName = (string?)null,
-            accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
             gender = (byte)Gender.NotSpecified
@@ -86,7 +84,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             firstName = "",
             lastName = "",
             middleName = (string?)null,
-            accessCardNumber = (string?)null,
             photoUrl = (string?)null,
             birthDate = (DateOnly?)null,
             gender = (byte)Gender.NotSpecified
@@ -107,6 +104,44 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         catch (Exception)
         {
             Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return422_WhenValidationFails] Response: {jsonString}");
+            throw;
+        }
+    }
+
+    [Fact]
+    public async Task Endpoint_UpdateProfile_Should_Return200_WhenBirthDateSentAsIsoDateTimeString()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        await SeedProfileAsync(userId, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
+
+        var dto = new
+        {
+            userId = userId.ToString(),
+            firstName = TestData.ExistingUsers.User2FirstName,
+            lastName = TestData.ExistingUsers.User2LastName,
+            middleName = (string?)null,
+            photoUrl = (string?)null,
+            birthDate = "1990-05-15T00:00:00.000Z",
+            gender = (byte)Gender.Female
+        };
+
+        // Act
+        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
+        var jsonString = await response.Content.ReadAsStringAsync();
+
+        // Assert
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            json.TryGetProperty("profile", out var profile).Should().BeTrue();
+            profile.TryGetProperty("birthDate", out var birthDate).Should().BeTrue();
+            birthDate.GetString()!.Should().Be("1990-05-15");
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return200_WhenBirthDateSentAsIsoDateTimeString] Response: {jsonString}");
             throw;
         }
     }
