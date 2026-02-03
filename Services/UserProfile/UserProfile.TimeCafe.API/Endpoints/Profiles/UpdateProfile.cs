@@ -14,7 +14,6 @@ public class UpdateProfile : ICarterModule
                 FirstName = dto.FirstName,
                 LastName = dto.LastName,
                 MiddleName = dto.MiddleName,
-                AccessCardNumber = dto.AccessCardNumber,
                 PhotoUrl = dto.PhotoUrl,
                 BirthDate = dto.BirthDate,
                 Gender = dto.Gender,

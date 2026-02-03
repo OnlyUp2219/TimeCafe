@@ -42,6 +42,7 @@ const authSlice = createSlice({
             state.accessToken = "";
             state.userId = "";
             state.role = "";
+            state.email = "";
             state.emailConfirmed = false;
         }
     }
