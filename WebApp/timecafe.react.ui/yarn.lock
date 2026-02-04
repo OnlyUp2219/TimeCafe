@@ -610,24 +610,24 @@
     "@fluentui/react-utilities" "^9.26.1"
     "@swc/helpers" "^0.5.1"
 
-"@fluentui/react-dialog@^9.15.2":
-  version "9.15.2"
-  resolved "https://registry.npmjs.org/@fluentui/react-dialog/-/react-dialog-9.15.2.tgz"
-  integrity sha512-040z1EMvI8guXBeBahTsSZted/WXEPST89Qa6z2SAe+NNrKo4C5AwVVQxa/KdktPvxDQJReHwA7n8lphzt5XOw==
+"@fluentui/react-dialog@^9.15.2", "@fluentui/react-dialog@^9.16.6":
+  version "9.16.6"
+  resolved "https://registry.npmjs.org/@fluentui/react-dialog/-/react-dialog-9.16.6.tgz"
+  integrity sha512-GD6GXI7MiMytdR1eTFrN3svfS9DKFQqimS35vKx0+ysizoYYahRdATOGLXjUxoj77X5UGfoeysIXr9f1ZcIs5w==
   dependencies:
     "@fluentui/keyboard-keys" "^9.0.8"
-    "@fluentui/react-aria" "^9.17.1"
-    "@fluentui/react-context-selector" "^9.2.8"
+    "@fluentui/react-aria" "^9.17.8"
+    "@fluentui/react-context-selector" "^9.2.14"
     "@fluentui/react-icons" "^2.0.245"
-    "@fluentui/react-jsx-runtime" "^9.2.1"
-    "@fluentui/react-motion" "^9.11.0"
-    "@fluentui/react-motion-components-preview" "^0.10.1"
-    "@fluentui/react-portal" "^9.8.3"
-    "@fluentui/react-shared-contexts" "^9.25.2"
-    "@fluentui/react-tabster" "^9.26.6"
-    "@fluentui/react-theme" "^9.2.0"
-    "@fluentui/react-utilities" "^9.25.0"
-    "@griffel/react" "^1.5.22"
+    "@fluentui/react-jsx-runtime" "^9.3.5"
+    "@fluentui/react-motion" "^9.11.6"
+    "@fluentui/react-motion-components-preview" "^0.15.0"
+    "@fluentui/react-portal" "^9.8.10"
+    "@fluentui/react-shared-contexts" "^9.26.1"
+    "@fluentui/react-tabster" "^9.26.12"
+    "@fluentui/react-theme" "^9.2.1"
+    "@fluentui/react-utilities" "^9.26.1"
+    "@griffel/react" "^1.5.32"
     "@swc/helpers" "^0.5.1"
 
 "@fluentui/react-divider@^9.4.6":
@@ -832,13 +832,22 @@
     "@fluentui/react-motion" "*"
     "@swc/helpers" "^0.5.1"
 
-"@fluentui/react-motion@*", "@fluentui/react-motion@^9.11.0":
-  version "9.11.0"
-  resolved "https://registry.npmjs.org/@fluentui/react-motion/-/react-motion-9.11.0.tgz"
-  integrity sha512-X6MAw4zXsV9RwpE9WCVjz3Uwkjgl7A+q2lT+hy0wKSprASQ1g3HZJwTtS6cCuBNijUKge2wIhIquUuk0WCcWqA==
+"@fluentui/react-motion-components-preview@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.npmjs.org/@fluentui/react-motion-components-preview/-/react-motion-components-preview-0.15.0.tgz"
+  integrity sha512-CUNl3WZt4RU4q6iAG56M3WRAq5sxfm8BNr9Me5dru1mkDXwgsdrCk03UFzydru3gThmuyYsBHwze79YrPzzmxw==
   dependencies:
-    "@fluentui/react-shared-contexts" "^9.25.2"
-    "@fluentui/react-utilities" "^9.25.0"
+    "@fluentui/react-motion" "*"
+    "@fluentui/react-utilities" "*"
+    "@swc/helpers" "^0.5.1"
+
+"@fluentui/react-motion@*", "@fluentui/react-motion@^9.11.0", "@fluentui/react-motion@^9.11.6":
+  version "9.11.6"
+  resolved "https://registry.npmjs.org/@fluentui/react-motion/-/react-motion-9.11.6.tgz"
+  integrity sha512-WZiqEtO0vCUYjYjkvxm9h1r/VRVEi0a4hDhVxCP3Ptsfn5ts5CEf61WbJyrmvvWD7X9TamP2SEf+lEmS8Qy89A==
+  dependencies:
+    "@fluentui/react-shared-contexts" "^9.26.1"
+    "@fluentui/react-utilities" "^9.26.1"
     "@swc/helpers" "^0.5.1"
 
 "@fluentui/react-nav@^9.3.7":
@@ -1324,7 +1333,7 @@
     "@griffel/react" "^1.5.22"
     "@swc/helpers" "^0.5.1"
 
-"@fluentui/react-utilities@^9.18.10", "@fluentui/react-utilities@^9.18.7", "@fluentui/react-utilities@^9.23.1", "@fluentui/react-utilities@^9.25.0", "@fluentui/react-utilities@^9.26.1":
+"@fluentui/react-utilities@*", "@fluentui/react-utilities@^9.18.10", "@fluentui/react-utilities@^9.18.7", "@fluentui/react-utilities@^9.23.1", "@fluentui/react-utilities@^9.25.0", "@fluentui/react-utilities@^9.26.1":
   version "9.26.1"
   resolved "https://registry.npmjs.org/@fluentui/react-utilities/-/react-utilities-9.26.1.tgz"
   integrity sha512-TCJ7TAQh4Lf4uEdbbFARhq3MqAGoGAsVKNPf/y54NCOsKnKnTHyQUvhIKFGJGxPpiqbLxqKspPEQOVZNL9am1A==
