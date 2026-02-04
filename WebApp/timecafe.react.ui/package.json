@@ -12,6 +12,7 @@
   "dependencies": {
     "@fluentui/react-charts": "^9.3.8",
     "@fluentui/react-components": "^9.71.0",
+    "@fluentui/react-dialog": "^9.16.6",
     "@griffel/react": "^1.5.30",
     "@reduxjs/toolkit": "^2.9.0",
     "@tailwindcss/vite": "^4.1.14",

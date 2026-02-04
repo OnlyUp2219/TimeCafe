@@ -329,7 +329,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(_, data) => !data.open && handleClose()}>
+        <Dialog open={isOpen} modalType="alert" unmountOnClose={false}>
             <DialogSurface className="phone-verification-modal">
                 <DialogBody>
                     <DialogTitle

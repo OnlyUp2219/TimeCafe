@@ -329,7 +329,7 @@ export const ProfileCompletionGate: FC = () => {
 
     return (
         <>
-            <Dialog open={mustCompleteProfile} modalType="modal">
+            <Dialog open={mustCompleteProfile} modalType="alert" unmountOnClose={false}>
                 <DialogSurface>
                     <DialogBody>
                         <DialogTitle>Заполните профиль</DialogTitle>

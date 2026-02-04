@@ -98,7 +98,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={(_, data) => !data.open && onClose()}>
+        <Dialog open={isOpen} modalType="alert" unmountOnClose={false}>
             <DialogSurface>
                 <DialogBody>
                     <DialogTitle
