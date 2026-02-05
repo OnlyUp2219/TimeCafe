@@ -3,36 +3,12 @@ import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fl
 import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
-
-type PhoneVerificationSessionV1 = {
-    open: boolean;
-    step: "input" | "verify";
-    phoneNumber: string;
-    mode: "api" | "ui";
-    uiGeneratedCode?: string | null;
-};
-
-const PHONE_VERIFICATION_SESSION_KEY = "tc_phone_verification_session_v1";
-
-const loadPhoneSession = (): PhoneVerificationSessionV1 | null => {
-    try {
-        const raw = window.localStorage.getItem(PHONE_VERIFICATION_SESSION_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as PhoneVerificationSessionV1;
-        if (!parsed || typeof parsed !== "object") return null;
-        if (parsed.step !== "input" && parsed.step !== "verify") return null;
-        if (parsed.mode !== "api" && parsed.mode !== "ui") return null;
-        return {
-            open: Boolean(parsed.open),
-            step: parsed.step,
-            phoneNumber: String(parsed.phoneNumber ?? ""),
-            mode: parsed.mode,
-            uiGeneratedCode: parsed.uiGeneratedCode ?? null,
-        };
-    } catch {
-        return null;
-    }
-};
+import {
+    isPhoneVerificationSessionV1,
+    PHONE_VERIFICATION_SESSION_KEY,
+    type PhoneVerificationSessionV1,
+} from "../../shared/auth/phoneVerificationSession";
+import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
 
 export interface PhoneFormCardProps {
     profile: Profile;
@@ -54,6 +30,11 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
 };
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false, className, onSave}) => {
+    const phoneSessionStore = useLocalStorageJson<PhoneVerificationSessionV1>(
+        PHONE_VERIFICATION_SESSION_KEY,
+        isPhoneVerificationSessionV1
+    );
+
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const [phoneModalMode, setPhoneModalMode] = useState<"api" | "ui">("ui");
 
@@ -63,7 +44,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
     const actionLabel = !hasPhone ? "Заполнить" : profile.phoneNumberConfirmed ? "Изменить" : "Подтвердить";
 
     useEffect(() => {
-        const session = loadPhoneSession();
+        const session = phoneSessionStore.load();
         if (session?.open && session.step === "verify") {
             setPhoneModalMode(session.mode);
             setShowPhoneModal(true);

@@ -18,55 +18,15 @@ import {DismissRegular} from "@fluentui/react-icons";
 import {authApi, type PhoneCodeRequest} from "../../shared/api/auth/authApi";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 import {handleVerificationError} from "../../shared/auth/phoneVerification";
+import {
+    isPhoneVerificationSessionV1,
+    PHONE_VERIFICATION_SESSION_KEY,
+    type PhoneVerificationSessionV1,
+} from "../../shared/auth/phoneVerificationSession";
 import {validatePhoneNumber} from "../../utility/validate";
 import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
+import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
 import {PhoneInput} from "../FormFields";
-
-type PhoneVerificationSessionV1 = {
-    open: boolean;
-    step: Step;
-    phoneNumber: string;
-    mode: "api" | "ui";
-    uiGeneratedCode?: string | null;
-};
-
-const PHONE_VERIFICATION_SESSION_KEY = "tc_phone_verification_session_v1";
-
-const loadPhoneSession = (): PhoneVerificationSessionV1 | null => {
-    try {
-        const raw = window.localStorage.getItem(PHONE_VERIFICATION_SESSION_KEY);
-        if (!raw) return null;
-        const parsed = JSON.parse(raw) as PhoneVerificationSessionV1;
-        if (!parsed || typeof parsed !== "object") return null;
-        if (parsed.step !== "verify") return null;
-        if (parsed.mode !== "api" && parsed.mode !== "ui") return null;
-        return {
-            open: Boolean(parsed.open),
-            step: parsed.step,
-            phoneNumber: String(parsed.phoneNumber ?? ""),
-            mode: parsed.mode,
-            uiGeneratedCode: parsed.uiGeneratedCode ?? null,
-        };
-    } catch {
-        return null;
-    }
-};
-
-const savePhoneSession = (session: PhoneVerificationSessionV1) => {
-    try {
-        window.localStorage.setItem(PHONE_VERIFICATION_SESSION_KEY, JSON.stringify(session));
-    } catch {
-        void 0;
-    }
-};
-
-const clearPhoneSession = () => {
-    try {
-        window.localStorage.removeItem(PHONE_VERIFICATION_SESSION_KEY);
-    } catch {
-        void 0;
-    }
-};
 
 
 interface PhoneVerificationModalProps {
@@ -90,6 +50,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             mode = "api",
                                                                             autoSendCodeOnOpen = false,
                                                                         }) => {
+    const phoneSessionStore = useLocalStorageJson<PhoneVerificationSessionV1>(
+        PHONE_VERIFICATION_SESSION_KEY,
+        isPhoneVerificationSessionV1
+    );
+
     const [step, setStep] = useState<Step>("input");
     const [phoneNumber, setPhoneNumber] = useState(currentPhoneNumber);
     const [verificationCode, setVerificationCode] = useState("");
@@ -141,8 +106,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
         autoSendOnceRef.current = false;
 
-        const session = loadPhoneSession();
-        if (session?.open && session.mode === mode && session.phoneNumber.trim()) {
+        const session = phoneSessionStore.load();
+        if (session?.open && session.step === "verify" && session.mode === mode && session.phoneNumber.trim()) {
             setPhoneNumber(session.phoneNumber);
             resetVerificationState();
             resetErrors();
@@ -181,12 +146,12 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     useEffect(() => {
         if (!isOpen) return;
         if (step !== "verify") {
-            clearPhoneSession();
+            phoneSessionStore.clear();
             return;
         }
-        savePhoneSession({
+        phoneSessionStore.save({
             open: true,
-            step: "verify",
+            step,
             phoneNumber,
             mode,
             uiGeneratedCode: mode === "ui" ? uiGeneratedCode : null,
@@ -194,7 +159,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     }, [isOpen, mode, phoneNumber, step, uiGeneratedCode]);
 
     const handleClose = () => {
-        clearPhoneSession();
+        phoneSessionStore.clear();
         onClose();
     };
 
