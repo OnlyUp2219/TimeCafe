@@ -20,9 +20,6 @@ public class Profile
     [MaxLength(100)]
     public string? MiddleName { get; set; }
 
-    [MaxLength(50)]
-    public string? AccessCardNumber { get; set; }
-
     [MaxLength(500)]
     public string? PhotoUrl { get; set; }
 

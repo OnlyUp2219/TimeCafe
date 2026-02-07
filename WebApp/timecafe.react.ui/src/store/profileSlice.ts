@@ -25,8 +25,6 @@ const createEmptyProfile = (): Profile => ({
 
   gender: Gender.NotSpecified,
   birthDate: undefined,
-
-  accessCardNumber: undefined,
   photoUrl: undefined,
 
   profileStatus: ProfileStatus.Pending,
@@ -110,10 +108,6 @@ export const updateProfile = createAsyncThunk<
     const state = getState();
     const existing = state.profile?.data ?? createEmptyProfile();
     const sanitizedPatch: Partial<Profile> = { ...patch };
-    if (Object.prototype.hasOwnProperty.call(sanitizedPatch, 'accessCardNumber')) {
-      delete (sanitizedPatch as { accessCardNumber?: unknown }).accessCardNumber;
-    }
-
     const merged: Profile = { ...existing, ...sanitizedPatch };
 
     const userId = state.auth.userId;

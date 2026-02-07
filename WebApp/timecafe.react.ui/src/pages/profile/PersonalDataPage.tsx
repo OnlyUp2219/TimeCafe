@@ -72,7 +72,6 @@ export const PersonalDataPage = () => {
             phoneNumberConfirmed: true,
             birthDate: "1999-01-15",
             gender: 1,
-            accessCardNumber: "TC-000001",
             photoUrl: undefined,
             profileStatus: 0,
             banReason: undefined,

@@ -29,7 +29,6 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.MiddleName).HasMaxLength(100);
             entity.Property(e => e.PhotoUrl).HasMaxLength(500);
-            entity.Property(e => e.AccessCardNumber).HasMaxLength(50);
         });
 
         modelBuilder.Entity<AdditionalInfo>(entity =>
