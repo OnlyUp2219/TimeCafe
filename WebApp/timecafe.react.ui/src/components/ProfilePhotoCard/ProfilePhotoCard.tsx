@@ -1,10 +1,13 @@
 import {useEffect, useId, useRef, useState} from "react";
-import {Avatar, Button, Card, Title2} from "@fluentui/react-components";
+import {Avatar, Button, Card, Spinner, Text, Title2} from "@fluentui/react-components";
 import {Delete24Regular, ImageAdd24Regular} from "@fluentui/react-icons";
 
 interface ProfilePhotoCardProps {
     displayName: string;
     onPhotoUrlChange?: (url: string | null) => void;
+    onUpload?: (file: File) => Promise<boolean>;
+    onDelete?: () => Promise<boolean>;
+    busy?: boolean;
     className?: string;
     asCard?: boolean;
     showTitle?: boolean;
@@ -16,6 +19,9 @@ interface ProfilePhotoCardProps {
 export function ProfilePhotoCard({
                                     displayName,
                                     onPhotoUrlChange,
+                                    onUpload,
+                                    onDelete,
+                                    busy = false,
                                     className,
                                     asCard = true,
                                     showTitle = true,
@@ -27,8 +33,14 @@ export function ProfilePhotoCard({
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const fileInputId = useId();
+    const fileLabelId = useId();
 
     const objectUrlRef = useRef<string | null>(null);
+    const onPhotoUrlChangeRef = useRef(onPhotoUrlChange);
+
+    useEffect(() => {
+        onPhotoUrlChangeRef.current = onPhotoUrlChange;
+    }, [onPhotoUrlChange]);
 
     const revokeObjectUrl = () => {
         if (objectUrlRef.current) {
@@ -42,13 +54,13 @@ export function ProfilePhotoCard({
         const url = URL.createObjectURL(blob);
         objectUrlRef.current = url;
         setPhotoUrl(url);
-        onPhotoUrlChange?.(url);
+        onPhotoUrlChangeRef.current?.(url);
     };
 
     const clearPhoto = () => {
         revokeObjectUrl();
         setPhotoUrl(null);
-        onPhotoUrlChange?.(null);
+        onPhotoUrlChangeRef.current?.(null);
     };
 
     useEffect(() => {
@@ -64,8 +76,8 @@ export function ProfilePhotoCard({
         }
         setSelectedFile(null);
         setPhotoUrl(initialPhotoUrl);
-        onPhotoUrlChange?.(initialPhotoUrl);
-    }, [initialPhotoUrl, onPhotoUrlChange]);
+        onPhotoUrlChangeRef.current?.(initialPhotoUrl);
+    }, [initialPhotoUrl]);
 
     const body = variant === "view" ? (
         <div className="flex items-center gap-4">
@@ -95,14 +107,15 @@ export function ProfilePhotoCard({
 
             <div className="mt-4 flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
-                    <label htmlFor={fileInputId} className="text-sm font-medium">
+                    <Text id={fileLabelId} size={200} weight="semibold">
                         Файл
-                    </label>
+                    </Text>
                     <input
                         id={fileInputId}
                         type="file"
                         accept="image/*"
-                        disabled={disabled}
+                        disabled={disabled || busy}
+                        aria-labelledby={fileLabelId}
                         className="sr-only"
                         ref={fileInputRef}
                         onChange={(e) => {
@@ -116,7 +129,7 @@ export function ProfilePhotoCard({
                     <Button
                         appearance="secondary"
                         icon={<ImageAdd24Regular />}
-                        disabled={disabled}
+                        disabled={disabled || busy}
                         onClick={() => fileInputRef.current?.click()}
                     >
                         Выбрать файл
@@ -126,21 +139,29 @@ export function ProfilePhotoCard({
                 <div className="flex flex-wrap gap-2">
                     <Button
                         appearance="primary"
-                        icon={<ImageAdd24Regular/>}
-                        disabled={disabled || !selectedFile}
-                        onClick={() => {
-                            if (selectedFile) setPhotoFromBlob(selectedFile);
+                        icon={busy ? <Spinner size="tiny" /> : <ImageAdd24Regular />}
+                        disabled={disabled || busy || !selectedFile || !onUpload}
+                        onClick={async () => {
+                            if (!selectedFile || !onUpload) return;
+                            const ok = await onUpload(selectedFile);
+                            if (ok) {
+                                setSelectedFile(null);
+                            }
                         }}
                     >
                         Применить
                     </Button>
                     <Button
                         appearance="secondary"
-                        icon={<Delete24Regular/>}
-                        disabled={disabled || !photoUrl}
-                        onClick={() => {
-                            setSelectedFile(null);
-                            clearPhoto();
+                        icon={busy ? <Spinner size="tiny" /> : <Delete24Regular />}
+                        disabled={disabled || busy || !photoUrl || !onDelete}
+                        onClick={async () => {
+                            if (!onDelete) return;
+                            const ok = await onDelete();
+                            if (ok) {
+                                setSelectedFile(null);
+                                clearPhoto();
+                            }
                         }}
                     >
                         Удалить
