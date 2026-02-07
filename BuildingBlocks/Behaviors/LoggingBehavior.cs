@@ -13,6 +13,7 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
             Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+        jsonOptions.Converters.Add(new StreamLoggingConverter());
         string payload = string.Empty;
         try
         {
@@ -37,4 +38,13 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
         _logger.LogInformation("Handled {RequestName} Response={Response}", requestName, responseJson);
         return response;
     }
+}
+
+public class StreamLoggingConverter : JsonConverter<Stream>
+{
+    public override Stream? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => null;
+
+    public override void Write(Utf8JsonWriter writer, Stream value, JsonSerializerOptions options)
+        => writer.WriteStringValue("<stream>");
 }

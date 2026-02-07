@@ -40,7 +40,8 @@ public static class S3Extensions
             var s3Opts = sp.GetRequiredService<IOptions<S3Options>>().Value;
             var photoOpts = sp.GetRequiredService<IOptions<PhotoOptions>>().Value;
             var s3Client = sp.GetRequiredService<IAmazonS3>();
-            return new S3ProfilePhotoStorage(s3Client, s3Opts, photoOpts);
+            var logger = sp.GetRequiredService<ILogger<S3ProfilePhotoStorage>>();
+            return new S3ProfilePhotoStorage(s3Client, s3Opts, photoOpts, logger);
         });
 
         return services;
