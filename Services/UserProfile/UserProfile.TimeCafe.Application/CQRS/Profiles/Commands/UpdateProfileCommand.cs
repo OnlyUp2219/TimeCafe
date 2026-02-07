@@ -41,6 +41,10 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 
         RuleFor(x => x.User.Gender)
             .IsInEnum().WithMessage("Пол указан некорректно");
+
+        RuleFor(x => x.User.BirthDate)
+            .Must(date => date == null || date <= DateOnly.FromDateTime(DateTime.UtcNow))
+            .WithMessage("Дата рождения не может быть в будущем");
     }
 }
 
