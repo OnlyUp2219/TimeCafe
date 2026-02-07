@@ -1,16 +1,15 @@
-import {createElement, useEffect, useState, type FC} from "react";
+import {createElement, useState, type FC} from "react";
 import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, MailRegular, type FluentIcon} from "@fluentui/react-icons";
-import type {Profile} from "../../types/profile";
 import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
+import {authApi} from "../../shared/api/auth/authApi";
+import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
 
 export interface EmailFormCardProps {
-    profile: Profile;
     loading?: boolean;
     className?: string;
-    onSave?: (patch: Partial<Profile>) => void;
 }
 
 const getStatusClass = (confirmed?: boolean | null): string => {
@@ -25,27 +24,29 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
     return DismissFilled;
 };
 
-export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false, className, onSave}) => {
+export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, className}) => {
+    const dispatch = useDispatch();
     const authEmail = useSelector((state: RootState) => state.auth.email);
-    const [email, setEmail] = useState(profile.email);
+    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const [showEmailModal, setShowEmailModal] = useState(false);
 
-    useEffect(() => {
-        setEmail(profile.email);
-    }, [profile.email]);
-
-    const profileEmail = (email ?? "").trim();
-    const fallbackEmail = (authEmail ?? "").trim();
-    const effectiveEmail = profileEmail || fallbackEmail;
+    const effectiveEmail = (authEmail ?? "").trim();
     const hasEmail = Boolean(effectiveEmail);
-    const effectiveConfirmed: boolean | null =
-        !hasEmail ? null : profileEmail ? (profile.emailConfirmed ?? null) : null;
+    const effectiveConfirmed: boolean | null = hasEmail ? authEmailConfirmed : null;
     const actionLabel =
         !hasEmail ? "Заполнить" : effectiveConfirmed === true ? "Изменить" : "Подтвердить";
 
-    const handleEmailVerified = (verifiedEmail: string) => {
-        setEmail(verifiedEmail);
-        onSave?.({email: verifiedEmail, emailConfirmed: true});
+    const handleEmailVerified = async () => {
+        try {
+            const currentUser = await authApi.getCurrentUser();
+            if (currentUser.userId) dispatch(setUserId(currentUser.userId));
+            dispatch(setEmail(currentUser.email));
+            dispatch(setEmailConfirmed(currentUser.emailConfirmed));
+            dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
+            dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
+        } catch {
+            void 0;
+        }
     };
 
     return (
@@ -97,7 +98,13 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({profile, loading = false,
                 onClose={() => setShowEmailModal(false)}
                 currentEmail={effectiveEmail}
                 currentEmailConfirmed={effectiveConfirmed === true}
-                onSuccess={handleEmailVerified}
+                onSuccess={async (_verifiedEmail) => {
+                    try {
+                        await handleEmailVerified();
+                    } finally {
+                        setShowEmailModal(false);
+                    }
+                }}
             />
         </Card>
     );

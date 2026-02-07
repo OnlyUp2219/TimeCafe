@@ -160,19 +160,11 @@ export const PersonalDataPage = () => {
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
                                 <PhoneFormCard
-                                    profile={profile}
                                     loading={saving}
-                                    onSave={(patch) => {
-                                        void savePatch(patch, "Телефон сохранён.");
-                                    }}
                                 />
 
                                 <EmailFormCard
-                                    profile={profile}
                                     loading={saving}
-                                    onSave={(patch) => {
-                                        void savePatch(patch, "Почта сохранена.");
-                                    }}
                                 />
 
                                 <Card className="sm:col-span-2 lg:col-span-1">
@@ -198,7 +190,7 @@ export const PersonalDataPage = () => {
                                             <ChangePasswordForm
                                                 wrapInCard={false}
                                                 showTitle={false}
-                                                mode="ui"
+                                                mode="api"
                                                 redirectToLoginOnSuccess={false}
                                                 autoClearTokensOnSuccess={false}
                                                 showCancelButton

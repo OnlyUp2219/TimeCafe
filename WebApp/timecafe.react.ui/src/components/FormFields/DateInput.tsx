@@ -11,6 +11,8 @@ interface DateInputProps {
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
     required?: boolean;
+    maxDate?: Date;
+    maxDateMessage?: string;
 }
 
 const formatDateForInput = (date: Date): string => {
@@ -30,19 +32,40 @@ export const DateInput = ({
                               onValidationChange,
                               shouldValidate = true,
                               required = false,
+                              maxDate,
+                              maxDateMessage = "Дата не может быть в будущем.",
                           }: DateInputProps) => {
     const inputValue = useMemo(() => (value ? formatDateForInput(value) : ""), [value]);
 
-        const errorMsg = useMemo(() => (validate ? validate(value) : ""), [validate, value]);
+    const normalizedMaxDate = useMemo(() => {
+        if (!maxDate) return undefined;
+        return new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+    }, [maxDate]);
 
-        const onValidationChangeRef = useRef(onValidationChange);
-        useEffect(() => {
-            onValidationChangeRef.current = onValidationChange;
-        }, [onValidationChange]);
+    const maxDateValue = useMemo(
+        () => (normalizedMaxDate ? formatDateForInput(normalizedMaxDate) : undefined),
+        [normalizedMaxDate]
+    );
 
-        useEffect(() => {
-            onValidationChangeRef.current?.(errorMsg);
-        }, [errorMsg]);
+    const maxDateError = useMemo(() => {
+        if (!normalizedMaxDate || !value || Number.isNaN(value.getTime())) return "";
+        const normalizedValue = new Date(value.getFullYear(), value.getMonth(), value.getDate());
+        return normalizedValue > normalizedMaxDate ? maxDateMessage : "";
+    }, [maxDateMessage, normalizedMaxDate, value]);
+
+    const errorMsg = useMemo(() => {
+        const customError = validate ? validate(value) : "";
+        return customError || maxDateError;
+    }, [validate, value, maxDateError]);
+
+    const onValidationChangeRef = useRef(onValidationChange);
+    useEffect(() => {
+        onValidationChangeRef.current = onValidationChange;
+    }, [onValidationChange]);
+
+    useEffect(() => {
+        onValidationChangeRef.current?.(errorMsg);
+    }, [errorMsg]);
 
     return (
         <Field
@@ -60,6 +83,7 @@ export const DateInput = ({
                 }}
                 placeholder={placeholder}
                 disabled={disabled}
+                max={maxDateValue}
                 className="w-full"
             />
         </Field>

@@ -1,4 +1,4 @@
-import {useEffect, useState, type FC} from "react";
+import {useEffect, useMemo, useState, type FC} from "react";
 import {
     Body1,
     Button,
@@ -14,6 +14,8 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
+import {authApi} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 import {validateEmail} from "../../utility/validate";
 
 interface EmailVerificationModalProps {
@@ -38,6 +40,8 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string>("");
+    const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
+    const [sentEmail, setSentEmail] = useState<string>("");
 
     useEffect(() => {
         if (!isOpen) return;
@@ -45,7 +49,20 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
         setEmail(currentEmail);
         setError(null);
         setValidationError("");
+        setCallbackUrl(null);
+        setSentEmail("");
     }, [isOpen, currentEmail]);
+
+    const hasMockLink = useMemo(() => Boolean(callbackUrl), [callbackUrl]);
+
+    const parseCallbackParams = (url: string) => {
+        const parsed = new URL(url, window.location.origin);
+        return {
+            userId: parsed.searchParams.get("userId") || "",
+            token: (parsed.searchParams.get("token") || "").replace(/ /g, "+"),
+            newEmail: parsed.searchParams.get("newEmail") || "",
+        };
+    };
 
     const handleSendLink = async () => {
         setError(null);
@@ -64,7 +81,18 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
 
         setLoading(true);
         try {
+            const response = await authApi.requestEmailChange(email.trim());
+            if (response.status === 429) {
+                const retryAfter = response.headers.retryAfter ?? 60;
+                setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
+                return;
+            }
+
+            setCallbackUrl(response.data?.callbackUrl ?? null);
+            setSentEmail(email.trim());
             setStep("sent");
+        } catch (err: unknown) {
+            setError(getUserMessageFromUnknown(err) || "Ошибка при отправке письма. Попробуйте позже.");
         } finally {
             setLoading(false);
         }
@@ -93,8 +121,34 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
             return;
         }
 
-        onSuccess(email.trim());
-        onClose();
+        if (!callbackUrl) {
+            setError("Подтвердите email по ссылке из письма.");
+            return;
+        }
+
+        void (async () => {
+            setLoading(true);
+            try {
+                const {userId, token, newEmail} = parseCallbackParams(callbackUrl);
+                if (!userId || !token || !newEmail) {
+                    setError("Некорректная ссылка подтверждения");
+                    return;
+                }
+
+                const r = await authApi.confirmEmailChange(userId, newEmail, token);
+                if (r.error) {
+                    setError(r.error);
+                    return;
+                }
+
+                onSuccess(email.trim());
+                onClose();
+            } catch (err: unknown) {
+                setError(getUserMessageFromUnknown(err) || "Ошибка подтверждения email");
+            } finally {
+                setLoading(false);
+            }
+        })();
     };
 
     return (
@@ -143,11 +197,11 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                         ) : (
                             <>
                                 <Body1 block>
-                                    Мы отправили ссылку на email <strong>{email}</strong>
+                                    Мы отправили ссылку на email <strong>{sentEmail || email}</strong>
                                 </Body1>
 
                                 <Caption1 block>
-                                    В UI-режиме можно продолжить, нажав «Я подтвердил».
+                                    Откройте письмо и перейдите по ссылке, чтобы подтвердить смену email.
                                 </Caption1>
 
                                 {error && (
@@ -184,7 +238,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                                 <Button
                                     appearance="primary"
                                     onClick={handleAssumeVerified}
-                                    disabled={loading}
+                                    disabled={loading || !hasMockLink}
                                 >
                                     {loading ? <Spinner size="tiny"/> : "Я подтвердил"}
                                 </Button>

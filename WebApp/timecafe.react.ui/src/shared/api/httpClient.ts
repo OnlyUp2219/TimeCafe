@@ -109,6 +109,12 @@ export const configureHttpClient = (config: HttpClientConfig) => {
                 return Promise.reject(normalizeAxiosError(err));
             }
 
+            const currentToken = config.getAccessToken();
+            if (!currentToken) {
+                config.handlers?.onUnauthorized?.();
+                return Promise.reject(normalizeAxiosError(err));
+            }
+
             if (originalRequest._retry) {
                 config.handlers?.onUnauthorized?.();
                 return Promise.reject(normalizeAxiosError(err));

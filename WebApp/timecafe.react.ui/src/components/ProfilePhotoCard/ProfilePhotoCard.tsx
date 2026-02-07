@@ -25,6 +25,7 @@ export function ProfilePhotoCard({
                                 }: ProfilePhotoCardProps) {
     const [photoUrl, setPhotoUrl] = useState<string | null>(initialPhotoUrl);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const objectUrlRef = useRef<string | null>(null);
 
@@ -97,11 +98,25 @@ export function ProfilePhotoCard({
                         type="file"
                         accept="image/*"
                         disabled={disabled}
+                        className="sr-only"
+                        ref={fileInputRef}
+                        aria-label="Выбор файла"
                         onChange={(e) => {
                             const file = e.target.files?.[0] ?? null;
                             setSelectedFile(file);
+                            if (file) {
+                                setPhotoFromBlob(file);
+                            }
                         }}
                     />
+                    <Button
+                        appearance="secondary"
+                        icon={<ImageAdd24Regular />}
+                        disabled={disabled}
+                        onClick={() => fileInputRef.current?.click()}
+                    >
+                        Выбрать файл
+                    </Button>
                 </Field>
 
                 <div className="flex flex-wrap gap-2">

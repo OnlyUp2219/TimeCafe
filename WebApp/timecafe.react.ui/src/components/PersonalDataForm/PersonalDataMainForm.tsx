@@ -1,4 +1,4 @@
-import {useEffect, useState, type FC} from "react";
+import {useEffect, useMemo, useState, type FC} from "react";
 import {Badge, Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
 import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
@@ -36,6 +36,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                                                         onSave,
                                                                         onPhotoUrlChange,
                                                                     }) => {
+    const maxBirthDate = useMemo(() => new Date(), []);
 
     const [firstName, setFirstName] = useState(profile.firstName ?? "");
     const [lastName, setLastName] = useState(profile.lastName ?? "");
@@ -118,7 +119,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 <Text>Дата рождения: {birthDateText}</Text>
                                 <Text>
                                     Номер карты
-                                    доступа: {profile.phoneNumberConfirmed === true ? (profile.accessCardNumber ?? "—") : "—"}
+                                    доступа: {profile.accessCardNumber ?? "—"}
                                 </Text>
                             </div>
                         </div>
@@ -168,6 +169,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                     onChange={setBirthDate}
                                     disabled={loading}
                                     label="Дата рождения"
+                                    maxDate={maxBirthDate}
                                 />
                             </div>
 
@@ -189,7 +191,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             <div>
                                 <Text>
                                     Номер карты
-                                    доступа: {profile.phoneNumberConfirmed === true ? (profile.accessCardNumber ?? "—") : "—"}
+                                    доступа: {profile.accessCardNumber ?? "—"}
                                 </Text>
                             </div>
 

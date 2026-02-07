@@ -29,6 +29,10 @@ export interface ChangePasswordRequest {
     newPassword: string;
 }
 
+export interface ChangeEmailRequest {
+    newEmail: string;
+}
+
 export interface PhoneCodeRequest {
     phoneNumber: string;
     code: string;
@@ -41,12 +45,31 @@ export interface VerifyPhoneResponse {
     requiresCaptcha?: boolean;
 }
 
+export interface SendPhoneResponse {
+    message?: string;
+    phoneNumber?: string;
+    token?: string;
+}
+
+export interface ChangeEmailResponse {
+    message?: string;
+    callbackUrl?: string;
+}
+
 export interface LoginJwtV2Response {
     accessToken: string;
     refreshToken?: string;
     role?: string;
     expiresIn?: number;
     emailConfirmed?: boolean;
+}
+
+export interface CurrentUserResponse {
+    userId: string;
+    email: string;
+    emailConfirmed: boolean;
+    phoneNumber?: string | null;
+    phoneNumberConfirmed: boolean;
 }
 
 const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
@@ -126,9 +149,9 @@ const changePassword = async (data: ChangePasswordRequest): Promise<void> => {
     }
 };
 
-const sendPhoneConfirmation = async (data: PhoneCodeRequest): Promise<RateLimitedResponse<void>> => {
+const sendPhoneConfirmation = async (data: PhoneCodeRequest): Promise<RateLimitedResponse<SendPhoneResponse>> => {
     const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
-    return withRateLimit(() => httpClient.post<void>(`${AUTH_PREFIX}${endpoint}`, data));
+    return withRateLimit(() => httpClient.post<SendPhoneResponse>(`${AUTH_PREFIX}${endpoint}`, data));
 };
 
 const verifyPhoneConfirmation = async (data: PhoneCodeRequest): Promise<VerifyPhoneResponse> => {
@@ -156,6 +179,34 @@ const confirmEmail = async (userId: string, token: string): Promise<{ message?: 
     }
 };
 
+const requestEmailChange = async (newEmail: string): Promise<RateLimitedResponse<ChangeEmailResponse>> => {
+    const endpoint = USE_MOCK_EMAIL ? "/email/change-mock" : "/email/change";
+    return withRateLimit(() => httpClient.post(`${AUTH_PREFIX}${endpoint}`, {newEmail}));
+};
+
+const confirmEmailChange = async (userId: string, newEmail: string, token: string): Promise<{ message?: string; error?: string }> => {
+    try {
+        const res = await httpClient.post<{ message?: string; error?: string }>(`${AUTH_PREFIX}/email/change-confirm`, {
+            userId,
+            newEmail,
+            token,
+        });
+        return res.data;
+    } catch (e) {
+        const err = normalizeUnknownError(e);
+        return {error: err.message};
+    }
+};
+
+const getCurrentUser = async (): Promise<CurrentUserResponse> => {
+    try {
+        const res = await httpClient.get<CurrentUserResponse>(`${AUTH_PREFIX}/account/me`);
+        return res.data;
+    } catch (e) {
+        throw normalizeUnknownError(e);
+    }
+};
+
 export const authApi = {
     loginJwtV2,
     registerWithUsername,
@@ -168,4 +219,7 @@ export const authApi = {
     verifyPhoneConfirmation,
     resendConfirmation,
     confirmEmail,
+    requestEmailChange,
+    confirmEmailChange,
+    getCurrentUser,
 };
