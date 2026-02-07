@@ -40,6 +40,8 @@ public static class SwaggerExtensions
         services.AddSwaggerExamplesFromAssemblyOf<LoginDtoExample>();
         services.AddSwaggerExamplesFromAssemblyOf<ChangePasswordRequestExample>();
         services.AddSwaggerExamplesFromAssemblyOf<ConfirmEmailRequestExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ConfirmChangeEmailRequestExample>();
+        services.AddSwaggerExamplesFromAssemblyOf<ChangeEmailRequestExample>();
         services.AddSwaggerExamplesFromAssemblyOf<ResendConfirmationRequestExample>();
         services.AddSwaggerExamplesFromAssemblyOf<ResetPasswordEmailRequestExample>();
 
