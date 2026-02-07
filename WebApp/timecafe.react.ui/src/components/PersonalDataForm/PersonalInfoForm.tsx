@@ -1,9 +1,11 @@
-import {useEffect, useState, type FC, createElement} from "react";
+import {useEffect, useMemo, useState, type FC, createElement} from "react";
 import {Card, Field, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {Gender, Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {DateInput, EmailInput, PhoneInput} from "../FormFields";
+import {useSelector} from "react-redux";
+import type {RootState} from "../../store";
 
 interface PersonalInfoFormProps {
     profile: Profile;
@@ -36,6 +38,9 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                                                 showDownloadButton = true,
                                                                 className,
                                                             }) => {
+    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
+    const authPhoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
+    const maxBirthDate = useMemo(() => new Date(), []);
     const normalizeDate = (value: unknown): Date | undefined => {
         if (!value) return undefined;
         if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
@@ -100,8 +105,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         trailingElement={
                             <Tag
                                 appearance="outline"
-                                        icon={createElement(getStatusIcon(profile.emailConfirmed))}
-                                        className={`custom-tag ${getStatusClass(profile.emailConfirmed)}`}
+                                    icon={createElement(getStatusIcon(authEmailConfirmed))}
+                                    className={`custom-tag ${getStatusClass(authEmailConfirmed)}`}
                             />
                         }
                     />
@@ -120,8 +125,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                             trailingElement={
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(profile.phoneNumberConfirmed))}
-                                    className={`custom-tag ${getStatusClass(profile.phoneNumberConfirmed)}`}
+                                    icon={createElement(getStatusIcon(authPhoneConfirmed))}
+                                    className={`custom-tag ${getStatusClass(authPhoneConfirmed)}`}
                                 />
                             }
                         />
@@ -135,7 +140,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                     onClick={() => setShowPhoneModal(true)}
                                     disabled={loading || !phone.trim()}
                                 >
-                                    {profile.phoneNumberConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
+                                    {authPhoneConfirmed ? "Изменить телефон" : "Подтвердить телефон"}
                                 </Button>
                             </div>
                         )}
@@ -151,6 +156,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         }}
                         disabled={readOnly || loading}
                         label="Дата рождения"
+                        maxDate={maxBirthDate}
                     />
 
                     <Field label="Пол">
@@ -189,9 +195,9 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
-                currentPhoneNumberConfirmed={profile.phoneNumberConfirmed === true}
+                currentPhoneNumberConfirmed={authPhoneConfirmed === true}
                 onSuccess={handlePhoneVerified}
-                mode="ui"
+                mode="api"
             />
         </Card>
     );

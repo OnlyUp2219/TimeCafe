@@ -6,6 +6,8 @@ interface AuthState {
     role: string;
     email: string;
     emailConfirmed: boolean;
+    phoneNumber: string;
+    phoneNumberConfirmed: boolean;
 }
 
 const initialState: AuthState = {
@@ -13,7 +15,9 @@ const initialState: AuthState = {
     userId: "",
     role: "",
     email: "",
-    emailConfirmed: false
+    emailConfirmed: false,
+    phoneNumber: "",
+    phoneNumberConfirmed: false
 }
 
 const authSlice = createSlice({
@@ -35,6 +39,12 @@ const authSlice = createSlice({
         setEmailConfirmed: (state, action) => {
             state.emailConfirmed = action.payload;
         },
+        setPhoneNumber: (state, action) => {
+            state.phoneNumber = action.payload;
+        },
+        setPhoneNumberConfirmed: (state, action) => {
+            state.phoneNumberConfirmed = action.payload;
+        },
         clearAccessToken: (state) => {
             state.accessToken = "";
         },
@@ -44,9 +54,21 @@ const authSlice = createSlice({
             state.role = "";
             state.email = "";
             state.emailConfirmed = false;
+            state.phoneNumber = "";
+            state.phoneNumberConfirmed = false;
         }
     }
 })
 
-export const {setAccessToken, setUserId, setRole, setEmail, setEmailConfirmed, clearAccessToken, clearTokens} = authSlice.actions;
+export const {
+    setAccessToken,
+    setUserId,
+    setRole,
+    setEmail,
+    setEmailConfirmed,
+    setPhoneNumber,
+    setPhoneNumberConfirmed,
+    clearAccessToken,
+    clearTokens
+} = authSlice.actions;
 export default authSlice.reducer;

@@ -36,6 +36,7 @@ export const HomePage = () => {
 
     const authEmail = useSelector((state: RootState) => state.auth.email);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
+    const phoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
     const profile = useSelector((state: RootState) => state.profile.data);
     const visitStatus = useSelector((state: RootState) => state.visit.status);
     const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
@@ -158,8 +159,8 @@ export const HomePage = () => {
                                     <Tag appearance={emailConfirmed ? "brand" : "outline"}>
                                         {emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}
                                     </Tag>
-                                    <Tag appearance={profile?.phoneNumberConfirmed ? "brand" : "outline"}>
-                                        {profile?.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
+                                    <Tag appearance={phoneConfirmed ? "brand" : "outline"}>
+                                        {phoneConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}
                                     </Tag>
                                 </div>
                             </div>

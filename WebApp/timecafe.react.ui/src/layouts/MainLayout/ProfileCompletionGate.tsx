@@ -285,6 +285,7 @@ export const ProfileCompletionGate: FC = () => {
                         disabled={profileSaving || profileLoading}
                         label="Дата рождения"
                         required={false}
+                        maxDate={new Date()}
                     />
                 </div>
 

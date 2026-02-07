@@ -1,7 +1,6 @@
 import {createElement, useEffect, useState, type FC} from "react";
 import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
-import type {Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {
     isPhoneVerificationSessionV1,
@@ -9,12 +8,14 @@ import {
     type PhoneVerificationSessionV1,
 } from "../../shared/auth/phoneVerificationSession";
 import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
+import {useDispatch, useSelector} from "react-redux";
+import type {RootState} from "../../store";
+import {authApi} from "../../shared/api/auth/authApi";
+import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
 
 export interface PhoneFormCardProps {
-    profile: Profile;
     loading?: boolean;
     className?: string;
-    onSave?: (patch: Partial<Profile>) => void;
 }
 
 const getStatusClass = (confirmed?: boolean | null): string => {
@@ -29,19 +30,22 @@ const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
     return DismissFilled;
 };
 
-export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false, className, onSave}) => {
+export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, className}) => {
+    const dispatch = useDispatch();
+    const phoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
+    const phoneNumberConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
     const phoneSessionStore = useLocalStorageJson<PhoneVerificationSessionV1>(
         PHONE_VERIFICATION_SESSION_KEY,
         isPhoneVerificationSessionV1
     );
 
     const [showPhoneModal, setShowPhoneModal] = useState(false);
-    const [phoneModalMode, setPhoneModalMode] = useState<"api" | "ui">("ui");
+    const [phoneModalMode, setPhoneModalMode] = useState<"api" | "ui">("api");
 
-    const phone = profile.phoneNumber || "";
+    const phone = phoneNumber || "";
     const hasPhone = Boolean(phone.trim());
-    const confirmedForUi: boolean | null = hasPhone ? (profile.phoneNumberConfirmed ?? null) : null;
-    const actionLabel = !hasPhone ? "Заполнить" : profile.phoneNumberConfirmed ? "Изменить" : "Подтвердить";
+    const confirmedForUi: boolean | null = hasPhone ? phoneNumberConfirmed : null;
+    const actionLabel = !hasPhone ? "Заполнить" : phoneNumberConfirmed ? "Изменить" : "Подтвердить";
 
     useEffect(() => {
         const session = phoneSessionStore.load();
@@ -51,8 +55,17 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
         }
     }, []);
 
-    const handlePhoneVerified = (verifiedPhone: string) => {
-        onSave?.({phoneNumber: verifiedPhone, phoneNumberConfirmed: true});
+    const handlePhoneVerified = async () => {
+        try {
+            const currentUser = await authApi.getCurrentUser();
+            if (currentUser.userId) dispatch(setUserId(currentUser.userId));
+            dispatch(setEmail(currentUser.email));
+            dispatch(setEmailConfirmed(currentUser.emailConfirmed));
+            dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
+            dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
+        } catch {
+            void 0;
+        }
     };
 
     return (
@@ -77,7 +90,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
                                 </Body1Strong>
                             </Tooltip>
                             <Tooltip
-                                content={!hasPhone ? "Телефон не указан" : (profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
+                                content={!hasPhone ? "Телефон не указан" : (phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
                                 relationship="description"
                             >
                                 <Tag
@@ -103,9 +116,15 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({profile, loading = false,
             <PhoneVerificationModal
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
-                currentPhoneNumber={profile.phoneNumber || ""}
-                currentPhoneNumberConfirmed={profile.phoneNumberConfirmed === true}
-                onSuccess={handlePhoneVerified}
+                currentPhoneNumber={phone}
+                currentPhoneNumberConfirmed={phoneNumberConfirmed === true}
+                onSuccess={async (_verifiedPhone) => {
+                    try {
+                        await handlePhoneVerified();
+                    } finally {
+                        setShowPhoneModal(false);
+                    }
+                }}
                 mode={phoneModalMode}
             />
         </Card>

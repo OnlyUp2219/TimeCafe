@@ -3,7 +3,7 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {Spinner, Subtitle1} from "@fluentui/react-components";
 import {useDispatch} from "react-redux";
 import {authApi} from "../../shared/api/auth/authApi";
-import {setEmailConfirmed} from "../../store/authSlice";
+import {setEmail, setEmailConfirmed} from "../../store/authSlice";
 import {authFormContainerClassName} from "../../layouts/authLayout";
 import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
 
@@ -22,6 +22,7 @@ export const ConfirmEmailPage = () => {
         const raw = searchParams.get("token") || "";
         return raw.replace(/ /g, "+");
     }, [searchParams]);
+    const newEmail = useMemo(() => searchParams.get("newEmail") || "", [searchParams]);
 
     const [state, setState] = useState<ViewState>({status: "loading"});
     const didConfirmRef = useRef(false);
@@ -36,18 +37,30 @@ export const ConfirmEmailPage = () => {
                 return;
             }
 
-            const r = await authApi.confirmEmail(userId, token);
-            if (r.error) {
-                setState({status: "error", message: r.error});
-                return;
-            }
+            if (newEmail) {
+                const r = await authApi.confirmEmailChange(userId, newEmail, token);
+                if (r.error) {
+                    setState({status: "error", message: r.error});
+                    return;
+                }
 
-            dispatch(setEmailConfirmed(true));
-            setState({status: "success", message: r.message || "Почта подтверждена"});
+                dispatch(setEmail(newEmail));
+                dispatch(setEmailConfirmed(true));
+                setState({status: "success", message: r.message || "Почта изменена и подтверждена"});
+            } else {
+                const r = await authApi.confirmEmail(userId, token);
+                if (r.error) {
+                    setState({status: "error", message: r.error});
+                    return;
+                }
+
+                dispatch(setEmailConfirmed(true));
+                setState({status: "success", message: r.message || "Почта подтверждена"});
+            }
         };
 
         void run();
-    }, [dispatch, token, userId]);
+    }, [dispatch, newEmail, token, userId]);
 
     return (
         <div

@@ -67,6 +67,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [captchaKey, setCaptchaKey] = useState(0);
     const [uiGeneratedCode, setUiGeneratedCode] = useState<string | null>(null);
+    const [mockGeneratedCode, setMockGeneratedCode] = useState<string | null>(null);
     const [autoSendRequested, setAutoSendRequested] = useState(false);
     const autoSendOnceRef = useRef(false);
 
@@ -122,6 +123,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetErrors();
         setStep("input");
         setUiGeneratedCode(null);
+        setMockGeneratedCode(null);
         setAutoSendRequested(autoSendCodeOnOpen && Boolean(currentPhoneNumber.trim()));
     }, [isOpen, currentPhoneNumber, mode]);
 
@@ -194,8 +196,9 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setLoading(true);
 
         try {
-            await sendRequest();
+            const response = await sendRequest();
             resetVerificationState();
+            setMockGeneratedCode(response?.token ?? null);
             setStep("verify");
         } catch (err: unknown) {
             if (typeof err === 'object' && err !== null && 'status' in err && err.status === 429) {
@@ -225,6 +228,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
             resetVerificationState();
             setUiGeneratedCode(null);
+            setMockGeneratedCode(null);
             onSuccess(phoneNumber);
             handleClose();
             return;
@@ -247,6 +251,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
             await authApi.verifyPhoneConfirmation(data);
 
             resetVerificationState();
+            setMockGeneratedCode(null);
 
             onSuccess(phoneNumber);
             handleClose();
@@ -277,6 +282,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetErrors();
         resetCaptcha();
         setUiGeneratedCode(null);
+        setMockGeneratedCode(null);
         await handleSendCode();
     };
 
@@ -285,6 +291,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setVerificationCode("");
         resetErrors();
         setUiGeneratedCode(null);
+        setMockGeneratedCode(null);
     };
 
     const formatCountdown = (seconds: number): string => {
@@ -338,6 +345,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 {mode === "ui" && uiGeneratedCode && (
                                     <Caption1 block>
                                         UI-режим: код подтверждения — <strong>{uiGeneratedCode}</strong>
+                                    </Caption1>
+                                )}
+                                {mode === "api" && mockGeneratedCode && (
+                                    <Caption1 block>
+                                        Mock-режим: код подтверждения — <strong>{mockGeneratedCode}</strong>
                                     </Caption1>
                                 )}
                                 <Field

@@ -4,7 +4,16 @@ import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
 import {authApi} from "../../shared/api/auth/authApi";
-import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "../../store/authSlice";
+import {
+    clearTokens,
+    setAccessToken,
+    setEmail,
+    setEmailConfirmed,
+    setPhoneNumber,
+    setPhoneNumberConfirmed,
+    setRole,
+    setUserId
+} from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
 
 interface PrivateRouteProps {
@@ -19,7 +28,21 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
 
     useEffect(() => {
         const checkAuth = async () => {
+            const hydrateCurrentUser = async () => {
+                const currentUser = await authApi.getCurrentUser();
+                if (currentUser.userId) dispatch(setUserId(currentUser.userId));
+                dispatch(setEmail(currentUser.email));
+                dispatch(setEmailConfirmed(currentUser.emailConfirmed));
+                dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
+                dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
+            };
+
             if (accessToken) {
+                try {
+                    await hydrateCurrentUser();
+                } catch {
+                    void 0;
+                }
                 setAllowed(true);
             } else {
                 try {
@@ -33,6 +56,11 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
                         if (info.userId) dispatch(setUserId(info.userId));
                         if (info.role) dispatch(setRole(info.role));
                         if (info.email) dispatch(setEmail(info.email));
+                        try {
+                            await hydrateCurrentUser();
+                        } catch {
+                            void 0;
+                        }
                         setAllowed(true);
                     }
                 } catch {
