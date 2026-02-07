@@ -65,12 +65,14 @@ public class UploadProfilePhotoCommandHandler(
             if (profile is null)
                 return UploadProfilePhotoResult.ProfileNotFound();
 
-            var moderationStream = new MemoryStream();
+            var uploadStream = new MemoryStream();
             try
             {
-                await request.Data.CopyToAsync(moderationStream, cancellationToken);
-                moderationStream.Position = 0;
+                await request.Data.CopyToAsync(uploadStream, cancellationToken);
+                uploadStream.Position = 0;
 
+                var moderationBytes = uploadStream.ToArray();
+                using var moderationStream = new MemoryStream(moderationBytes);
                 var moderationResult = await _moderationService.ModeratePhotoAsync(moderationStream, cancellationToken);
 
                 if (!moderationResult.IsSafe)
@@ -93,9 +95,9 @@ public class UploadProfilePhotoCommandHandler(
                     request.UserId,
                     moderationResult.Scores != null ? string.Join(", ", moderationResult.Scores.Select(s => $"{s.Key}={s.Value:F2}")) : "N/A");
 
-                moderationStream.Position = 0;
+                uploadStream.Position = 0;
 
-                var result = await _storage.UploadAsync(userId, moderationStream, request.ContentType, request.FileName, cancellationToken);
+                var result = await _storage.UploadAsync(userId, uploadStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
                     return UploadProfilePhotoResult.Failed();
@@ -107,7 +109,7 @@ public class UploadProfilePhotoCommandHandler(
             }
             finally
             {
-                moderationStream.Dispose();
+                uploadStream.Dispose();
             }
         }
         catch (Exception ex)

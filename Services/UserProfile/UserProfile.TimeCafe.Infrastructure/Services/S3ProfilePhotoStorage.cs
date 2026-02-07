@@ -7,11 +7,12 @@ using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 
-public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptions photoOptions) : IProfilePhotoStorage
+public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptions photoOptions, ILogger<S3ProfilePhotoStorage> logger) : IProfilePhotoStorage
 {
     private readonly IAmazonS3 _s3 = s3;
     private readonly S3Options _s3Options = s3Options;
     private readonly PhotoOptions _photoOptions = photoOptions;
+    private readonly ILogger<S3ProfilePhotoStorage> _logger = logger;
 
     public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
     {
@@ -26,7 +27,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
                 AutoCloseStream = false,
                 ContentType = contentType
             };
-            put.Metadata["original-filename"] = fileName;
+            put.Metadata["original-filename"] = SanitizeAscii(fileName);
             put.Metadata["uploaded-at-utc"] = DateTimeOffset.UtcNow.ToString("O");
 
             var resp = await _s3.PutObjectAsync(put, cancellationToken);
@@ -42,9 +43,13 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
 
             return new PhotoUploadDto(true, key, url, data.Length, contentType);
         }
-        catch
+        catch (AmazonS3Exception)
         {
-            return new PhotoUploadDto(false);
+            throw;
+        }
+        catch (Exception)
+        {
+            throw;
         }
         finally
         {
@@ -91,4 +96,11 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
     }
 
     private static string BuildKey(Guid userId) => $"profiles/{userId}/photo";
+
+    private static string SanitizeAscii(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return "file";
+        var filtered = new string(value.Where(ch => ch <= sbyte.MaxValue).ToArray());
+        return string.IsNullOrWhiteSpace(filtered) ? "file" : filtered;
+    }
 }
