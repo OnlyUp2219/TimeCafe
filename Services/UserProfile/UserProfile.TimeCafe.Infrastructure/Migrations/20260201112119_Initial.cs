@@ -19,7 +19,6 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     MiddleName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    AccessCardNumber = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     PhotoUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     BirthDate = table.Column<DateOnly>(type: "date", nullable: true),
                     CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),

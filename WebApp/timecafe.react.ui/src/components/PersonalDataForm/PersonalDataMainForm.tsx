@@ -117,10 +117,6 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 <Text weight="semibold" size={400}>{fullName || "—"}</Text>
                                 <Text>Пол: {genderText}</Text>
                                 <Text>Дата рождения: {birthDateText}</Text>
-                                <Text>
-                                    Номер карты
-                                    доступа: {profile.accessCardNumber ?? "—"}
-                                </Text>
                             </div>
                         </div>
 
@@ -187,13 +183,6 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                     <Radio value="2" label="Женщина"/>
                                 </RadioGroup>
                             </Field>
-
-                            <div>
-                                <Text>
-                                    Номер карты
-                                    доступа: {profile.accessCardNumber ?? "—"}
-                                </Text>
-                            </div>
 
                             <div className="flex flex-wrap gap-2 sm:justify-end">
                                 <Button appearance="primary" onClick={handleSave} disabled={loading}>

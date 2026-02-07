@@ -59,10 +59,6 @@ namespace UserProfile.TimeCafe.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AccessCardNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<string>("BanReason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");

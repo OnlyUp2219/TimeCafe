@@ -1,5 +1,5 @@
 import {useEffect, useMemo, useState, type FC, createElement} from "react";
-import {Card, Field, Tag, RadioGroup, Radio, Button, Body2, Title2} from "@fluentui/react-components";
+import {Card, Field, Tag, RadioGroup, Radio, Button, Title2} from "@fluentui/react-components";
 import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {Gender, Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
@@ -175,10 +175,6 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                     </Field>
                 </div>
             </div>
-
-            {profile.accessCardNumber && (
-                <Body2 className="mt-[8px]"><strong>Номер карты доступа:</strong> {profile.accessCardNumber}</Body2>
-            )}
 
             <div className="flex gap-[12px] mt-[16px]">
                 {showDownloadButton && (

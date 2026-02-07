@@ -26,8 +26,6 @@ export interface Profile {
 
   gender: Gender;
   birthDate?: string;
-
-  accessCardNumber?: string;
   photoUrl?: string;
 
   profileStatus: ProfileStatus;
