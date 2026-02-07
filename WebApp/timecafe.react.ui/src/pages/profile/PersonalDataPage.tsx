@@ -16,7 +16,7 @@ import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "../../store";
 import {ChangePasswordForm} from "../../components/PersonalDataForm/ChangePasswordForm";
 import type {Profile} from "../../types/profile";
-import {setProfile, updateProfile} from "../../store/profileSlice";
+import {setProfile, setProfileForUser, updateProfile} from "../../store/profileSlice";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress";
 import {PersonalDataMainForm} from "../../components/PersonalDataForm/PersonalDataMainForm";
 import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
@@ -26,6 +26,8 @@ import {LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
 import {DismissRegular} from "@fluentui/react-icons";
 import {authApi} from "../../shared/api/auth/authApi";
 import {clearTokens} from "../../store/authSlice";
+import {ProfileApi} from "../../shared/api/profile/profileApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 import blob3Url from "../../assets/ssshape_blob3.svg";
 import blob4Url from "../../assets/ssshape_blob4.svg";
 import squiggly1Url from "../../assets/sssquiggl_1.svg";
@@ -37,10 +39,13 @@ export const PersonalDataPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const profile = useSelector((state: RootState) => state.profile.data);
     const saving = useSelector((state: RootState) => state.profile.saving);
+    const userId = useSelector((state: RootState) => state.auth.userId);
 
     const {showToast, ToasterElement} = useProgressToast();
 
     const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+    const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+    const [photoMessageIntent, setPhotoMessageIntent] = useState<"success" | "error">("success");
 
     const savePatch = useCallback(
         async (patch: Partial<Profile>, successMessage: string): Promise<boolean> => {
@@ -77,20 +82,61 @@ export const PersonalDataPage = () => {
             banReason: undefined,
         };
 
-        dispatch(setProfile(demo));
+        if (userId) {
+            dispatch(setProfileForUser({profile: demo, userId}));
+        } else {
+            dispatch(setProfile(demo));
+        }
         showToast("Загружен демо-профиль для теста UI.", "info", "Demo");
-    }, [dispatch, showToast]);
+    }, [dispatch, showToast, userId]);
 
     const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
 
     const [, setPhotoUrl] = useState<string | null | undefined>(undefined);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [photoBusy, setPhotoBusy] = useState(false);
 
     const handleLogout = useCallback(async () => {
         await authApi.logout();
         dispatch(clearTokens());
         navigate("/login", {replace: true});
     }, [dispatch, navigate]);
+
+    const handlePhotoUpload = useCallback(async (file: File) => {
+        if (!profile) return false;
+        setPhotoBusy(true);
+        try {
+            const result = await ProfileApi.uploadProfilePhoto(userId, file);
+            dispatch(setProfileForUser({profile: {...profile, photoUrl: result.url}, userId}));
+            setPhotoMessage("Фото профиля обновлено.");
+            setPhotoMessageIntent("success");
+            return true;
+        } catch (err) {
+            setPhotoMessage(getUserMessageFromUnknown(err) || "Не удалось загрузить фото.");
+            setPhotoMessageIntent("error");
+            return false;
+        } finally {
+            setPhotoBusy(false);
+        }
+    }, [dispatch, profile, userId]);
+
+    const handlePhotoDelete = useCallback(async () => {
+        if (!profile) return false;
+        setPhotoBusy(true);
+        try {
+            await ProfileApi.deleteProfilePhoto(userId);
+            dispatch(setProfileForUser({profile: {...profile, photoUrl: undefined}, userId}));
+            setPhotoMessage("Фото профиля удалено.");
+            setPhotoMessageIntent("success");
+            return true;
+        } catch (err) {
+            setPhotoMessage(getUserMessageFromUnknown(err) || "Не удалось удалить фото.");
+            setPhotoMessageIntent("error");
+            return false;
+        } finally {
+            setPhotoBusy(false);
+        }
+    }, [dispatch, profile, userId]);
 
     const content = !profile ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
@@ -127,6 +173,27 @@ export const PersonalDataPage = () => {
 
                     <Divider/>
 
+                    {photoMessage && (
+                        <MessageBar intent={photoMessageIntent}>
+                            <MessageBarBody>
+                                <MessageBarTitle>
+                                    {photoMessageIntent === "success" ? "Готово" : "Ошибка"}
+                                </MessageBarTitle>
+                                {photoMessage}
+                            </MessageBarBody>
+                            <MessageBarActions
+                                containerAction={
+                                    <Button
+                                        appearance="transparent"
+                                        aria-label="Закрыть"
+                                        icon={<DismissRegular className="size-5" />}
+                                        onClick={() => setPhotoMessage(null)}
+                                    />
+                                }
+                            />
+                        </MessageBar>
+                    )}
+
                     {lastSaveError && (
                         <MessageBar intent="error">
                             <MessageBarBody>
@@ -152,6 +219,9 @@ export const PersonalDataPage = () => {
                                 profile={profile}
                                 loading={saving}
                                 onPhotoUrlChange={(url) => setPhotoUrl(url)}
+                                onPhotoUpload={handlePhotoUpload}
+                                onPhotoDelete={handlePhotoDelete}
+                                photoBusy={photoBusy}
                                 onSave={(patch) => {
                                     void savePatch(patch, "Персональные данные сохранены.");
                                 }}

@@ -144,6 +144,10 @@ const profileSlice = createSlice({
       state.data = action.payload;
       state.loadedUserId = null;
     },
+    setProfileForUser(state, action: PayloadAction<{ profile: Profile; userId: string }>) {
+      state.data = action.payload.profile;
+      state.loadedUserId = action.payload.userId;
+    },
     resetProfile(state) {
       state.data = null;
       state.loading = false;
@@ -194,5 +198,5 @@ const profileSlice = createSlice({
   },
 });
 
-export const { setProfile, resetProfile } = profileSlice.actions;
+export const { setProfile, setProfileForUser, resetProfile } = profileSlice.actions;
 export default profileSlice.reducer;

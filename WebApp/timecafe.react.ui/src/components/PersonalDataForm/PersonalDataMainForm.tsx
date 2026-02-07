@@ -1,5 +1,5 @@
-import {useEffect, useMemo, useState, type FC} from "react";
-import {Badge, Button, Card, Field, Input, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
+import {useEffect, useId, useMemo, useState, type FC} from "react";
+import {Badge, Button, Card, Field, Input, Label, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
 import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {DateInput} from "../FormFields";
@@ -11,6 +11,9 @@ export interface PersonalDataMainFormProps {
     className?: string;
     onSave?: (patch: Partial<Profile>) => void;
     onPhotoUrlChange?: (url: string | null) => void;
+    onPhotoUpload?: (file: File) => Promise<boolean>;
+    onPhotoDelete?: () => Promise<boolean>;
+    photoBusy?: boolean;
 }
 
 const normalizeDate = (value: unknown): Date | undefined => {
@@ -35,6 +38,9 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                                                         className,
                                                                         onSave,
                                                                         onPhotoUrlChange,
+                                                                        onPhotoUpload,
+                                                                        onPhotoDelete,
+                                                                        photoBusy = false,
                                                                     }) => {
     const maxBirthDate = useMemo(() => new Date(), []);
 
@@ -44,6 +50,8 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
     const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(profile.birthDate));
     const [genderId, setGenderId] = useState<0 | 1 | 2>(() => normalizeGenderId(profile.gender));
     const [mode, setMode] = useState<"view" | "edit">("view");
+    const genderGroupId = useId();
+    const genderLabelId = useId();
 
     useEffect(() => {
         setFirstName(profile.firstName ?? "");
@@ -107,6 +115,9 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             <ProfilePhotoCard
                                 displayName={displayName}
                                 onPhotoUrlChange={onPhotoUrlChange}
+                                onUpload={onPhotoUpload}
+                                onDelete={onPhotoDelete}
+                                busy={photoBusy}
                                 asCard={false}
                                 showTitle={false}
                                 variant="view"
@@ -137,10 +148,13 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             <ProfilePhotoCard
                                 displayName={displayName}
                                 onPhotoUrlChange={onPhotoUrlChange}
+                                onUpload={onPhotoUpload}
+                                onDelete={onPhotoDelete}
+                                busy={photoBusy}
                                 asCard={false}
                                 showTitle={false}
                                 variant="edit"
-                                disabled={loading}
+                                disabled={loading || photoBusy}
                                 initialPhotoUrl={profile.photoUrl ?? null}
                             />
                         </div>
@@ -169,8 +183,11 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 />
                             </div>
 
-                            <Field label="Пол">
+                            <div className="flex flex-col gap-2">
+                                <Label id={genderLabelId}>Пол</Label>
                                 <RadioGroup
+                                    id={genderGroupId}
+                                    aria-labelledby={genderLabelId}
                                     value={String(genderId)}
                                     disabled={loading}
                                     onChange={(_, data) => {
@@ -182,7 +199,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                     <Radio value="1" label="Мужчина"/>
                                     <Radio value="2" label="Женщина"/>
                                 </RadioGroup>
-                            </Field>
+                            </div>
 
                             <div className="flex flex-wrap gap-2 sm:justify-end">
                                 <Button appearance="primary" onClick={handleSave} disabled={loading}>
