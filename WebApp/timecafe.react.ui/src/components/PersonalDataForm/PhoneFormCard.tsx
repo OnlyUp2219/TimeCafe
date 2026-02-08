@@ -1,6 +1,23 @@
 import {createElement, useEffect, useState, type FC} from "react";
-import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
+import {
+    Badge,
+    Body1,
+    Body1Strong,
+    Body2,
+    Button,
+    Caption1,
+    Card,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Tag,
+    Title2,
+    Tooltip,
+} from "@fluentui/react-components";
+import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {
     isPhoneVerificationSessionV1,
@@ -12,6 +29,7 @@ import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
 import {authApi} from "../../shared/api/auth/authApi";
 import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 export interface PhoneFormCardProps {
     loading?: boolean;
@@ -34,13 +52,15 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const dispatch = useDispatch();
     const phoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
     const phoneNumberConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
-    const phoneSessionStore = useLocalStorageJson<PhoneVerificationSessionV1>(
+    const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
         PHONE_VERIFICATION_SESSION_KEY,
         isPhoneVerificationSessionV1
     );
 
     const [showPhoneModal, setShowPhoneModal] = useState(false);
-    const [phoneModalMode, setPhoneModalMode] = useState<"api" | "ui">("api");
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [showClearDialog, setShowClearDialog] = useState(false);
+    const [clearing, setClearing] = useState(false);
 
     const phone = phoneNumber || "";
     const hasPhone = Boolean(phone.trim());
@@ -48,12 +68,11 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const actionLabel = !hasPhone ? "Заполнить" : phoneNumberConfirmed ? "Изменить" : "Подтвердить";
 
     useEffect(() => {
-        const session = phoneSessionStore.load();
-        if (session?.open && session.step === "verify") {
-            setPhoneModalMode(session.mode);
+        const session = loadPhoneSession();
+        if (session?.open) {
             setShowPhoneModal(true);
         }
-    }, []);
+    }, [loadPhoneSession]);
 
     const handlePhoneVerified = async () => {
         try {
@@ -68,7 +87,23 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
         }
     };
 
+    const handleClearPhone = async () => {
+        setPhoneError(null);
+        setClearing(true);
+        try {
+            await authApi.clearPhoneNumber();
+            dispatch(setPhoneNumber(""));
+            dispatch(setPhoneNumberConfirmed(false));
+            setShowClearDialog(false);
+        } catch (err: unknown) {
+            setPhoneError(getUserMessageFromUnknown(err) || "Не удалось удалить номер телефона.");
+        } finally {
+            setClearing(false);
+        }
+    };
+
     return (
+        <>
         <Card className={className}>
             <Title2 block className="!flex items-center gap-2">
                 <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
@@ -101,15 +136,26 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                             </Tooltip>
                         </div>
 
-                        <Button
-                            appearance="primary"
-                            icon={<Edit20Filled/>}
-                            onClick={() => setShowPhoneModal(true)}
-                            disabled={loading}
-                        >
-                            {actionLabel}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                appearance="subtle"
+                                icon={<Delete20Regular />}
+                                onClick={async () => {
+                                    setShowClearDialog(true);
+                                }}
+                                disabled={loading || !hasPhone}
+                            />
+                            <Button
+                                appearance="primary"
+                                icon={<Edit20Filled/>}
+                                onClick={() => setShowPhoneModal(true)}
+                                disabled={loading}
+                            >
+                                {actionLabel}
+                            </Button>
+                        </div>
                     </div>
+                    {phoneError && <Caption1 className="text-red-600">{phoneError}</Caption1>}
                 </div>
             </div>
 
@@ -118,15 +164,48 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
                 currentPhoneNumberConfirmed={phoneNumberConfirmed === true}
-                onSuccess={async (_verifiedPhone) => {
+                onPhoneNumberSaved={(nextPhone) => {
+                    dispatch(setPhoneNumber(nextPhone));
+                    dispatch(setPhoneNumberConfirmed(false));
+                }}
+                onSuccess={async () => {
                     try {
                         await handlePhoneVerified();
                     } finally {
                         setShowPhoneModal(false);
                     }
                 }}
-                mode={phoneModalMode}
             />
         </Card>
+
+        <Dialog open={showClearDialog} modalType="alert">
+            <DialogSurface>
+                <DialogBody>
+                    <DialogTitle>Удалить номер телефона?</DialogTitle>
+                    <DialogContent>
+                        <Body1>
+                            Без номера телефона вы не сможете оформить заказ и получать уведомления.
+                        </Body1>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            appearance="secondary"
+                            onClick={() => setShowClearDialog(false)}
+                            disabled={clearing}
+                        >
+                            Отмена
+                        </Button>
+                        <Button
+                            appearance="primary"
+                            onClick={handleClearPhone}
+                            disabled={clearing}
+                        >
+                            Удалить
+                        </Button>
+                    </DialogActions>
+                </DialogBody>
+            </DialogSurface>
+        </Dialog>
+        </>
     );
 };

@@ -16,7 +16,7 @@ import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "../../store";
 import {ChangePasswordForm} from "../../components/PersonalDataForm/ChangePasswordForm";
 import type {Profile} from "../../types/profile";
-import {setProfile, setProfileForUser, updateProfile} from "../../store/profileSlice";
+import {setProfileForUser, updateProfile} from "../../store/profileSlice";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress";
 import {PersonalDataMainForm} from "../../components/PersonalDataForm/PersonalDataMainForm";
 import {PhoneFormCard} from "../../components/PersonalDataForm/PhoneFormCard";
@@ -65,30 +65,6 @@ export const PersonalDataPage = () => {
         },
         [dispatch, showToast]
     );
-
-    const loadDemoProfile = useCallback(() => {
-        const demo: Profile = {
-            firstName: "Иван",
-            lastName: "Иванов",
-            middleName: "Иванович",
-            email: "demo@timecafe.local",
-            emailConfirmed: true,
-            phoneNumber: "+375291234567",
-            phoneNumberConfirmed: true,
-            birthDate: "1999-01-15",
-            gender: 1,
-            photoUrl: undefined,
-            profileStatus: 0,
-            banReason: undefined,
-        };
-
-        if (userId) {
-            dispatch(setProfileForUser({profile: demo, userId}));
-        } else {
-            dispatch(setProfile(demo));
-        }
-        showToast("Загружен демо-профиль для теста UI.", "info", "Demo");
-    }, [dispatch, showToast, userId]);
 
     const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
 
@@ -140,142 +116,130 @@ export const PersonalDataPage = () => {
 
     const content = !profile ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-            <div
-                className="rounded-3xl p-6 personal-data-gradient-card"
-            >
-                <Title2>Персональные данные</Title2>
-                <div>
-                    Профиль не загружен. Перейдите на главную и попробуйте снова.
-                </div>
-
-                <div className="mt-4 flex gap-2">
-                    <Button appearance="secondary" onClick={loadDemoProfile}>
-                        Загрузить демо-профиль
-                    </Button>
-                </div>
+            <Title2>Персональные данные</Title2>
+            <div>
+                Профиль не загружен. Перейдите на главную и попробуйте снова.
             </div>
+
         </div>
     ) : (
         <div className="mx-auto  w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10 ">
-            <div
-                className="rounded-3xl p-5 sm:p-8 personal-data-gradient-card"
-            >
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex flex-col gap-1 min-w-0">
-                            <Title2>Профиль</Title2>
-                            <Body2>
-                                Обновляйте контакты и основные данные — они используются для уведомлений и
-                                восстановления доступа.
-                            </Body2>
-                        </div>
-                    </div>
 
-                    <Divider/>
-
-                    {photoMessage && (
-                        <MessageBar intent={photoMessageIntent}>
-                            <MessageBarBody>
-                                <MessageBarTitle>
-                                    {photoMessageIntent === "success" ? "Готово" : "Ошибка"}
-                                </MessageBarTitle>
-                                {photoMessage}
-                            </MessageBarBody>
-                            <MessageBarActions
-                                containerAction={
-                                    <Button
-                                        appearance="transparent"
-                                        aria-label="Закрыть"
-                                        icon={<DismissRegular className="size-5" />}
-                                        onClick={() => setPhotoMessage(null)}
-                                    />
-                                }
-                            />
-                        </MessageBar>
-                    )}
-
-                    {lastSaveError && (
-                        <MessageBar intent="error">
-                            <MessageBarBody>
-                                <MessageBarTitle>Последняя ошибка сохранения</MessageBarTitle>
-                                {lastSaveError}
-                            </MessageBarBody>
-                            <MessageBarActions
-                                containerAction={
-                                    <Button
-                                        appearance="transparent"
-                                        aria-label="Закрыть"
-                                        icon={<DismissRegular className="size-5" />}
-                                        onClick={() => setLastSaveError(null)}
-                                    />
-                                }
-                            />
-                        </MessageBar>
-                    )}
-
-                    <div className="flex flex-col gap-4">
-                        <>
-                            <PersonalDataMainForm
-                                profile={profile}
-                                loading={saving}
-                                onPhotoUrlChange={(url) => setPhotoUrl(url)}
-                                onPhotoUpload={handlePhotoUpload}
-                                onPhotoDelete={handlePhotoDelete}
-                                photoBusy={photoBusy}
-                                onSave={(patch) => {
-                                    void savePatch(patch, "Персональные данные сохранены.");
-                                }}
-                            />
-
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
-                                <PhoneFormCard
-                                    loading={saving}
-                                />
-
-                                <EmailFormCard
-                                    loading={saving}
-                                />
-
-                                <Card className="sm:col-span-2 lg:col-span-1">
-                                    <Title2 block className="!flex items-center gap-2">
-                                        <Badge appearance="tint" shape="rounded" size="extra-large"
-                                               className="brand-badge">
-                                            <LockClosedRegular className="size-5"/>
-                                        </Badge>
-                                        Смена пароля
-                                    </Title2>
-                                    <Body2 className="!line-clamp-2">
-                                        Рекомендуется менять пароль регулярно и использовать уникальные пароли для
-                                        разных сервисов.
-                                    </Body2>
-                                    <div
-                                        className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center sm:justify-end " : "w-full"}>
-                                        {!showPasswordForm ? (
-                                            <Button appearance="primary" icon={<PasswordFilled className="size-5" />}
-                                                    onClick={() => setShowPasswordForm(true)}>
-                                                Сменить пароль
-                                            </Button>
-                                        ) : (
-                                            <ChangePasswordForm
-                                                wrapInCard={false}
-                                                showTitle={false}
-                                                mode="api"
-                                                redirectToLoginOnSuccess={false}
-                                                autoClearTokensOnSuccess={false}
-                                                showCancelButton
-                                                onCancel={() => setShowPasswordForm(false)}
-                                            />
-                                        )}
-                                    </div>
-                                </Card>
-
-                                <LogoutCard className="h-full border-2 border-dashed sm:col-span-2 lg:col-span-1"
-                                            onLogout={handleLogout}/>
-                            </div>
-                        </>
-
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-1 min-w-0">
+                        <Title2>Профиль</Title2>
+                        <Body2>
+                            Обновляйте контакты и основные данные — они используются для уведомлений и
+                            восстановления доступа.
+                        </Body2>
                     </div>
                 </div>
+
+                <Divider/>
+
+                {photoMessage && (
+                    <MessageBar intent={photoMessageIntent}>
+                        <MessageBarBody>
+                            <MessageBarTitle>
+                                {photoMessageIntent === "success" ? "Готово" : "Ошибка"}
+                            </MessageBarTitle>
+                            {photoMessage}
+                        </MessageBarBody>
+                        <MessageBarActions
+                            containerAction={
+                                <Button
+                                    appearance="transparent"
+                                    aria-label="Закрыть"
+                                    icon={<DismissRegular className="size-5"/>}
+                                    onClick={() => setPhotoMessage(null)}
+                                />
+                            }
+                        />
+                    </MessageBar>
+                )}
+
+                {lastSaveError && (
+                    <MessageBar intent="error">
+                        <MessageBarBody>
+                            <MessageBarTitle>Последняя ошибка сохранения</MessageBarTitle>
+                            {lastSaveError}
+                        </MessageBarBody>
+                        <MessageBarActions
+                            containerAction={
+                                <Button
+                                    appearance="transparent"
+                                    aria-label="Закрыть"
+                                    icon={<DismissRegular className="size-5"/>}
+                                    onClick={() => setLastSaveError(null)}
+                                />
+                            }
+                        />
+                    </MessageBar>
+                )}
+
+                <div className="flex flex-col gap-4">
+                    <>
+                        <PersonalDataMainForm
+                            profile={profile}
+                            loading={saving}
+                            onPhotoUrlChange={(url) => setPhotoUrl(url)}
+                            onPhotoUpload={handlePhotoUpload}
+                            onPhotoDelete={handlePhotoDelete}
+                            photoBusy={photoBusy}
+                            onSave={(patch) => {
+                                void savePatch(patch, "Персональные данные сохранены.");
+                            }}
+                        />
+
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
+                            <PhoneFormCard
+                                loading={saving}
+                            />
+
+                            <EmailFormCard
+                                loading={saving}
+                            />
+
+                            <Card className="sm:col-span-2 lg:col-span-1">
+                                <Title2 block className="!flex items-center gap-2">
+                                    <Badge appearance="tint" shape="rounded" size="extra-large"
+                                           className="brand-badge">
+                                        <LockClosedRegular className="size-5"/>
+                                    </Badge>
+                                    Смена пароля
+                                </Title2>
+                                <Body2 className="!line-clamp-2">
+                                    Рекомендуется менять пароль регулярно и использовать уникальные пароли для
+                                    разных сервисов.
+                                </Body2>
+                                <div
+                                    className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center sm:justify-end " : "w-full"}>
+                                    {!showPasswordForm ? (
+                                        <Button appearance="primary" icon={<PasswordFilled className="size-5"/>}
+                                                onClick={() => setShowPasswordForm(true)}>
+                                            Сменить пароль
+                                        </Button>
+                                    ) : (
+                                        <ChangePasswordForm
+                                            wrapInCard={false}
+                                            showTitle={false}
+                                            redirectToLoginOnSuccess={false}
+                                            autoClearTokensOnSuccess={false}
+                                            showCancelButton
+                                            onCancel={() => setShowPasswordForm(false)}
+                                        />
+                                    )}
+                                </div>
+                            </Card>
+
+                            <LogoutCard className="h-full border-2 border-dashed sm:col-span-2 lg:col-span-1"
+                                        onLogout={handleLogout}/>
+                        </div>
+                    </>
+
+                </div>
+
             </div>
         </div>
     );

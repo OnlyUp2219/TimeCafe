@@ -1,11 +1,31 @@
 import {useEffect, useMemo, useState, type FC, createElement} from "react";
-import {Card, Field, Tag, RadioGroup, Radio, Button, Title2} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
+import {
+    Body1,
+    Button,
+    Caption1,
+    Card,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    Field,
+    Radio,
+    RadioGroup,
+    Tag,
+    Title2,
+} from "@fluentui/react-components";
+import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {Gender, Profile} from "../../types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {DateInput, EmailInput, PhoneInput} from "../FormFields";
-import {useSelector} from "react-redux";
-import type {RootState} from "../../store";
+import {useDispatch, useSelector} from "react-redux";
+import type {AppDispatch, RootState} from "../../store";
+import {setPhoneNumber, setPhoneNumberConfirmed} from "../../store/authSlice";
+import {authApi} from "../../shared/api/auth/authApi";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {normalizeDate} from "../../utility/normalizeDate";
 
 interface PersonalInfoFormProps {
     profile: Profile;
@@ -40,22 +60,16 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                                             }) => {
     const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const authPhoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
+    const dispatch = useDispatch<AppDispatch>();
     const maxBirthDate = useMemo(() => new Date(), []);
-    const normalizeDate = (value: unknown): Date | undefined => {
-        if (!value) return undefined;
-        if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
-        if (typeof value === "string" || typeof value === "number") {
-            const d = new Date(value);
-            return Number.isNaN(d.getTime()) ? undefined : d;
-        }
-        return undefined;
-    };
-
     const [email, setEmail] = useState(profile.email);
     const [phone, setPhone] = useState(profile.phoneNumber || "");
     const [birthDate, setBirthDate] = useState<Date | undefined>(() => normalizeDate(profile.birthDate));
     const [genderId, setGenderId] = useState<number | undefined>(profile.gender);
     const [showPhoneModal, setShowPhoneModal] = useState(false);
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [showClearDialog, setShowClearDialog] = useState(false);
+    const [clearing, setClearing] = useState(false);
 
     useEffect(() => {
         setEmail(profile.email);
@@ -87,6 +101,23 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
     const handlePhoneVerified = (verifiedPhone: string) => {
         setPhone(verifiedPhone);
         onChange?.({phoneNumber: verifiedPhone, phoneNumberConfirmed: true});
+    };
+
+    const handleClearPhone = async () => {
+        setPhoneError(null);
+        setClearing(true);
+        try {
+            await authApi.clearPhoneNumber();
+            setPhone("");
+            dispatch(setPhoneNumber(""));
+            dispatch(setPhoneNumberConfirmed(false));
+            onChange?.({phoneNumber: "", phoneNumberConfirmed: false});
+            setShowClearDialog(false);
+        } catch (err: unknown) {
+            setPhoneError(getUserMessageFromUnknown(err) || "Не удалось удалить номер телефона.");
+        } finally {
+            setClearing(false);
+        }
     };
 
     return (
@@ -132,7 +163,16 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         />
 
                         {!readOnly && (
-                            <div className="flex justify-end">
+                            <div className="flex justify-end gap-2">
+                                <Button
+                                    appearance="subtle"
+                                    size="small"
+                                    icon={<Delete20Regular />}
+                                    onClick={async () => {
+                                        setShowClearDialog(true);
+                                    }}
+                                    disabled={loading || !phone.trim()}
+                                />
                                 <Button
                                     appearance="subtle"
                                     size="small"
@@ -144,6 +184,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 </Button>
                             </div>
                         )}
+                        {phoneError && <Caption1 className="text-red-600">{phoneError}</Caption1>}
                     </div>
                 </div>
 
@@ -192,9 +233,40 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
                 currentPhoneNumberConfirmed={authPhoneConfirmed === true}
+                onPhoneNumberSaved={(nextPhone) => {
+                    dispatch(setPhoneNumber(nextPhone));
+                    dispatch(setPhoneNumberConfirmed(false));
+                }}
                 onSuccess={handlePhoneVerified}
-                mode="api"
             />
+            <Dialog open={showClearDialog} modalType="alert">
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>Удалить номер телефона?</DialogTitle>
+                        <DialogContent>
+                            <Body1>
+                                Без номера телефона вы не сможете оформить заказ и получать уведомления.
+                            </Body1>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button
+                                appearance="secondary"
+                                onClick={() => setShowClearDialog(false)}
+                                disabled={clearing}
+                            >
+                                Отмена
+                            </Button>
+                            <Button
+                                appearance="primary"
+                                onClick={handleClearPhone}
+                                disabled={clearing}
+                            >
+                                Удалить
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </Card>
     );
 };

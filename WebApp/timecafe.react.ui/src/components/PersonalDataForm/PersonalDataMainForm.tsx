@@ -4,6 +4,7 @@ import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
 import type {Profile} from "../../types/profile";
 import {DateInput} from "../FormFields";
 import {ProfilePhotoCard} from "../ProfilePhotoCard/ProfilePhotoCard";
+import {normalizeDate} from "../../utility/normalizeDate";
 
 export interface PersonalDataMainFormProps {
     profile: Profile;
@@ -15,16 +16,6 @@ export interface PersonalDataMainFormProps {
     onPhotoDelete?: () => Promise<boolean>;
     photoBusy?: boolean;
 }
-
-const normalizeDate = (value: unknown): Date | undefined => {
-    if (!value) return undefined;
-    if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
-    if (typeof value === "string" || typeof value === "number") {
-        const d = new Date(value);
-        return Number.isNaN(d.getTime()) ? undefined : d;
-    }
-    return undefined;
-};
 
 const normalizeGenderId = (value: unknown): 0 | 1 | 2 => {
     const num = typeof value === "number" ? value : undefined;

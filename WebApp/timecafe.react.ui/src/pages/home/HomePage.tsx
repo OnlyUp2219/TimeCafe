@@ -11,7 +11,6 @@ import {
     Text,
     Tooltip,
     Title3,
-    tokens,
 } from "@fluentui/react-components";
 import {
     ArrowTrendingLines20Regular,
@@ -128,11 +127,6 @@ export const HomePage = () => {
             <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
                 <div
                     className="flex flex-col gap-4 overflow-hidden rounded-3xl p-5 sm:p-8"
-                    style={{
-                        backgroundImage: `radial-gradient(900px 480px at 20% 10%, ${tokens.colorBrandBackground2} 0%, transparent 60%), radial-gradient(720px 420px at 90% 0%, ${tokens.colorPaletteLightGreenBackground2} 0%, transparent 55%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
-                        border: `1px solid ${tokens.colorNeutralStroke1}`,
-                        boxShadow: tokens.shadow16,
-                    }}
                 >
                     <div className="flex flex-col gap-4 sm:justify-between ">
                         <div className="flex flex-col gap-2 min-w-0">

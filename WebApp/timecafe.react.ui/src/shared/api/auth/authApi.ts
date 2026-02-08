@@ -33,6 +33,10 @@ export interface ChangeEmailRequest {
     newEmail: string;
 }
 
+export interface SavePhoneRequest {
+    phoneNumber: string;
+}
+
 export interface PhoneCodeRequest {
     phoneNumber: string;
     code: string;
@@ -149,6 +153,22 @@ const changePassword = async (data: ChangePasswordRequest): Promise<void> => {
     }
 };
 
+const savePhoneNumber = async (data: SavePhoneRequest): Promise<void> => {
+    try {
+        await httpClient.post(`${AUTH_PREFIX}/account/phone`, data);
+    } catch (e) {
+        throw normalizeUnknownError(e);
+    }
+};
+
+const clearPhoneNumber = async (): Promise<void> => {
+    try {
+        await httpClient.delete(`${AUTH_PREFIX}/account/phone`);
+    } catch (e) {
+        throw normalizeUnknownError(e);
+    }
+};
+
 const sendPhoneConfirmation = async (data: PhoneCodeRequest): Promise<RateLimitedResponse<SendPhoneResponse>> => {
     const endpoint = USE_MOCK_SMS ? "/twilio/generateSMS-mock" : "/twilio/generateSMS";
     return withRateLimit(() => httpClient.post<SendPhoneResponse>(`${AUTH_PREFIX}${endpoint}`, data));
@@ -215,6 +235,8 @@ export const authApi = {
     forgotPasswordLink,
     resetPassword,
     changePassword,
+    savePhoneNumber,
+    clearPhoneNumber,
     sendPhoneConfirmation,
     verifyPhoneConfirmation,
     resendConfirmation,
