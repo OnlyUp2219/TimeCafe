@@ -1,4 +1,4 @@
-import {type FC, useEffect, useRef, useState} from "react";
+import {type FC, useCallback, useEffect, useRef, useState} from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
     Body1,
@@ -35,7 +35,7 @@ interface PhoneVerificationModalProps {
     currentPhoneNumber?: string;
     currentPhoneNumberConfirmed?: boolean;
     onSuccess: (phoneNumber: string) => void;
-    mode?: "api" | "ui";
+    onPhoneNumberSaved?: (phoneNumber: string) => void;
     autoSendCodeOnOpen?: boolean;
 }
 
@@ -47,10 +47,15 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             currentPhoneNumber = "",
                                                                             currentPhoneNumberConfirmed = false,
                                                                             onSuccess,
-                                                                            mode = "api",
+                                                                            onPhoneNumberSaved,
                                                                             autoSendCodeOnOpen = false,
                                                                         }) => {
-    const phoneSessionStore = useLocalStorageJson<PhoneVerificationSessionV1>(
+    const normalizePhone = useCallback((value: string): string => {
+        const digits = value.replace(/\D/g, "");
+        return digits ? `+${digits}` : value;
+    }, []);
+
+    const {load: loadPhoneSession, save: savePhoneSession, clear: clearPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
         PHONE_VERIFICATION_SESSION_KEY,
         isPhoneVerificationSessionV1
     );
@@ -66,10 +71,10 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [requiresCaptcha, setRequiresCaptcha] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
     const [captchaKey, setCaptchaKey] = useState(0);
-    const [uiGeneratedCode, setUiGeneratedCode] = useState<string | null>(null);
     const [mockGeneratedCode, setMockGeneratedCode] = useState<string | null>(null);
     const [autoSendRequested, setAutoSendRequested] = useState(false);
     const autoSendOnceRef = useRef(false);
+    const phoneNumberRef = useRef(phoneNumber);
 
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
@@ -77,22 +82,22 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const {countdown, isBlocked, sendRequest} = useRateLimitedRequest(
         'sms-verification',
         async () => {
-            return await authApi.sendPhoneConfirmation({phoneNumber, code: ""});
+            return await authApi.sendPhoneConfirmation({phoneNumber: phoneNumberRef.current, code: ""});
         }
     );
 
-    const resetVerificationState = () => {
+    const resetVerificationState = useCallback(() => {
         setRemainingAttempts(null);
         setAttemptsExhausted(false);
         setRequiresCaptcha(false);
         setCaptchaToken(null);
         setVerificationCode("");
-    };
+    }, []);
 
-    const resetErrors = () => {
+    const resetErrors = useCallback(() => {
         setError(null);
         setValidationError("");
-    };
+    }, []);
 
     const resetCaptcha = () => {
         setCaptchaToken(null);
@@ -107,13 +112,13 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
         autoSendOnceRef.current = false;
 
-        const session = phoneSessionStore.load();
-        if (session?.open && session.step === "verify" && session.mode === mode && session.phoneNumber.trim()) {
+        const session = loadPhoneSession();
+        if (session?.open && session.phoneNumber.trim()) {
             setPhoneNumber(session.phoneNumber);
             resetVerificationState();
             resetErrors();
-            setStep("verify");
-            setUiGeneratedCode(mode === "ui" ? (session.uiGeneratedCode ?? null) : null);
+            setStep(session.step);
+            setMockGeneratedCode(session.mockToken ?? null);
             setAutoSendRequested(false);
             return;
         }
@@ -122,10 +127,71 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetVerificationState();
         resetErrors();
         setStep("input");
-        setUiGeneratedCode(null);
         setMockGeneratedCode(null);
         setAutoSendRequested(autoSendCodeOnOpen && Boolean(currentPhoneNumber.trim()));
-    }, [isOpen, currentPhoneNumber, mode]);
+    }, [autoSendCodeOnOpen, currentPhoneNumber, isOpen, loadPhoneSession, resetErrors, resetVerificationState]);
+
+    useEffect(() => {
+        phoneNumberRef.current = phoneNumber;
+    }, [phoneNumber]);
+
+    const handleClose = () => {
+        clearPhoneSession();
+        onClose();
+    };
+
+    const handleSendCode = useCallback(async () => {
+        resetErrors();
+
+        if (
+            currentPhoneNumberConfirmed && phoneNumber.trim() &&
+            phoneNumber.trim() === currentPhoneNumber.trim()
+        ) {
+            setValidationError("Этот номер уже подтверждён.");
+            return;
+        }
+
+        const validation = validatePhoneNumber(phoneNumber);
+        if (validation) {
+            setValidationError(validation);
+            return;
+        }
+
+        const normalizedPhone = normalizePhone(phoneNumber);
+        setPhoneNumber(normalizedPhone);
+        phoneNumberRef.current = normalizedPhone;
+
+        try {
+            await authApi.savePhoneNumber({phoneNumber: normalizedPhone});
+            onPhoneNumberSaved?.(normalizedPhone);
+        } catch (err: unknown) {
+            setError(getUserMessageFromUnknown(err) || "Ошибка при сохранении номера телефона.");
+            return;
+        }
+
+        if (isBlocked) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const response = await sendRequest();
+            resetVerificationState();
+            const nextToken = response?.token ?? null;
+            setMockGeneratedCode(nextToken);
+            setStep("verify");
+        } catch (err: unknown) {
+            if (typeof err === 'object' && err !== null && 'status' in err && err.status === 429) {
+                const retryAfter = 'retryAfter' in err ? (err.retryAfter as number) : 60;
+                setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
+                return;
+            }
+            setError(getUserMessageFromUnknown(err) || "Ошибка при отправке SMS. Попробуйте позже.");
+        } finally {
+            setLoading(false);
+        }
+    }, [currentPhoneNumber, currentPhoneNumberConfirmed, isBlocked, normalizePhone, onPhoneNumberSaved, phoneNumber, resetErrors, resetVerificationState, sendRequest]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -143,96 +209,24 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
         setAutoSendRequested(false);
         void handleSendCode();
-    }, [autoSendRequested, isOpen, step]);
+    }, [autoSendRequested, handleSendCode, isOpen, step]);
 
     useEffect(() => {
         if (!isOpen) return;
-        if (step !== "verify") {
-            phoneSessionStore.clear();
+        if (!phoneNumber.trim()) {
+            clearPhoneSession();
             return;
         }
-        phoneSessionStore.save({
+        savePhoneSession({
             open: true,
             step,
             phoneNumber,
-            mode,
-            uiGeneratedCode: mode === "ui" ? uiGeneratedCode : null,
+            mockToken: mockGeneratedCode,
         });
-    }, [isOpen, mode, phoneNumber, step, uiGeneratedCode]);
-
-    const handleClose = () => {
-        phoneSessionStore.clear();
-        onClose();
-    };
-
-    const handleSendCode = async () => {
-        resetErrors();
-
-        if (
-            currentPhoneNumberConfirmed && phoneNumber.trim() &&
-            phoneNumber.trim() === currentPhoneNumber.trim()
-        ) {
-            setValidationError("Этот номер уже подтверждён.");
-            return;
-        }
-
-        const validation = validatePhoneNumber(phoneNumber);
-        if (validation) {
-            setValidationError(validation);
-            return;
-        }
-
-        if (isBlocked) {
-            return;
-        }
-
-        if (mode === "ui") {
-            const code = String(Math.floor(100000 + Math.random() * 900000));
-            setUiGeneratedCode(code);
-            setStep("verify");
-            return;
-        }
-
-        setLoading(true);
-
-        try {
-            const response = await sendRequest();
-            resetVerificationState();
-            setMockGeneratedCode(response?.token ?? null);
-            setStep("verify");
-        } catch (err: unknown) {
-            if (typeof err === 'object' && err !== null && 'status' in err && err.status === 429) {
-                const retryAfter = 'retryAfter' in err ? (err.retryAfter as number) : 60;
-                setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
-                return;
-            }
-            setError(getUserMessageFromUnknown(err) || "Ошибка при отправке SMS. Попробуйте позже.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [clearPhoneSession, isOpen, mockGeneratedCode, phoneNumber, savePhoneSession, step]);
 
     const handleVerifyCode = async () => {
         resetErrors();
-
-        if (mode === "ui") {
-            const safeCode = (verificationCode || "").replace(/\D/g, "");
-            if (!uiGeneratedCode) {
-                setError("Сначала запросите код подтверждения");
-                return;
-            }
-            if (safeCode !== uiGeneratedCode) {
-                setError("Неверный код подтверждения");
-                return;
-            }
-
-            resetVerificationState();
-            setUiGeneratedCode(null);
-            setMockGeneratedCode(null);
-            onSuccess(phoneNumber);
-            handleClose();
-            return;
-        }
 
         if (requiresCaptcha && !captchaToken) {
             setError("Пройдите проверку капчи");
@@ -242,8 +236,13 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setLoading(true);
 
         try {
+            const normalizedPhone = normalizePhone(phoneNumber);
+            if (normalizedPhone !== phoneNumber) {
+                setPhoneNumber(normalizedPhone);
+                phoneNumberRef.current = normalizedPhone;
+            }
             const data: PhoneCodeRequest = {
-                phoneNumber,
+                phoneNumber: normalizedPhone,
                 code: verificationCode,
                 captchaToken: captchaToken || undefined,
             };
@@ -281,7 +280,6 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         resetVerificationState();
         resetErrors();
         resetCaptcha();
-        setUiGeneratedCode(null);
         setMockGeneratedCode(null);
         await handleSendCode();
     };
@@ -290,7 +288,6 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setStep("input");
         setVerificationCode("");
         resetErrors();
-        setUiGeneratedCode(null);
         setMockGeneratedCode(null);
     };
 
@@ -342,12 +339,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Body1 block>
                                     Код отправлен на номер <strong>{phoneNumber}</strong>
                                 </Body1>
-                                {mode === "ui" && uiGeneratedCode && (
-                                    <Caption1 block>
-                                        UI-режим: код подтверждения — <strong>{uiGeneratedCode}</strong>
-                                    </Caption1>
-                                )}
-                                {mode === "api" && mockGeneratedCode && (
+                                {mockGeneratedCode && (
                                     <Caption1 block>
                                         Mock-режим: код подтверждения — <strong>{mockGeneratedCode}</strong>
                                     </Caption1>

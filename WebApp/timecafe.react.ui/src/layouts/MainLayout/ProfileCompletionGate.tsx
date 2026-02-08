@@ -22,12 +22,27 @@ import {
 import {fetchProfileByUserId, resetProfile, updateProfile} from "../../store/profileSlice";
 import {isNameCompleted} from "../../utility/profileCompletion";
 import {getJwtInfo} from "../../shared/auth/jwt";
-import {clearTokens, setEmail, setRole, setUserId} from "../../store/authSlice";
+import {
+    clearTokens,
+    setEmail,
+    setPhoneNumber,
+    setPhoneNumberConfirmed,
+    setRole,
+    setUserId
+} from "../../store/authSlice";
 import {DateInput, PhoneInput} from "../../components/FormFields";
 import {Gender} from "../../types/profile";
 import {PhoneVerificationModal} from "../../components/PhoneVerificationModal/PhoneVerificationModal";
+import {
+    isPhoneVerificationSessionV1,
+    PHONE_VERIFICATION_SESSION_KEY,
+    type PhoneVerificationSessionV1,
+} from "../../shared/auth/phoneVerificationSession";
+import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
 import {validatePhoneNumber} from "../../utility/validate";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {authApi} from "../../shared/api/auth/authApi";
+import {normalizeDate} from "../../utility/normalizeDate";
 
 export const ProfileCompletionGate: FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -46,6 +61,13 @@ export const ProfileCompletionGate: FC = () => {
     const profileSaving = useSelector((state: RootState) => state.profile.saving);
     const profileError = useSelector((state: RootState) => state.profile.error);
     const profileLoadedUserId = useSelector((state: RootState) => state.profile.loadedUserId);
+    const authPhoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
+    const authPhoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
+
+    const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
+        PHONE_VERIFICATION_SESSION_KEY,
+        isPhoneVerificationSessionV1
+    );
 
     const requestedProfileUserIdRef = useRef<string | null>(null);
 
@@ -69,6 +91,7 @@ export const ProfileCompletionGate: FC = () => {
         if (derivedAuthInfo?.role) dispatch(setRole(derivedAuthInfo.role) as never);
         if (derivedAuthInfo?.email) dispatch(setEmail(derivedAuthInfo.email) as never);
     }, [accessToken, derivedAuthInfo, dispatch, userId]);
+
 
     useEffect(() => {
         if (!accessToken) {
@@ -134,6 +157,17 @@ export const ProfileCompletionGate: FC = () => {
     const [saveError, setSaveError] = useState<string | null>(null);
     const phoneVerifiedRecentlyRef = useRef<{ phone: string; at: number } | null>(null);
 
+    useEffect(() => {
+        if (!accessToken) return;
+        const session = loadPhoneSession();
+        if (!session?.open) return;
+        if (showPhoneModal) return;
+        const nextPhone = session.phoneNumber.trim();
+        if (nextPhone) setPhoneDraft((prev) => (prev.trim() ? prev : nextPhone));
+        setPhoneAutoSend(false);
+        setShowPhoneModal(true);
+    }, [accessToken, loadPhoneSession, showPhoneModal]);
+
     const isProfileForCurrentUser = useMemo(() => {
         if (!profile) return false;
         if (!effectiveUserId) return false;
@@ -158,20 +192,10 @@ export const ProfileCompletionGate: FC = () => {
         if (!isNameCompleted(profile)) return true;
 
         const trimmedPhone = phoneDraft.trim();
-        if (trimmedPhone && phoneSendError) return true;
+        return !!(trimmedPhone && phoneSendError);
 
-        return false;
+
     }, [accessToken, effectiveUserId, gateDecisionReady, isProfileForCurrentUser, phoneDraft, phoneSendError, profile, profileError]);
-
-    const normalizeDate = (value: unknown): Date | undefined => {
-        if (!value) return undefined;
-        if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
-        if (typeof value === "string" || typeof value === "number") {
-            const d = new Date(value);
-            return Number.isNaN(d.getTime()) ? undefined : d;
-        }
-        return undefined;
-    };
 
     const toDateOnlyStringOrUndefined = (value: Date | undefined): string | undefined => {
         if (!value) return undefined;
@@ -187,12 +211,25 @@ export const ProfileCompletionGate: FC = () => {
         setLastName(profile.lastName ?? "");
         setMiddleName(profile.middleName ?? "");
         setBirthDate(normalizeDate(profile.birthDate));
-        setPhoneDraft((profile.phoneNumber ?? "").trim());
+        setPhoneDraft((prev) => {
+            const profilePhone = (profile.phoneNumber ?? "").trim();
+            if (profilePhone) return profilePhone;
+            const current = prev.trim();
+            if (current) return prev;
+            const authPhone = (authPhoneNumber ?? "").trim();
+            return authPhone || prev;
+        });
         setSaveError(null);
         setPhoneSendError(null);
         const g = profile.gender;
         setGenderId(g === Gender.Male || g === Gender.Female ? g : Gender.NotSpecified);
-    }, [profile?.firstName, profile?.lastName, profile?.middleName, profile]);
+    }, [authPhoneNumber, profile?.firstName, profile?.lastName, profile?.middleName, profile]);
+
+    useEffect(() => {
+        const authPhone = (authPhoneNumber ?? "").trim();
+        if (!authPhone) return;
+        setPhoneDraft((prev) => (prev.trim() ? prev : authPhone));
+    }, [authPhoneNumber]);
 
     const canSave = Boolean(firstName.trim()) && Boolean(lastName.trim()) && !profileSaving && !profileLoading;
 
@@ -233,7 +270,7 @@ export const ProfileCompletionGate: FC = () => {
         if (profileLoading) {
             return (
                 <div className="flex items-center gap-3">
-                    <Spinner size="small" />
+                    <Spinner size="small"/>
                     <Body1>Загружаем профиль…</Body1>
                 </div>
             );
@@ -255,7 +292,7 @@ export const ProfileCompletionGate: FC = () => {
         if (!profile) {
             return (
                 <div className="flex items-center gap-3">
-                    <Spinner size="small" />
+                    <Spinner size="small"/>
                     <Body1>Подготавливаем профиль…</Body1>
                 </div>
             );
@@ -270,13 +307,13 @@ export const ProfileCompletionGate: FC = () => {
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Фамилия" required>
-                        <Input value={lastName} onChange={(_, d) => setLastName(d.value)} />
+                        <Input value={lastName} onChange={(_, d) => setLastName(d.value)}/>
                     </Field>
                     <Field label="Имя" required>
-                        <Input value={firstName} onChange={(_, d) => setFirstName(d.value)} />
+                        <Input value={firstName} onChange={(_, d) => setFirstName(d.value)}/>
                     </Field>
                     <Field label="Отчество">
-                        <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)} />
+                        <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)}/>
                     </Field>
 
                     <DateInput
@@ -298,15 +335,15 @@ export const ProfileCompletionGate: FC = () => {
                             setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
                         }}
                     >
-                        <Radio value="0" label="Не указан" />
-                        <Radio value="1" label="Мужчина" />
-                        <Radio value="2" label="Женщина" />
+                        <Radio value="0" label="Не указан"/>
+                        <Radio value="1" label="Мужчина"/>
+                        <Radio value="2" label="Женщина"/>
                     </RadioGroup>
                 </Field>
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Email">
-                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled />
+                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled/>
                     </Field>
 
                     <PhoneInput
@@ -365,9 +402,8 @@ export const ProfileCompletionGate: FC = () => {
                                         void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}));
 
                                         const nextPhone = phoneDraft.trim();
-                                        const currentPhone = (profile?.phoneNumber ?? "").trim();
-                                        const currentPhoneConfirmed = profile?.phoneNumberConfirmed === true;
-                                        const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !currentPhoneConfirmed);
+                                        const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
+                                        const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed);
 
                                         if (phoneNeedsVerification) {
                                             const validation = validatePhoneNumber(nextPhone);
@@ -403,14 +439,24 @@ export const ProfileCompletionGate: FC = () => {
                     setPhoneAutoSend(false);
                 }}
                 currentPhoneNumber={phoneDraft.trim()}
-                currentPhoneNumberConfirmed={profile?.phoneNumberConfirmed === true}
-                mode="api"
+                currentPhoneNumberConfirmed={authPhoneConfirmed}
+                onPhoneNumberSaved={(nextPhone) => {
+                    dispatch(setPhoneNumber(nextPhone) as never);
+                    dispatch(setPhoneNumberConfirmed(false) as never);
+                }}
                 autoSendCodeOnOpen={phoneAutoSend}
                 onSuccess={async (verifiedPhone: string) => {
                     setShowPhoneModal(false);
                     setPhoneAutoSend(false);
                     setPhoneDraft(verifiedPhone);
-                    phoneVerifiedRecentlyRef.current = { phone: verifiedPhone, at: Date.now() };
+                    phoneVerifiedRecentlyRef.current = {phone: verifiedPhone, at: Date.now()};
+                    try {
+                        const currentUser = await authApi.getCurrentUser();
+                        dispatch(setPhoneNumber(currentUser.phoneNumber ?? "") as never);
+                        dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed) as never);
+                    } catch {
+                        void 0;
+                    }
                     requestedProfileUserIdRef.current = null;
                     void dispatch(resetProfile() as never);
                     void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
@@ -419,5 +465,3 @@ export const ProfileCompletionGate: FC = () => {
         </>
     );
 };
-
-export default ProfileCompletionGate;

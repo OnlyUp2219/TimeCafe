@@ -27,7 +27,6 @@ export interface ChangePasswordFormProps {
     className?: string;
     wrapInCard?: boolean;
     showTitle?: boolean;
-    mode?: "api" | "ui";
 }
 
 export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
@@ -39,7 +38,6 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                                                                     className,
                                                                     wrapInCard = true,
                                                                     showTitle = true,
-                                                                    mode = "api",
                                                                 }) => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
@@ -85,11 +83,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         setLoading(true);
 
         try {
-            if (mode === "ui") {
-                await new Promise((r) => setTimeout(r, 450));
-            } else {
-                await authApi.changePassword({currentPassword, newPassword});
-            }
+            await authApi.changePassword({currentPassword, newPassword});
 
             setSuccess(true);
             onSuccess?.();

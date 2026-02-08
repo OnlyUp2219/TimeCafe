@@ -2,8 +2,7 @@ export type PhoneVerificationSessionV1 = {
     open: boolean;
     step: "input" | "verify";
     phoneNumber: string;
-    mode: "api" | "ui";
-    uiGeneratedCode?: string | null;
+    mockToken?: string | null;
 };
 
 export const PHONE_VERIFICATION_SESSION_KEY = "tc_phone_verification_session_v1";
@@ -16,17 +15,14 @@ export const isPhoneVerificationSessionV1 = (value: unknown): value is PhoneVeri
     const step = v.step;
     if (step !== "input" && step !== "verify") return false;
 
-    const mode = v.mode;
-    if (mode !== "api" && mode !== "ui") return false;
-
     const phoneNumber = v.phoneNumber;
     if (typeof phoneNumber !== "string") return false;
 
     const open = v.open;
     if (typeof open !== "boolean") return false;
 
-    const uiGeneratedCode = v.uiGeneratedCode;
-    if (!(uiGeneratedCode == null || typeof uiGeneratedCode === "string")) return false;
+    const mockToken = v.mockToken;
+    if (!(mockToken == null || typeof mockToken === "string")) return false;
 
     return true;
 };
