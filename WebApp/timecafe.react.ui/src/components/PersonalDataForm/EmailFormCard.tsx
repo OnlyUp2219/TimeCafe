@@ -3,8 +3,8 @@ import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fl
 import {Edit20Filled, MailRegular} from "@fluentui/react-icons";
 import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
+import type {RootState} from "@store";
+import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
 
 export interface EmailFormCardProps {

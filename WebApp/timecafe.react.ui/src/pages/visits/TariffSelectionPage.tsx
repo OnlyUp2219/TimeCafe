@@ -25,18 +25,18 @@ import {
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import type {AppDispatch, RootState} from "../../store";
-import {setSelectedTariffId, startVisit} from "../../store/visitSlice";
-import {TariffCard} from "../../components/TariffCard/TariffCard";
-import type {BillingType, Tariff} from "../../types/tariff";
-import {clamp} from "../../utility/clamp";
-import {formatMoneyByN} from "../../utility/formatMoney";
-import {formatDurationMinutes} from "../../utility/formatDurationMinutes";
+import type {AppDispatch, RootState} from "@store";
+import {setSelectedTariffId, startVisit} from "@store/visitSlice";
+import {TariffCard} from "@components/TariffCard/TariffCard";
+import type {BillingType, Tariff} from "@app-types/tariff";
+import {clamp} from "@utility/clamp";
+import {formatMoneyByN} from "@utility/formatMoney";
+import {formatDurationMinutes} from "@utility/formatDurationMinutes";
 
-import repeatTriangleUrl from "../../assets/rrrepeat_triangle.svg";
-import vortexUrl from "../../assets/vvvortex.svg";
-import blob2Url from "../../assets/ssshape_blob2.svg";
-import blob4Url from "../../assets/ssshape_blob4.svg";
+import repeatTriangleUrl from "@assets/rrrepeat_triangle.svg";
+import vortexUrl from "@assets/vvvortex.svg";
+import blob2Url from "@assets/ssshape_blob2.svg";
+import blob4Url from "@assets/ssshape_blob4.svg";
 import "./visits.css";
 
 type CalcResult = {

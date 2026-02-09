@@ -8,6 +8,21 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "baseUrl": "src",
+    "paths": {
+      "@components/*": ["components/*"],
+      "@pages/*": ["pages/*"],
+      "@shared/*": ["shared/*"],
+      "@store": ["store/index.ts"],
+      "@store/*": ["store/*"],
+      "@hooks/*": ["hooks/*"],
+      "@utility/*": ["utility/*"],
+      "@assets/*": ["assets/*"],
+      "@app-types/*": ["types/*"],
+      "@layouts/*": ["layouts/*"],
+      "@api/*": ["shared/api/*"],
+      "@legacy/*": ["legacy/*"]
+    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",

@@ -1,7 +1,7 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
-import type {Tariff} from "../types/tariff";
-import type {BillingFilters, BillingPagination, BillingTransaction} from "../types/billing";
-import {mockBilling, mockTariffs} from "../pages/billing/billing.mock";
+import type {Tariff} from "@app-types/tariff";
+import type {BillingFilters, BillingPagination, BillingTransaction} from "@app-types/billing";
+import {mockBilling, mockTariffs} from "@pages/billing/billing.mock";
 
 export type BillingState = {
     balanceRub: number;

@@ -1,5 +1,5 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
-import type {Tariff} from "../types/tariff";
+import type {Tariff} from "@app-types/tariff";
 
 export type VisitStatus = "idle" | "active" | "finished";
 

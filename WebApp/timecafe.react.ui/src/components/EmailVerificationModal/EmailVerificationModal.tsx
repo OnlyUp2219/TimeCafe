@@ -14,9 +14,9 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {authApi} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {validateEmail} from "../../utility/validate";
+import {authApi} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {validateEmail} from "@utility/validate";
 
 interface EmailVerificationModalProps {
     isOpen: boolean;

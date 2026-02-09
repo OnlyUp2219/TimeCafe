@@ -1,12 +1,12 @@
 import {Body2, Title3, Spinner} from '@fluentui/react-components';
 import React, {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
-import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
-import {authFormContainerClassName} from "../../layouts/authLayout";
-import {authApi} from "../../shared/api/auth/authApi";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
+import {authFormContainerClassName} from "@layouts/authLayout";
+import {authApi} from "@api/auth/authApi";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();

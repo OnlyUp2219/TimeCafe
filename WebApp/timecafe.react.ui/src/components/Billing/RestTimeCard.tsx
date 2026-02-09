@@ -1,8 +1,8 @@
 import {Caption1, Card, Subtitle2Stronger, Title2} from "@fluentui/react-components";
 
-import {formatMinutesAsDuration, formatRub} from "../../pages/billing/billing.mock";
+import {formatMinutesAsDuration, formatRub} from "@pages/billing/billing.mock";
 
-import "../../pages/billing/billing.css";
+import "@pages/billing/billing.css";
 
 type RestTimeCardProps = {
     availableRub: number;

@@ -30,15 +30,15 @@ import {
 import {useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import type {AppDispatch, RootState} from "../../store";
-import {finishVisit} from "../../store/visitSlice";
-import type {BillingType} from "../../types/tariff";
-import {formatMoneyByN} from "../../utility/formatMoney";
+import type {AppDispatch, RootState} from "@store";
+import {finishVisit} from "@store/visitSlice";
+import type {BillingType} from "@app-types/tariff";
+import {formatMoneyByN} from "@utility/formatMoney";
 
-import vortex from "../../assets/vvvortex.svg";
-import repeat from "../../assets/rrrepeat (2).svg";
-import surf from "../../assets/sssurf.svg";
-import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
+import vortex from "@assets/vvvortex.svg";
+import repeat from "@assets/rrrepeat (2).svg";
+import surf from "@assets/sssurf.svg";
+import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import "./visits.css";
 
 const clampMin = (value: number, min: number) => Math.max(min, value);

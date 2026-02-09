@@ -1,10 +1,10 @@
-import {Header} from "../../components/Header/Header";
-import {Sidebar} from "../../components/Sidebar/Sidebar";
-import {Footer} from "../../components/Footer/Footer";
+import {Header} from "@components/Header/Header";
+import {Sidebar} from "@components/Sidebar/Sidebar";
+import {Footer} from "@components/Footer/Footer";
 import {Outlet} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {toggleSidebar} from "../../store/uiSlice.ts";
-import type {RootState} from "../../store";
+import {toggleSidebar} from "@store/uiSlice.ts";
+import type {RootState} from "@store";
 import type {FC} from "react";
 import {ProfileCompletionGate} from "./ProfileCompletionGate";
 

@@ -116,6 +116,7 @@ export function ProfilePhotoCard({
                         accept="image/*"
                         disabled={disabled || busy}
                         aria-labelledby={fileLabelId}
+                        title="Выберите файл"
                         className="sr-only"
                         ref={fileInputRef}
                         onChange={(e) => {

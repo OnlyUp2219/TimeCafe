@@ -1,1 +1,1 @@
-export * from "../legacy/api/auth";
+export * from "@legacy/api/auth";

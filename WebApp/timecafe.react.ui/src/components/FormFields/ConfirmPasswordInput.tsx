@@ -1,6 +1,6 @@
 import { Input, Field } from '@fluentui/react-components';
 import {useEffect, useMemo, useRef} from 'react';
-import { validateConfirmPassword as defaultValidateConfirmPassword } from '../../utility/validate';
+import { validateConfirmPassword as defaultValidateConfirmPassword } from '@utility/validate';
 
 interface ConfirmPasswordInputProps {
     value: string;

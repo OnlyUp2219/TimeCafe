@@ -2,8 +2,8 @@ import {Hamburger, Button, Avatar} from "@fluentui/react-components";
 import {useDispatch} from "react-redux";
 import type {FC} from "react";
 import {useNavigate} from "react-router-dom";
-import {authApi} from "../../shared/api/auth/authApi";
-import {clearTokens} from "../../store/authSlice";
+import {authApi} from "@api/auth/authApi";
+import {clearTokens} from "@store/authSlice";
 
 interface HeaderProps {
     onMenuToggle?: () => void;

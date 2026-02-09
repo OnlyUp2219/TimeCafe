@@ -1,1 +1,1 @@
-export * from "../legacy/api/interceptors";
+export * from "@legacy/api/interceptors";

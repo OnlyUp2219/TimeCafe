@@ -1,4 +1,4 @@
-import type {ApiError} from "./types";
+import type {ApiError} from "@types";
 
 export const getAuthErrorMessageByStatus = (statusCode: number): string | null => {
     if (statusCode === 401) return "Сессия истекла. Войдите снова.";

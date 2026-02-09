@@ -23,14 +23,14 @@ import {
     isPhoneVerificationSessionV1,
     PHONE_VERIFICATION_SESSION_KEY,
     type PhoneVerificationSessionV1,
-} from "../../shared/auth/phoneVerificationSession";
-import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
+} from "@shared/auth/phoneVerificationSession";
+import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {authApi} from "../../shared/api/auth/authApi";
-import {setPhoneNumber, setPhoneNumberConfirmed} from "../../store/authSlice";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
+import type {RootState} from "@store";
+import {authApi} from "@api/auth/authApi";
+import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
 
 export interface PhoneFormCardProps {

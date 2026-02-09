@@ -11,12 +11,12 @@ import {
 } from "@fluentui/react-components";
 import {LockClosedRegular} from "@fluentui/react-icons";
 import {useDispatch} from "react-redux";
-import type {AppDispatch} from "../../store";
+import type {AppDispatch} from "@store";
 import {useNavigate} from "react-router-dom";
-import {clearTokens} from "../../store/authSlice.ts";
+import {clearTokens} from "@store/authSlice.ts";
 import {ConfirmPasswordInput, PasswordInput} from "../FormFields";
-import {authApi} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {authApi} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;

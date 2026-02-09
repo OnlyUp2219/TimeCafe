@@ -21,14 +21,14 @@ import {
 } from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
 import {useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {HoverTiltCard} from "../../components/HoverTiltCard/HoverTiltCard";
-import vortex from "../../assets/vvvortex.svg";
-import repeat from "../../assets/rrrepeat (2).svg";
-import surf from "../../assets/sssurf.svg";
-import {formatMoneyByN} from "../../utility/formatMoney";
-import {formatDurationSeconds} from "../../utility/formatDurationSeconds";
-import {calcVisitEstimate} from "../../utility/visitEstimate";
+import type {RootState} from "@store";
+import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
+import vortex from "@assets/vvvortex.svg";
+import repeat from "@assets/rrrepeat (2).svg";
+import surf from "@assets/sssurf.svg";
+import {formatMoneyByN} from "@utility/formatMoney";
+import {formatDurationSeconds} from "@utility/formatDurationSeconds";
+import {calcVisitEstimate} from "@utility/visitEstimate";
 
 export const HomePage = () => {
     const navigate = useNavigate();

@@ -1,4 +1,4 @@
-import type {Profile} from "../types/profile";
+import type {Profile} from "@app-types/profile";
 
 export const isNameCompleted = (profile: Profile | null): boolean => {
     if (!profile) return false;

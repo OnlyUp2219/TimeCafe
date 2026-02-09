@@ -13,8 +13,8 @@ import {
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
-import type {Tariff} from "../../types/tariff";
-import {formatMoneyByN} from "../../utility/formatMoney";
+import type {Tariff} from "@app-types/tariff";
+import {formatMoneyByN} from "@utility/formatMoney";
 
 type Props = {
     tariff: Tariff;

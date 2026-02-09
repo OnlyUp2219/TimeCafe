@@ -1,7 +1,7 @@
 import {httpClient, rawHttpClient} from "../httpClient";
 import {normalizeUnknownError} from "../errors/normalize";
-import type {RateLimitedResponse} from "../../../utility/rateLimitHelper.ts";
-import {withRateLimit} from "../../../utility/rateLimitHelper.ts";
+import type {RateLimitedResponse} from "@utility/rateLimitHelper.ts";
+import {withRateLimit} from "@utility/rateLimitHelper.ts";
 
 export interface RegisterRequest {
     username: string;

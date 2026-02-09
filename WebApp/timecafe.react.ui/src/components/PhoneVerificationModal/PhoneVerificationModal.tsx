@@ -15,17 +15,17 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {authApi, type PhoneCodeRequest} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {handleVerificationError} from "../../shared/auth/phoneVerification";
+import {authApi, type PhoneCodeRequest} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {handleVerificationError} from "@shared/auth/phoneVerification";
 import {
     isPhoneVerificationSessionV1,
     PHONE_VERIFICATION_SESSION_KEY,
     type PhoneVerificationSessionV1,
-} from "../../shared/auth/phoneVerificationSession";
-import {validatePhoneNumber} from "../../utility/validate";
-import {useRateLimitedRequest} from "../../hooks/useRateLimitedRequest.ts";
-import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
+} from "@shared/auth/phoneVerificationSession";
+import {validatePhoneNumber} from "@utility/validate";
+import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest.ts";
+import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {PhoneInput} from "../FormFields";
 
 

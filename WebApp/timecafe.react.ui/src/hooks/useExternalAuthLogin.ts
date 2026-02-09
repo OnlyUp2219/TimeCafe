@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {getApiBaseUrl} from "../shared/api/apiBaseUrl";
+import {getApiBaseUrl} from "@api/apiBaseUrl";
 
 export const useExternalAuthLogin = () => {
     const apiBase = getApiBaseUrl();

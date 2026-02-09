@@ -2,12 +2,12 @@ import {Badge, Subtitle1, Field, Input, MessageBar} from '@fluentui/react-compon
 import {useState} from 'react';
 import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
 import {useSelector} from 'react-redux';
-import type {RootState} from '../../store';
-import {authApi} from "../../shared/api/auth/authApi";
+import type {RootState} from '@store';
+import {authApi} from "@api/auth/authApi";
 import {useProgressToast} from '../ToastProgress/ToastProgress';
-import {useRateLimitedRequest} from '../../hooks/useRateLimitedRequest';
+import {useRateLimitedRequest} from '@hooks/useRateLimitedRequest';
 import {MockCallbackLink} from '../MockCallbackLink/MockCallbackLink';
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {TooltipButton} from "../TooltipButton/TooltipButton";
 
 interface EmailPendingCardProps {

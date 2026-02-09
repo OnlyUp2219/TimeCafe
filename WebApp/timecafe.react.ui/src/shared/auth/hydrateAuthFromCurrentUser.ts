@@ -1,5 +1,5 @@
-import {authApi} from "../api/auth/authApi";
-import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
+import {authApi} from "@api/auth/authApi";
+import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "@store/authSlice";
 import type {Dispatch} from "redux";
 
 export const hydrateAuthFromCurrentUser = async (dispatch: Dispatch) => {

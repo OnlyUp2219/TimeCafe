@@ -1,1 +1,1 @@
-export * from "../legacy/api/errors";
+export * from "@legacy/api/errors";

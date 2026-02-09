@@ -1,4 +1,4 @@
-import type {Tariff} from "../../types/tariff";
+import type {Tariff} from "@app-types/tariff";
 
 export const formatRub = (value: number, maximumFractionDigits = 0) => {
     try {

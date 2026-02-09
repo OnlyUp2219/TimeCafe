@@ -1,7 +1,7 @@
 import type {AxiosError} from "axios";
 import {isAxiosError} from "axios";
-import type {ApiError, ApiErrorItem} from "./types";
-import {isApiError} from "./types";
+import type {ApiError, ApiErrorItem} from "@api/errors/types";
+import {isApiError} from "@api/errors/types";
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;

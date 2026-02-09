@@ -3,26 +3,26 @@ import {LargeTitle} from "@fluentui/react-components";
 import {useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 
-import type {RootState} from "../../store";
-import type {Tariff} from "../../types/tariff";
-import {setBalanceRub, setDebtRub} from "../../store/billingSlice";
+import type {RootState} from "@store";
+import type {Tariff} from "@app-types/tariff";
+import {setBalanceRub, setDebtRub} from "@store/billingSlice";
 
 import {mockWeeklyActivity} from "./billing.mock";
 
 import "./billing.css";
 
-import glitch from "../../assets/ggglitch.svg";
-import blob4 from "../../assets/ssshape_blob4.svg";
-import blob2 from "../../assets/ssshape_blob2.svg";
-import squiggl from "../../assets/sssquiggl_1.svg";
+import glitch from "@assets/ggglitch.svg";
+import blob4 from "@assets/ssshape_blob4.svg";
+import blob2 from "@assets/ssshape_blob2.svg";
+import squiggl from "@assets/sssquiggl_1.svg";
 
-import {BalanceActivityCard} from "../../components/Billing/BalanceActivityCard";
-import {TopUpCard} from "../../components/Billing/TopUpCard";
-import {TransactionsSection} from "../../components/Billing/TransactionsSection";
-import {RestTimeCard} from "../../components/Billing/RestTimeCard";
-import {DebtWarningCard} from "../../components/Billing/DebtWarningCard";
-import {LoyaltyCard} from "../../components/Billing/LoyaltyCard";
-import {SupportCard} from "../../components/Billing/SupportCard";
+import {BalanceActivityCard} from "@components/Billing/BalanceActivityCard";
+import {TopUpCard} from "@components/Billing/TopUpCard";
+import {TransactionsSection} from "@components/Billing/TransactionsSection";
+import {RestTimeCard} from "@components/Billing/RestTimeCard";
+import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
+import {LoyaltyCard} from "@components/Billing/LoyaltyCard";
+import {SupportCard} from "@components/Billing/SupportCard";
 
 export const BillingPage = () => {
     const dispatch = useDispatch();

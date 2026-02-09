@@ -12,8 +12,8 @@ import {
 
 import {ResponsiveContainer, VerticalBarChart, type VerticalBarChartDataPoint} from "@fluentui/react-charts";
 
-import type {MockActivityPoint} from "../../pages/billing/billing.mock";
-import {formatRub} from "../../pages/billing/billing.mock";
+import type {MockActivityPoint} from "@pages/billing/billing.mock";
+import {formatRub} from "@pages/billing/billing.mock";
 
 type BalanceActivityCardProps = {
     balanceRub: number;
