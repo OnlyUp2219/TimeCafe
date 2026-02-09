@@ -1,5 +1,5 @@
 import {Body2, Title3, Spinner} from '@fluentui/react-components';
-import {useState, useEffect, useCallback} from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
@@ -68,13 +68,14 @@ export const ConfirmResetPage = () => {
             {ToasterElement}
 
             {/* Hero Section - Left Side (Desktop Only) */}
-            <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            <div id="Left Side"
+                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
             </div>
 
             {/* Confirm Reset Form */}
             <div id="Form"
-                  className={authFormContainerClassName}>
+                 className={authFormContainerClassName}>
                 <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
@@ -108,7 +109,7 @@ export const ConfirmResetPage = () => {
                                 type="submit"
                                 disabled={isSubmitting}
                                 className="w-full order-1 sm:order-2"
-                                icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                                icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                                 tooltip="Сохранить новый пароль"
                                 label="Восстановить пароль"
                             />

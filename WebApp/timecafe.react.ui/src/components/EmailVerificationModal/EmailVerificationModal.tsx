@@ -81,7 +81,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
 
         setLoading(true);
         try {
-            const response = await authApi.requestEmailChange(email.trim());
+            const response = await authApi.requestEmailChange({newEmail: email.trim()});
             if (response.status === 429) {
                 const retryAfter = response.headers.retryAfter ?? 60;
                 setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);

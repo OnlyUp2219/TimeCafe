@@ -136,8 +136,8 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         trailingElement={
                             <Tag
                                 appearance="outline"
-                                    icon={createElement(getStatusIcon(authEmailConfirmed))}
-                                    className={`custom-tag ${getStatusClass(authEmailConfirmed)}`}
+                                icon={createElement(getStatusIcon(authEmailConfirmed))}
+                                className={`custom-tag ${getStatusClass(authEmailConfirmed)}`}
                             />
                         }
                     />
@@ -167,7 +167,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 <Button
                                     appearance="subtle"
                                     size="small"
-                                    icon={<Delete20Regular />}
+                                    icon={<Delete20Regular/>}
                                     onClick={async () => {
                                         setShowClearDialog(true);
                                     }}
@@ -176,7 +176,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 <Button
                                     appearance="subtle"
                                     size="small"
-                                    icon={<Edit20Regular />}
+                                    icon={<Edit20Regular/>}
                                     onClick={() => setShowPhoneModal(true)}
                                     disabled={loading || !phone.trim()}
                                 >
@@ -232,7 +232,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                 isOpen={showPhoneModal}
                 onClose={() => setShowPhoneModal(false)}
                 currentPhoneNumber={phone}
-                currentPhoneNumberConfirmed={authPhoneConfirmed === true}
+                currentPhoneNumberConfirmed={authPhoneConfirmed}
                 onPhoneNumberSaved={(nextPhone) => {
                     dispatch(setPhoneNumber(nextPhone));
                     dispatch(setPhoneNumberConfirmed(false));

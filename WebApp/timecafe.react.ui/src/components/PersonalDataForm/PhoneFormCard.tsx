@@ -89,108 +89,108 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
 
     return (
         <>
-        <Card className={className}>
-            <Title2 block className="!flex items-center gap-2">
-                <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
-                    <PhoneRegular className="size-5" />
-                </Badge>
-                Телефон
-            </Title2>
-            <Body2 className="!line-clamp-2">
-                Используется для уведомлений и подтверждения номера.
-            </Body2>
+            <Card className={className}>
+                <Title2 block className="!flex items-center gap-2">
+                    <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                        <PhoneRegular className="size-5"/>
+                    </Badge>
+                    Телефон
+                </Title2>
+                <Body2 className="!line-clamp-2">
+                    Используется для уведомлений и подтверждения номера.
+                </Body2>
 
-            <div>
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-col sm:items-center sm:flex-row justify-between gap-2 min-w-0">
-                        <div className="flex items-center gap-2 min-w-0 ">
-                            <Tooltip content={`Телефон: ${phone || "не указан"}`} relationship="label">
-                                <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
-                                    {phone || "—"}
-                                </Body1Strong>
-                            </Tooltip>
-                            <Tooltip
-                                content={!hasPhone ? "Телефон не указан" : (phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
-                                relationship="description"
-                            >
-                                <Tag
-                                    appearance="outline"
-                                    icon={createElement(getPersonalDataStatusIcon(confirmedForUi))}
-                                    className={`custom-tag ${getPersonalDataStatusClass(confirmedForUi)}`}
+                <div>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex flex-col sm:items-center sm:flex-row justify-between gap-2 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0 ">
+                                <Tooltip content={`Телефон: ${phone || "не указан"}`} relationship="label">
+                                    <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
+                                        {phone || "—"}
+                                    </Body1Strong>
+                                </Tooltip>
+                                <Tooltip
+                                    content={!hasPhone ? "Телефон не указан" : (phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
+                                    relationship="description"
+                                >
+                                    <Tag
+                                        appearance="outline"
+                                        icon={createElement(getPersonalDataStatusIcon(confirmedForUi))}
+                                        className={`custom-tag ${getPersonalDataStatusClass(confirmedForUi)}`}
+                                    />
+                                </Tooltip>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    appearance="subtle"
+                                    icon={<Delete20Regular/>}
+                                    onClick={async () => {
+                                        setShowClearDialog(true);
+                                    }}
+                                    disabled={loading || !hasPhone}
                                 />
-                            </Tooltip>
+                                <Button
+                                    appearance="primary"
+                                    icon={<Edit20Filled/>}
+                                    onClick={() => setShowPhoneModal(true)}
+                                    disabled={loading}
+                                >
+                                    {actionLabel}
+                                </Button>
+                            </div>
                         </div>
+                        {phoneError && <Caption1 className="text-red-600">{phoneError}</Caption1>}
+                    </div>
+                </div>
 
-                        <div className="flex items-center gap-2">
+                <PhoneVerificationModal
+                    isOpen={showPhoneModal}
+                    onClose={() => setShowPhoneModal(false)}
+                    currentPhoneNumber={phone}
+                    currentPhoneNumberConfirmed={phoneNumberConfirmed}
+                    onPhoneNumberSaved={(nextPhone) => {
+                        dispatch(setPhoneNumber(nextPhone));
+                        dispatch(setPhoneNumberConfirmed(false));
+                    }}
+                    onSuccess={async () => {
+                        try {
+                            await handlePhoneVerified();
+                        } finally {
+                            setShowPhoneModal(false);
+                        }
+                    }}
+                />
+            </Card>
+
+            <Dialog open={showClearDialog} modalType="alert">
+                <DialogSurface>
+                    <DialogBody>
+                        <DialogTitle>Удалить номер телефона?</DialogTitle>
+                        <DialogContent>
+                            <Body1>
+                                Без номера телефона вы не сможете оформить заказ и получать уведомления.
+                            </Body1>
+                        </DialogContent>
+                        <DialogActions>
                             <Button
-                                appearance="subtle"
-                                icon={<Delete20Regular />}
-                                onClick={async () => {
-                                    setShowClearDialog(true);
-                                }}
-                                disabled={loading || !hasPhone}
-                            />
+                                appearance="secondary"
+                                onClick={() => setShowClearDialog(false)}
+                                disabled={clearing}
+                            >
+                                Отмена
+                            </Button>
                             <Button
                                 appearance="primary"
-                                icon={<Edit20Filled/>}
-                                onClick={() => setShowPhoneModal(true)}
-                                disabled={loading}
+                                onClick={handleClearPhone}
+                                disabled={clearing}
                             >
-                                {actionLabel}
+                                Удалить
                             </Button>
-                        </div>
-                    </div>
-                    {phoneError && <Caption1 className="text-red-600">{phoneError}</Caption1>}
-                </div>
-            </div>
-
-            <PhoneVerificationModal
-                isOpen={showPhoneModal}
-                onClose={() => setShowPhoneModal(false)}
-                currentPhoneNumber={phone}
-                currentPhoneNumberConfirmed={phoneNumberConfirmed === true}
-                onPhoneNumberSaved={(nextPhone) => {
-                    dispatch(setPhoneNumber(nextPhone));
-                    dispatch(setPhoneNumberConfirmed(false));
-                }}
-                onSuccess={async () => {
-                    try {
-                        await handlePhoneVerified();
-                    } finally {
-                        setShowPhoneModal(false);
-                    }
-                }}
-            />
-        </Card>
-
-        <Dialog open={showClearDialog} modalType="alert">
-            <DialogSurface>
-                <DialogBody>
-                    <DialogTitle>Удалить номер телефона?</DialogTitle>
-                    <DialogContent>
-                        <Body1>
-                            Без номера телефона вы не сможете оформить заказ и получать уведомления.
-                        </Body1>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            appearance="secondary"
-                            onClick={() => setShowClearDialog(false)}
-                            disabled={clearing}
-                        >
-                            Отмена
-                        </Button>
-                        <Button
-                            appearance="primary"
-                            onClick={handleClearPhone}
-                            disabled={clearing}
-                        >
-                            Удалить
-                        </Button>
-                    </DialogActions>
-                </DialogBody>
-            </DialogSurface>
-        </Dialog>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </>
     );
 };

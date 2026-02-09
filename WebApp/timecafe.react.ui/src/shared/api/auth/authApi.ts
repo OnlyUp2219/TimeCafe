@@ -199,9 +199,9 @@ const confirmEmail = async (userId: string, token: string): Promise<{ message?: 
     }
 };
 
-const requestEmailChange = async (newEmail: string): Promise<RateLimitedResponse<ChangeEmailResponse>> => {
+const requestEmailChange = async (data: ChangeEmailRequest): Promise<RateLimitedResponse<ChangeEmailResponse>> => {
     const endpoint = USE_MOCK_EMAIL ? "/email/change-mock" : "/email/change";
-    return withRateLimit(() => httpClient.post(`${AUTH_PREFIX}${endpoint}`, {newEmail}));
+    return withRateLimit(() => httpClient.post(`${AUTH_PREFIX}${endpoint}`, data));
 };
 
 const confirmEmailChange = async (userId: string, newEmail: string, token: string): Promise<{ message?: string; error?: string }> => {

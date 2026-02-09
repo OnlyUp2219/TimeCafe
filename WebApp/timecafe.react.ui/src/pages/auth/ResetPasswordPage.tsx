@@ -11,7 +11,7 @@ import {
 } from '@fluentui/react-components';
 import {Spinner} from '@fluentui/react-components';
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
-import {useState} from "react";
+import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput} from "../../components/FormFields";
@@ -85,7 +85,7 @@ export const ResetPasswordPage = () => {
                         <DialogTitle>
                             <div className="flex items-center gap-2">
                                 <Badge appearance="tint" shape="rounded" size="extra-large" className="dark-green">
-                                    <MailCheckmark20Filled />
+                                    <MailCheckmark20Filled/>
                                 </Badge>
                                 <span>Письмо отправлено</span>
                             </div>
@@ -133,8 +133,9 @@ export const ResetPasswordPage = () => {
                  sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
 
                 {/* Hero Section - Left Side (Desktop Only) */}
-                <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                    <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+                <div id="Left Side"
+                     className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                    <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
                 </div>
 
                 {/* Reset Form */}
@@ -162,7 +163,7 @@ export const ResetPasswordPage = () => {
                                     type="submit"
                                     disabled={isSubmitting || openDialog}
                                     className="w-full order-1 sm:order-2"
-                                    icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                                    icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                                     tooltip="Отправить письмо для сброса"
                                     label="Отправить код"
                                 />

@@ -1,5 +1,5 @@
 import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
-import {useState, useCallback} from "react";
+import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput} from "../../components/FormFields";
@@ -107,7 +107,7 @@ export const LoginPage = () => {
                         type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                        icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                        icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Войти"
                         label="Войти"
                     />
@@ -150,8 +150,9 @@ export const LoginPage = () => {
             </div>
 
             {/* Hero Section - Right Side (Desktop Only) */}
-            <div id="Right Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-right bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            <div id="Right Side"
+                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-right bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
             </div>
         </div>
     );
