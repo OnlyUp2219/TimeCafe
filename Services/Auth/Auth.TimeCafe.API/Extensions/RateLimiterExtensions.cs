@@ -5,6 +5,17 @@ public static class RateLimiterExtensions
     private static string GetRateLimitKey(HttpContext context)
     {
         var endpoint = context.GetEndpoint()?.DisplayName;
+        var env = context.RequestServices.GetService<IHostEnvironment>();
+        if (env != null
+            && (env.IsDevelopment() || env.IsEnvironment("Docker"))
+            && context.User.Identity?.IsAuthenticated != true)
+        {
+            var testKey = context.Request.Headers["X-Test-RateLimit-Key"].ToString();
+            if (!string.IsNullOrWhiteSpace(testKey))
+            {
+                return $"{testKey}:{endpoint}";
+            }
+        }
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var userId = context.User.Identity.Name ?? "unknown";
