@@ -17,7 +17,7 @@ import {
     Title2,
     Tooltip,
 } from "@fluentui/react-components";
-import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Filled, PhoneRegular, type FluentIcon} from "@fluentui/react-icons";
+import {Delete20Regular, Edit20Filled, PhoneRegular} from "@fluentui/react-icons";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {
     isPhoneVerificationSessionV1,
@@ -28,25 +28,15 @@ import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
 import {authApi} from "../../shared/api/auth/authApi";
-import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
+import {setPhoneNumber, setPhoneNumberConfirmed} from "../../store/authSlice";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
+import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
 
 export interface PhoneFormCardProps {
     loading?: boolean;
     className?: string;
 }
-
-const getStatusClass = (confirmed?: boolean | null): string => {
-    if (confirmed === true) return "dark-green";
-    if (confirmed === false) return "pumpkin";
-    if (confirmed == null) return "beige";
-    return "dark-red";
-};
-
-const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
-    if (confirmed) return CheckmarkFilled;
-    return DismissFilled;
-};
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, className}) => {
     const dispatch = useDispatch();
@@ -76,12 +66,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
 
     const handlePhoneVerified = async () => {
         try {
-            const currentUser = await authApi.getCurrentUser();
-            if (currentUser.userId) dispatch(setUserId(currentUser.userId));
-            dispatch(setEmail(currentUser.email));
-            dispatch(setEmailConfirmed(currentUser.emailConfirmed));
-            dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
-            dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
+            await hydrateAuthFromCurrentUser(dispatch);
         } catch {
             void 0;
         }
@@ -130,8 +115,8 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(confirmedForUi))}
-                                    className={`custom-tag ${getStatusClass(confirmedForUi)}`}
+                                    icon={createElement(getPersonalDataStatusIcon(confirmedForUi))}
+                                    className={`custom-tag ${getPersonalDataStatusClass(confirmedForUi)}`}
                                 />
                             </Tooltip>
                         </div>

@@ -10,16 +10,14 @@ import {useDispatch} from "react-redux";
 import {setEmail, setEmailConfirmed} from "../../store/authSlice";
 import {normalizeUnknownError} from "../../shared/api/errors/normalize";
 import {isApiError} from "../../shared/api/errors/types";
-import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
 import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
+import {useExternalAuthLogin} from "../../hooks/useExternalAuthLogin";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
-
-    const apiBase = getApiBaseUrl();
-    const returnUrl = `${window.location.origin}/external-callback`;
+    const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
 
     const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
@@ -80,14 +78,6 @@ export const RegisterPage = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const handleGoogleLogin = () => {
-        window.location.href = `${apiBase}/auth/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
-    };
-
-    const handleMicrosoftLogin = () => {
-        window.location.href = `${apiBase}/auth/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleEmailValidationChange = useCallback((error: string) => {

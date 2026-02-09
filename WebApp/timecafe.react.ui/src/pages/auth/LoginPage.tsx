@@ -9,22 +9,20 @@ import {authApi} from "../../shared/api/auth/authApi";
 import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
-import {getApiBaseUrl} from "../../shared/api/apiBaseUrl";
 import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
+import {useExternalAuthLogin} from "../../hooks/useExternalAuthLogin";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useDispatch();
+    const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
 
     const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
-    const apiBase = getApiBaseUrl();
-    const returnUrl = `${window.location.origin}/external-callback`;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -53,14 +51,6 @@ export const LoginPage = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const handleGoogleLogin = () => {
-        window.location.href = `${apiBase}/auth/authenticate/login/google?returnUrl=${encodeURIComponent(returnUrl)}`;
-    };
-
-    const handleMicrosoftLogin = () => {
-        window.location.href = `${apiBase}/auth/authenticate/login/microsoft?returnUrl=${encodeURIComponent(returnUrl)}`;
     };
 
     const handleEmailValidationChange = useCallback((error: string) => {

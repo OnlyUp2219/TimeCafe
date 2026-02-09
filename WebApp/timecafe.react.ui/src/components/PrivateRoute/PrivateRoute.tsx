@@ -8,13 +8,11 @@ import {
     clearTokens,
     setAccessToken,
     setEmail,
-    setEmailConfirmed,
-    setPhoneNumber,
-    setPhoneNumberConfirmed,
     setRole,
     setUserId
 } from "../../store/authSlice";
 import {getJwtInfo} from "../../shared/auth/jwt";
+import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
 
 interface PrivateRouteProps {
     children: JSX.Element;
@@ -28,18 +26,9 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const hydrateCurrentUser = async () => {
-                const currentUser = await authApi.getCurrentUser();
-                if (currentUser.userId) dispatch(setUserId(currentUser.userId));
-                dispatch(setEmail(currentUser.email));
-                dispatch(setEmailConfirmed(currentUser.emailConfirmed));
-                dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
-                dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
-            };
-
             if (accessToken) {
                 try {
-                    await hydrateCurrentUser();
+                    await hydrateAuthFromCurrentUser(dispatch);
                 } catch {
                     void 0;
                 }
@@ -57,7 +46,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
                         if (info.role) dispatch(setRole(info.role));
                         if (info.email) dispatch(setEmail(info.email));
                         try {
-                            await hydrateCurrentUser();
+                            await hydrateAuthFromCurrentUser(dispatch);
                         } catch {
                             void 0;
                         }

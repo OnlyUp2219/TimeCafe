@@ -1,28 +1,16 @@
 import {createElement, useState, type FC} from "react";
 import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
-import {CheckmarkFilled, DismissFilled, Edit20Filled, MailRegular, type FluentIcon} from "@fluentui/react-icons";
+import {Edit20Filled, MailRegular} from "@fluentui/react-icons";
 import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "../../store";
-import {authApi} from "../../shared/api/auth/authApi";
-import {setEmail, setEmailConfirmed, setPhoneNumber, setPhoneNumberConfirmed, setUserId} from "../../store/authSlice";
+import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
+import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
 
 export interface EmailFormCardProps {
     loading?: boolean;
     className?: string;
 }
-
-const getStatusClass = (confirmed?: boolean | null): string => {
-    if (confirmed === true) return "dark-green";
-    if (confirmed === false) return "pumpkin";
-    if (confirmed == null) return "beige";
-    return "dark-red";
-};
-
-const getStatusIcon = (confirmed?: boolean | null): FluentIcon => {
-    if (confirmed) return CheckmarkFilled;
-    return DismissFilled;
-};
 
 export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, className}) => {
     const dispatch = useDispatch();
@@ -38,12 +26,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, classNam
 
     const handleEmailVerified = async () => {
         try {
-            const currentUser = await authApi.getCurrentUser();
-            if (currentUser.userId) dispatch(setUserId(currentUser.userId));
-            dispatch(setEmail(currentUser.email));
-            dispatch(setEmailConfirmed(currentUser.emailConfirmed));
-            dispatch(setPhoneNumber(currentUser.phoneNumber ?? ""));
-            dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed));
+            await hydrateAuthFromCurrentUser(dispatch);
         } catch {
             void 0;
         }
@@ -76,8 +59,8 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, classNam
                             >
                                 <Tag
                                     appearance="outline"
-                                    icon={createElement(getStatusIcon(effectiveConfirmed))}
-                                    className={`custom-tag ${getStatusClass(effectiveConfirmed)}`}
+                                    icon={createElement(getPersonalDataStatusIcon(effectiveConfirmed))}
+                                    className={`custom-tag ${getPersonalDataStatusClass(effectiveConfirmed)}`}
                                 />
                             </Tooltip>
                         </div>
