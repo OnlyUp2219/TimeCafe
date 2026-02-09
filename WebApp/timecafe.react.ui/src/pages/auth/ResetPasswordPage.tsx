@@ -19,6 +19,7 @@ import {authFormContainerClassName} from "../../layouts/authLayout";
 import {authApi} from "../../shared/api/auth/authApi";
 import {MockCallbackLink} from "../../components/MockCallbackLink/MockCallbackLink";
 import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
+import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -55,22 +56,7 @@ export const ResetPasswordPage = () => {
             setSentEmail(email);
             setOpenDialog(true);
         } catch (err: unknown) {
-            if (err && typeof err === "object" && "message" in err && typeof (err as { message?: unknown }).message === "string") {
-                showToast((err as { message: string }).message, "error");
-                return;
-            }
-
-            if (err && typeof err === "object" && "errors" in err && Array.isArray((err as { errors?: unknown }).errors)) {
-                const items = (err as { errors: Array<{ message?: string; description?: string }> }).errors;
-                const message = items
-                    .map(e => e.message || e.description)
-                    .filter(Boolean)
-                    .join(" ");
-                showToast(message || "Ошибка. Попробуйте позже", "error");
-                return;
-            }
-
-            showToast("Ошибка. Попробуйте позже", "error");
+            showToast(getUserMessageFromUnknown(err), "error");
         } finally {
             setIsSubmitting(false);
         }
