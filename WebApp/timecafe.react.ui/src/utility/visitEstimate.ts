@@ -1,4 +1,4 @@
-import type {BillingType} from "../types/tariff";
+import type {BillingType} from "@app-types/tariff";
 import {formatMoneyByN} from "./formatMoney";
 
 export type VisitEstimate = {

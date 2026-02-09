@@ -10,9 +10,9 @@ import {
 } from "@fluentui/react-components";
 import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
-import {setSelectedNav, setSidebarOpen, toggleSidebar} from "../../store/uiSlice.ts";
+import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
+import type {RootState} from "@store";
 import {type FC, useCallback, useEffect, useState} from "react";
 
 type DrawerType = Required<NavDrawerProps>["type"];

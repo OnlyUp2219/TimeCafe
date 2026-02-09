@@ -3,9 +3,9 @@ import {Badge, Body1, Card, Title3} from "@fluentui/react-components";
 import {Warning20Filled} from "@fluentui/react-icons";
 
 import {TooltipButton} from "../TooltipButton/TooltipButton";
-import {formatRub} from "../../pages/billing/billing.mock";
+import {formatRub} from "@pages/billing/billing.mock";
 
-import "../../pages/billing/billing.css";
+import "@pages/billing/billing.css";
 
 
 type DebtWarningCardProps = {

@@ -1,7 +1,7 @@
 import {Field, Input} from "@fluentui/react-components";
 import type {ReactNode} from "react";
 import {useEffect, useMemo, useRef, useState} from "react";
-import {validatePhoneNumber as defaultValidatePhoneNumber} from "../../utility/validate";
+import {validatePhoneNumber as defaultValidatePhoneNumber} from "@utility/validate";
 
 interface PhoneInputProps {
     value: string;

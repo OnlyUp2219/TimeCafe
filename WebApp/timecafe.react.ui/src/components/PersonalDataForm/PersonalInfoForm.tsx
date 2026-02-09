@@ -17,15 +17,15 @@ import {
     Title2,
 } from "@fluentui/react-components";
 import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
-import type {Gender, Profile} from "../../types/profile";
+import type {Gender, Profile} from "@app-types/profile";
 import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
 import {DateInput, EmailInput, PhoneInput} from "../FormFields";
 import {useDispatch, useSelector} from "react-redux";
-import type {AppDispatch, RootState} from "../../store";
-import {setPhoneNumber, setPhoneNumberConfirmed} from "../../store/authSlice";
-import {authApi} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {normalizeDate} from "../../utility/normalizeDate";
+import type {AppDispatch, RootState} from "@store";
+import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
+import {authApi} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {normalizeDate} from "@utility/normalizeDate";
 
 interface PersonalInfoFormProps {
     profile: Profile;

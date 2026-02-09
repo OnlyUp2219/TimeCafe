@@ -1,7 +1,7 @@
 import axios from "axios";
 import {refreshAccessToken} from "./auth.ts";
-import {store} from "../../store";
-import type {AppDispatch} from "../../store";
+import {store} from "@store";
+import type {AppDispatch} from "@store";
 
 let isRefreshing = false;
 axios.defaults.withCredentials = true;

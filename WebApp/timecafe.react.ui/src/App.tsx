@@ -3,29 +3,29 @@ import {BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 
 import "./App.css";
-import {LoginPage} from './pages/auth/LoginPage';
-import {RegisterPage} from './pages/auth/RegisterPage';
-import {ResetPasswordPage} from './pages/auth/ResetPasswordPage';
-import {ConfirmResetPage} from './pages/auth/ConfirmResetPage';
-import {LandingPage} from './pages/public/LandingPage';
-import {HomePage} from './pages/home/HomePage';
-import {PersonalDataPage} from "./pages/profile/PersonalDataPage";
-import {TariffSelectionPage} from "./pages/visits/TariffSelectionPage";
-import {ActiveVisitPage} from "./pages/visits/ActiveVisitPage";
-import {AuthLayout} from './layouts/AuthLayout/AuthLayuot';
-import {MainLayout} from './layouts/MainLayout/MainLayuot';
-import {BillingPage} from './pages/billing/BillingPage.tsx'
-import {useProgressToast} from "./components/ToastProgress/ToastProgress";
-import {configureHttpClient} from "./shared/api/httpClient";
-import {store} from "./store";
-import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "./store/authSlice";
-import {getJwtInfo} from "./shared/auth/jwt";
-import {authApi} from "./shared/api/auth/authApi";
-import {ExternalCallback} from "./pages/auth/ExternalCallback";
-import {EmailPendingPage} from "./pages/auth/EmailPendingPage";
-import {ConfirmEmailPage} from "./pages/auth/ConfirmEmailPage";
-import {PrivateRoute} from "./components/PrivateRoute/PrivateRoute";
-import {JwtCrossServiceTestPage} from "./pages/dev/JwtCrossServiceTestPage";
+import {LoginPage} from '@pages/auth/LoginPage';
+import {RegisterPage} from '@pages/auth/RegisterPage';
+import {ResetPasswordPage} from '@pages/auth/ResetPasswordPage';
+import {ConfirmResetPage} from '@pages/auth/ConfirmResetPage';
+import {LandingPage} from '@pages/public/LandingPage';
+import {HomePage} from '@pages/home/HomePage';
+import {PersonalDataPage} from "@pages/profile/PersonalDataPage";
+import {TariffSelectionPage} from "@pages/visits/TariffSelectionPage";
+import {ActiveVisitPage} from "@pages/visits/ActiveVisitPage";
+import {AuthLayout} from '@layouts/AuthLayout/AuthLayuot';
+import {MainLayout} from '@layouts/MainLayout/MainLayuot';
+import {BillingPage} from '@pages/billing/BillingPage.tsx'
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
+import {configureHttpClient} from "@api/httpClient";
+import {store} from "@store";
+import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "@store/authSlice";
+import {getJwtInfo} from "@shared/auth/jwt";
+import {authApi} from "@api/auth/authApi";
+import {ExternalCallback} from "@pages/auth/ExternalCallback";
+import {EmailPendingPage} from "@pages/auth/EmailPendingPage";
+import {ConfirmEmailPage} from "@pages/auth/ConfirmEmailPage";
+import {PrivateRoute} from "@components/PrivateRoute/PrivateRoute";
+import {JwtCrossServiceTestPage} from "@pages/dev/JwtCrossServiceTestPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();

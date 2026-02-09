@@ -1,7 +1,7 @@
 import type {FC} from "react";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import type {AppDispatch, RootState} from "../../store";
+import type {AppDispatch, RootState} from "@store";
 import {useNavigate} from "react-router-dom";
 import {
     Body1,
@@ -19,9 +19,9 @@ import {
     RadioGroup,
     Spinner,
 } from "@fluentui/react-components";
-import {fetchProfileByUserId, resetProfile, updateProfile} from "../../store/profileSlice";
-import {isNameCompleted} from "../../utility/profileCompletion";
-import {getJwtInfo} from "../../shared/auth/jwt";
+import {fetchProfileByUserId, resetProfile, updateProfile} from "@store/profileSlice";
+import {isNameCompleted} from "@utility/profileCompletion";
+import {getJwtInfo} from "@shared/auth/jwt";
 import {
     clearTokens,
     setEmail,
@@ -29,20 +29,20 @@ import {
     setPhoneNumberConfirmed,
     setRole,
     setUserId
-} from "../../store/authSlice";
-import {DateInput, PhoneInput} from "../../components/FormFields";
-import {Gender} from "../../types/profile";
-import {PhoneVerificationModal} from "../../components/PhoneVerificationModal/PhoneVerificationModal";
+} from "@store/authSlice";
+import {DateInput, PhoneInput} from "@components/FormFields";
+import {Gender} from "@app-types/profile";
+import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
 import {
     isPhoneVerificationSessionV1,
     PHONE_VERIFICATION_SESSION_KEY,
     type PhoneVerificationSessionV1,
-} from "../../shared/auth/phoneVerificationSession";
-import {useLocalStorageJson} from "../../hooks/useLocalStorageJson";
-import {validatePhoneNumber} from "../../utility/validate";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {authApi} from "../../shared/api/auth/authApi";
-import {normalizeDate} from "../../utility/normalizeDate";
+} from "@shared/auth/phoneVerificationSession";
+import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
+import {validatePhoneNumber} from "@utility/validate";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {authApi} from "@api/auth/authApi";
+import {normalizeDate} from "@utility/normalizeDate";
 
 export const ProfileCompletionGate: FC = () => {
     const dispatch = useDispatch<AppDispatch>();

@@ -1,8 +1,8 @@
 import axios from "axios";
-import {clearTokens, setAccessToken, setEmail, setEmailConfirmed} from "../../store/authSlice.ts";
-import type {AppDispatch} from "../../store";
-import {store} from "../../store";
-import {withRateLimit, type RateLimitedResponse} from "../../utility/rateLimitHelper.ts";
+import {clearTokens, setAccessToken, setEmail, setEmailConfirmed} from "@store/authSlice.ts";
+import type {AppDispatch} from "@store";
+import {store} from "@store";
+import {withRateLimit, type RateLimitedResponse} from "@utility/rateLimitHelper.ts";
 
 export interface RegisterRequest {
     username: string;

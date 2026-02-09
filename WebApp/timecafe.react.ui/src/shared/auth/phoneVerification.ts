@@ -1,4 +1,4 @@
-import {getUserMessageFromUnknown} from "../api/errors/getUserMessageFromUnknown";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 
 export interface VerificationErrorResult {
     errorMessage: string;

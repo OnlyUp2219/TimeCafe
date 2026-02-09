@@ -1,13 +1,13 @@
 import {useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {authApi} from "../../shared/api/auth/authApi";
-import {normalizeUnknownError} from "../../shared/api/errors/normalize";
-import {httpClient} from "../../shared/api/httpClient";
-import {getJwtInfo} from "../../shared/auth/jwt";
-import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
+import type {RootState} from "@store";
+import {authApi} from "@api/auth/authApi";
+import {normalizeUnknownError} from "@api/errors/normalize";
+import {httpClient} from "@api/httpClient";
+import {getJwtInfo} from "@shared/auth/jwt";
+import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
 import {Body2, Button, Caption1, Field, Input, Subtitle2Stronger, Textarea, Title3} from "@fluentui/react-components";
-import {EmailInput, PasswordInput} from "../../components/FormFields";
+import {EmailInput, PasswordInput} from "@components/FormFields";
 
 const nowIso = () => new Date().toISOString();
 

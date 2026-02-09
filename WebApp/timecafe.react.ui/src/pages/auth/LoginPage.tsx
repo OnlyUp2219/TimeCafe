@@ -1,16 +1,16 @@
 import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
 import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput, PasswordInput} from "../../components/FormFields";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {EmailInput, PasswordInput} from "@components/FormFields";
 import {useDispatch} from "react-redux";
-import {authFormContainerClassName} from "../../layouts/authLayout";
-import {authApi} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
-import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "../../store/authSlice";
-import {getJwtInfo} from "../../shared/auth/jwt";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
-import {useExternalAuthLogin} from "../../hooks/useExternalAuthLogin";
+import {authFormContainerClassName} from "@layouts/authLayout";
+import {authApi} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
+import {getJwtInfo} from "@shared/auth/jwt";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
 
 export const LoginPage = () => {
     const navigate = useNavigate();

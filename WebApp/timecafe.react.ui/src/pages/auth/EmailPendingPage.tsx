@@ -1,11 +1,11 @@
 import {useMemo} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {EmailPendingCard} from "../../components/EmailPendingCard/EmailPendingCard";
+import type {RootState} from "@store";
+import {EmailPendingCard} from "@components/EmailPendingCard/EmailPendingCard";
 import {Body2, Title3} from "@fluentui/react-components";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
-import {authFormContainerClassName} from "../../layouts/authLayout";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {authFormContainerClassName} from "@layouts/authLayout";
 
 type LocationState = {
     mockLink?: string;

@@ -1,6 +1,6 @@
 import {httpClient} from "../httpClient";
 import {normalizeUnknownError} from "../errors/normalize";
-import type {Profile} from "../../../types/profile";
+import type {Profile} from "@app-types/profile";
 
 export class ProfileApi {
     static async getProfileByUserId(userId: string): Promise<Profile> {

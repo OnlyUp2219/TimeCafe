@@ -2,17 +2,17 @@ import {Navigate} from "react-router-dom";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "../../store";
-import {authApi} from "../../shared/api/auth/authApi";
+import type {RootState} from "@store";
+import {authApi} from "@api/auth/authApi";
 import {
     clearTokens,
     setAccessToken,
     setEmail,
     setRole,
     setUserId
-} from "../../store/authSlice";
-import {getJwtInfo} from "../../shared/auth/jwt";
-import {hydrateAuthFromCurrentUser} from "../../shared/auth/hydrateAuthFromCurrentUser";
+} from "@store/authSlice";
+import {getJwtInfo} from "@shared/auth/jwt";
+import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 
 interface PrivateRouteProps {
     children: JSX.Element;

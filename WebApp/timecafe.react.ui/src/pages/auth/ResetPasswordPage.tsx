@@ -13,13 +13,13 @@ import {Spinner} from '@fluentui/react-components';
 import {MailCheckmark20Filled} from '@fluentui/react-icons';
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput} from "../../components/FormFields";
-import {authFormContainerClassName} from "../../layouts/authLayout";
-import {authApi} from "../../shared/api/auth/authApi";
-import {MockCallbackLink} from "../../components/MockCallbackLink/MockCallbackLink";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {EmailInput} from "@components/FormFields";
+import {authFormContainerClassName} from "@layouts/authLayout";
+import {authApi} from "@api/auth/authApi";
+import {MockCallbackLink} from "@components/MockCallbackLink/MockCallbackLink";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();

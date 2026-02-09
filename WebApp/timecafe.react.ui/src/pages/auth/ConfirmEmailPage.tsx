@@ -2,10 +2,10 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {Spinner, Subtitle1} from "@fluentui/react-components";
 import {useDispatch} from "react-redux";
-import {authApi} from "../../shared/api/auth/authApi";
-import {setEmail, setEmailConfirmed} from "../../store/authSlice";
-import {authFormContainerClassName} from "../../layouts/authLayout";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
+import {authApi} from "@api/auth/authApi";
+import {setEmail, setEmailConfirmed} from "@store/authSlice";
+import {authFormContainerClassName} from "@layouts/authLayout";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 type ViewState =
     | {status: "loading"}

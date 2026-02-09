@@ -1,17 +1,17 @@
 import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
 import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
-import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
-import {authFormContainerClassName} from "../../layouts/authLayout";
-import {authApi} from "../../shared/api/auth/authApi";
-import {getUserMessageFromUnknown} from "../../shared/api/errors/getUserMessageFromUnknown";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {EmailInput, PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
+import {authFormContainerClassName} from "@layouts/authLayout";
+import {authApi} from "@api/auth/authApi";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {useDispatch} from "react-redux";
-import {setEmail, setEmailConfirmed} from "../../store/authSlice";
-import {normalizeUnknownError} from "../../shared/api/errors/normalize";
-import {isApiError} from "../../shared/api/errors/types";
-import {TooltipButton} from "../../components/TooltipButton/TooltipButton";
-import {useExternalAuthLogin} from "../../hooks/useExternalAuthLogin";
+import {setEmail, setEmailConfirmed} from "@store/authSlice";
+import {normalizeUnknownError} from "@api/errors/normalize";
+import {isApiError} from "@api/errors/types";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
