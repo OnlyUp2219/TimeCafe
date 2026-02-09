@@ -12,7 +12,7 @@ import {Add20Regular} from "@fluentui/react-icons";
 
 import type {ReactElement} from "react";
 
-import {DataTable} from "../DataTable/DataTable";
+import {DataTable} from "../DataTable";
 import {TooltipButton} from "../TooltipButton/TooltipButton";
 
 interface Transaction {
@@ -73,7 +73,7 @@ export const TransactionsSection = () => {
         },
         {
             id: "2",
-            icon: <Add20Regular />,
+            icon: <Add20Regular/>,
             title: "Пополнение баланса",
             sub: "Вчера, 18:10 • Stripe",
             amount: 2000,
@@ -86,11 +86,11 @@ export const TransactionsSection = () => {
         <Card className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between">
                 <Title1>История операций</Title1>
-                <TooltipButton appearance="subtle" size="small" tooltip="Фильтры (скоро)" label="Фильтры" />
+                <TooltipButton appearance="subtle" size="small" tooltip="Фильтры (скоро)" label="Фильтры"/>
             </div>
 
             <div className="overflow-hidden">
-                <DataTable items={transactions} columns={columns} getRowId={(item) => item.id} />
+                <DataTable items={transactions} columns={columns} getRowId={(item) => item.id}/>
             </div>
 
             <TooltipButton

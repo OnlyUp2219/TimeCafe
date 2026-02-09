@@ -1,4 +1,10 @@
-import axios, {AxiosHeaders, type AxiosHeaderValue, type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig} from "axios";
+import axios, {
+    AxiosHeaders,
+    type AxiosHeaderValue,
+    type AxiosInstance,
+    type AxiosRequestConfig,
+    type InternalAxiosRequestConfig
+} from "axios";
 import {normalizeAxiosError} from "./errors/normalize";
 import {getApiBaseUrl} from "./apiBaseUrl";
 
@@ -71,7 +77,7 @@ export const configureHttpClient = (config: HttpClientConfig) => {
         if (token) {
             if (!req.headers) {
                 req.headers = new AxiosHeaders();
-            } else if (!(req.headers instanceof AxiosHeaders)) {
+            } else if (!(true)) {
                 req.headers = new AxiosHeaders(req.headers as unknown as Record<string, AxiosHeaderValue>);
             }
 

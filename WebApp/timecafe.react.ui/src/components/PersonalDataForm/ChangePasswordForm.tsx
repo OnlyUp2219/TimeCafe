@@ -1,4 +1,4 @@
-import {useCallback, useState} from "react";
+import React, {useCallback, useState} from "react";
 import type {FC} from "react";
 import {
     Badge,
@@ -109,7 +109,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
             {showTitle && (
                 <Title2 block className="!flex items-center gap-2">
                     <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
-                        <LockClosedRegular className="size-5" />
+                        <LockClosedRegular className="size-5"/>
                     </Badge>
                     Смена пароля
                 </Title2>
@@ -131,7 +131,8 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                 </MessageBar>
             )}
 
-            <form onSubmit={handleSubmit} className={showTitle ? "flex flex-col gap-[12px] mt-[8px]" : "flex flex-col gap-[12px]"}>
+            <form onSubmit={handleSubmit}
+                  className={showTitle ? "flex flex-col gap-[12px] mt-[8px]" : "flex flex-col gap-[12px]"}>
                 <PasswordInput
                     value={currentPassword}
                     onChange={setCurrentPassword}

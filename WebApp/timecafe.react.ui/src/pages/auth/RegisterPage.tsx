@@ -1,5 +1,5 @@
 import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
-import {useState, useCallback} from "react";
+import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "../../components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "../../components/FormFields";
@@ -25,7 +25,12 @@ export const RegisterPage = () => {
     const [errors, setErrors] = useState({email: "", password: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [serverErrors, setServerErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; general?: string }>({});
+    const [serverErrors, setServerErrors] = useState<{
+        email?: string;
+        password?: string;
+        confirmPassword?: string;
+        general?: string
+    }>({});
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +71,7 @@ export const RegisterPage = () => {
 
                 if (code.startsWith("password") || code.includes("password")) {
                     appendError("password", msg);
-                    continue;
+
                 }
             }
 
@@ -99,8 +104,9 @@ export const RegisterPage = () => {
             {ToasterElement}
 
             {/* Hero Section - Left Side (Desktop Only) */}
-            <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
+            <div id="Left Side"
+                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
+                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
             </div>
 
             {/* Register Form */}
@@ -115,7 +121,7 @@ export const RegisterPage = () => {
 
                     <EmailInput
                         value={email}
-                            onChange={setEmailValue}
+                        onChange={setEmailValue}
                         disabled={isSubmitting}
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}
@@ -150,7 +156,7 @@ export const RegisterPage = () => {
                         type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                        icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
+                        icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Зарегистрироваться"
                         label="Зарегистрироваться"
                     />
@@ -169,7 +175,7 @@ export const RegisterPage = () => {
                             />
 
                             <TooltipButton
-                            
+
                                 appearance="secondary"
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}

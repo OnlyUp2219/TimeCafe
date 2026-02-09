@@ -59,7 +59,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
             setLoading(false);
         };
 
-        checkAuth();
+        void checkAuth();
     }, [dispatch, accessToken]);
 
     if (loading) return <Spinner size={"huge"}/>;

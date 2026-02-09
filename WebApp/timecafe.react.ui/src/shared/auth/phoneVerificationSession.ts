@@ -22,7 +22,7 @@ export const isPhoneVerificationSessionV1 = (value: unknown): value is PhoneVeri
     if (typeof open !== "boolean") return false;
 
     const mockToken = v.mockToken;
-    if (!(mockToken == null || typeof mockToken === "string")) return false;
+    return mockToken == null || typeof mockToken === "string";
 
-    return true;
+
 };
