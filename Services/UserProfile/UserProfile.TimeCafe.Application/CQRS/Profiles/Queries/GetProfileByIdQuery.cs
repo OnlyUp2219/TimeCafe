@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Application.Helpers;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
 public record GetProfileByIdQuery(string UserId) : IRequest<GetProfileByIdResult>;
@@ -45,7 +47,8 @@ public class GetProfileByIdQueryHandler(IUserRepositories repository) : IRequest
             if (profile == null)
                 return GetProfileByIdResult.ProfileNotFound();
 
-            return GetProfileByIdResult.GetSuccess(profile);
+            var responseProfile = ProfilePhotoUrlMapper.WithApiUrl(profile);
+            return GetProfileByIdResult.GetSuccess(responseProfile);
         }
         catch (Exception ex)
         {

@@ -7,7 +7,9 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
+        var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
+        profile.PhotoUrl = $"profiles/{userId}/photo";
+        await Context.SaveChangesAsync();
         var query = new GetProfileByIdQuery(userId.ToString());
         var handler = new GetProfileByIdQueryHandler(Repository);
 
@@ -21,6 +23,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         result.Profile!.UserId.Should().Be(userId);
         result.Profile.FirstName.Should().Be(ExistingUsers.User1FirstName);
         result.Profile.LastName.Should().Be(ExistingUsers.User1LastName);
+        result.Profile.PhotoUrl.Should().Be($"/userprofile/S3/image/{userId}");
     }
 
     [Fact]

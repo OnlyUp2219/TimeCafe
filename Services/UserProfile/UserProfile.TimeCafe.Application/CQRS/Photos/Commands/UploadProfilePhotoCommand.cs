@@ -1,3 +1,4 @@
+using UserProfile.TimeCafe.Application.Helpers;
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
@@ -99,13 +100,14 @@ public class UploadProfilePhotoCommandHandler(
 
                 var result = await _storage.UploadAsync(userId, uploadStream, request.ContentType, request.FileName, cancellationToken);
 
-                if (!result.Success || result.Key is null || result.Url is null || result.Size is null || result.ContentType is null)
+                if (!result.Success || result.Key is null || result.Size is null || result.ContentType is null)
                     return UploadProfilePhotoResult.Failed();
 
-                profile.PhotoUrl = result.Url;
+                profile.PhotoUrl = result.Key;
                 await _userRepository.UpdateProfileAsync(profile, cancellationToken);
 
-                return UploadProfilePhotoResult.Ok(result.Key, result.Url, result.Size.Value, result.ContentType);
+                var responseUrl = ProfilePhotoUrlMapper.BuildApiUrl(userId);
+                return UploadProfilePhotoResult.Ok(result.Key, responseUrl, result.Size.Value, result.ContentType);
             }
             finally
             {

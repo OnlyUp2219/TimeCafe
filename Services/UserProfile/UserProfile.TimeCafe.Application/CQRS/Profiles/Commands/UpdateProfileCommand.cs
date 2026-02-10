@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Application.Helpers;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 //TODO: rewrite dto
 public record UpdateProfileCommand(Profile User) : IRequest<UpdateProfileResult>;
@@ -60,6 +62,8 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
             if (existing == null)
                 return UpdateProfileResult.ProfileNotFound();
 
+            request.User.PhotoUrl = existing.PhotoUrl;
+
             if (existing.ProfileStatus == ProfileStatus.Banned)
             {
                 request.User.ProfileStatus = ProfileStatus.Banned;
@@ -79,7 +83,8 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
             if (updated == null)
                 return UpdateProfileResult.UpdateFailed();
 
-            return UpdateProfileResult.UpdateSuccess(updated);
+            var responseProfile = ProfilePhotoUrlMapper.WithApiUrl(updated);
+            return UpdateProfileResult.UpdateSuccess(responseProfile);
         }
         catch (Exception ex)
         {
