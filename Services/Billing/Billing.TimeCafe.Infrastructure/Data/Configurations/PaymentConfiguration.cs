@@ -51,7 +51,6 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .HasMaxLength(1000)
             .IsRequired(false);
 
-        // Индексы
         builder.HasIndex(p => p.UserId);
         builder.HasIndex(p => p.ExternalPaymentId);
         builder.HasIndex(p => p.Status);

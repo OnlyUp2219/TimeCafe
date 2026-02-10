@@ -32,11 +32,12 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
     }
 }
 
-public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper, IPublishEndpoint publishEndpoint) : IRequestHandler<EndVisitCommand, EndVisitResult>
+public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper, IPublishEndpoint publishEndpoint, ILogger logger) : IRequestHandler<EndVisitCommand, EndVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly ILogger _logger = logger;
 
     public async Task<EndVisitResult> Handle(EndVisitCommand request, CancellationToken cancellationToken)
     {
@@ -64,11 +65,10 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
             if (updated == null)
                 return EndVisitResult.EndFailed();
 
-            // Publish VisitCompletedEvent with timeout to avoid hanging
             try
             {
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter(TimeSpan.FromSeconds(5)); // 5 second timeout for publish
+                cts.CancelAfter(TimeSpan.FromSeconds(5));
 
                 await _publishEndpoint.Publish(new VisitCompletedEvent
                 {
@@ -78,10 +78,9 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
                     CompletedAt = exitTime
                 }, cts.Token);
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                // Log but don't fail the request - event publishing timeout is not critical
-                // The visit was updated successfully, message bus will retry
+                _logger.Warning(ex, "Operation was cancelled");
             }
 
             return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);

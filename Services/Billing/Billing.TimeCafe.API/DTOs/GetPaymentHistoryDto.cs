@@ -1,4 +1,4 @@
-namespace Billing.TimeCafe.API.Endpoints.Payments;
+namespace Billing.TimeCafe.API.DTOs;
 
 public record GetPaymentHistoryDto(
     [FromRoute] string UserId,

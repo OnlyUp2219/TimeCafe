@@ -54,7 +54,6 @@ public abstract class BaseCqrsTest : IDisposable
         return profile;
     }
 
-    // Перегрузка для совместимости со string
     protected async Task<Profile> SeedProfileAsync(string userIdStr, string firstName = "Test", string lastName = "User")
     {
         return await SeedProfileAsync(Guid.Parse(userIdStr), firstName, lastName);

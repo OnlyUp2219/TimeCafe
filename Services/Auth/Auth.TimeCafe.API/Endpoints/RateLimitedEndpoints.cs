@@ -5,7 +5,7 @@ public class RateLimitedEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/api/test-rate-limit", (
-            HttpContext context, 
+            HttpContext context,
             [FromServices] RateLimitConfig cfg) =>
         {
 
@@ -24,7 +24,7 @@ public class RateLimitedEndpoints : ICarterModule
         .WithDescription("Возвращает успешный ответ с текущим временем. Применяются лимиты OneRequestPerInterval и MaxRequestPerWindow");
 
         app.MapGet("/api/test-rate-limit2", (
-            HttpContext context, 
+            HttpContext context,
             [FromServices] RateLimitConfig cfg) =>
         {
             context.Response.Headers["X-Rate-Limit-Window"] = cfg.MinIntervalSeconds.ToString();

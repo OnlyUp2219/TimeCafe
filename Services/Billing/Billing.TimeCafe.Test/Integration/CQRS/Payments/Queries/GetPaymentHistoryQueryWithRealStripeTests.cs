@@ -205,11 +205,9 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         // Act & Assert
         var action = async () =>
         {
-            using (var scope = CreateScope())
-            {
-                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-                result = await sender.Send(new GetPaymentHistoryQuery("invalid-guid"));
-            }
+            using var scope = CreateScope();
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+            result = await sender.Send(new GetPaymentHistoryQuery("invalid-guid"));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();
@@ -221,11 +219,9 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         // Arrange & Act & Assert
         var action = async () =>
         {
-            using (var scope = CreateScope())
-            {
-                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-                await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 0, 10));
-            }
+            using var scope = CreateScope();
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+            await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 0, 10));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();
@@ -237,11 +233,9 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         // Arrange & Act & Assert
         var action = async () =>
         {
-            using (var scope = CreateScope())
-            {
-                var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-                await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 1, 0));
-            }
+            using var scope = CreateScope();
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+            await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 1, 0));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();

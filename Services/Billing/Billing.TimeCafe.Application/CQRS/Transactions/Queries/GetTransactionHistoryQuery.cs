@@ -1,4 +1,4 @@
-namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
+namespace Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 
 public record GetTransactionHistoryQuery(string UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
 

@@ -12,5 +12,6 @@ global using Microsoft.Extensions.Options;
 
 global using System.Reflection;
 
+global using UserProfile.TimeCafe.Application.Helpers;
 global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.Models;

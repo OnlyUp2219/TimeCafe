@@ -21,7 +21,6 @@ public class GetTotalPagesQueryValidator : AbstractValidator<GetTotalPagesQuery>
 {
     public GetTotalPagesQueryValidator()
     {
-        // Нет параметров для валидации
     }
 }
 

@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace BuildingBlocks.Authorization;
+namespace BuildingBlocks.Authorization.Filters;
 
 public class PermissionEndpointFilter : IEndpointFilter
 {

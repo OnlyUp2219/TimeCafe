@@ -1,4 +1,4 @@
-namespace TimeCafe.UI.Views;
+namespace TimeCafe.UI.Views.UserGridContentDialogs;
 
 public sealed partial class RefuseServiceContentDialog : Page
 {

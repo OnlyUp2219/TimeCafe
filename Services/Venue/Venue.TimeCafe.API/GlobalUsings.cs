@@ -1,9 +1,6 @@
+global using BuildingBlocks.Authorization;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
-
-global using BuildingBlocks.Authorization;
-
-global using Venue.TimeCafe.Application.DependencyInjection;
 
 global using Carter;
 
@@ -13,10 +10,9 @@ global using MediatR;
 
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
+global using Microsoft.OpenApi.Models;
 
 global using Scalar.AspNetCore;
-
-global using Microsoft.OpenApi.Models;
 
 global using Serilog;
 
@@ -35,6 +31,7 @@ global using Venue.TimeCafe.Application.CQRS.Themes.Commands;
 global using Venue.TimeCafe.Application.CQRS.Themes.Queries;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
 global using Venue.TimeCafe.Application.CQRS.Visits.Queries;
+global using Venue.TimeCafe.Application.DependencyInjection;
 global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure;
 global using Venue.TimeCafe.Infrastructure.Data;
