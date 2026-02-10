@@ -1,6 +1,7 @@
-using System.Security.Claims;
 using Auth.TimeCafe.API.DTOs;
 using Auth.TimeCafe.Application.CQRS.Account.Commands;
+
+using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 

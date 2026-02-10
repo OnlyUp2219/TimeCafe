@@ -1,32 +1,16 @@
-using Microsoft.Extensions.Configuration;
-
-using System.Text.Json;
-
-using UserProfile.TimeCafe.Domain.DTOs;
-
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 
-public class SightenginePhotoModerationService : IPhotoModerationService
+public class SightenginePhotoModerationService(
+    HttpClient httpClient,
+    IConfiguration configuration,
+    ILogger<SightenginePhotoModerationService> logger) : IPhotoModerationService
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<SightenginePhotoModerationService> _logger;
-    private readonly string _apiUser;
-    private readonly string _apiSecret;
-    private readonly string _apiUrl;
-    private readonly string _models;
-
-    public SightenginePhotoModerationService(
-        HttpClient httpClient,
-        IConfiguration configuration,
-        ILogger<SightenginePhotoModerationService> logger)
-    {
-        _httpClient = httpClient;
-        _logger = logger;
-        _apiUser = configuration["Sightengine:ApiUser"] ?? throw new ArgumentNullException("Sightengine:ApiUser");
-        _apiSecret = configuration["Sightengine:ApiSecret"] ?? throw new ArgumentNullException("Sightengine:ApiSecret");
-        _apiUrl = configuration["Sightengine:ApiUrl"] ?? "https://api.sightengine.com/1.0/check.json";
-        _models = configuration["Sightengine:Models"] ?? "nudity-2.1,wad,gore,offensive";
-    }
+    private readonly HttpClient _httpClient = httpClient;
+    private readonly ILogger<SightenginePhotoModerationService> _logger = logger;
+    private readonly string _apiUser = configuration["Sightengine:ApiUser"] ?? throw new InvalidOperationException("Configuration value 'Sightengine:ApiUser' is missing.");
+    private readonly string _apiSecret = configuration["Sightengine:ApiSecret"] ?? throw new InvalidOperationException("Configuration value 'Sightengine:ApiSecret' is missing.");
+    private readonly string _apiUrl = configuration["Sightengine:ApiUrl"] ?? throw new InvalidOperationException("Configuration value 'Sightengine:ApiUrl' is missing.");
+    private readonly string _models = configuration["Sightengine:Models"] ?? throw new InvalidOperationException("Configuration value 'Sightengine:Models' is missing.");
 
     public async Task<ModerationResult> ModeratePhotoAsync(Stream photoStream, CancellationToken cancellationToken = default)
     {
@@ -53,20 +37,20 @@ public class SightenginePhotoModerationService : IPhotoModerationService
             if (result == null)
             {
                 _logger.LogWarning("Не удалось десериализовать ответ от Sightengine");
-                return new ModerationResult(true, null, null); // По умолчанию пропускаем
+                return new ModerationResult(true, null, null);
             }
 
             var scores = new Dictionary<string, double>();
             var reasons = new List<string>();
 
-            // Проверка на обнажённость
+
             if (result.Nudity?.Raw > 0.5 || result.Nudity?.Partial > 0.5)
             {
                 scores["nudity"] = result.Nudity.Raw;
                 reasons.Add("Обнаружено нежелательное содержимое");
             }
 
-            // Проверка на оружие/алкоголь/наркотики
+
             if (result.Weapon > 0.5)
             {
                 scores["weapon"] = result.Weapon;
@@ -85,14 +69,12 @@ public class SightenginePhotoModerationService : IPhotoModerationService
                 reasons.Add("Обнаружены наркотики");
             }
 
-            // Проверка на насилие/gore
             if (result.Gore?.Prob > 0.5)
             {
                 scores["gore"] = result.Gore.Prob;
                 reasons.Add("Обнаружен жестокий контент");
             }
 
-            // Проверка на оскорбительные жесты
             if (result.Offensive?.Prob > 0.5)
             {
                 scores["offensive"] = result.Offensive.Prob;
@@ -109,35 +91,34 @@ public class SightenginePhotoModerationService : IPhotoModerationService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при модерации фото через Sightengine");
-            // В случае ошибки API разрешаем загрузку (fail-open), но можно изменить на fail-closed
             return new ModerationResult(true, null, null);
         }
     }
 
-    private class SightengineResponse
+    private sealed class SightengineResponse
     {
-        public NudityInfo? Nudity { get; set; }
-        public double Weapon { get; set; }
-        public double Alcohol { get; set; }
-        public double Drugs { get; set; }
-        public GoreInfo? Gore { get; set; }
-        public OffensiveInfo? Offensive { get; set; }
+        public NudityInfo? Nudity { get; set; } = null;
+        public double Weapon { get; set; } = 0;
+        public double Alcohol { get; set; } = 0;
+        public double Drugs { get; set; } = 0;
+        public GoreInfo? Gore { get; set; } = null;
+        public OffensiveInfo? Offensive { get; set; } = null;
     }
 
-    private class NudityInfo
+    private sealed class NudityInfo
     {
-        public double Raw { get; set; }
-        public double Partial { get; set; }
-        public double Safe { get; set; }
+        public double Raw { get; set; } = 0;
+        public double Partial { get; set; } = 0;
+        public double Safe { get; set; } = 0;
     }
 
-    private class GoreInfo
+    private sealed class GoreInfo
     {
-        public double Prob { get; set; }
+        public double Prob { get; set; } = 0;
     }
 
-    private class OffensiveInfo
+    private sealed class OffensiveInfo
     {
-        public double Prob { get; set; }
+        public double Prob { get; set; } = 0;
     }
 }

@@ -1,7 +1,9 @@
-using System.Security.Claims;
 using Auth.TimeCafe.API.DTOs;
 using Auth.TimeCafe.Domain.Models;
+
 using Microsoft.AspNetCore.Identity;
+
+using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 

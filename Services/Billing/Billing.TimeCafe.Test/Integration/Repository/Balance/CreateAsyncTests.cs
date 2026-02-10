@@ -1,6 +1,7 @@
-namespace Billing.TimeCafe.Test.Integration.Repository.Balance;
 
 using Billing.TimeCafe.Test.TestData;
+
+namespace Billing.TimeCafe.Test.Integration.Repository.Balance;
 
 public class CreateAsyncTests : BaseBalanceRepositoryTest
 {

@@ -38,8 +38,8 @@ public class StripePaymentClient : IStripePaymentClient
                     { "paymentId", request.PaymentId.ToString() },
                     { "userId", request.UserId.ToString() }
                 },
-                StatementDescriptorSuffix = "TimeCafe" 
-                };
+                StatementDescriptorSuffix = "TimeCafe"
+            };
 
             var service = new PaymentIntentService();
             var paymentIntent = await service.CreateAsync(options, null, ct);

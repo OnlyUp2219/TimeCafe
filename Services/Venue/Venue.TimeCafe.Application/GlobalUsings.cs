@@ -13,6 +13,8 @@ global using MediatR;
 
 global using Microsoft.Extensions.DependencyInjection;
 
+global using Serilog;
+
 global using System.Reflection;
 
 global using Venue.TimeCafe.Application.Contracts.Repositories;

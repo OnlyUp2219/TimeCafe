@@ -1,7 +1,6 @@
 global using Amazon.S3;
 
 global using BuildingBlocks.Authorization;
-
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 
@@ -14,9 +13,9 @@ global using MediatR;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Options;
+global using Microsoft.OpenApi.Models;
 
 global using Scalar.AspNetCore;
-global using Microsoft.OpenApi.Models;
 
 global using Serilog;
 

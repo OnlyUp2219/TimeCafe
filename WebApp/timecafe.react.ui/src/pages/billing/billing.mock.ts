@@ -58,7 +58,6 @@ export const mockBilling = {
 };
 
 export const mockWeeklyActivity: MockActivityPoint[] = [
-    // 7 точек: сегодня и 6 дней назад
     ...(() => {
         const today = new Date();
 

@@ -1,4 +1,4 @@
-namespace TimeCafe.UI.Views;
+namespace TimeCafe.UI.Views.CreateClientPages;
 
 public sealed partial class PhoneVerificationConfirm : Page
 {

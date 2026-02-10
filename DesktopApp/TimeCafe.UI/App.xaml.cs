@@ -10,6 +10,8 @@ using Serilog;
 
 using StackExchange.Redis;
 
+using TimeCafe.UI.Views.UserGridContentDialogs;
+
 
 namespace TimeCafe.UI;
 

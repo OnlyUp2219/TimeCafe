@@ -1,6 +1,7 @@
-namespace Billing.TimeCafe.API.Endpoints.Balance;
 
 using Billing.TimeCafe.API.DTOs;
+
+namespace Billing.TimeCafe.API.Endpoints.Balance;
 
 public class GetUserDebt : ICarterModule
 {

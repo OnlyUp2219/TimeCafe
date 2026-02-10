@@ -1,6 +1,7 @@
-namespace Billing.TimeCafe.Test.Integration;
 
 using Billing.TimeCafe.Test.Integration.Fakes;
+
+namespace Billing.TimeCafe.Test.Integration;
 
 public class IntegrationApiFactory : WebApplicationFactory<Program>
 {

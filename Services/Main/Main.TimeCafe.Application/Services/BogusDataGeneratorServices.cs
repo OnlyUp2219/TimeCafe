@@ -6,13 +6,16 @@ public class BogusDataGeneratorServices
     private readonly Faker<Client> _clientFaker;
     private readonly Faker<Tariff> _tariffFaker;
 
+    private const int MAN = 1;
+    private const int WOMAN = 2;
+
     public BogusDataGeneratorServices()
     {
         _clientFaker = new Faker<Client>("ru")
             .RuleFor(c => c.FirstName, f => f.Name.FirstName())
             .RuleFor(c => c.LastName, f => f.Name.LastName())
             .RuleFor(c => c.MiddleName, f => f.Name.FirstName())
-            .RuleFor(c => c.GenderId, f => f.Random.Number(1, 2)) // 1 - мужской, 2 - женский
+            .RuleFor(c => c.GenderId, f => f.Random.Number(MAN, WOMAN))
             .RuleFor(c => c.Email, f => f.Internet.Email())
             .RuleFor(c => c.BirthDate, f => DateOnly.FromDateTime(f.Date.Past(80, DateTime.Now.AddYears(-18))))
             .RuleFor(c => c.PhoneNumber, f => f.Phone.PhoneNumber("+375 (##) ### ####"))
