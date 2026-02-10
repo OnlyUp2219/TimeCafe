@@ -7,11 +7,10 @@ using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 
-public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptions photoOptions, ILogger<S3ProfilePhotoStorage> logger) : IProfilePhotoStorage
+public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, ILogger<S3ProfilePhotoStorage> logger) : IProfilePhotoStorage
 {
     private readonly IAmazonS3 _s3 = s3;
     private readonly S3Options _s3Options = s3Options;
-    private readonly PhotoOptions _photoOptions = photoOptions;
     private readonly ILogger<S3ProfilePhotoStorage> _logger = logger;
 
     public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
@@ -34,14 +33,7 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, PhotoOptio
             if (resp.HttpStatusCode != HttpStatusCode.OK)
                 return new PhotoUploadDto(false);
 
-            var url = _s3.GetPreSignedURL(new GetPreSignedUrlRequest
-            {
-                BucketName = _s3Options.BucketName,
-                Key = key,
-                Expires = DateTime.UtcNow.AddMinutes(_photoOptions.PresignedUrlExpirationMinutes)
-            });
-
-            return new PhotoUploadDto(true, key, url, data.Length, contentType);
+            return new PhotoUploadDto(true, key, null, data.Length, contentType);
         }
         catch (AmazonS3Exception)
         {

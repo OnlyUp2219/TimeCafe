@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Application.Helpers;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
 public record GetProfilesPageQuery(int PageNumber, int PageSize) : IRequest<GetProfilesPageResult>;
@@ -46,7 +48,8 @@ public class GetProfilesPageQueryHandler(IUserRepositories repositories) : IRequ
             var totalCount = await _repositories.GetTotalPageAsync(cancellationToken);
             var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
 
-            return GetProfilesPageResult.GetSuccess(nonNullProfiles, request.PageNumber, request.PageSize, totalCount);
+            var responseProfiles = ProfilePhotoUrlMapper.WithApiUrl(nonNullProfiles);
+            return GetProfilesPageResult.GetSuccess(responseProfiles, request.PageNumber, request.PageSize, totalCount);
         }
         catch (Exception ex)
         {

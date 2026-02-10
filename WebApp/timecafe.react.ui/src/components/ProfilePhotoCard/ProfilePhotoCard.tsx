@@ -1,6 +1,7 @@
 import {useEffect, useId, useRef, useState} from "react";
 import {Avatar, Button, Card, Spinner, Text, Title2} from "@fluentui/react-components";
 import {Delete24Regular, ImageAdd24Regular} from "@fluentui/react-icons";
+import {ProfileApi} from "@api/profile/profileApi";
 
 interface ProfilePhotoCardProps {
     displayName: string;
@@ -70,13 +71,38 @@ export function ProfilePhotoCard({
     }, []);
 
     useEffect(() => {
-        if (objectUrlRef.current) {
-            URL.revokeObjectURL(objectUrlRef.current);
-            objectUrlRef.current = null;
-        }
+        revokeObjectUrl();
         setSelectedFile(null);
-        setPhotoUrl(initialPhotoUrl);
-        onPhotoUrlChangeRef.current?.(initialPhotoUrl);
+
+        if (!initialPhotoUrl) {
+            setPhotoUrl(null);
+            onPhotoUrlChangeRef.current?.(null);
+            return;
+        }
+
+        if (initialPhotoUrl.startsWith("blob:") || initialPhotoUrl.startsWith("data:")) {
+            setPhotoUrl(initialPhotoUrl);
+            onPhotoUrlChangeRef.current?.(initialPhotoUrl);
+            return;
+        }
+
+        let isActive = true;
+        const loadPhoto = async () => {
+            try {
+                const blob = await ProfileApi.getProfilePhotoBlob(initialPhotoUrl);
+                if (!isActive) return;
+                setPhotoFromBlob(blob);
+            } catch {
+                if (!isActive) return;
+                clearPhoto();
+            }
+        };
+
+        void loadPhoto();
+
+        return () => {
+            isActive = false;
+        };
     }, [initialPhotoUrl]);
 
     const body = variant === "view" ? (

@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Application.Helpers;
+
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
 public record GetAllProfilesQuery() : IRequest<GetAllProfilesResult>;
@@ -35,7 +37,8 @@ public class GetAllProfilesQueryHandler(IUserRepositories userRepositories) : IR
         {
             var profiles = await _userRepositories.GetAllProfilesAsync(cancellationToken);
             var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
-            return GetAllProfilesResult.GetSuccess(nonNullProfiles);
+            var responseProfiles = ProfilePhotoUrlMapper.WithApiUrl(nonNullProfiles);
+            return GetAllProfilesResult.GetSuccess(responseProfiles);
         }
         catch (Exception ex)
         {

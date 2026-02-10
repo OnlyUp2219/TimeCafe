@@ -42,7 +42,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PhotoUploadDto(true, $"profiles/{userId}/photo", PhotoTestData.PhotoUrl, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
+            .ReturnsAsync(new PhotoUploadDto(true, $"profiles/{userId}/photo", null, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
 
         var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
@@ -54,13 +54,13 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         result.StatusCode.Should().Be(201);
         result.Message.Should().Be("Фото загружено");
         result.Key.Should().Be($"profiles/{userId}/photo");
-        result.Url.Should().Be(PhotoTestData.PhotoUrl);
+        result.Url.Should().Be($"/userprofile/S3/image/{userId}");
         result.Size.Should().Be(PhotoTestData.ValidPhotoSize);
         result.ContentType.Should().Be(PhotoTestData.JpegContentType);
 
         // Verify profile was updated
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
-        updatedProfile!.PhotoUrl.Should().Be(PhotoTestData.PhotoUrl);
+        updatedProfile!.PhotoUrl.Should().Be($"profiles/{userId}/photo");
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new PhotoUploadDto(true, "profiles/new-photo", PhotoTestData.NewPhotoUrl, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
+            .ReturnsAsync(new PhotoUploadDto(true, "profiles/new-photo", null, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
 
         var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
@@ -233,6 +233,6 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Assert
         result.Success.Should().BeTrue();
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
-        updatedProfile!.PhotoUrl.Should().Be(PhotoTestData.NewPhotoUrl);
+        updatedProfile!.PhotoUrl.Should().Be("profiles/new-photo");
     }
 }
