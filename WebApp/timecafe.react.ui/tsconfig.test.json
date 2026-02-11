@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "types": ["vitest/globals"],
+    "paths": {
+      "@components/*": ["components/*"],
+      "@pages/*": ["pages/*"],
+      "@shared/*": ["shared/*"],
+      "@store": ["store/index.ts"],
+      "@store/*": ["store/*"],
+      "@hooks/*": ["hooks/*"],
+      "@utility/*": ["utility/*"],
+      "@assets/*": ["assets/*"],
+      "@app-types/*": ["types/*"],
+      "@layouts/*": ["layouts/*"],
+      "@api/*": ["shared/api/*"],
+      "@legacy/*": ["legacy/*"],
+      "@tests/*": ["../tests/*"]
+    }
+  },
+  "include": ["src", "tests"]
+}
