@@ -14,7 +14,7 @@ import {useDispatch} from "react-redux";
 import type {AppDispatch} from "@store";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "@store/authSlice.ts";
-import {ConfirmPasswordInput, PasswordInput} from "../FormFields";
+import {ConfirmPasswordInput, PasswordInput} from "@components/FormFields";
 import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 

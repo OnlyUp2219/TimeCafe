@@ -3,6 +3,7 @@
   "compilerOptions": {
     "types": ["vitest/globals"],
     "paths": {
+      "@app/*": ["*"],
       "@components/*": ["components/*"],
       "@pages/*": ["pages/*"],
       "@shared/*": ["shared/*"],

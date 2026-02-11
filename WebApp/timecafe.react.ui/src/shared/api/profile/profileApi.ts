@@ -1,5 +1,5 @@
-import {httpClient} from "../httpClient";
-import {normalizeUnknownError} from "../errors/normalize";
+import {httpClient} from "@api/httpClient";
+import {normalizeUnknownError} from "@api/errors/normalize";
 import type {Profile} from "@app-types/profile";
 
 export class ProfileApi {

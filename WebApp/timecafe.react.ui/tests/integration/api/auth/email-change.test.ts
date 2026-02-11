@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, registerAndConfirm, parseCallbackParams, withAuthHeader} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, registerAndConfirm, parseCallbackParams, withAuthHeader} from "@tests/integration/api/helpers";
 
 describe("/auth/email/change", () => {
     it("changes email with confirm flow", async () => {

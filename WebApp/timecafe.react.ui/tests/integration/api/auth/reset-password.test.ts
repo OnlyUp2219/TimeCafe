@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, registerAndConfirm, parseCallbackParams} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, registerAndConfirm, parseCallbackParams} from "@tests/integration/api/helpers";
 
 describe("/auth/resetPassword", () => {
     it("resets password and allows login", async () => {

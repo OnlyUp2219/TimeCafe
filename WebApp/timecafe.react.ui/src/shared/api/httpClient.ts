@@ -5,8 +5,8 @@ import axios, {
     type AxiosRequestConfig,
     type InternalAxiosRequestConfig
 } from "axios";
-import {normalizeAxiosError} from "./errors/normalize";
-import {getApiBaseUrl} from "./apiBaseUrl";
+import {normalizeAxiosError} from "@api/errors/normalize";
+import {getApiBaseUrl} from "@api/apiBaseUrl";
 
 type GetAccessToken = () => string | null;
 type SetAccessToken = (token: string | null) => void;

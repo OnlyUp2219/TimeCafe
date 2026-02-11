@@ -2,7 +2,7 @@ import {Button, Card, Input, Title3} from "@fluentui/react-components";
 
 import {Money20Regular, Add20Regular} from "@fluentui/react-icons";
 
-import {TooltipButton} from "../TooltipButton/TooltipButton";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 type TopUpCardProps = {
     draftAmountText: string;

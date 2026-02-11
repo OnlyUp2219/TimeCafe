@@ -2,7 +2,7 @@ import axios from "axios";
 import {randomUUID} from "node:crypto";
 import {mkdirSync, existsSync, appendFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {getApiBaseUrl, getMockEmailEnabled, getMockSmsEnabled, getOptionalEnvValue} from "./testEnv";
+import {getApiBaseUrl, getMockEmailEnabled, getMockSmsEnabled, getOptionalEnvValue} from "@tests/integration/api/testEnv";
 
 export const apiBaseUrl = getApiBaseUrl();
 

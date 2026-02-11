@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {canUseS3, createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, parseCallbackParams, registerUser} from "../helpers";
+import {canUseS3, createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, parseCallbackParams, registerUser} from "@tests/integration/api/helpers";
 
 describe("/userprofile/S3/image", () => {
     it("returns 401 when unauthorized", async () => {

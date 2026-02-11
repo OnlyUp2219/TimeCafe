@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, registerUser} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, registerUser} from "@tests/integration/api/helpers";
 
 describe("/auth/forgot-password-link", () => {
     it("returns callbackUrl when user exists", async () => {

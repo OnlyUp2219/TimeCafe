@@ -1,11 +1,11 @@
 import {createElement, useState, type FC} from "react";
 import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {Edit20Filled, MailRegular} from "@fluentui/react-icons";
-import {EmailVerificationModal} from "../EmailVerificationModal/EmailVerificationModal";
+import {EmailVerificationModal} from "@components/EmailVerificationModal/EmailVerificationModal";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "@store";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
-import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
+import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
 
 export interface EmailFormCardProps {
     loading?: boolean;

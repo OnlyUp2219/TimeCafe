@@ -4,11 +4,11 @@ import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/
 import {useSelector} from 'react-redux';
 import type {RootState} from '@store';
 import {authApi} from "@api/auth/authApi";
-import {useProgressToast} from '../ToastProgress/ToastProgress';
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {useRateLimitedRequest} from '@hooks/useRateLimitedRequest';
-import {MockCallbackLink} from '../MockCallbackLink/MockCallbackLink';
+import {MockCallbackLink} from "@components/MockCallbackLink/MockCallbackLink";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {TooltipButton} from "../TooltipButton/TooltipButton";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 interface EmailPendingCardProps {
     showResend?: boolean

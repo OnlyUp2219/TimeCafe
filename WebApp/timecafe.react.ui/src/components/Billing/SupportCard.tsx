@@ -2,7 +2,7 @@ import {Body2, Caption1, Card, Subtitle2Stronger} from "@fluentui/react-componen
 
 import {ChatRegular, CallRegular} from "@fluentui/react-icons";
 
-import {TooltipButton} from "../TooltipButton/TooltipButton";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 type SupportCardProps = {
     telegramUrl: string;

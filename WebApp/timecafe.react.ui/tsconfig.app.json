@@ -10,6 +10,7 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "src",
     "paths": {
+      "@app/*": ["*"],
       "@components/*": ["components/*"],
       "@pages/*": ["pages/*"],
       "@shared/*": ["shared/*"],

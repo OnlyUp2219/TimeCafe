@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, loginAndGetRefreshToken, registerAndConfirm, buildRefreshCookieHeader} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, loginAndGetRefreshToken, registerAndConfirm, buildRefreshCookieHeader} from "@tests/integration/api/helpers";
 
 describe("/auth/logout", () => {
     it("returns revoked false when cookie missing", async () => {

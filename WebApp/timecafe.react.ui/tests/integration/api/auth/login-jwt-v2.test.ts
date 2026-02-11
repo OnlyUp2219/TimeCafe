@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, registerAndConfirm, registerUser} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, registerAndConfirm, registerUser} from "@tests/integration/api/helpers";
 
 describe("/auth/login-jwt-v2", () => {
     it("returns emailConfirmed false when email not confirmed", async () => {
