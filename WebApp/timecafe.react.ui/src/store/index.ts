@@ -1,11 +1,11 @@
 import {combineReducers, configureStore} from "@reduxjs/toolkit";
 import {persistReducer, persistStore} from "redux-persist";
-import uiSlice from "./uiSlice.ts";
+import uiSlice from "@store/uiSlice";
 import storage from "redux-persist/lib/storage";
-import authSlice from "./authSlice.ts";
-import profileSlice from "./profileSlice";
-import visitSlice from "./visitSlice";
-import billingSlice from "./billingSlice";
+import authSlice from "@store/authSlice";
+import profileSlice from "@store/profileSlice";
+import visitSlice from "@store/visitSlice";
+import billingSlice from "@store/billingSlice";
 
 const rootReducer = combineReducers({
     ui: uiSlice,

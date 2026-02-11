@@ -7,7 +7,7 @@ import type {RootState} from "@store";
 import type {Tariff} from "@app-types/tariff";
 import {setBalanceRub, setDebtRub} from "@store/billingSlice";
 
-import {mockWeeklyActivity} from "./billing.mock";
+import {mockWeeklyActivity} from "@pages/billing/billing.mock";
 
 import "./billing.css";
 

@@ -1,6 +1,6 @@
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
-import App from "./App"
+import App from "@app/App"
 import {FluentProvider, webLightTheme} from '@fluentui/react-components'
 import {Provider} from "react-redux";
 import {persistor, store} from "@store";

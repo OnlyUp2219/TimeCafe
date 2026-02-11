@@ -18,7 +18,7 @@ import {
     Tooltip,
 } from "@fluentui/react-components";
 import {Delete20Regular, Edit20Filled, PhoneRegular} from "@fluentui/react-icons";
-import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
+import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
 import {
     isPhoneVerificationSessionV1,
     PHONE_VERIFICATION_SESSION_KEY,
@@ -31,7 +31,7 @@ import {authApi} from "@api/auth/authApi";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
-import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "./personalDataStatus";
+import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
 
 export interface PhoneFormCardProps {
     loading?: boolean;

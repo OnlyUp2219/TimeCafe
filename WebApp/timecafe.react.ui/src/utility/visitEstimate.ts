@@ -1,5 +1,5 @@
 import type {BillingType} from "@app-types/tariff";
-import {formatMoneyByN} from "./formatMoney";
+import {formatMoneyByN} from "@utility/formatMoney";
 
 export type VisitEstimate = {
     total: number;

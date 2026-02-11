@@ -1,5 +1,5 @@
-import {httpClient, rawHttpClient} from "../httpClient";
-import {normalizeUnknownError} from "../errors/normalize";
+import {httpClient, rawHttpClient} from "@api/httpClient";
+import {normalizeUnknownError} from "@api/errors/normalize";
 import type {RateLimitedResponse} from "@utility/rateLimitHelper.ts";
 import {withRateLimit} from "@utility/rateLimitHelper.ts";
 

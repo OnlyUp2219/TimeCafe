@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from './index';
+import type {RootState} from "@store";
 import { Gender, ProfileStatus, type Profile } from '@app-types/profile';
 import { ProfileApi } from '@api/profile/profileApi';
-import { clearTokens } from './authSlice';
+import {clearTokens} from "@store/authSlice";
 
 export interface ProfileState {
   data: Profile | null;

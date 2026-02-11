@@ -2,7 +2,7 @@ import {beforeAll} from "vitest";
 import axios from "axios";
 import {existsSync, mkdirSync, writeFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {apiBaseUrl} from "./helpers";
+import {apiBaseUrl} from "@tests/integration/api/helpers";
 
 beforeAll(async () => {
     const artifactsDir = resolve(process.cwd(), "tests", ".artifacts");

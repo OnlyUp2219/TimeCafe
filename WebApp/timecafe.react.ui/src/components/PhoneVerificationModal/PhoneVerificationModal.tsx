@@ -26,7 +26,7 @@ import {
 import {validatePhoneNumber} from "@utility/validate";
 import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest.ts";
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
-import {PhoneInput} from "../FormFields";
+import {PhoneInput} from "@components/FormFields";
 
 
 interface PhoneVerificationModalProps {

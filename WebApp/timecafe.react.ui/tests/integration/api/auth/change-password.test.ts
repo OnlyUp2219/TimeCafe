@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, registerAndConfirm, withAuthHeader} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, registerAndConfirm, withAuthHeader} from "@tests/integration/api/helpers";
 
 describe("/auth/account/change-password", () => {
     it("returns 401 when unauthorized", async () => {

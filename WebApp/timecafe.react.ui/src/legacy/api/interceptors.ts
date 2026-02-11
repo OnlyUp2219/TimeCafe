@@ -1,5 +1,5 @@
 import axios from "axios";
-import {refreshAccessToken} from "./auth.ts";
+import {refreshAccessToken} from "@legacy/api/auth";
 import {store} from "@store";
 import type {AppDispatch} from "@store";
 

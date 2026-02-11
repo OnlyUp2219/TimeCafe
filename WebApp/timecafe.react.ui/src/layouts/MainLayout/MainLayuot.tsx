@@ -3,10 +3,10 @@ import {Sidebar} from "@components/Sidebar/Sidebar";
 import {Footer} from "@components/Footer/Footer";
 import {Outlet} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {toggleSidebar} from "@store/uiSlice.ts";
+import {toggleSidebar} from "@store/uiSlice";
 import type {RootState} from "@store";
 import type {FC} from "react";
-import {ProfileCompletionGate} from "./ProfileCompletionGate";
+import {ProfileCompletionGate} from "@layouts/MainLayout/ProfileCompletionGate";
 
 export const MainLayout: FC = () => {
     const dispatch = useDispatch();

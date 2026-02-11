@@ -12,8 +12,8 @@ import {Add20Regular} from "@fluentui/react-icons";
 
 import type {ReactElement} from "react";
 
-import {DataTable} from "../DataTable";
-import {TooltipButton} from "../TooltipButton/TooltipButton";
+import {DataTable} from "@components/DataTable";
+import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 interface Transaction {
     id: string;

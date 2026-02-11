@@ -18,8 +18,8 @@ import {
 } from "@fluentui/react-components";
 import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Regular, type FluentIcon} from "@fluentui/react-icons";
 import type {Gender, Profile} from "@app-types/profile";
-import {PhoneVerificationModal} from "../PhoneVerificationModal/PhoneVerificationModal.tsx";
-import {DateInput, EmailInput, PhoneInput} from "../FormFields";
+import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
+import {DateInput, EmailInput, PhoneInput} from "@components/FormFields";
 import {useDispatch, useSelector} from "react-redux";
 import type {AppDispatch, RootState} from "@store";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";

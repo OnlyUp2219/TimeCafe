@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, registerUser} from "../helpers";
+import {createPassword, createTestClient, createTestEmail, registerUser} from "@tests/integration/api/helpers";
 
 describe("/auth/registerWithUsername", () => {
     it("returns callbackUrl for valid data", async () => {
