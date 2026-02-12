@@ -4,13 +4,13 @@ html,
 body,
 #root {
   width: 100%;
+  min-width: 320px;
   margin: 0;
   padding: 0;
 }
 
-body,
-#root {
-  overflow-x: hidden;
+body {
+  overflow-x: auto;
 }
 
 :root {
