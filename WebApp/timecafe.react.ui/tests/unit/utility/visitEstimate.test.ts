@@ -6,7 +6,7 @@ vi.mock("@utility/formatMoney", () => ({
 
 import {calcVisitEstimate} from "@utility/visitEstimate";
 import {formatMoneyByN} from "@utility/formatMoney";
-import type {BillingType} from "@app-types/tariff";
+import {BillingType} from "@app-types/tariff";
 
 describe("calcVisitEstimate", () => {
     beforeEach(() => {
@@ -14,7 +14,7 @@ describe("calcVisitEstimate", () => {
     });
 
     it("calculates per-minute estimates", () => {
-        const result = calcVisitEstimate(15.9, "PerMinute" as BillingType, 2);
+        const result = calcVisitEstimate(15.9, BillingType.PerMinute, 2);
 
         expect(result.total).toBe(30);
         expect(result.chargedMinutes).toBe(15);
@@ -23,7 +23,7 @@ describe("calcVisitEstimate", () => {
 
     it("calculates hourly estimates", () => {
         vi.mocked(formatMoneyByN).mockReturnValue("90 BYN");
-        const result = calcVisitEstimate(61, "Hourly" as BillingType, 1.5);
+        const result = calcVisitEstimate(61, BillingType.Hourly, 1.5);
 
         expect(result.total).toBe(180);
         expect(result.chargedHours).toBe(2);
@@ -32,7 +32,7 @@ describe("calcVisitEstimate", () => {
 
     it("guards against negative price", () => {
         vi.mocked(formatMoneyByN).mockReturnValue("0 BYN");
-        const result = calcVisitEstimate(5, "PerMinute" as BillingType, -1);
+        const result = calcVisitEstimate(5, BillingType.PerMinute, -1);
 
         expect(result.total).toBe(0);
         expect(result.chargedMinutes).toBe(5);

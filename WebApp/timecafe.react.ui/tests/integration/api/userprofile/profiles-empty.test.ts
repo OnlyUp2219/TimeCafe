@@ -1,5 +1,5 @@
 import {describe, it, expect} from "vitest";
-import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, registerAndConfirm, parseCallbackParams, registerUser} from "@tests/integration/api/helpers";
+import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, parseCallbackParams, registerUser} from "@tests/integration/api/helpers";
 
 describe("/userprofile/profiles/empty", () => {
     it("returns 401 when unauthorized", async () => {

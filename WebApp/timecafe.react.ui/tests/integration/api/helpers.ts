@@ -95,7 +95,7 @@ export const loginAndGetRefreshToken = async (client: ReturnType<typeof getAxios
     return {loginRes, refreshToken};
 };
 
-export const withAuthHeader = (client: ReturnType<typeof getAxiosClientWithRateLimitKey>, token: string) => {
+export const withAuthHeader = (_client: ReturnType<typeof getAxiosClientWithRateLimitKey>, token: string) => {
     const headers = token ? {Authorization: `Bearer ${token}`} : undefined;
     return {headers};
 };
