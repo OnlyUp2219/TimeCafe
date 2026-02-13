@@ -4,7 +4,7 @@ public class GetTariffById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tariffs/{tariffId}", async (
+        app.MapGet("/tariffs/{TariffId}", async (
             [FromServices] ISender sender,
             [AsParameters] GetTariffByIdDto dto) =>
         {
