@@ -1,7 +1,14 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
 import type {Tariff} from "@app-types/tariff";
+import {VisitStatus, type Visit} from "@app-types/visit.ts";
 
-export type VisitStatus = "idle" | "active" | "finished";
+export const VisitUiStatus = {
+    Idle: 0,
+    Active: VisitStatus.Active,
+    Completed: VisitStatus.Completed,
+} as const;
+
+export type VisitUiStatus = (typeof VisitUiStatus)[keyof typeof VisitUiStatus];
 
 export type ActiveVisit = {
     startedAtMs: number;
@@ -10,14 +17,16 @@ export type ActiveVisit = {
 };
 
 type VisitState = {
+    data: Visit | null;
     selectedTariffId: string | null;
-    status: VisitStatus;
+    status: VisitUiStatus;
     activeVisit: ActiveVisit | null;
 };
 
 export const initialVisitState: VisitState = {
+    data: null,
     selectedTariffId: "standard",
-    status: "idle",
+    status: VisitUiStatus.Idle,
     activeVisit: null,
 };
 
@@ -37,7 +46,7 @@ const visitSlice = createSlice({
             state.selectedTariffId = null;
         },
         startVisit: (state, action: PayloadAction<StartVisitPayload>) => {
-            state.status = "active";
+            state.status = VisitUiStatus.Active;
             state.activeVisit = {
                 startedAtMs: Date.now(),
                 plannedMinutes: action.payload.plannedMinutes,
@@ -46,11 +55,11 @@ const visitSlice = createSlice({
             state.selectedTariffId = action.payload.tariff.tariffId;
         },
         finishVisit: (state) => {
-            state.status = "finished";
+            state.status = VisitUiStatus.Completed;
             state.activeVisit = null;
         },
         resetVisit: (state) => {
-            state.status = "idle";
+            state.status = VisitUiStatus.Idle;
             state.activeVisit = null;
         },
     },

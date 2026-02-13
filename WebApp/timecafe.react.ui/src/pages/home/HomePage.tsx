@@ -29,6 +29,7 @@ import surf from "@assets/sssurf.svg";
 import {formatMoneyByN} from "@utility/formatMoney";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {calcVisitEstimate} from "@utility/visitEstimate";
+import {VisitUiStatus} from "@store/visitSlice";
 
 export const HomePage = () => {
     const navigate = useNavigate();
@@ -43,13 +44,13 @@ export const HomePage = () => {
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
-        if (visitStatus !== "active" || !activeVisit) return;
+        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return;
         const id = window.setInterval(() => setNow(Date.now()), 1000);
         return () => window.clearInterval(id);
     }, [activeVisit, visitStatus]);
 
     const activeElapsedSeconds = useMemo(() => {
-        if (visitStatus !== "active" || !activeVisit) return 0;
+        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return 0;
         return Math.max(0, Math.floor((now - activeVisit.startedAtMs) / 1000));
     }, [activeVisit, now, visitStatus]);
 
@@ -59,7 +60,7 @@ export const HomePage = () => {
     );
 
     const activeEstimate = useMemo(() => {
-        if (visitStatus !== "active" || !activeVisit) return null;
+        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return null;
         return calcVisitEstimate(
             activeElapsedMinutes,
             activeVisit.tariff.billingType,
@@ -203,8 +204,8 @@ export const HomePage = () => {
                                         <Clock20Regular/>
                                         <Subtitle2Stronger>Визит</Subtitle2Stronger>
                                     </div>
-                                    <Tag size="small" appearance={visitStatus === "active" ? "brand" : "outline"}>
-                                        {visitStatus === "active" ? "Активен" : "Нет визита"}
+                                    <Tag size="small" appearance={visitStatus === VisitUiStatus.Active ? "brand" : "outline"}>
+                                        {visitStatus === VisitUiStatus.Active ? "Активен" : "Нет визита"}
                                     </Tag>
                                 </div>
                                 <Divider className="divider grow-0"/>
@@ -214,7 +215,7 @@ export const HomePage = () => {
                                 <div className="flex flex-col gap-1">
                                     <Caption1>Длительность</Caption1>
                                     <Title3>
-                                        {visitStatus === "active" && activeVisit
+                                        {visitStatus === VisitUiStatus.Active && activeVisit
                                             ? formatDurationSeconds(activeElapsedSeconds)
                                             : demo.visitDuration}
                                     </Title3>
@@ -222,7 +223,7 @@ export const HomePage = () => {
                                 <div className="flex flex-col gap-1 text-right">
                                     <Caption1>Оценка</Caption1>
                                     <Title3>
-                                        {visitStatus === "active" && activeEstimate
+                                        {visitStatus === VisitUiStatus.Active && activeEstimate
                                             ? formatMoneyByN(activeEstimate.total)
                                             : demo.visitEstimate}
                                     </Title3>
@@ -230,24 +231,24 @@ export const HomePage = () => {
                             </div>
 
                             <Caption1>
-                                {visitStatus === "active" && activeVisit
+                                {visitStatus === VisitUiStatus.Active && activeVisit
                                     ? "Визит идёт"
                                     : "Нет активного визита"}
                             </Caption1>
 
                             <div className="flex flex-col gap-2 lg:flex-row">
                                 <Tooltip
-                                    content={visitStatus === "active" ? "Перейти к активному визиту" : "Начать визит"}
+                                    content={visitStatus === VisitUiStatus.Active ? "Перейти к активному визиту" : "Начать визит"}
                                     relationship="label"
                                 >
                                     <Button
                                         appearance="primary"
                                         onClick={() =>
-                                            navigate(visitStatus === "active" ? "/visit/active" : "/visit/start")
+                                            navigate(visitStatus === VisitUiStatus.Active ? "/visit/active" : "/visit/start")
                                         }
                                     >
                                         <Text truncate wrap={false}>
-                                            {visitStatus === "active" ? "Открыть" : "Начать"}
+                                            {visitStatus === VisitUiStatus.Active ? "Открыть" : "Начать"}
                                         </Text>
                                     </Button>
                                 </Tooltip>

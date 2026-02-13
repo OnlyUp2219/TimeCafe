@@ -13,7 +13,7 @@ import {
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
-import type {Tariff} from "@app-types/tariff";
+import {BillingType as BillingTypeEnum, type Tariff} from "@app-types/tariff";
 import {formatMoneyByN} from "@utility/formatMoney";
 
 type Props = {
@@ -31,9 +31,9 @@ export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
         return tokens.colorBrandBackground2;
     }, [tariff.accent]);
 
-    const rateLabel = tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный";
-    const unitLabel = tariff.billingType === "Hourly" ? "/ час" : "/ мин";
-    const rateValue = tariff.billingType === "Hourly" ? tariff.pricePerMinute * 60 : tariff.pricePerMinute;
+    const rateLabel = tariff.billingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный";
+    const unitLabel = tariff.billingType === BillingTypeEnum.Hourly ? "/ час" : "/ мин";
+    const rateValue = tariff.billingType === BillingTypeEnum.Hourly ? tariff.pricePerMinute * 60 : tariff.pricePerMinute;
 
 
     return (
