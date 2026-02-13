@@ -1,4 +1,9 @@
-export type BillingType = "Hourly" | "PerMinute";
+export const BillingType = {
+    Hourly: 1,
+    PerMinute: 2,
+} as const;
+
+export type BillingType = (typeof BillingType)[keyof typeof BillingType];
 
 export type Tariff = {
     tariffId: string;

@@ -1,4 +1,4 @@
-import type {BillingType} from "@app-types/tariff";
+import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
 import {formatMoneyByN} from "@utility/formatMoney";
 
 export type VisitEstimate = {
@@ -12,7 +12,7 @@ export const calcVisitEstimate = (elapsedMinutes: number, billingType: BillingTy
     const minutes = Math.max(1, Math.floor(elapsedMinutes));
     const safePricePerMinute = Math.max(0, pricePerMinute);
 
-    if (billingType === "PerMinute") {
+    if (billingType === BillingTypeEnum.PerMinute) {
         return {
             total: minutes * safePricePerMinute,
             chargedMinutes: minutes,

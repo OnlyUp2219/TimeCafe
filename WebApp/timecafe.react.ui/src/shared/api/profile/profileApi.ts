@@ -2,40 +2,66 @@ import {httpClient} from "@api/httpClient";
 import {normalizeUnknownError} from "@api/errors/normalize";
 import type {Profile} from "@app-types/profile";
 
+export interface UpdateProfileRequest {
+    userId: string;
+    firstName: string;
+    lastName: string;
+    middleName?: string | null;
+    photoUrl?: string | null;
+    birthDate?: string | null;
+    gender: number;
+}
+
+export interface UpdateProfileResponse {
+    message: string;
+    profile: Profile;
+}
+
+export interface CreateEmptyProfileResponse {
+    message: string;
+}
+
+export interface UploadProfilePhotoResponse {
+    key: string;
+    url: string;
+    size: number;
+    contentType: string;
+}
+
 export class ProfileApi {
     static async getProfileByUserId(userId: string): Promise<Profile> {
-        const res = await httpClient.get<Profile>(`/userprofile/profiles/${userId}`);
-        return res.data;
+        try {
+            const res = await httpClient.get<Profile>(`/userprofile/profiles/${userId}`);
+            return res.data;
+        } catch (e) {
+            throw normalizeUnknownError(e);
+        }
     }
 
-    static async createEmptyProfile(userId: string): Promise<void> {
-        await httpClient.post(`/userprofile/profiles/empty/${userId}`);
+    static async createEmptyProfile(userId: string): Promise<CreateEmptyProfileResponse> {
+        try {
+            const res = await httpClient.post<CreateEmptyProfileResponse>(`/userprofile/profiles/empty/${userId}`);
+            return res.data;
+        } catch (e) {
+            throw normalizeUnknownError(e);
+        }
     }
 
-    static async updateProfile(profile: {
-        userId: string;
-        firstName: string;
-        lastName: string;
-        middleName?: string | null;
-        photoUrl?: string | null;
-        birthDate?: string | null;
-        gender: number;
-    }): Promise<Profile> {
-        const res = await httpClient.put<{ message: string; profile: Profile }>("/userprofile/profiles", profile);
-        return res.data.profile;
+    static async updateProfile(profile: UpdateProfileRequest): Promise<UpdateProfileResponse> {
+        try {
+            const res = await httpClient.put<UpdateProfileResponse>("/userprofile/profiles", profile);
+            return res.data;
+        } catch (e) {
+            throw normalizeUnknownError(e);
+        }
     }
 
-    static async uploadProfilePhoto(userId: string, file: File): Promise<{
-        key: string;
-        url: string;
-        size: number;
-        contentType: string;
-    }> {
+    static async uploadProfilePhoto(userId: string, file: File): Promise<UploadProfilePhotoResponse> {
         try {
             if (!userId) throw new Error("Не найден userId пользователя");
             const formData = new FormData();
             formData.append("file", file, file.name);
-            const res = await httpClient.post<{ key: string; url: string; size: number; contentType: string }>(
+            const res = await httpClient.post<UploadProfilePhotoResponse>(
                 `/userprofile/S3/image/${userId}`,
                 formData,
                 {
