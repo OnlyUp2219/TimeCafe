@@ -1,4 +1,4 @@
-import type {ApiError} from "@types";
+import type {ApiError, ApiErrorItem} from "@api/errors/types";
 
 export const getAuthErrorMessageByStatus = (statusCode: number): string | null => {
     if (statusCode === 401) return "Сессия истекла. Войдите снова.";
@@ -12,8 +12,8 @@ export const getUserMessage = (error: ApiError): string => {
 
     if (error.errors && error.errors.length) {
         const msg = error.errors
-            .map(e => e.message)
-            .map(s => s.trim())
+            .map((e: ApiErrorItem) => e.message)
+            .map((s: string) => s.trim())
             .filter(Boolean)
             .join(" ");
         if (msg) return msg;
