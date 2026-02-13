@@ -1,58 +1,27 @@
-import {
-    Button,
-    Caption1,
-    Card,
-    Divider,
-    Field,
-    Input,
-    Tag,
-    Body1,
-    Body2,
-    Text,
-    Tooltip,
-    Title2,
-    Title3,
-} from "@fluentui/react-components";
-import {
-    Carousel,
-    CarouselCard,
-    CarouselNav,
-    CarouselNavButton,
-    CarouselNavContainer,
-    CarouselSlider,
-    CarouselViewport,
-} from "@fluentui/react-components";
+import {Body1, Button, Divider, Text, Title2, Tooltip,} from "@fluentui/react-components";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "@store";
-import {setSelectedTariffId, startVisit} from "@store/visitSlice";
-import {TariffCard} from "@components/TariffCard/TariffCard";
-import type {BillingType, Tariff} from "@app-types/tariff";
+import {setSelectedTariffId, startVisit, VisitUiStatus} from "@store/visitSlice";
+import {BillingType as BillingTypeEnum, type BillingType, type Tariff} from "@app-types/tariff";
 import {clamp} from "@utility/clamp";
-import {formatMoneyByN} from "@utility/formatMoney";
-import {formatDurationMinutes} from "@utility/formatDurationMinutes";
 
 import repeatTriangleUrl from "@assets/rrrepeat_triangle.svg";
 import vortexUrl from "@assets/vvvortex.svg";
 import blob2Url from "@assets/ssshape_blob2.svg";
 import blob4Url from "@assets/ssshape_blob4.svg";
 import "./visits.css";
-
-type CalcResult = {
-    total: number;
-    chargedMinutes: number;
-    chargedHours: number;
-    pricePerMinute: number;
-    pricePerHour: number;
-};
+import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard.tsx";
+import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection.tsx";
+import {VisitParamsCard} from "@components/Tariff/VisitParamsCard.tsx";
 
 const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
     const priceMinute = Math.max(0, pricePerMinute);
     const priceHour = priceMinute * 60;
 
-    if (billingType === "PerMinute") {
+    if (billingType === BillingTypeEnum.PerMinute) {
         return {
             total: safeMinutes * priceMinute,
             chargedMinutes: safeMinutes,
@@ -73,197 +42,6 @@ const calculate = (minutes: number, pricePerMinute: number, billingType: Billing
     };
 };
 
-const getBillingLabel = (billingType: BillingType) =>
-    billingType === "PerMinute" ? "Оплата за минуты" : "Округление до часа";
-
-type TariffCarouselSectionProps = {
-    visibleTariffs: Tariff[];
-    totalCount: number;
-    activeIndex: number;
-    onActiveIndexChange: (nextIndex: number) => void;
-    selectedTariffId: string | null;
-    onSelectTariff: (tariffId: string) => void;
-};
-
-const TariffCarouselSection = ({
-                                   visibleTariffs,
-                                   totalCount,
-                                   activeIndex,
-                                   onActiveIndexChange,
-                                   selectedTariffId,
-                                   onSelectTariff,
-                               }: TariffCarouselSectionProps) => {
-    return (
-        <Card className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-                <Title3>Тарифы</Title3>
-                <Body2 block>Потяните мышкой/тачем или используйте стрелки.</Body2>
-            </div>
-
-            <Divider/>
-
-            <Carousel
-                activeIndex={activeIndex}
-                groupSize={1}
-                onActiveIndexChange={(_, data) => onActiveIndexChange(data.index)}
-                circular
-                draggable
-                align="center"
-                whitespace
-            >
-                <CarouselViewport>
-                    <CarouselSlider cardFocus className="tc-carousel-slider">
-                        {visibleTariffs.map((tariff, index) => (
-                            <CarouselCard
-                                key={tariff.tariffId}
-                                autoSize
-                                aria-label={`${index + 1} из ${totalCount}`}
-                            >
-                                <div
-                                    className={
-                                        index === activeIndex
-                                            ? "scale-100 opacity-100"
-                                            : "scale-[0.92] opacity-[0.55]"
-                                    }
-                                >
-                                    <TariffCard
-                                        tariff={tariff}
-                                        selected={tariff.tariffId === selectedTariffId}
-                                        onSelect={onSelectTariff}
-                                    />
-                                </div>
-                            </CarouselCard>
-                        ))}
-                    </CarouselSlider>
-                </CarouselViewport>
-
-                <CarouselNavContainer
-                    next={{"aria-label": "следующий тариф"}}
-                    prev={{"aria-label": "предыдущий тариф"}}
-                >
-                    <CarouselNav>
-                        {(index) => <CarouselNavButton aria-label={`Тариф ${index + 1}`}/>}
-                    </CarouselNav>
-                </CarouselNavContainer>
-            </Carousel>
-        </Card>
-    );
-};
-
-type VisitParamsCardProps = {
-    selectedTariff: Tariff | null;
-    durationMinutes: number;
-    setDurationMinutes: (value: number) => void;
-    presets: number[];
-};
-
-const VisitParamsCard = ({selectedTariff, durationMinutes, setDurationMinutes, presets}: VisitParamsCardProps) => {
-    return (
-        <Card className="lg:col-span-7">
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <Title3>Параметры визита</Title3>
-                </div>
-                <Divider/>
-
-                {!selectedTariff ? (
-                    <Body2 block>Сначала выберите тариф в карусели.</Body2>
-                ) : (
-                    <div className="flex flex-col gap-4">
-                        <Field
-                            label="Примерное время пребывания"
-                            hint="Можно выбрать пресет или ввести вручную (в минутах)"
-                        >
-                            <Input
-                                type="number"
-                                value={String(durationMinutes)}
-                                onChange={(_, data) => {
-                                    const next = Number(data.value);
-                                    if (!Number.isFinite(next)) return;
-                                    setDurationMinutes(clamp(next, 1, 12 * 60));
-                                }}
-                                min={1}
-                                max={12 * 60}
-                            />
-                        </Field>
-
-                        <div className="flex flex-wrap gap-2">
-                            {presets.map((m) => (
-                                <Button
-                                    key={m}
-                                    appearance={durationMinutes === m ? "primary" : "secondary"}
-                                    onClick={() => setDurationMinutes(m)}
-                                >
-                                    {formatDurationMinutes(m)}
-                                </Button>
-                            ))}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Tag appearance="brand">{selectedTariff.name}</Tag>
-                            <Tag appearance="outline">{getBillingLabel(selectedTariff.billingType)}</Tag>
-                            <Tag appearance="outline">{formatDurationMinutes(durationMinutes)}</Tag>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </Card>
-    );
-};
-
-type TariffForecastCardProps = {
-    selectedTariff: Tariff | null;
-    calc: CalcResult | null;
-};
-
-const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => {
-    return (
-        <Card className="lg:col-span-5">
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <Title3>Калькулятор</Title3>
-                </div>
-
-                <Divider/>
-
-                {!selectedTariff || !calc ? (
-                    <Body2 block>Выберите тариф и задайте параметры.</Body2>
-                ) : (
-                    <div className="flex flex-col gap-3">
-                        <div className="rounded-2xl p-4 tc-tariff-forecast-box">
-                            <div className="flex items-end justify-between gap-3 flex-wrap">
-                                <div className="min-w-0">
-                                    <Caption1>Ориентировочная сумма</Caption1>
-                                    <Title2 block>{formatMoneyByN(calc.total)}</Title2>
-                                </div>
-                            </div>
-
-                            <div className="mt-3 grid grid-cols-2 gap-3">
-                                {/* mt удалить */}
-                                <div>
-                                    <Caption1>Списание</Caption1>
-                                    <Title3 block>
-                                        {selectedTariff.billingType === "PerMinute"
-                                            ? `${calc.chargedMinutes} мин`
-                                            : `${calc.chargedHours} ч (за ${calc.chargedMinutes} мин)`}
-                                    </Title3>
-                                </div>
-                                <div>
-                                    <Caption1>Ставка</Caption1>
-                                    <Title3 block>
-                                        {selectedTariff.billingType === "PerMinute"
-                                            ? `${formatMoneyByN(calc.pricePerMinute)} / мин`
-                                            : `${formatMoneyByN(calc.pricePerHour)} / час`}
-                                    </Title3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </Card>
-    );
-};
 
 export const TariffSelectionPage = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -277,7 +55,7 @@ export const TariffSelectionPage = () => {
                 tariffId: "standard",
                 name: "Стандартный",
                 description: "Идеально для большинства визитов — без ограничений и с прозрачным расчётом.",
-                billingType: "PerMinute",
+                billingType: BillingTypeEnum.PerMinute,
                 pricePerMinute: 0.12,
                 isActive: true,
                 accent: "brand",
@@ -287,7 +65,7 @@ export const TariffSelectionPage = () => {
                 tariffId: "quiet",
                 name: "Тихая зона",
                 description: "Спокойная атмосфера и минимальный шум — для работы и учёбы.",
-                billingType: "PerMinute",
+                billingType: BillingTypeEnum.PerMinute,
                 pricePerMinute: 0.10,
                 isActive: true,
                 accent: "green",
@@ -296,7 +74,7 @@ export const TariffSelectionPage = () => {
                 tariffId: "night",
                 name: "Ночной",
                 description: "Для поздних визитов: мягкий свет, меньше людей и приятный темп.",
-                billingType: "Hourly",
+                billingType: BillingTypeEnum.Hourly,
                 pricePerMinute: 0.09,
                 isActive: true,
                 accent: "purple",
@@ -305,7 +83,7 @@ export const TariffSelectionPage = () => {
                 tariffId: "promo",
                 name: "Промо",
                 description: "Тариф для акций и промокодов.",
-                billingType: "Hourly",
+                billingType: BillingTypeEnum.Hourly,
                 pricePerMinute: 0.07,
                 isActive: true,
                 accent: "pink",
@@ -359,7 +137,7 @@ export const TariffSelectionPage = () => {
     }, [initialActiveIndex]);
 
     useEffect(() => {
-        if (visitStatus === "active") {
+        if (visitStatus === VisitUiStatus.Active) {
             navigate("/visit/active", {replace: true});
         }
     }, [navigate, visitStatus]);

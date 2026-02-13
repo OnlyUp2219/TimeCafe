@@ -119,7 +119,7 @@ export const updateProfile = createAsyncThunk<
       return merged;
     }
 
-    const saved = await ProfileApi.updateProfile({
+    const savedResponse = await ProfileApi.updateProfile({
       userId,
       firstName: merged.firstName ?? '',
       lastName: merged.lastName ?? '',
@@ -129,7 +129,7 @@ export const updateProfile = createAsyncThunk<
       gender: merged.gender ?? Gender.NotSpecified,
     });
 
-    return { ...merged, ...saved };
+    return { ...merged, ...savedResponse.profile };
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Ошибка сохранения профиля';
     return rejectWithValue(message);

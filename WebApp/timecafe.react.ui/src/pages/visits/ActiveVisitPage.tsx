@@ -31,8 +31,8 @@ import {useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "@store";
-import {finishVisit} from "@store/visitSlice";
-import type {BillingType} from "@app-types/tariff";
+import {finishVisit, VisitUiStatus} from "@store/visitSlice";
+import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
 import {formatMoneyByN} from "@utility/formatMoney";
 
 import vortex from "@assets/vvvortex.svg";
@@ -73,7 +73,7 @@ const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePer
 
     const safePricePerMinute = Math.max(0, pricePerMinute);
 
-    if (billingType === "PerMinute") {
+    if (billingType === BillingTypeEnum.PerMinute) {
         return {
             total: minutes * safePricePerMinute,
             chargedMinutes: minutes,
@@ -102,7 +102,7 @@ export const ActiveVisitPage = () => {
     const [exitComplete, setExitComplete] = useState(false);
 
     useEffect(() => {
-        if (visitStatus !== "active" || !activeVisit) {
+        if (visitStatus !== VisitUiStatus.Active || !activeVisit) {
             navigate("/visit/start", {replace: true});
         }
     }, [activeVisit, navigate, visitStatus]);
@@ -121,13 +121,13 @@ export const ActiveVisitPage = () => {
     const elapsedMinutes = useMemo(() => Math.max(1, Math.ceil(elapsedSeconds / 60)), [elapsedSeconds]);
 
     const estimate = useMemo(() => {
-        const billingType = activeVisit?.tariff.billingType ?? "PerMinute";
+        const billingType = activeVisit?.tariff.billingType ?? BillingTypeEnum.PerMinute;
         const pricePerMinute = activeVisit?.tariff.pricePerMinute ?? 0;
         return calcEstimate(elapsedMinutes, billingType, pricePerMinute);
     }, [activeVisit?.tariff.billingType, activeVisit?.tariff.pricePerMinute, elapsedMinutes]);
 
     const progressToNextHour = useMemo(() => {
-        if (activeVisit?.tariff.billingType !== "Hourly") return null;
+        if (activeVisit?.tariff.billingType !== BillingTypeEnum.Hourly) return null;
         const minutesIntoHour = elapsedMinutes % 60;
         return minutesIntoHour / 60;
     }, [activeVisit?.tariff.billingType, elapsedMinutes]);
@@ -236,7 +236,7 @@ export const ActiveVisitPage = () => {
                                         <div className="flex items-center justify-between gap-3">
                                             <Body1>Тип</Body1>
                                             <Body1>
-                                                {activeVisit?.tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный"}
+                                                {activeVisit?.tariff.billingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный"}
                                             </Body1>
                                         </div>
                                     </div>
@@ -270,7 +270,7 @@ export const ActiveVisitPage = () => {
                                                     <Body1 block>Тип</Body1>
                                                 </div>
                                                 <Title3 block>
-                                                    {activeVisit?.tariff.billingType === "Hourly" ? "Почасовой" : "Поминутный"}
+                                                    {activeVisit?.tariff.billingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный"}
                                                 </Title3>
                                             </div>
 
@@ -291,7 +291,7 @@ export const ActiveVisitPage = () => {
                                     </div>
 
                                     <Body2 block>
-                                        {activeVisit?.tariff.billingType === "Hourly"
+                                        {activeVisit?.tariff.billingType === BillingTypeEnum.Hourly
                                             ? "Почасовой: округление вверх до часа."
                                             : "Поминутный: расчёт по минутам."}
                                     </Body2>
@@ -312,7 +312,7 @@ export const ActiveVisitPage = () => {
 
                                     <Divider/>
 
-                                    {activeVisit?.tariff.billingType === "Hourly" && progressToNextHour !== null ? (
+                                    {activeVisit?.tariff.billingType === BillingTypeEnum.Hourly && progressToNextHour !== null ? (
                                         <div className="flex flex-col gap-2">
                                             <Body1 block>Прогресс до следующего часа</Body1>
                                             <ProgressBar value={progressToNextHour}/>

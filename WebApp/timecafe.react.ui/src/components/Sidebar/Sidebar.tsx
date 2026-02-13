@@ -11,6 +11,7 @@ import {
 import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
+import {VisitUiStatus} from "@store/visitSlice";
 import {useDispatch, useSelector} from "react-redux";
 import type {RootState} from "@store";
 import {type FC, useCallback, useEffect, useState} from "react";
@@ -73,7 +74,7 @@ export const Sidebar: FC = () => {
     };
     const navigate = useNavigate();
 
-    const visitNav = visitStatus === "active"
+    const visitNav = visitStatus === VisitUiStatus.Active
         ? {id: "3", label: "Активный визит", path: "/visit/active"}
         : {id: "3", label: "Начать визит", path: "/visit/start"};
 

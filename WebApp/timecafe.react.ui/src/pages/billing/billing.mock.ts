@@ -1,4 +1,4 @@
-import type {Tariff} from "@app-types/tariff";
+import {BillingType as BillingTypeEnum, type Tariff} from "@app-types/tariff";
 
 export const formatRub = (value: number, maximumFractionDigits = 0) => {
     try {
@@ -35,7 +35,7 @@ export const mockTariffs: Tariff[] = [
         tariffId: "standard",
         name: "Стандарт",
         description: "Обычный тариф",
-        billingType: "PerMinute",
+        billingType: BillingTypeEnum.PerMinute,
         pricePerMinute: 7,
         isActive: true,
         themeEmoji: "☕",
@@ -44,7 +44,7 @@ export const mockTariffs: Tariff[] = [
         tariffId: "discount",
         name: "Льготный",
         description: "Для студентов и постоянных гостей",
-        billingType: "PerMinute",
+        billingType: BillingTypeEnum.PerMinute,
         pricePerMinute: 5,
         isActive: true,
         themeEmoji: "🎓",
