@@ -61,5 +61,5 @@ public class Visit
 public enum VisitStatus
 {
     Active = 1,
-    Completed = 2
+    Completed = 2,
 }
