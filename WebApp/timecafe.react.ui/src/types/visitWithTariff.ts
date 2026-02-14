@@ -15,4 +15,4 @@ export type VisitWithTariff =
         tariffPricePerMinute: number;
         tariffDescription: string;
         tariffBillingType: BillingType
-    }
+}

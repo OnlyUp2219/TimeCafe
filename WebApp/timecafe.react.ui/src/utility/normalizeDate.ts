@@ -7,3 +7,19 @@ export const normalizeDate = (value: unknown): Date | undefined => {
     }
     return undefined;
 };
+
+export const normalizeDateForApi = (value: unknown): string | null => {
+    const date = normalizeDate(value);
+    if (!date) return null;
+    return date.toISOString().slice(0, 10);
+};
+
+export const normalizeBirthDateForApi = (value: string | undefined): string | null => {
+    const trimmed = (value ?? "").trim();
+    if (!trimmed) return null;
+
+    const m = /^\d{4}-\d{2}-\d{2}/.exec(trimmed);
+    if (!m) return null;
+
+    return trimmed.slice(0, 10);
+};
