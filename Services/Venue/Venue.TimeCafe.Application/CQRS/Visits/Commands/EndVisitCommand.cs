@@ -32,12 +32,12 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
     }
 }
 
-public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper, IPublishEndpoint publishEndpoint, ILogger logger) : IRequestHandler<EndVisitCommand, EndVisitResult>
+public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper, IPublishEndpoint publishEndpoint, ILogger<EndVisitCommandHandler> logger) : IRequestHandler<EndVisitCommand, EndVisitResult>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
-    private readonly ILogger _logger = logger;
+    private readonly ILogger<EndVisitCommandHandler> _logger = logger;
 
     public async Task<EndVisitResult> Handle(EndVisitCommand request, CancellationToken cancellationToken)
     {
@@ -80,7 +80,7 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
             }
             catch (OperationCanceledException ex)
             {
-                _logger.Warning(ex, "Operation was cancelled");
+                _logger.LogWarning(ex, "Operation was cancelled");
             }
 
             return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
