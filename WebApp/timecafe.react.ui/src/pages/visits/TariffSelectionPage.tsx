@@ -1,11 +1,32 @@
-import {Body1, Button, Divider, Text, Title2, Tooltip,} from "@fluentui/react-components";
+import {
+    Body1,
+    Button,
+    Card,
+    Divider,
+    MessageBar,
+    MessageBarActions,
+    MessageBarBody,
+    MessageBarTitle,
+    Text,
+    Title2,
+    Tooltip,
+} from "@fluentui/react-components";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "@store";
-import {setSelectedTariffId, startVisit, VisitUiStatus} from "@store/visitSlice";
+import {
+    clearVisitError,
+    loadActiveTariffs,
+    loadActiveVisitByUser,
+    setSelectedTariffId,
+    startVisitOnServer,
+    VisitUiStatus
+} from "@store/visitSlice";
 import {BillingType as BillingTypeEnum, type BillingType, type Tariff} from "@app-types/tariff";
 import {clamp} from "@utility/clamp";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
+import {DismissRegular} from "@fluentui/react-icons";
 
 import repeatTriangleUrl from "@assets/rrrepeat_triangle.svg";
 import vortexUrl from "@assets/vvvortex.svg";
@@ -46,51 +67,16 @@ const calculate = (minutes: number, pricePerMinute: number, billingType: Billing
 export const TariffSelectionPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const {showToast, ToasterElement} = useProgressToast();
+    const userId = useSelector((state: RootState) => state.auth.userId);
     const selectedTariffId = useSelector((state: RootState) => state.visit.selectedTariffId);
     const visitStatus = useSelector((state: RootState) => state.visit.status);
+    const tariffs = useSelector((state: RootState) => state.visit.tariffs);
+    const loadingTariffs = useSelector((state: RootState) => state.visit.loadingTariffs);
+    const startingVisit = useSelector((state: RootState) => state.visit.startingVisit);
+    const visitError = useSelector((state: RootState) => state.visit.error);
 
-    const mockTariffs = useMemo<Tariff[]>(
-        () => [
-            {
-                tariffId: "standard",
-                name: "Стандартный",
-                description: "Идеально для большинства визитов — без ограничений и с прозрачным расчётом.",
-                billingType: BillingTypeEnum.PerMinute,
-                pricePerMinute: 0.12,
-                isActive: true,
-                accent: "brand",
-                recommended: true,
-            },
-            {
-                tariffId: "quiet",
-                name: "Тихая зона",
-                description: "Спокойная атмосфера и минимальный шум — для работы и учёбы.",
-                billingType: BillingTypeEnum.PerMinute,
-                pricePerMinute: 0.10,
-                isActive: true,
-                accent: "green",
-            },
-            {
-                tariffId: "night",
-                name: "Ночной",
-                description: "Для поздних визитов: мягкий свет, меньше людей и приятный темп.",
-                billingType: BillingTypeEnum.Hourly,
-                pricePerMinute: 0.09,
-                isActive: true,
-                accent: "purple",
-            },
-            {
-                tariffId: "promo",
-                name: "Промо",
-                description: "Тариф для акций и промокодов.",
-                billingType: BillingTypeEnum.Hourly,
-                pricePerMinute: 0.07,
-                isActive: true,
-                accent: "pink",
-            },
-        ],
-        []
-    );
+    const mockTariffs = useMemo<Tariff[]>(() => tariffs, [tariffs]);
 
     const visibleTariffs = useMemo(
         () => mockTariffs.filter((tariff): tariff is Tariff => tariff !== null && tariff.isActive),
@@ -137,6 +123,21 @@ export const TariffSelectionPage = () => {
     }, [initialActiveIndex]);
 
     useEffect(() => {
+        void dispatch(loadActiveTariffs());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (!userId) return;
+        void dispatch(loadActiveVisitByUser({userId}));
+    }, [dispatch, userId]);
+
+    useEffect(() => {
+        if (!selectedTariffId && visibleTariffs.length > 0) {
+            dispatch(setSelectedTariffId(visibleTariffs[0].tariffId));
+        }
+    }, [dispatch, selectedTariffId, visibleTariffs]);
+
+    useEffect(() => {
         if (visitStatus === VisitUiStatus.Active) {
             navigate("/visit/active", {replace: true});
         }
@@ -144,8 +145,35 @@ export const TariffSelectionPage = () => {
 
     const presets = useMemo(() => [30, 60, 90, 120, 180, 240], []);
 
+    const onStartVisit = useCallback(async () => {
+        if (!selectedTariff) return;
+        const action = await dispatch(startVisitOnServer({
+            tariffId: selectedTariff.tariffId,
+            plannedMinutes: durationMinutes,
+            userId,
+        }));
+
+        if (startVisitOnServer.rejected.match(action)) {
+            showToast(action.payload ?? "Не удалось начать визит", "error", "Ошибка");
+            return;
+        }
+
+        navigate("/visit/active");
+    }, [dispatch, durationMinutes, navigate, selectedTariff, showToast, userId]);
+
+    const onRetryLoad = useCallback(async () => {
+        dispatch(clearVisitError());
+        await dispatch(loadActiveTariffs());
+        if (userId) {
+            await dispatch(loadActiveVisitByUser({userId}));
+        }
+    }, [dispatch, userId]);
+
+    const showEmptyTariffs = !loadingTariffs && visibleTariffs.length === 0;
+
     return (
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
+            {ToasterElement}
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
                 <img
                     src={repeatTriangleUrl}
@@ -180,13 +208,31 @@ export const TariffSelectionPage = () => {
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
                 <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
                     <div className="flex flex-col gap-4">
+                        {visitError && (
+                            <MessageBar intent="error">
+                                <MessageBarBody>
+                                    <MessageBarTitle>Ошибка загрузки</MessageBarTitle>
+                                    {visitError}
+                                </MessageBarBody>
+                                <MessageBarActions
+                                    containerAction={
+                                        <Button
+                                            appearance="transparent"
+                                            aria-label="Закрыть"
+                                            icon={<DismissRegular className="size-5"/>}
+                                            onClick={() => dispatch(clearVisitError())}
+                                        />
+                                    }
+                                />
+                            </MessageBar>
+                        )}
+
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <Title2>Выбор тарифа</Title2>
                                 </div>
                                 <Body1 block className="mt-2">
-                                    {/* mt удалить */}
                                     Выберите тариф в карусели, затем задайте примерное время пребывания.
                                 </Body1>
                             </div>
@@ -194,14 +240,27 @@ export const TariffSelectionPage = () => {
 
                         <Divider/>
 
-                        <TariffCarouselSection
-                            visibleTariffs={visibleTariffs}
-                            totalCount={mockTariffs.length}
-                            activeIndex={activeIndex}
-                            onActiveIndexChange={setActiveTariff}
-                            selectedTariffId={selectedTariffId}
-                            onSelectTariff={onSelectTariff}
-                        />
+                        {loadingTariffs && visibleTariffs.length === 0 ? (
+                            <Card>
+                                <Body1 block>Загружаем доступные тарифы...</Body1>
+                            </Card>
+                        ) : showEmptyTariffs ? (
+                            <Card className="flex flex-col gap-3">
+                                <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
+                                <Button appearance="primary" onClick={() => void onRetryLoad()}>
+                                    Обновить тарифы
+                                </Button>
+                            </Card>
+                        ) : (
+                            <TariffCarouselSection
+                                visibleTariffs={visibleTariffs}
+                                totalCount={visibleTariffs.length}
+                                activeIndex={activeIndex}
+                                onActiveIndexChange={setActiveTariff}
+                                selectedTariffId={selectedTariffId}
+                                onSelectTariff={onSelectTariff}
+                            />
+                        )}
 
                         <Divider/>
 
@@ -221,19 +280,10 @@ export const TariffSelectionPage = () => {
                                 <Button
                                     appearance="primary"
                                     className="w-full"
-                                    disabled={!selectedTariff}
-                                    onClick={() => {
-                                        if (!selectedTariff) return;
-                                        dispatch(
-                                            startVisit({
-                                                tariff: selectedTariff,
-                                                plannedMinutes: durationMinutes,
-                                            })
-                                        );
-                                        navigate("/visit/active");
-                                    }}
+                                    disabled={!selectedTariff || loadingTariffs || startingVisit || showEmptyTariffs}
+                                    onClick={() => void onStartVisit()}
                                 >
-                                    <Text truncate wrap={false}>Начать визит</Text>
+                                    <Text truncate wrap={false}>{startingVisit ? "Запуск..." : "Начать визит"}</Text>
                                 </Button>
                             </Tooltip>
                         </div>

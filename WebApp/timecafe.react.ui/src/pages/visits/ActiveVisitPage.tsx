@@ -16,6 +16,10 @@ import {
     DialogTitle,
     DialogActions,
     DialogContent,
+    MessageBar,
+    MessageBarActions,
+    MessageBarBody,
+    MessageBarTitle,
     ProgressBar,
 } from "@fluentui/react-components";
 import {
@@ -26,14 +30,16 @@ import {
     Info20Regular,
     Sticker20Regular,
     WeatherMoon20Regular,
+    ArrowClockwise20Regular,
 } from "@fluentui/react-icons";
 import {useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import type {AppDispatch, RootState} from "@store";
-import {finishVisit, VisitUiStatus} from "@store/visitSlice";
+import {clearVisitError, endVisitOnServer, loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
 import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
 import {formatMoneyByN} from "@utility/formatMoney";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 
 import vortex from "@assets/vvvortex.svg";
 import repeat from "@assets/rrrepeat (2).svg";
@@ -94,18 +100,29 @@ const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePer
 export const ActiveVisitPage = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
+    const {showToast, ToasterElement} = useProgressToast();
+    const userId = useSelector((state: RootState) => state.auth.userId);
     const visitStatus = useSelector((state: RootState) => state.visit.status);
     const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
+    const loadingActiveVisit = useSelector((state: RootState) => state.visit.loadingActiveVisit);
+    const endingVisit = useSelector((state: RootState) => state.visit.endingVisit);
+    const visitError = useSelector((state: RootState) => state.visit.error);
 
     const [now, setNow] = useState(() => Date.now());
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [exitComplete, setExitComplete] = useState(false);
 
     useEffect(() => {
+        if (!userId) return;
+        void dispatch(loadActiveVisitByUser({userId}));
+    }, [dispatch, userId]);
+
+    useEffect(() => {
+        if (loadingActiveVisit || visitError) return;
         if (visitStatus !== VisitUiStatus.Active || !activeVisit) {
             navigate("/visit/start", {replace: true});
         }
-    }, [activeVisit, navigate, visitStatus]);
+    }, [activeVisit, loadingActiveVisit, navigate, visitError, visitStatus]);
 
     useEffect(() => {
         const id = window.setInterval(() => setNow(Date.now()), 1000);
@@ -132,8 +149,41 @@ export const ActiveVisitPage = () => {
         return minutesIntoHour / 60;
     }, [activeVisit?.tariff.billingType, elapsedMinutes]);
 
+    const onFinishVisit = async () => {
+        const action = await dispatch(endVisitOnServer({visitId: activeVisit?.visitId}));
+        if (endVisitOnServer.rejected.match(action)) {
+            showToast(action.payload ?? "Не удалось завершить визит", "error", "Ошибка");
+            return;
+        }
+
+        setExitComplete(true);
+        setConfirmOpen(false);
+        showToast("Визит завершён", "success", "Готово");
+        navigate("/visit/start", {replace: true});
+    };
+
+    const onRetryLoad = async () => {
+        if (!userId) return;
+        dispatch(clearVisitError());
+        await dispatch(loadActiveVisitByUser({userId}));
+    };
+
+    if (loadingActiveVisit && !activeVisit) {
+        return (
+            <div className="tc-noise-overlay relative overflow-hidden min-h-full">
+                {ToasterElement}
+                <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+                    <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
+                        <Body1 block>Загружаем активный визит...</Body1>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
+            {ToasterElement}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <img
                     src={vortex}
@@ -168,6 +218,21 @@ export const ActiveVisitPage = () => {
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
                 <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
                     <div className="flex flex-col gap-4">
+                        {visitError && (
+                            <MessageBar intent="error">
+                                <MessageBarBody>
+                                    <MessageBarTitle>Ошибка загрузки визита</MessageBarTitle>
+                                    {visitError}
+                                </MessageBarBody>
+                                <MessageBarActions>
+                                    <Button appearance="secondary" icon={<ArrowClockwise20Regular/>}
+                                            onClick={() => void onRetryLoad()}>
+                                        Повторить
+                                    </Button>
+                                </MessageBarActions>
+                            </MessageBar>
+                        )}
+
                         <div className="flex flex-col gap-3">
                             <Title2 block>Вы в заведении</Title2>
                             <Body2 block>
@@ -221,7 +286,7 @@ export const ActiveVisitPage = () => {
                                         appearance="primary"
                                         icon={<DoorArrowRight20Regular/>}
                                         onClick={() => setConfirmOpen(true)}
-                                        disabled={exitComplete}
+                                        disabled={exitComplete || endingVisit}
                                     >
                                         Выход из заведения
                                     </Button>
@@ -347,7 +412,7 @@ export const ActiveVisitPage = () => {
                                                 баланс.
                                             </Body1>
                                             <Body1 block>
-                                                Сейчас это демо: показываем сумму, но ничего не списываем.
+                                                Финальная стоимость будет рассчитана и отправлена в биллинг.
                                             </Body1>
 
                                             <Card>
@@ -381,13 +446,10 @@ export const ActiveVisitPage = () => {
                                         </Button>
                                         <Button
                                             appearance="primary"
-                                            onClick={() => {
-                                                setExitComplete(true);
-                                                setConfirmOpen(false);
-                                                dispatch(finishVisit());
-                                            }}
+                                            disabled={endingVisit}
+                                            onClick={() => void onFinishVisit()}
                                         >
-                                            Завершить визит
+                                            {endingVisit ? "Завершение..." : "Завершить визит"}
                                         </Button>
                                     </DialogActions>
                                 </DialogBody>
