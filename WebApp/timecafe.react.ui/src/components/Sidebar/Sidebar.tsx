@@ -113,6 +113,7 @@ export const Sidebar: FC = () => {
                         <NavItem
                             value={item.id}
                             key={item.id}
+                            data-testid={`sidebar-nav-${item.id}`}
                             onClick={() => {
                                 if (selectedValue !== item.id) {
                                     dispatch(setSelectedNav(item.id));

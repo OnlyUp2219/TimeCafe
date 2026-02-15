@@ -307,10 +307,10 @@ export const ProfileCompletionGate: FC = () => {
 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Фамилия" required>
-                        <Input value={lastName} onChange={(_, d) => setLastName(d.value)}/>
+                        <Input data-testid="profile-gate-last-name" value={lastName} onChange={(_, d) => setLastName(d.value)}/>
                     </Field>
                     <Field label="Имя" required>
-                        <Input value={firstName} onChange={(_, d) => setFirstName(d.value)}/>
+                        <Input data-testid="profile-gate-first-name" value={firstName} onChange={(_, d) => setFirstName(d.value)}/>
                     </Field>
                     <Field label="Отчество">
                         <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)}/>
@@ -370,7 +370,7 @@ export const ProfileCompletionGate: FC = () => {
             <Dialog open={mustCompleteProfile} modalType="alert" unmountOnClose={false}>
                 <DialogSurface>
                     <DialogBody>
-                        <DialogTitle>Заполните профиль</DialogTitle>
+                        <DialogTitle data-testid="profile-gate-title">Заполните профиль</DialogTitle>
 
                         <DialogContent>
                             {renderDialogContent()}
@@ -382,6 +382,7 @@ export const ProfileCompletionGate: FC = () => {
                             </Button>
                             <Button
                                 appearance="primary"
+                                data-testid="profile-gate-save"
                                 disabled={!canSave}
                                 onClick={async () => {
                                     setPhoneSendError(null);

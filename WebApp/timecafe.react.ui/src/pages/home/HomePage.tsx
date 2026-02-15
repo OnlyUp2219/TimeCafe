@@ -250,6 +250,7 @@ export const HomePage = () => {
                                 >
                                     <Button
                                         appearance="primary"
+                                        data-testid="home-visit-action"
                                         onClick={() =>
                                             navigate(visitStatus === VisitUiStatus.Active ? "/visit/active" : "/visit/start")
                                         }

@@ -70,7 +70,7 @@ export const LoginPage = () => {
             {/* Login Form */}
             <div id="Form"
                  className={authFormContainerClassName}>
-                <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-md gap-[12px]">
+                <form onSubmit={handleSubmit} className="flex flex-col w-full max-w-md gap-[12px]" data-testid="login-form">
 
                     <div className="flex flex-col items-center">
                         <Title3 block>Добро пожаловать</Title3>
@@ -105,6 +105,7 @@ export const LoginPage = () => {
                     <TooltipButton
                         appearance="primary"
                         type="submit"
+                        data-testid="login-submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
                         icon={isSubmitting ? <Spinner size="tiny"/> : undefined}

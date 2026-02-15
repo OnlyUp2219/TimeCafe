@@ -129,6 +129,10 @@ export const loadActiveVisitByUser = createAsyncThunk<
     try {
         const state = getState();
         const userId = resolveUserId(state, payload?.userId);
+        const hasActiveVisit = await VisitVenueApi.hasActiveVisit(userId);
+        if (!hasActiveVisit) {
+            return null;
+        }
         const visit = await VisitVenueApi.getActiveVisitByUser(userId);
         const plannedMinutes = payload?.plannedMinutes ?? state.visit.activeVisit?.plannedMinutes ?? null;
         return mapVisitWithTariffToActiveVisit(visit, plannedMinutes);
@@ -237,6 +241,11 @@ const visitSlice = createSlice({
                 state.selectedTariffId = null;
                 state.status = VisitUiStatus.Idle;
                 state.activeVisit = null;
+                state.tariffs = [];
+                state.loadingTariffs = false;
+                state.loadingActiveVisit = false;
+                state.startingVisit = false;
+                state.endingVisit = false;
                 state.error = null;
                 state.lastCalculatedCost = null;
             })
