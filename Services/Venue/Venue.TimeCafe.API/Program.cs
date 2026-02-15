@@ -44,6 +44,7 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 await app.ApplyMigrationsAsync();
+await app.SeedFrontendDataAsync();
 
 app.UseCors(corsPolicyName);
 
