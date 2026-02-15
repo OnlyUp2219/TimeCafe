@@ -173,7 +173,7 @@ export const ActiveVisitPage = () => {
             <div className="tc-noise-overlay relative overflow-hidden min-h-full">
                 {ToasterElement}
                 <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-                    <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
+                    <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-active-loading">
                         <Body1 block>Загружаем активный визит...</Body1>
                     </div>
                 </div>
@@ -216,16 +216,17 @@ export const ActiveVisitPage = () => {
             </div>
 
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
+                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-active-page">
                     <div className="flex flex-col gap-4">
                         {visitError && (
-                            <MessageBar intent="error">
+                            <MessageBar intent="error" data-testid="visit-active-error">
                                 <MessageBarBody>
                                     <MessageBarTitle>Ошибка загрузки визита</MessageBarTitle>
                                     {visitError}
                                 </MessageBarBody>
                                 <MessageBarActions>
                                     <Button appearance="secondary" icon={<ArrowClockwise20Regular/>}
+                                            data-testid="visit-active-retry"
                                             onClick={() => void onRetryLoad()}>
                                         Повторить
                                     </Button>
@@ -254,7 +255,7 @@ export const ActiveVisitPage = () => {
                                             <Tag appearance="outline" icon={<Sticker20Regular/>}>
                                                 {activeVisit?.tariff.name ?? "Тариф"}
                                             </Tag>
-                                            <Tag appearance="outline"
+                                            <Tag appearance="outline" data-testid="visit-active-estimate"
                                                  icon={<Money20Regular/>}>{formatMoneyByN(estimate.total)}</Tag>
                                         </div>
                                     </div>
@@ -285,6 +286,7 @@ export const ActiveVisitPage = () => {
                                     <Button
                                         appearance="primary"
                                         icon={<DoorArrowRight20Regular/>}
+                                        data-testid="visit-active-exit"
                                         onClick={() => setConfirmOpen(true)}
                                         disabled={exitComplete || endingVisit}
                                     >
@@ -399,7 +401,7 @@ export const ActiveVisitPage = () => {
                         <Dialog open={confirmOpen} onOpenChange={(_, data) => setConfirmOpen(data.open)}>
                             <DialogSurface className="w-[calc(100vw-32px)] max-w-[520px]">
                                 <DialogBody>
-                                    <DialogTitle>
+                                    <DialogTitle data-testid="visit-end-dialog-title">
                                         <div className="flex items-center gap-2">
                                             <Shield20Regular/>
                                             Завершить визит
@@ -441,11 +443,12 @@ export const ActiveVisitPage = () => {
                                     </DialogContent>
 
                                     <DialogActions>
-                                        <Button appearance="secondary" onClick={() => setConfirmOpen(false)}>
+                                        <Button appearance="secondary" data-testid="visit-end-cancel" onClick={() => setConfirmOpen(false)}>
                                             Отмена
                                         </Button>
                                         <Button
                                             appearance="primary"
+                                            data-testid="visit-end-confirm"
                                             disabled={endingVisit}
                                             onClick={() => void onFinishVisit()}
                                         >

@@ -76,16 +76,16 @@ export const TariffSelectionPage = () => {
     const startingVisit = useSelector((state: RootState) => state.visit.startingVisit);
     const visitError = useSelector((state: RootState) => state.visit.error);
 
-    const mockTariffs = useMemo<Tariff[]>(() => tariffs, [tariffs]);
+    const tariffsList = useMemo<Tariff[]>(() => Array.isArray(tariffs) ? tariffs : [], [tariffs]);
 
     const visibleTariffs = useMemo(
-        () => mockTariffs.filter((tariff): tariff is Tariff => tariff !== null && tariff.isActive),
-        [mockTariffs]
+        () => tariffsList.filter((tariff): tariff is Tariff => tariff !== null && tariff.isActive),
+        [tariffsList]
     );
 
     const selectedTariff = useMemo(
-        () => mockTariffs.find((t) => t.tariffId === selectedTariffId) ?? null,
-        [mockTariffs, selectedTariffId]
+        () => tariffsList.find((t) => t.tariffId === selectedTariffId) ?? null,
+        [tariffsList, selectedTariffId]
     );
 
     const initialActiveIndex = useMemo(() => {
@@ -206,10 +206,10 @@ export const TariffSelectionPage = () => {
             </div>
 
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel">
+                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-start-page">
                     <div className="flex flex-col gap-4">
                         {visitError && (
-                            <MessageBar intent="error">
+                            <MessageBar intent="error" data-testid="visit-start-error">
                                 <MessageBarBody>
                                     <MessageBarTitle>Ошибка загрузки</MessageBarTitle>
                                     {visitError}
@@ -241,13 +241,13 @@ export const TariffSelectionPage = () => {
                         <Divider/>
 
                         {loadingTariffs && visibleTariffs.length === 0 ? (
-                            <Card>
+                            <Card data-testid="visit-start-loading">
                                 <Body1 block>Загружаем доступные тарифы...</Body1>
                             </Card>
                         ) : showEmptyTariffs ? (
-                            <Card className="flex flex-col gap-3">
+                            <Card className="flex flex-col gap-3" data-testid="visit-start-empty">
                                 <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
-                                <Button appearance="primary" onClick={() => void onRetryLoad()}>
+                                <Button appearance="primary" onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
                                     Обновить тарифы
                                 </Button>
                             </Card>
@@ -280,6 +280,7 @@ export const TariffSelectionPage = () => {
                                 <Button
                                     appearance="primary"
                                     className="w-full"
+                                    data-testid="visit-start-submit"
                                     disabled={!selectedTariff || loadingTariffs || startingVisit || showEmptyTariffs}
                                     onClick={() => void onStartVisit()}
                                 >
