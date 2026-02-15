@@ -20,8 +20,8 @@ import {
     Sparkle20Regular,
 } from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
-import {useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useDispatch, useSelector} from "react-redux";
+import type {AppDispatch, RootState} from "@store";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import vortex from "@assets/vvvortex.svg";
 import repeat from "@assets/rrrepeat (2).svg";
@@ -29,12 +29,14 @@ import surf from "@assets/sssurf.svg";
 import {formatMoneyByN} from "@utility/formatMoney";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {calcVisitEstimate} from "@utility/visitEstimate";
-import {VisitUiStatus} from "@store/visitSlice";
+import {loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
 
 export const HomePage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch<AppDispatch>();
 
     const authEmail = useSelector((state: RootState) => state.auth.email);
+    const userId = useSelector((state: RootState) => state.auth.userId);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const phoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
     const profile = useSelector((state: RootState) => state.profile.data);
@@ -42,6 +44,11 @@ export const HomePage = () => {
     const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
 
     const [now, setNow] = useState(() => Date.now());
+
+    useEffect(() => {
+        if (!userId) return;
+        void dispatch(loadActiveVisitByUser({userId}));
+    }, [dispatch, userId]);
 
     useEffect(() => {
         if (visitStatus !== VisitUiStatus.Active || !activeVisit) return;
