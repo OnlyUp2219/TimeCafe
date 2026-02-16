@@ -8,7 +8,7 @@ public class ExternalProviders : ICarterModule
             [FromQuery] string returnUrl,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", $"/auth/authenticate/login/google/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Google"]);
         })
@@ -21,7 +21,7 @@ public class ExternalProviders : ICarterModule
             [FromQuery] string returnUrl,
             [FromServices] SignInManager<ApplicationUser> signInManager) =>
         {
-            var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Microsoft", $"/auth/authenticate/login/microsoft/callback?returnUrl={Uri.EscapeDataString(returnUrl)}");
             properties.Items.Add("prompt", "select_account");
             return Results.Challenge(properties, ["Microsoft"]);
         })

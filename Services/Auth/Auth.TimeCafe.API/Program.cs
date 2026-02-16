@@ -50,9 +50,21 @@ builder.Services.AddCarter();
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
 
+builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto |
+        Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseForwardedHeaders();
 
 await app.ApplyMigrationsAsync();
 
