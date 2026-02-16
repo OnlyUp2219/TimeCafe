@@ -3,17 +3,26 @@ import {persistReducer, persistStore} from "redux-persist";
 import uiSlice from "@store/uiSlice";
 import storage from "redux-persist/lib/storage";
 import authSlice from "@store/authSlice";
+import {clearTokens} from "@store/authSlice";
 import profileSlice from "@store/profileSlice";
 import visitSlice from "@store/visitSlice";
 import billingSlice from "@store/billingSlice";
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
     ui: uiSlice,
     auth: authSlice,
     profile: profileSlice,
     visit: visitSlice,
     billing: billingSlice,
 });
+
+const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: { type: string }) => {
+    if (action.type === clearTokens.type) {
+        return appReducer(undefined, action);
+    }
+
+    return appReducer(state, action);
+};
 
 const persistConfigure = {
     key: "root-v4",
