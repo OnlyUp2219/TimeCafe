@@ -60,7 +60,7 @@ public static class AuthenticationExtensions
             {
                 op.ClientId = google["ClientId"]!;
                 op.ClientSecret = google["ClientSecret"] ?? string.Empty;
-                op.CallbackPath = "/signin-google";
+                op.CallbackPath = "/auth/signin-google";
                 op.Events.OnRemoteFailure = context =>
                 {
                     var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
@@ -79,7 +79,7 @@ public static class AuthenticationExtensions
             {
                 op.ClientId = ms["ClientId"]!;
                 op.ClientSecret = ms["ClientSecret"] ?? string.Empty;
-                op.CallbackPath = "/signin-microsoft";
+                op.CallbackPath = "/auth/signin-microsoft";
                 op.Events.OnRemoteFailure = context =>
                 {
                     var returnUrl = context.Request.Query["returnUrl"].FirstOrDefault();
