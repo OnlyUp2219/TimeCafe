@@ -7,7 +7,7 @@ import {useDispatch} from "react-redux";
 import {authFormContainerClassName} from "@layouts/authLayout";
 import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
+import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
 import {getJwtInfo} from "@shared/auth/jwt";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
@@ -39,6 +39,7 @@ export const LoginPage = () => {
                 return;
             }
 
+            dispatch(clearTokens());
             dispatch(setAccessToken(r.accessToken));
             const info = getJwtInfo(r.accessToken);
             if (info.userId) dispatch(setUserId(info.userId));
