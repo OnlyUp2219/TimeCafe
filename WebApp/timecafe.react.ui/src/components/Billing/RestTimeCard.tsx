@@ -1,6 +1,7 @@
 import {Caption1, Card, Subtitle2Stronger, Title2} from "@fluentui/react-components";
 
-import {formatMinutesAsDuration, formatRub} from "@pages/billing/billing.mock";
+import {formatDurationMinutes} from "@utility/formatDurationMinutes";
+import {formatRub} from "@utility/formatRub";
 
 import "@pages/billing/billing.css";
 
@@ -19,7 +20,7 @@ export const RestTimeCard = ({availableRub, tariffName, pricePerMinuteRub}: Rest
                 Хватит на отдых
             </Caption1>
             <Title2 block>
-                ~ {formatMinutesAsDuration(minutes)}
+                ~ {formatDurationMinutes(minutes)}
             </Title2>
 
             <div className="flex flex-col gap-1">

@@ -30,6 +30,9 @@ import {formatMoneyByN} from "@utility/formatMoney";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {calcVisitEstimate} from "@utility/visitEstimate";
 import {loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
+import {loadBillingOverview, loadBillingTransactions} from "@store/billingSlice";
+import {TransactionType} from "@app-types/billing";
+import {formatRub} from "@utility/formatRub";
 
 export const HomePage = () => {
     const navigate = useNavigate();
@@ -42,12 +45,22 @@ export const HomePage = () => {
     const profile = useSelector((state: RootState) => state.profile.data);
     const visitStatus = useSelector((state: RootState) => state.visit.status);
     const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
+    const balanceRub = useSelector((state: RootState) => state.billing.balanceRub);
+    const debtRub = useSelector((state: RootState) => state.billing.debtRub);
+    const transactions = useSelector((state: RootState) => state.billing.transactions);
+    const loadingBilling = useSelector((state: RootState) => state.billing.loading);
 
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
         if (!userId) return;
         void dispatch(loadActiveVisitByUser({userId}));
+    }, [dispatch, userId]);
+
+    useEffect(() => {
+        if (!userId) return;
+        void dispatch(loadBillingOverview({userId}));
+        void dispatch(loadBillingTransactions({userId, page: 1, pageSize: 100, append: false}));
     }, [dispatch, userId]);
 
     useEffect(() => {
@@ -83,17 +96,24 @@ export const HomePage = () => {
         return "";
     }, [authEmail, profile?.firstName]);
 
-    const demo = useMemo(
-        () => ({
-            balance: "3 500 ₽",
-            balanceHint: "Доступно для оплаты визитов",
-            visitDuration: "—:—",
-            visitEstimate: "— Br",
-            weekSpent: "1 240 ₽",
-            weekSpentHint: "Расходы за 7 дней (demo)",
-        }),
-        []
-    );
+    const weekSpentRub = useMemo(() => {
+        const fromDate = new Date();
+        fromDate.setHours(0, 0, 0, 0);
+        fromDate.setDate(fromDate.getDate() - 6);
+
+        return transactions.reduce((acc, transaction) => {
+            const created = new Date(transaction.createdAt);
+            if (Number.isNaN(created.getTime()) || created < fromDate) {
+                return acc;
+            }
+
+            if (transaction.type !== TransactionType.Deposit) {
+                return acc + Math.abs(Number(transaction.amount) || 0);
+            }
+
+            return acc;
+        }, 0);
+    }, [transactions]);
 
     return (
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
@@ -188,18 +208,22 @@ export const HomePage = () => {
                                         <Money20Regular/>
                                         <Subtitle2Stronger>Баланс</Subtitle2Stronger>
                                     </div>
-                                    <Badge appearance="tint">Demo</Badge>
+                                    {loadingBilling && <Badge appearance="tint">Загрузка</Badge>}
                                 </div>
                                 <Divider className="divider grow-0"/>
                             </div>
 
                             <div className="flex items-end justify-between gap-3 flex-wrap">
                                 <div className="flex flex-col gap-1">
-                                    <Title3>{demo.balance}</Title3>
-                                    <Caption1>{demo.balanceHint}</Caption1>
+                                    <Title3>{formatRub(balanceRub, 0)}</Title3>
+                                    <Caption1>
+                                        {debtRub > 0
+                                            ? `Есть задолженность: ${formatRub(debtRub, 0)}`
+                                            : "Доступно для оплаты визитов"}
+                                    </Caption1>
                                 </div>
-                                <Button appearance="secondary" disabled>
-                                    Операции (скоро)
+                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
+                                    Открыть биллинг
                                 </Button>
                             </div>
                         </HoverTiltCard>
@@ -224,7 +248,7 @@ export const HomePage = () => {
                                     <Title3>
                                         {visitStatus === VisitUiStatus.Active && activeVisit
                                             ? formatDurationSeconds(activeElapsedSeconds)
-                                            : demo.visitDuration}
+                                            : "—:—"}
                                     </Title3>
                                 </div>
                                 <div className="flex flex-col gap-1 text-right">
@@ -232,7 +256,7 @@ export const HomePage = () => {
                                     <Title3>
                                         {visitStatus === VisitUiStatus.Active && activeEstimate
                                             ? formatMoneyByN(activeEstimate.total)
-                                            : demo.visitEstimate}
+                                            : "— BYN"}
                                     </Title3>
                                 </div>
                             </div>
@@ -261,10 +285,10 @@ export const HomePage = () => {
                                     </Button>
                                 </Tooltip>
 
-                                <Tooltip content="История визитов (скоро)" relationship="label">
+                                <Tooltip content="Открыть биллинг" relationship="label">
                                     <span>
-                                        <Button appearance="secondary" disabled>
-                                            <Text truncate wrap={false}>История визитов (скоро)</Text>
+                                        <Button appearance="secondary" onClick={() => navigate("/billing")}>
+                                            <Text truncate wrap={false}>История операций</Text>
                                         </Button>
                                     </span>
                                 </Tooltip>
@@ -278,18 +302,17 @@ export const HomePage = () => {
                                         <ArrowTrendingLines20Regular/>
                                         <Subtitle2Stronger>Неделя</Subtitle2Stronger>
                                     </div>
-                                    <Badge appearance="outline">Demo</Badge>
                                 </div>
                                 <Divider className="divider grow-0"/>
                             </div>
 
                             <div className="flex flex-col gap-1">
-                                <Title3>{demo.weekSpent}</Title3>
-                                <Caption1>{demo.weekSpentHint}</Caption1>
+                                <Title3>{formatRub(weekSpentRub, 0)}</Title3>
+                                <Caption1>Расходы за последние 7 дней</Caption1>
                             </div>
                             <div className="mt-4">
-                                <Button appearance="secondary" className="w-full" disabled>
-                                    Посмотреть (скоро)
+                                <Button appearance="secondary" className="w-full" onClick={() => navigate("/billing")}>
+                                    Перейти в биллинг
                                 </Button>
                             </div>
                         </HoverTiltCard>
@@ -335,8 +358,8 @@ export const HomePage = () => {
                                                 Заполнить профиль
                                             </Text>
                                         </Button>
-                                        <Button appearance="secondary" disabled>
-                                            Настройки (скоро)
+                                        <Button appearance="secondary" onClick={() => navigate("/home")}>
+                                            Обновить
                                         </Button>
                                     </div>
                                 </div>
@@ -361,13 +384,13 @@ export const HomePage = () => {
                                 <Button appearance="secondary" onClick={() => navigate("/personal-data")}>
                                     Безопасность
                                 </Button>
-                                <Button appearance="secondary" disabled>
+                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
                                     <Text truncate wrap={false}>
-                                        Баланс (скоро)
+                                        Баланс
                                     </Text>
                                 </Button>
-                                <Button appearance="secondary" disabled>
-                                    Операции (скоро)
+                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
+                                    Операции
                                 </Button>
                             </div>
                         </HoverTiltCard>
