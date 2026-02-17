@@ -15,7 +15,7 @@ export const RestTimeCard = ({availableRub, tariffName, pricePerMinuteRub}: Rest
     const minutes = pricePerMinuteRub > 0 ? Math.floor(Math.max(0, availableRub) / pricePerMinuteRub) : 0;
 
     return (
-        <Card className="flex flex-col gap-2 tc-billing-rest-card">
+        <Card className="flex h-full flex-col justify-between gap-2 tc-billing-rest-card">
             <Caption1 block className="opacity-80">
                 Хватит на отдых
             </Caption1>

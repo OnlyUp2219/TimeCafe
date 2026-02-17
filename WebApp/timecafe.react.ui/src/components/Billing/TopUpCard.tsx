@@ -20,7 +20,7 @@ export const TopUpCard = ({
     loading = false,
 }: TopUpCardProps) => {
     return (
-        <Card className="flex flex-col gap-4">
+        <Card className="flex h-full flex-col gap-4">
             <Title3 block>Быстрое пополнение</Title3>
             <Input
                 type="number"
