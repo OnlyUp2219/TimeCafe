@@ -11,9 +11,10 @@ import "@pages/billing/billing.css";
 type DebtWarningCardProps = {
     debtRub: number;
     onPay: () => void;
+    loading?: boolean;
 };
 
-export const DebtWarningCard = ({debtRub, onPay}: DebtWarningCardProps) => {
+export const DebtWarningCard = ({debtRub, onPay, loading = false}: DebtWarningCardProps) => {
     if (debtRub <= 0) return null;
 
     return (
@@ -41,8 +42,9 @@ export const DebtWarningCard = ({debtRub, onPay}: DebtWarningCardProps) => {
             <TooltipButton
                 appearance="primary"
                 tooltip="Погасить задолженность"
-                label="Погасить сейчас"
+                label={loading ? "Переход к оплате..." : "Погасить сейчас"}
                 onClick={onPay}
+                disabled={loading}
             />
         </Card>
     );

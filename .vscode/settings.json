@@ -1,1 +1,8 @@
-{}
+{
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "file": "./.github/GitConventions.Copilot.md",
+      "text": "Всегда используй инструкцию из этого файла для генерации сообщений коммитов. Не используй никакие другие инструкции, даже если они будут предоставлены в чате."
+    }
+  ]
+}

@@ -11,6 +11,13 @@ import {
 import {Add20Regular} from "@fluentui/react-icons";
 
 import type {ReactElement} from "react";
+import {
+    TransactionSource,
+    TransactionStatus,
+    TransactionType,
+    type BillingTransaction,
+} from "@app-types/billing";
+import {formatRub} from "@pages/billing/billing.mock";
 
 import {DataTable} from "@components/DataTable";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
@@ -25,7 +32,66 @@ interface Transaction {
     isPositive?: boolean;
 }
 
-export const TransactionsSection = () => {
+type TransactionsSectionProps = {
+    transactions: BillingTransaction[];
+    loading: boolean;
+    loadingMore: boolean;
+    canLoadMore: boolean;
+    onLoadMore: () => void;
+};
+
+const mapStatusLabel = (status: number): string => {
+    if (status === TransactionStatus.Pending) return "В обработке";
+    if (status === TransactionStatus.Completed) return "Успешно";
+    if (status === TransactionStatus.Failed) return "Ошибка";
+    if (status === TransactionStatus.PartialCompleted) return "Частично";
+    return "Неизвестно";
+};
+
+const mapIcon = (transaction: BillingTransaction): string | ReactElement => {
+    if (transaction.type === TransactionType.Deposit) {
+        return <Add20Regular />;
+    }
+
+    if (transaction.source === TransactionSource.Visit) {
+        return "☕";
+    }
+
+    if (transaction.source === TransactionSource.Refund) {
+        return "↩";
+    }
+
+    return "₽";
+};
+
+const mapTitle = (transaction: BillingTransaction): string => {
+    if (transaction.type === TransactionType.Deposit) return "Пополнение баланса";
+    if (transaction.source === TransactionSource.Visit) return "Оплата визита";
+    if (transaction.type === TransactionType.Adjustment) return "Корректировка баланса";
+    return "Списание";
+};
+
+const mapSubtitle = (transaction: BillingTransaction): string => {
+    const date = new Date(transaction.createdAt);
+    const dateText = Number.isNaN(date.getTime())
+        ? transaction.createdAt
+        : date.toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+
+    return transaction.comment ? `${dateText} • ${transaction.comment}` : dateText;
+};
+
+export const TransactionsSection = ({
+    transactions,
+    loading,
+    loadingMore,
+    canLoadMore,
+    onLoadMore,
+}: TransactionsSectionProps) => {
     const columns: TableColumnDefinition<Transaction>[] = [
         createTableColumn<Transaction>({
             columnId: "info",
@@ -62,41 +128,41 @@ export const TransactionsSection = () => {
         }),
     ];
 
-    const transactions: Transaction[] = [
-        {
-            id: "1",
-            icon: "☕",
-            title: "Визит: Главный зал",
-            sub: "Сегодня, 14:20 • 2ч 15мин",
-            amount: 525,
-            status: "Завершено",
-        },
-        {
-            id: "2",
-            icon: <Add20Regular/>,
-            title: "Пополнение баланса",
-            sub: "Вчера, 18:10 • Stripe",
-            amount: 2000,
-            status: "Успешно",
-            isPositive: true,
-        },
-    ];
+    const tableItems: Transaction[] = transactions.map((transaction) => ({
+        id: transaction.transactionId,
+        icon: mapIcon(transaction),
+        title: mapTitle(transaction),
+        sub: mapSubtitle(transaction),
+        amount: Math.abs(Number(transaction.amount) || 0),
+        status: mapStatusLabel(transaction.status),
+        isPositive: transaction.type === TransactionType.Deposit,
+    }));
 
     return (
         <Card className="flex flex-col gap-4 h-full">
             <div className="flex items-center justify-between">
                 <Title1>История операций</Title1>
-                <TooltipButton appearance="subtle" size="small" tooltip="Фильтры (скоро)" label="Фильтры"/>
+                <Caption1>
+                    Всего: {formatRub(tableItems.reduce((acc, item) => acc + (item.isPositive ? item.amount : -item.amount), 0), 0)}
+                </Caption1>
             </div>
 
             <div className="overflow-hidden">
-                <DataTable items={transactions} columns={columns} getRowId={(item) => item.id}/>
+                <DataTable
+                    items={tableItems}
+                    columns={columns}
+                    getRowId={(item) => item.id}
+                    loading={loading}
+                    emptyMessage="Транзакции пока отсутствуют"
+                />
             </div>
 
             <TooltipButton
                 appearance="outline"
-                tooltip="Открыть полную историю (скоро)"
+                tooltip="Загрузить следующую страницу"
                 label="Загрузить все транзакции"
+                onClick={onLoadMore}
+                disabled={!canLoadMore || loadingMore}
             />
         </Card>
     );
