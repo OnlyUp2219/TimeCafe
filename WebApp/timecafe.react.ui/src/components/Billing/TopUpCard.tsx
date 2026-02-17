@@ -24,7 +24,7 @@ export const TopUpCard = ({
             <Title3 block>Быстрое пополнение</Title3>
             <Input
                 type="number"
-                placeholder="Введите сумму (₽)"
+                placeholder="Введите сумму (BYN)"
                 contentBefore={<Money20Regular />}
                 className="w-full"
                 value={draftAmountText}

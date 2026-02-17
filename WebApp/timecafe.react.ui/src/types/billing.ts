@@ -44,6 +44,12 @@ export type BillingTransaction = {
     balanceAfter: number;
 };
 
+export type BillingActivityPoint = {
+    date: Date;
+    depositsRub: number;
+    withdrawalsRub: number;
+};
+
 export type BillingFilters = {
     period: "week" | "month" | "all";
     onlyCredits?: boolean;

@@ -17,7 +17,7 @@ import {
     TransactionType,
     type BillingTransaction,
 } from "@app-types/billing";
-import {formatRub} from "@pages/billing/billing.mock";
+import {formatRub} from "@utility/formatRub";
 
 import {DataTable} from "@components/DataTable";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
@@ -120,7 +120,7 @@ export const TransactionsSection = ({
                 <div>
                     <Subtitle2Stronger block>
                         {item.isPositive ? "+" : ""}
-                        {item.amount.toLocaleString()} ₽
+                        {formatRub(item.amount, 0)}
                     </Subtitle2Stronger>
                     <Caption1>{item.status}</Caption1>
                 </div>

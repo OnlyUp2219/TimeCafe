@@ -1,6 +1,6 @@
 import {Body1, Caption1, Card, Display} from "@fluentui/react-components";
 
-import {formatRub} from "@pages/billing/billing.mock";
+import {formatRub} from "@utility/formatRub";
 
 type BalanceSummaryCardProps = {
     balanceRub: number;

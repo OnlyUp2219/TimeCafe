@@ -1,10 +1,11 @@
-import {LargeTitle} from "@fluentui/react-components";
+import {Body2, Divider, Title2} from "@fluentui/react-components";
 
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 
 import type {AppDispatch, RootState} from "@store";
 import type {Tariff} from "@app-types/tariff";
+import {TransactionType, type BillingActivityPoint} from "@app-types/billing";
 import {
     clearBillingError,
     clearCheckoutUrl,
@@ -22,8 +23,6 @@ import {
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
 
-import {mockWeeklyActivity} from "@pages/billing/billing.mock";
-
 import "./billing.css";
 
 import glitch from "@assets/ggglitch.svg";
@@ -36,7 +35,6 @@ import {TopUpCard} from "@components/Billing/TopUpCard";
 import {TransactionsSection} from "@components/Billing/TransactionsSection";
 import {RestTimeCard} from "@components/Billing/RestTimeCard";
 import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
-import {LoyaltyCard} from "@components/Billing/LoyaltyCard";
 import {SupportCard} from "@components/Billing/SupportCard";
 
 export const BillingPage = () => {
@@ -141,6 +139,84 @@ export const BillingPage = () => {
 
     const canLoadMoreTransactions = pagination.currentPage < pagination.totalPages;
 
+    const weeklyActivity = useMemo<BillingActivityPoint[]>(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dayMap = new Map<string, BillingActivityPoint>();
+        for (let offset = 6; offset >= 0; offset -= 1) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - offset);
+            const key = date.toISOString().slice(0, 10);
+            dayMap.set(key, {
+                date,
+                depositsRub: 0,
+                withdrawalsRub: 0,
+            });
+        }
+
+        for (const transaction of transactions) {
+            const created = new Date(transaction.createdAt);
+            if (Number.isNaN(created.getTime())) continue;
+
+            const dayDate = new Date(created);
+            dayDate.setHours(0, 0, 0, 0);
+            const key = dayDate.toISOString().slice(0, 10);
+            const point = dayMap.get(key);
+            if (!point) continue;
+
+            const amount = Math.abs(Number(transaction.amount) || 0);
+            if (transaction.type === TransactionType.Deposit) {
+                point.depositsRub += amount;
+            } else {
+                point.withdrawalsRub += amount;
+            }
+        }
+
+        return Array.from(dayMap.values());
+    }, [transactions]);
+
+    const monthDeltaPercent = useMemo(() => {
+        const now = new Date();
+        const currentStart = new Date(now);
+        currentStart.setDate(now.getDate() - 29);
+        currentStart.setHours(0, 0, 0, 0);
+
+        const previousStart = new Date(currentStart);
+        previousStart.setDate(currentStart.getDate() - 30);
+
+        let currentPeriod = 0;
+        let previousPeriod = 0;
+
+        for (const transaction of transactions) {
+            if (transaction.type === TransactionType.Deposit) continue;
+
+            const created = new Date(transaction.createdAt);
+            if (Number.isNaN(created.getTime())) continue;
+
+            const amount = Math.abs(Number(transaction.amount) || 0);
+
+            if (created >= currentStart) {
+                currentPeriod += amount;
+                continue;
+            }
+
+            if (created >= previousStart && created < currentStart) {
+                previousPeriod += amount;
+            }
+        }
+
+        if (previousPeriod <= 0) {
+            return currentPeriod > 0 ? 100 : 0;
+        }
+
+        return Math.round(((currentPeriod - previousPeriod) / previousPeriod) * 100);
+    }, [transactions]);
+
+    const handleCallAdmin = useCallback(() => {
+        window.open("https://t.me/OnlyUp_S", "_blank");
+    }, []);
+
     return (
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -175,9 +251,7 @@ export const BillingPage = () => {
             </div>
 
             <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
-                <div
-                    className="flex flex-col gap-6 overflow-hidden rounded-3xl p-5 sm:p-8 tc-billing-panel"
-                >
+                <div className="flex flex-col gap-4">
                     {(billingError || checkoutError) && (
                         <MessageBar intent="error">
                             <MessageBarBody>
@@ -197,20 +271,25 @@ export const BillingPage = () => {
                         </MessageBar>
                     )}
 
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                        <LargeTitle>Баланс и транзакции</LargeTitle>
+                    <div className="flex flex-col gap-3">
+                        <Title2 block>Баланс и транзакции</Title2>
+                        <Body2 block>
+                            Следите за движением средств, пополняйте баланс и просматривайте историю операций.
+                        </Body2>
                     </div>
+
+                    <Divider/>
 
                     <div className="flex flex-col gap-4">
                         <div className="grid grid-cols-1 gap-4">
                             <BalanceActivityCard
                                 balanceRub={balanceRub}
-                                monthDeltaPercent={12}
-                                activity={mockWeeklyActivity}
+                                monthDeltaPercent={monthDeltaPercent}
+                                activity={weeklyActivity}
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
                             <TopUpCard
                                 draftAmountText={draftAmountText}
                                 onDraftAmountTextChange={setDraftAmountText}
@@ -218,7 +297,7 @@ export const BillingPage = () => {
                                 onSubmit={onSubmitTopUp}
                                 loading={initializingCheckout || loadingOverview}
                             />
-                            <div className="hidden md:block">
+                            <div className="hidden h-full md:block">
                                 <RestTimeCard
                                     availableRub={availableForVisitsRub}
                                     tariffName={effectiveTariff?.name ?? "Тариф"}
@@ -242,14 +321,10 @@ export const BillingPage = () => {
                         />
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <LoyaltyCard
-                                statusLabel="Серебро"
-                                progress={0.75}
-                                spentRubText="750 ₽ потрачено"
-                                leftRubText="250 ₽ до золота"
-                                perkText="Ваша скидка 5% уже применяется ко всем визитам."
-                            />
-                            <SupportCard telegramUrl="https://t.me/your_admin" onCallAdmin={() => {}} />
+                            <div className="flex h-full items-center rounded-xl border border-dashed px-4 py-3">
+                                <Body2 block>TODO: loyalty блок скрыт до появления backend-контракта программы лояльности.</Body2>
+                            </div>
+                            <SupportCard telegramUrl="https://t.me/OnlyUp_S" onCallAdmin={handleCallAdmin} />
                         </div>
                     </div>
                 </div>
