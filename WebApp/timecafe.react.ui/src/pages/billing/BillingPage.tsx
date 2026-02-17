@@ -297,7 +297,7 @@ export const BillingPage = () => {
                                 onSubmit={onSubmitTopUp}
                                 loading={initializingCheckout || loadingOverview}
                             />
-                            <div className="hidden h-full md:block">
+                            <div className="hidden h-full sm:block">
                                 <RestTimeCard
                                     availableRub={availableForVisitsRub}
                                     tariffName={effectiveTariff?.name ?? "Тариф"}

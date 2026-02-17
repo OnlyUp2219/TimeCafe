@@ -33,7 +33,6 @@ interface PersonalInfoFormProps {
     onSave?: (data: Profile) => void;
     loading?: boolean;
     readOnly?: boolean;
-    showDownloadButton?: boolean;
     className?: string;
 }
 
@@ -55,7 +54,6 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                                                 onSave,
                                                                 loading = false,
                                                                 readOnly = false,
-                                                                showDownloadButton = true,
                                                                 className,
                                                             }) => {
     const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
@@ -218,11 +216,6 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
             </div>
 
             <div className="flex gap-[12px] mt-[16px]">
-                {showDownloadButton && (
-                    <Button appearance="primary" disabled>
-                        Скачать данные
-                    </Button>
-                )}
                 <Button appearance="secondary" disabled={loading || readOnly} onClick={handleSave}>
                     Сохранить изменения
                 </Button>

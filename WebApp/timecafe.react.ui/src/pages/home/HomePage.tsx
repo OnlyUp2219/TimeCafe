@@ -39,6 +39,7 @@ export const HomePage = () => {
     const dispatch = useDispatch<AppDispatch>();
 
     const authEmail = useSelector((state: RootState) => state.auth.email);
+    const authPhoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
     const userId = useSelector((state: RootState) => state.auth.userId);
     const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
     const phoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
@@ -114,6 +115,9 @@ export const HomePage = () => {
             return acc;
         }, 0);
     }, [transactions]);
+
+    const profileEmail = profile?.email?.trim() || authEmail?.trim() || "—";
+    const profilePhone = profile?.phoneNumber?.trim() || authPhoneNumber?.trim() || "Телефон не указан";
 
     return (
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
@@ -341,9 +345,9 @@ export const HomePage = () => {
                                     </div>
                                     <div className="flex flex-col gap-1 sm:text-right min-w-0">
                                         <Caption1>Контакты</Caption1>
-                                        <Body2>{profile.email ?? "—"}</Body2>
+                                        <Body2>{profileEmail}</Body2>
                                         <Caption1>
-                                            {profile.phoneNumber ?? "Телефон не указан"}
+                                            {profilePhone}
                                         </Caption1>
                                     </div>
                                 </div>
