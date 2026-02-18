@@ -19,6 +19,11 @@ type ActivityChartCardProps = {
 
 export const ActivityChartCard = ({points}: ActivityChartCardProps) => {
     const tickValues: Date[] = points.map((p) => p.date);
+    const getPointDate = (date: Date, hourOffset: number) => {
+        const normalized = new Date(date);
+        normalized.setHours(hourOffset, 0, 0, 0);
+        return normalized;
+    };
     const formatTick = (date: Date) =>
         date.toLocaleDateString("ru-RU", {
             day: "2-digit",
@@ -27,14 +32,14 @@ export const ActivityChartCard = ({points}: ActivityChartCardProps) => {
 
     const chartPoints: VerticalBarChartDataPoint[] = points.flatMap((p) => {
         const deposits: VerticalBarChartDataPoint = {
-            x: p.date,
+            x: getPointDate(p.date, 8),
             y: p.depositsRub,
             color: tokens.colorBrandBackground,
             legend: "Пополнения",
         };
 
         const withdrawals: VerticalBarChartDataPoint = {
-            x: p.date,
+            x: getPointDate(p.date, 20),
             y: -Math.abs(p.withdrawalsRub),
             color: tokens.colorStatusDangerBackground3,
             legend: "Списание",
