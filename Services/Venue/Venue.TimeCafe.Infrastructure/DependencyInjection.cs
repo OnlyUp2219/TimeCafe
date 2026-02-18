@@ -8,6 +8,7 @@ public static class DependencyInjection
         services.AddScoped<IPromotionRepository, PromotionRepository>();
         services.AddScoped<IThemeRepository, ThemeRepository>();
         services.AddScoped<IVisitRepository, VisitRepository>();
+        services.AddScoped<IVisitBalancePolicyService, VisitBalancePolicyService>();
 
         return services;
     }

@@ -6,6 +6,7 @@ public abstract class BaseCqrsHandlerTest
     protected readonly Mock<IPromotionRepository> PromotionRepositoryMock;
     protected readonly Mock<IThemeRepository> ThemeRepositoryMock;
     protected readonly Mock<IVisitRepository> VisitRepositoryMock;
+    protected readonly Mock<IVisitBalancePolicyService> VisitBalancePolicyServiceMock;
     protected readonly Mock<IMapper> MapperMock;
     protected readonly Mock<IPublishEndpoint> PublishEndpointMock;
 
@@ -15,6 +16,7 @@ public abstract class BaseCqrsHandlerTest
         PromotionRepositoryMock = new Mock<IPromotionRepository>();
         ThemeRepositoryMock = new Mock<IThemeRepository>();
         VisitRepositoryMock = new Mock<IVisitRepository>();
+        VisitBalancePolicyServiceMock = new Mock<IVisitBalancePolicyService>();
         MapperMock = new Mock<IMapper>();
         PublishEndpointMock = new Mock<IPublishEndpoint>();
     }
