@@ -18,6 +18,7 @@ global using System.Net.Http.Json;
 global using System.Text.Json;
 
 global using Venue.TimeCafe.Application.Contracts.Repositories;
+global using Venue.TimeCafe.Application.Contracts.Services;
 global using Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 global using Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 global using Venue.TimeCafe.Application.CQRS.Tariffs.Commands;

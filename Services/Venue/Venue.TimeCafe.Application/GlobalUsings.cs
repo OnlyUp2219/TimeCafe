@@ -19,6 +19,7 @@ global using Serilog;
 global using System.Reflection;
 
 global using Venue.TimeCafe.Application.Contracts.Repositories;
+global using Venue.TimeCafe.Application.Contracts.Services;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
 global using Venue.TimeCafe.Application.DTOs;
 global using Venue.TimeCafe.Application.Mapping;

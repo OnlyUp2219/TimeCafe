@@ -8,7 +8,12 @@ public class CreateVisit : ICarterModule
             [FromServices] ISender sender,
             [FromBody] CreateVisitDto dto) =>
         {
-            var command = new CreateVisitCommand(dto.UserId, dto.TariffId);
+            var command = new CreateVisitCommand(
+                dto.UserId,
+                dto.TariffId,
+                dto.PlannedMinutes,
+                dto.RequirePositiveBalance ?? true,
+                dto.RequireEnoughForPlanned ?? false);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message, visit = r.Visit }, statusCode: 201));
         })
