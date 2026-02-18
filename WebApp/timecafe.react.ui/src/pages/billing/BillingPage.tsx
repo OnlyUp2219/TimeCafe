@@ -107,8 +107,8 @@ export const BillingPage = () => {
     const onSubmitTopUp = useCallback(async () => {
         const value = Number(draftAmountText);
         const safeValue = Number.isFinite(value) ? value : 0;
-        const topUpRub = Math.floor(safeValue);
-        if (topUpRub <= 0) return;
+        const topUpRub = Math.round(safeValue * 100) / 100;
+        if (topUpRub < 50) return;
 
         const isStarted = await openCheckout(topUpRub, "Пополнение баланса");
         if (isStarted) {
@@ -119,7 +119,7 @@ export const BillingPage = () => {
     const onPayDebt = useCallback(async () => {
         if (debtRub <= 0) return;
 
-        const amount = Math.max(50, Math.ceil(debtRub));
+        const amount = Math.max(50, Math.ceil(debtRub * 100) / 100);
         setDraftAmountText(String(amount));
         await openCheckout(amount, "Погашение задолженности");
     }, [debtRub, openCheckout]);
@@ -255,7 +255,7 @@ export const BillingPage = () => {
                     {(billingError || checkoutError) && (
                         <MessageBar intent="error">
                             <MessageBarBody>
-                                <MessageBarTitle>Ошибка биллинга</MessageBarTitle>
+                                <MessageBarTitle>Ошибка биллинга:</MessageBarTitle>
                                 {checkoutError ?? billingError}
                             </MessageBarBody>
                             <MessageBarActions
@@ -268,6 +268,15 @@ export const BillingPage = () => {
                                     />
                                 }
                             />
+                        </MessageBar>
+                    )}
+
+                    {initializingCheckout && (
+                        <MessageBar intent="info">
+                            <MessageBarBody>
+                                <MessageBarTitle>Переход к оплате</MessageBarTitle>
+                                Подготавливаем платёжную сессию Stripe. Это может занять несколько секунд.
+                            </MessageBarBody>
                         </MessageBar>
                     )}
 

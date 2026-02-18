@@ -260,7 +260,7 @@ export const HomePage = () => {
                                     <Title3>
                                         {visitStatus === VisitUiStatus.Active && activeEstimate
                                             ? formatMoneyByN(activeEstimate.total)
-                                            : "— BYN"}
+                                            : "— ₽"}
                                     </Title3>
                                 </div>
                             </div>

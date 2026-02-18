@@ -6,6 +6,9 @@ import type {VisitWithTariff} from "@app-types/visitWithTariff.ts";
 export interface CreateVisitRequest {
     userId: string;
     tariffId: string;
+    plannedMinutes?: number;
+    requirePositiveBalance?: boolean;
+    requireEnoughForPlanned?: boolean;
 }
 
 export interface VisitResponse {

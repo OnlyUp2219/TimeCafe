@@ -156,6 +156,9 @@ export const startVisitOnServer = createAsyncThunk<
         const createResult = await VisitVenueApi.createVisit({
             userId,
             tariffId: payload.tariffId,
+            plannedMinutes: payload.plannedMinutes,
+            requirePositiveBalance: true,
+            requireEnoughForPlanned: true,
         });
 
         const tariffFromState = state.visit.tariffs.find((item) => item.tariffId === payload.tariffId);
