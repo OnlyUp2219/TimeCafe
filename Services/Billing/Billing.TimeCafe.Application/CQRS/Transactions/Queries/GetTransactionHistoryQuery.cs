@@ -47,6 +47,8 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
     {
         var userId = Guid.Parse(request.UserId);
 
+        var totalCount = await _repository.GetTotalCountByUserIdAsync(userId, cancellationToken);
+
         var transactions = await _repository.GetByUserIdAsync(
             userId,
             request.Page,
@@ -55,10 +57,8 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
 
         if (transactions == null || transactions.Count == 0)
         {
-            return GetTransactionHistoryResult.GetSuccess(new List<TransactionDto>(), 0, request.PageSize);
+            return GetTransactionHistoryResult.GetSuccess(new List<TransactionDto>(), totalCount, request.PageSize);
         }
-
-        var totalCount = await _repository.GetTotalCountByUserIdAsync(userId, cancellationToken);
 
         var dtos = transactions.Select(t => new TransactionDto(
             t.TransactionId,

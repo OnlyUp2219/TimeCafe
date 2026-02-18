@@ -44,7 +44,12 @@ public class TransactionRepository(
             _cache,
             _cacheLogger,
             CacheKeys.Transaction_All,
-            CacheKeys.Transaction_ByUserId(transaction.UserId)).ConfigureAwait(false);
+            CacheKeys.Transaction_ByUserId(transaction.UserId),
+            CacheKeys.Transaction_History(transaction.UserId, 1),
+            CacheKeys.Transaction_History(transaction.UserId, 2),
+            CacheKeys.Transaction_History(transaction.UserId, 3),
+            CacheKeys.Transaction_History(transaction.UserId, 4),
+            CacheKeys.Transaction_History(transaction.UserId, 5)).ConfigureAwait(false);
 
         return transaction;
     }

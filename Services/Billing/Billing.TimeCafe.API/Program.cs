@@ -24,16 +24,9 @@ builder.Services.AddBillingInfrastructure(builder.Configuration);
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddBillingCqrs();
 
-// Authentication & Authorization (for development - allows all)
-builder.Services
-    .AddAuthentication("DummyScheme")
-    .AddScheme<AuthenticationSchemeOptions, DummyAuthenticationHandler>("DummyScheme", _ => { });
-builder.Services.AddAuthorization(options =>
-{
-    options.DefaultPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
+// Authentication & Authorization
+builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
+builder.Services.AddAuthorization();
 
 // Swagger & Carter
 builder.Services.AddControllers();
@@ -53,6 +46,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSwaggerDevelopment();
+
+app.MapPost("/payments/webhook/stripe", async (
+    [FromServices] ISender sender,
+    [FromBody] StripeWebhookPayload payload,
+    HttpRequest request) =>
+{
+    var signature = request.Headers["Stripe-Signature"].ToString();
+    var command = new ProcessStripeWebhookCommand(payload, signature);
+    var result = await sender.Send(command);
+    return result.ToHttpResultV2(onSuccess: _ => Results.Ok());
+})
+.AllowAnonymous();
 
 var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();

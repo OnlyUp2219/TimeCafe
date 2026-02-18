@@ -66,7 +66,7 @@ public class InitializeStripePaymentCommandHandler(
         var userId = Guid.Parse(request.UserId);
 
         var settings = _options.Value;
-        var currency = string.IsNullOrWhiteSpace(settings.DefaultCurrency) ? "rub" : settings.DefaultCurrency;
+        var currency = settings.DefaultCurrency;
 
         var returnUrl = string.IsNullOrWhiteSpace(request.ReturnUrl)
             ? settings.DefaultReturnUrl

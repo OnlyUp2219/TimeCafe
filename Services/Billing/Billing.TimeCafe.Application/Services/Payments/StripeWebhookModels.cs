@@ -33,4 +33,10 @@ public class StripePaymentIntentObject
 
     [JsonPropertyName("created")]
     public long Created { get; set; }
+
+    [JsonPropertyName("payment_intent")]
+    public string? PaymentIntentId { get; set; }
+
+    [JsonPropertyName("amount_total")]
+    public long AmountTotal { get; set; }
 }

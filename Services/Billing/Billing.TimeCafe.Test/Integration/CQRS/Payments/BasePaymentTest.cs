@@ -210,6 +210,29 @@ public abstract class BasePaymentTest : IDisposable
         };
     }
 
+    protected StripeWebhookPayload CreateStripeCheckoutCompletedWebhook(
+        string sessionId,
+        decimal amountInCents,
+        string? paymentIntentId = null,
+        long? createdAt = null)
+    {
+        return new StripeWebhookPayload
+        {
+            Type = "checkout.session.completed",
+            Data = new StripeWebhookData
+            {
+                Object = new StripePaymentIntentObject
+                {
+                    Id = sessionId,
+                    AmountTotal = (long)amountInCents,
+                    PaymentIntentId = paymentIntentId,
+                    Status = "complete",
+                    Created = createdAt ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                }
+            }
+        };
+    }
+
     public void Dispose()
     {
         Client?.Dispose();

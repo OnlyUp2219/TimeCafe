@@ -3,6 +3,37 @@ namespace Billing.TimeCafe.Test.Integration.CQRS.Payments.Commands;
 public class ProcessStripeWebhookCommandTests : BasePaymentTest
 {
     [Fact]
+    public async Task Command_ProcessStripeWebhook_Should_CompletePayment_WhenCheckoutSessionCompletedEvent()
+    {
+        var userId = Defaults.UserId3;
+        var paymentId = Defaults.PaymentId5;
+        var checkoutSessionId = "cs_test_checkout_session";
+        var amount = 250m;
+
+        await CreateBalanceAsync(userId);
+        await CreatePaymentAsync(paymentId, userId, amount, PaymentStatus.Pending, checkoutSessionId);
+
+        var webhook = CreateStripeCheckoutCompletedWebhook(checkoutSessionId, amount * 100, "pi_test_123");
+
+        ProcessStripeWebhookResult result;
+        using (var scope = CreateScope())
+        {
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+            result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
+        }
+
+        result.Success.Should().BeTrue();
+
+        var payment = await GetPaymentByIdAsync(paymentId);
+        payment!.Status.Should().Be(PaymentStatus.Completed);
+        payment.TransactionId.Should().NotBeNull();
+
+        var balance = await GetBalanceByUserIdAsync(userId);
+        balance!.CurrentBalance.Should().Be(amount);
+        balance.TotalDeposited.Should().Be(amount);
+    }
+
+    [Fact]
     public async Task Command_ProcessStripeWebhook_Should_CompletePayment_WhenSuccessEvent()
     {
         var userId = Defaults.UserId;
