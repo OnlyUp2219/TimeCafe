@@ -24,7 +24,7 @@ export const TopUpCard = ({
             <Title3 block>Быстрое пополнение</Title3>
             <Input
                 type="number"
-                placeholder="Введите сумму (BYN)"
+                placeholder="Введите сумму (₽)"
                 contentBefore={<Money20Regular />}
                 className="w-full"
                 value={draftAmountText}
@@ -32,7 +32,7 @@ export const TopUpCard = ({
                 disabled={loading}
             />
             <div className="flex flex-wrap gap-3">
-                {[500, 1000, 2500, 5000].map((val) => (
+                {[100, 200, 500, 1000].map((val) => (
                     <Button
                         key={val}
                         appearance="outline"
@@ -49,7 +49,7 @@ export const TopUpCard = ({
                 appearance="primary"
                 icon={<Add20Regular />}
                 tooltip="Перейти к оплате Stripe"
-                label={loading ? "Переход к Stripe..." : "Перейти к оплате Stripe"}
+                label={loading ? "Подготавливаем Stripe Checkout..." : "Перейти к оплате Stripe"}
                 onClick={onSubmit}
                 disabled={loading}
             />

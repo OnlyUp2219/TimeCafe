@@ -10,7 +10,7 @@ import {BillingType} from "@app-types/tariff";
 
 describe("calcVisitEstimate", () => {
     beforeEach(() => {
-        vi.mocked(formatMoneyByN).mockReturnValue("10 BYN");
+        vi.mocked(formatMoneyByN).mockReturnValue("10 ₽");
     });
 
     it("calculates per-minute estimates", () => {
@@ -18,24 +18,24 @@ describe("calcVisitEstimate", () => {
 
         expect(result.total).toBe(30);
         expect(result.chargedMinutes).toBe(15);
-        expect(result.breakdown).toBe("10 BYN / мин × 15 мин");
+        expect(result.breakdown).toBe("10 ₽ / мин × 15 мин");
     });
 
     it("calculates hourly estimates", () => {
-        vi.mocked(formatMoneyByN).mockReturnValue("90 BYN");
+        vi.mocked(formatMoneyByN).mockReturnValue("90 ₽");
         const result = calcVisitEstimate(61, BillingType.Hourly, 1.5);
 
         expect(result.total).toBe(180);
         expect(result.chargedHours).toBe(2);
-        expect(result.breakdown).toBe("90 BYN / час × 2 ч");
+        expect(result.breakdown).toBe("90 ₽ / час × 2 ч");
     });
 
     it("guards against negative price", () => {
-        vi.mocked(formatMoneyByN).mockReturnValue("0 BYN");
+        vi.mocked(formatMoneyByN).mockReturnValue("0 ₽");
         const result = calcVisitEstimate(5, BillingType.PerMinute, -1);
 
         expect(result.total).toBe(0);
         expect(result.chargedMinutes).toBe(5);
-        expect(result.breakdown).toBe("0 BYN / мин × 5 мин");
+        expect(result.breakdown).toBe("0 ₽ / мин × 5 мин");
     });
 });

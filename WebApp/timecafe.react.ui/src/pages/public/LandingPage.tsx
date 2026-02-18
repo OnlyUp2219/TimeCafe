@@ -240,7 +240,7 @@ export const LandingPage: FC = () => {
                                             <Badge appearance="outline">Demo</Badge>
                                         </div>
                                         <Divider className="my-3"/>
-                                        <Title3>75 BYN</Title3>
+                                        <Title3>750 ₽</Title3>
                                         <Caption1>Доступно для оплаты визитов</Caption1>
                                     </HoverTiltCard>
 
@@ -252,7 +252,7 @@ export const LandingPage: FC = () => {
                                         <Divider className="my-3"/>
                                         <div className="flex items-baseline justify-between">
                                             <Title3>1:42</Title3>
-                                            <Caption1>примерно 15.5 BYN</Caption1>
+                                            <Caption1>примерно 155 ₽</Caption1>
                                         </div>
                                         <Caption1>Тариф: часовой</Caption1>
                                     </HoverTiltCard>
