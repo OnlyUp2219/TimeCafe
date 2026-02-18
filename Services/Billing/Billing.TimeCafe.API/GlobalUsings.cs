@@ -1,4 +1,3 @@
-global using Billing.TimeCafe.API.Auth;
 global using Billing.TimeCafe.API.DTOs;
 global using Billing.TimeCafe.API.Extensions;
 global using Billing.TimeCafe.API.Filters;
@@ -12,6 +11,7 @@ global using Billing.TimeCafe.Domain.Enums;
 global using Billing.TimeCafe.Infrastructure;
 global using Billing.TimeCafe.Infrastructure.Data;
 
+global using BuildingBlocks.Authorization;
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;

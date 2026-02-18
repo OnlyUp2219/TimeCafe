@@ -13,11 +13,7 @@ public class StripePaymentClient : IStripePaymentClient
         _options = options;
         _logger = logger;
 
-        var secretKey = options.Value.SecretKey;
-        if (string.IsNullOrWhiteSpace(secretKey))
-            throw new InvalidOperationException("Stripe:SecretKey is not configured.");
-
-        StripeConfiguration.ApiKey = secretKey;
+        StripeConfiguration.ApiKey = options.Value.SecretKey;
     }
 
     public async Task<StripeCreatePaymentResponse> CreatePaymentAsync(
@@ -28,10 +24,11 @@ public class StripePaymentClient : IStripePaymentClient
         {
             var options = new PaymentIntentCreateOptions
             {
-                // TODO: Получать актуальный курс валюты (сейчас 100 центов = 1 рубль)
-                // В продакшене нужна интеграция с API курсов валют (например, API ЦБ РФ/РБ)
+                // TODO: Получать актуальный курс валюты для конвертации между валютами
+                // Stripe принимает сумму в минимальных единицах (100 cents = 1 unit для большинства валют)
+                // В продакшене нужна интеграция с API курсов валют для мультивалютности
                 Amount = (long)(request.Amount * 100),
-                Currency = string.IsNullOrWhiteSpace(request.Currency) ? "rub" : request.Currency,
+                Currency = request.Currency,
                 Description = request.Description,
                 Metadata = new Dictionary<string, string>
                 {
@@ -74,6 +71,9 @@ public class StripePaymentClient : IStripePaymentClient
     {
         try
         {
+            _logger.LogInformation("Creating Stripe checkout session: Amount={Amount}, Currency={Currency}, UserId={UserId}", 
+                request.Amount, request.Currency, request.UserId);
+
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
@@ -83,7 +83,7 @@ public class StripePaymentClient : IStripePaymentClient
                     {
                         PriceData = new SessionLineItemPriceDataOptions
                         {
-                            Currency = string.IsNullOrWhiteSpace(request.Currency) ? "rub" : request.Currency,
+                            Currency = request.Currency,
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
                                 Name = "Пополнение баланса TimeCafe",

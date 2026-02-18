@@ -75,23 +75,73 @@ public class ProcessStripeWebhookCommandHandler(
         if (paymentIntent == null || string.IsNullOrWhiteSpace(paymentIntent.Id))
             return ProcessStripeWebhookResult.PaymentNotFound();
 
-        var paymentIntentId = paymentIntent.Id;
-        var payment = await _paymentRepository.GetByExternalPaymentIdAsync(paymentIntentId, cancellationToken)
+        var stripeObjectId = paymentIntent.Id.Trim();
+        var stripePaymentIntentId = paymentIntent.PaymentIntentId?.Trim();
+        string? metadataPaymentId = null;
+        string? metadataUserId = null;
+        paymentIntent.Metadata?.TryGetValue("paymentId", out metadataPaymentId);
+        paymentIntent.Metadata?.TryGetValue("userId", out metadataUserId);
+
+        _logger.LogInformation(
+            "Stripe webhook received: Type={Type}, ObjectId={ObjectId}, PaymentIntentId={PaymentIntentId}, MetadataPaymentId={MetadataPaymentId}, MetadataUserId={MetadataUserId}",
+            payload.Type,
+            stripeObjectId,
+            stripePaymentIntentId,
+            metadataPaymentId,
+            metadataUserId);
+
+        var payment = await _paymentRepository.GetByExternalPaymentIdAsync(stripeObjectId, cancellationToken)
             .ConfigureAwait(false);
 
-        if (payment == null && paymentIntent.Metadata?.TryGetValue("paymentId", out var paymentIdStr) == true)
+        if (payment == null && !string.IsNullOrWhiteSpace(stripePaymentIntentId))
         {
-            if (Guid.TryParse(paymentIdStr, out var paymentId))
-            {
-                payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken).ConfigureAwait(false);
-            }
+            payment = await _paymentRepository.GetByExternalPaymentIdAsync(stripePaymentIntentId, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (payment == null && Guid.TryParse(metadataPaymentId, out var paymentId))
+        {
+            payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken).ConfigureAwait(false);
+        }
+
+        if (payment == null && Guid.TryParse(metadataUserId, out var metadataUserGuid))
+        {
+            var amountFromStripe = paymentIntent.AmountTotal > 0
+                ? paymentIntent.AmountTotal / 100m
+                : paymentIntent.Amount / 100m;
+
+            var recentUserPayments = await _paymentRepository.GetByUserIdAsync(metadataUserGuid, 1, 20, cancellationToken)
+                .ConfigureAwait(false);
+
+            payment = recentUserPayments
+                .OrderByDescending(p => p.CreatedAt)
+                .FirstOrDefault(p =>
+                    p.Status == PaymentStatus.Pending &&
+                    (string.Equals(p.ExternalPaymentId, stripeObjectId, StringComparison.OrdinalIgnoreCase)
+                     || (!string.IsNullOrWhiteSpace(stripePaymentIntentId)
+                         && string.Equals(p.ExternalPaymentId, stripePaymentIntentId, StringComparison.OrdinalIgnoreCase))
+                     || Math.Abs(p.Amount - amountFromStripe) <= 0.01m));
         }
 
         if (payment == null)
+        {
+            _logger.LogWarning(
+                "Stripe webhook payment not found: Type={Type}, ObjectId={ObjectId}, PaymentIntentId={PaymentIntentId}, MetadataPaymentId={MetadataPaymentId}, MetadataUserId={MetadataUserId}",
+                payload.Type,
+                stripeObjectId,
+                stripePaymentIntentId,
+                metadataPaymentId,
+                metadataUserId);
             return ProcessStripeWebhookResult.PaymentNotFound();
+        }
 
         if (payment.Status == PaymentStatus.Completed)
             return ProcessStripeWebhookResult.AlreadyProcessed();
+
+        if (string.Equals(payload.Type, "checkout.session.completed", StringComparison.OrdinalIgnoreCase))
+        {
+            return await HandleCheckoutSessionCompleted(payment, paymentIntent, cancellationToken);
+        }
 
         if (string.Equals(payload.Type, "payment_intent.succeeded", StringComparison.OrdinalIgnoreCase))
         {
@@ -110,6 +160,50 @@ public class ProcessStripeWebhookCommandHandler(
 
         _logger.LogInformation("Stripe: event {Event} for payment {PaymentId} skipped", payload.Type, payment.PaymentId);
         return ProcessStripeWebhookResult.Ignored();
+    }
+
+    private async Task<ProcessStripeWebhookResult> HandleCheckoutSessionCompleted(
+        Payment payment,
+        StripePaymentIntentObject session,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Stripe webhook: checkout.session.completed for payment {PaymentId}, amount_total={AmountTotal}",
+            payment.PaymentId, session.AmountTotal);
+
+        if (payment.Status == PaymentStatus.Completed)
+            return ProcessStripeWebhookResult.AlreadyProcessed();
+
+        payment.CompletedAt = ResolveCompletedAt(session.Created);
+
+        if (!string.IsNullOrWhiteSpace(session.PaymentIntentId))
+        {
+            payment.ExternalData = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                paymentIntentId = session.PaymentIntentId
+            });
+        }
+
+        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+
+        _logger.LogInformation("Stripe: checkout session {SessionId} completed for user {UserId}",
+            session.Id,
+            payment.UserId);
+
+        return ProcessStripeWebhookResult.Completed("Checkout session синхронизирована");
+    }
+
+    private static DateTimeOffset ResolveCompletedAt(long createdUnix)
+    {
+        try
+        {
+            if (createdUnix > 0)
+                return DateTimeOffset.FromUnixTimeSeconds(createdUnix);
+        }
+        catch
+        {
+        }
+
+        return DateTimeOffset.UtcNow;
     }
 
     private async Task<ProcessStripeWebhookResult> HandleSuccessfulPayment(
@@ -134,6 +228,16 @@ public class ProcessStripeWebhookCommandHandler(
 
         if (!adjustResult.Success)
         {
+            if (string.Equals(adjustResult.Code, "DuplicateTransaction", StringComparison.OrdinalIgnoreCase))
+            {
+                payment.Status = PaymentStatus.Completed;
+                payment.CompletedAt = ResolveCompletedAt(paymentIntent.Created);
+                payment.ExternalPaymentId = paymentIntent.Id;
+                payment.ErrorMessage = null;
+                await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+                return ProcessStripeWebhookResult.Completed("Платёж уже был зачислен ранее");
+            }
+
             payment.Status = PaymentStatus.Failed;
             payment.ErrorMessage = adjustResult.Message ?? "Не удалось зачислить оплату";
             await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
@@ -141,7 +245,7 @@ public class ProcessStripeWebhookCommandHandler(
         }
 
         payment.Status = PaymentStatus.Completed;
-        payment.CompletedAt = DateTimeOffset.FromUnixTimeSeconds(paymentIntent.Created);
+        payment.CompletedAt = ResolveCompletedAt(paymentIntent.Created);
         payment.TransactionId = adjustResult.Transaction?.TransactionId;
         payment.ExternalPaymentId = paymentIntent.Id;
         payment.ErrorMessage = null;

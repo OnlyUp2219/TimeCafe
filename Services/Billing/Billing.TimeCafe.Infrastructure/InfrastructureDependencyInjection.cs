@@ -8,7 +8,21 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
 
-        services.Configure<StripeOptions>(configuration.GetSection("Stripe"));
+        services.AddOptions<StripeOptions>()
+            .Bind(configuration.GetSection("Stripe"))
+            .ValidateDataAnnotations()
+            .Validate(options =>
+            {
+                if (string.IsNullOrWhiteSpace(options.SecretKey))
+                    return false;
+                if (string.IsNullOrWhiteSpace(options.PublishableKey))
+                    return false;
+                if (string.IsNullOrWhiteSpace(options.DefaultCurrency))
+                    return false;
+                return true;
+            }, "Критичные поля Stripe не заполнены: SecretKey, PublishableKey или DefaultCurrency отсутствуют в appsettings.json")
+            .ValidateOnStart();
+
         services.AddScoped<IStripePaymentClient, StripePaymentClient>();
 
         return services;

@@ -41,7 +41,7 @@ public class InitializeStripeCheckoutCommandValidator : AbstractValidator<Initia
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
-            .GreaterThanOrEqualTo(50).WithMessage("Минимальная сумма платежа 50 рублей");
+            .GreaterThanOrEqualTo(50m).WithMessage("Минимальная сумма платежа 50 ₽ (требование Stripe)");
 
         RuleFor(x => x.SuccessUrl)
             .Must(IsValidUrlWithPlaceholder)
@@ -78,7 +78,10 @@ public class InitializeStripeCheckoutCommandHandler(
         var userId = Guid.Parse(request.UserId);
 
         var settings = _options.Value;
-        var currency = string.IsNullOrWhiteSpace(settings.DefaultCurrency) ? "rub" : settings.DefaultCurrency;
+        var currency = settings.DefaultCurrency;
+
+        _logger.LogInformation("Initializing Stripe checkout: Amount={Amount}, Currency={Currency}, UserId={UserId}", 
+            request.Amount, currency, userId);
 
         var successUrl = string.IsNullOrWhiteSpace(request.SuccessUrl)
             ? settings.CheckoutSuccessUrl
