@@ -24,6 +24,11 @@ type BalanceActivityCardProps = {
 export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: BalanceActivityCardProps) => {
     const hasAnyActivity = activity.some((point) => point.depositsRub > 0 || point.withdrawalsRub > 0);
     const tickValues: Date[] = activity.map((p) => p.date);
+    const getPointDate = (date: Date, hourOffset: number) => {
+        const normalized = new Date(date);
+        normalized.setHours(hourOffset, 0, 0, 0);
+        return normalized;
+    };
     const formatTick = (date: Date) =>
         date.toLocaleDateString("ru-RU", {
             day: "2-digit",
@@ -32,14 +37,14 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
 
     const chartPoints: VerticalBarChartDataPoint[] = activity.flatMap((p) => {
         const deposits: VerticalBarChartDataPoint = {
-            x: p.date,
+            x: getPointDate(p.date, 8),
             y: p.depositsRub,
             color: tokens.colorBrandBackground,
             legend: "Пополнения",
         };
 
         const withdrawals: VerticalBarChartDataPoint = {
-            x: p.date,
+            x: getPointDate(p.date, 20),
             y: -Math.abs(p.withdrawalsRub),
             color: tokens.colorStatusDangerBackground3,
             legend: "Списание",
