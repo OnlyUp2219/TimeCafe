@@ -14,6 +14,7 @@ var corsPolicyName = builder.Configuration["CORS:PolicyName"]
 builder.Services.AddCorsConfiguration(corsPolicyName);
 
 builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration);
@@ -22,12 +23,14 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 
 // HttpClient
+builder.Services.AddTransient<AuthorizationDelegatingHandler>();
 builder.Services.AddHttpClient("BillingApi", (sp, client) =>
 {
     var billingBaseUrl = builder.Configuration["Services:Billing:BaseUrl"] ?? "http://localhost:8004";
     client.BaseAddress = new Uri(billingBaseUrl);
     client.Timeout = TimeSpan.FromSeconds(5);
-});
+})
+.AddHttpMessageHandler<AuthorizationDelegatingHandler>();
 
 // DbContext
 builder.Services.AddVenueDatabase(builder.Configuration);

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Venue.TimeCafe.Test.Integration.Mocks;
 
 namespace Venue.TimeCafe.Test.Integration;
 
@@ -58,6 +59,15 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 TestAuthHandler.AuthenticationScheme, options => { });
 
             services.AddAuthorization();
+
+            // Mock IVisitBalancePolicyService for integration tests
+            var balancePolicyDescriptor = services.FirstOrDefault(d =>
+                d.ServiceType == typeof(IVisitBalancePolicyService));
+            if (balancePolicyDescriptor != null)
+            {
+                services.Remove(balancePolicyDescriptor);
+            }
+            services.AddScoped<IVisitBalancePolicyService, MockVisitBalancePolicyService>();
         });
     }
 }
