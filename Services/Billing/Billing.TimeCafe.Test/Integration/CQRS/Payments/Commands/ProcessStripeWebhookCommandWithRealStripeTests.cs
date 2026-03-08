@@ -50,7 +50,7 @@ public class ProcessStripeWebhookCommandWithRealStripeTests : BasePaymentTest
         var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.Default, 50000);
 
         webhook.Should().NotBeNull();
-        webhook.Type.Should().Be(StripeTestData.Events.Succeeded);
+        webhook.Type.Should().Be("checkout.session.completed");
         webhook.Data.Should().NotBeNull();
         webhook.Data.Object.Should().NotBeNull();
         webhook.Data.Object.Id.Should().NotBeNullOrEmpty();

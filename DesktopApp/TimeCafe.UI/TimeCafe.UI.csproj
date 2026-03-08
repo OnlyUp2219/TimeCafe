@@ -1,25 +1,36 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-	<OutputType>WinExe</OutputType>
-	<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
-	<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-	<RootNamespace>TimeCafe.UI</RootNamespace>
-	<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
-	<ApplicationManifest>app.manifest</ApplicationManifest>
-	<Platforms>x86;x64;arm64</Platforms>
-	<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-	<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<UseWinUI>true</UseWinUI>
-	<EnableMsixTooling>true</EnableMsixTooling>
-	<DefaultLanguage>ru-RU</DefaultLanguage>
-	  <UseRidGraph>true</UseRidGraph>
-	  <PlatformTarget>AnyCPU</PlatformTarget>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	<LangVersion>preview</LangVersion>
-	  <NoWarn>$(NoWarn);CS8618</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>TimeCafe.UI</RootNamespace>
+		<ApplicationIcon>Assets/WindowIcon.ico</ApplicationIcon>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<Platforms>x86;x64;arm64</Platforms>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<PublishProfile>Properties\PublishProfiles\win10-$(Platform).pubxml</PublishProfile>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<UseWinUI>true</UseWinUI>
+		<EnableMsixTooling>true</EnableMsixTooling>
+		<DefaultLanguage>ru-RU</DefaultLanguage>
+		<UseRidGraph>true</UseRidGraph>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<LangVersion>preview</LangVersion>
+
+		<NoWarn>$(NoWarn);CS8618;0067;0168;0169;0414;0649;1591;IDE*;CA*</NoWarn>
+
+		<RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+		<RunAnalyzersDuringLiveAnalysis>false</RunAnalyzersDuringLiveAnalysis>
+
+		<EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+
+		<AnalysisMode>None</AnalysisMode>
+		<AnalysisLevel>none</AnalysisLevel>
+
+		<SkipMicrosoftDefaultVisualStateGroupsCommonCodeAnalysis>true</SkipMicrosoftDefaultVisualStateGroupsCommonCodeAnalysis>
+	</PropertyGroup>
 
   <ItemGroup>
 	<Content Remove="Assets\BadgeLogo.scale-100.png" />

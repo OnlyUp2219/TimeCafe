@@ -64,6 +64,13 @@ public class ProcessStripeWebhookCommandHandler(
 
         var payload = request.Payload;
 
+        if (string.IsNullOrWhiteSpace(payload.Type) ||
+            !payload.Type.StartsWith("checkout.session.", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogInformation("Stripe webhook skipped non-session event: {Type}", payload.Type);
+            return ProcessStripeWebhookResult.Ignored();
+        }
+
         var webhookSecret = _options.Value.WebhookSecret;
         if (!string.IsNullOrWhiteSpace(webhookSecret) && string.IsNullOrWhiteSpace(request.SignatureHeader))
         {
@@ -138,24 +145,26 @@ public class ProcessStripeWebhookCommandHandler(
         if (payment.Status == PaymentStatus.Completed)
             return ProcessStripeWebhookResult.AlreadyProcessed();
 
-        if (string.Equals(payload.Type, "checkout.session.completed", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(payload.Type, "checkout.session.completed", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(payload.Type, "checkout.session.async_payment_succeeded", StringComparison.OrdinalIgnoreCase))
         {
             return await HandleCheckoutSessionCompleted(payment, paymentIntent, cancellationToken);
         }
 
-        if (string.Equals(payload.Type, "payment_intent.succeeded", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(payload.Type, "checkout.session.async_payment_failed", StringComparison.OrdinalIgnoreCase))
         {
-            return await HandleSuccessfulPayment(payment, paymentIntent, cancellationToken);
+            payment.Status = PaymentStatus.Failed;
+            payment.ErrorMessage = "Асинхронный платёж отклонён";
+            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+            return ProcessStripeWebhookResult.Completed("Асинхронный платёж отклонён");
         }
 
-        if (string.Equals(payload.Type, "payment_intent.payment_failed", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(payload.Type, "checkout.session.expired", StringComparison.OrdinalIgnoreCase))
         {
-            return await HandleFailedPayment(payment, paymentIntent, cancellationToken);
-        }
-
-        if (string.Equals(payload.Type, "payment_intent.canceled", StringComparison.OrdinalIgnoreCase))
-        {
-            return await HandleCancelledPayment(payment, paymentIntent, cancellationToken);
+            payment.Status = PaymentStatus.Cancelled;
+            payment.ErrorMessage = "Сессия оплаты истекла";
+            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+            return ProcessStripeWebhookResult.Completed("Сессия оплаты истекла");
         }
 
         _logger.LogInformation("Stripe: event {Event} for payment {PaymentId} skipped", payload.Type, payment.PaymentId);
@@ -170,10 +179,33 @@ public class ProcessStripeWebhookCommandHandler(
         _logger.LogInformation("Stripe webhook: checkout.session.completed for payment {PaymentId}, amount_total={AmountTotal}",
             payment.PaymentId, session.AmountTotal);
 
-        if (payment.Status == PaymentStatus.Completed)
-            return ProcessStripeWebhookResult.AlreadyProcessed();
+        var amountFromStripe = session.AmountTotal > 0
+            ? session.AmountTotal / 100m
+            : payment.Amount;
 
+        var adjustResult = await _sender.Send(new AdjustBalanceCommand(
+            payment.UserId.ToString(),
+            amountFromStripe,
+            TransactionType.Deposit,
+            TransactionSource.Payment,
+            payment.PaymentId.ToString(),
+            "Пополнение баланса через Stripe Checkout"), cancellationToken).ConfigureAwait(false);
+
+        if (!adjustResult.Success)
+        {
+            if (!string.Equals(adjustResult.Code, "DuplicateTransaction", StringComparison.OrdinalIgnoreCase))
+            {
+                payment.Status = PaymentStatus.Failed;
+                payment.ErrorMessage = adjustResult.Message ?? "Не удалось зачислить оплату";
+                await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+                return ProcessStripeWebhookResult.ProviderError(adjustResult.Message ?? "Ошибка зачисления платежа");
+            }
+        }
+
+        payment.Status = PaymentStatus.Completed;
         payment.CompletedAt = ResolveCompletedAt(session.Created);
+        payment.TransactionId = adjustResult.Transaction?.TransactionId ?? payment.TransactionId;
+        payment.ErrorMessage = null;
 
         if (!string.IsNullOrWhiteSpace(session.PaymentIntentId))
         {
@@ -189,7 +221,7 @@ public class ProcessStripeWebhookCommandHandler(
             session.Id,
             payment.UserId);
 
-        return ProcessStripeWebhookResult.Completed("Checkout session синхронизирована");
+        return ProcessStripeWebhookResult.Completed("Платёж зачислен через Checkout Session");
     }
 
     private static DateTimeOffset ResolveCompletedAt(long createdUnix)
@@ -206,94 +238,5 @@ public class ProcessStripeWebhookCommandHandler(
         return DateTimeOffset.UtcNow;
     }
 
-    private async Task<ProcessStripeWebhookResult> HandleSuccessfulPayment(
-        Payment payment,
-        StripePaymentIntentObject paymentIntent,
-        CancellationToken cancellationToken)
-    {
-        var amountFromStripe = paymentIntent.Amount / 100m;
-
-        if (Math.Abs(amountFromStripe - payment.Amount) > 0.01m)
-        {
-            _logger.LogWarning("Stripe: amount mismatch {WebhookAmount} vs {Expected}", amountFromStripe, payment.Amount);
-        }
-
-        var adjustResult = await _sender.Send(new AdjustBalanceCommand(
-            payment.UserId.ToString(),
-            amountFromStripe,
-            TransactionType.Deposit,
-            TransactionSource.Payment,
-            payment.PaymentId.ToString(),
-            "Пополнение баланса через Stripe"), cancellationToken).ConfigureAwait(false);
-
-        if (!adjustResult.Success)
-        {
-            if (string.Equals(adjustResult.Code, "DuplicateTransaction", StringComparison.OrdinalIgnoreCase))
-            {
-                payment.Status = PaymentStatus.Completed;
-                payment.CompletedAt = ResolveCompletedAt(paymentIntent.Created);
-                payment.ExternalPaymentId = paymentIntent.Id;
-                payment.ErrorMessage = null;
-                await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-                return ProcessStripeWebhookResult.Completed("Платёж уже был зачислен ранее");
-            }
-
-            payment.Status = PaymentStatus.Failed;
-            payment.ErrorMessage = adjustResult.Message ?? "Не удалось зачислить оплату";
-            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-            return ProcessStripeWebhookResult.ProviderError(adjustResult.Message ?? "Ошибка зачисления платежа");
-        }
-
-        payment.Status = PaymentStatus.Completed;
-        payment.CompletedAt = ResolveCompletedAt(paymentIntent.Created);
-        payment.TransactionId = adjustResult.Transaction?.TransactionId;
-        payment.ExternalPaymentId = paymentIntent.Id;
-        payment.ErrorMessage = null;
-
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation("Stripe: payment {PaymentIntentId} completed for user {UserId}",
-            paymentIntent.Id,
-            payment.UserId);
-
-        return ProcessStripeWebhookResult.Completed();
-    }
-
-    private async Task<ProcessStripeWebhookResult> HandleFailedPayment(
-        Payment payment,
-        StripePaymentIntentObject paymentIntent,
-        CancellationToken cancellationToken)
-    {
-        payment.Status = PaymentStatus.Failed;
-        payment.ErrorMessage = $"Платеж отклонен Stripe (статус: {paymentIntent.Status})";
-        payment.ExternalPaymentId = paymentIntent.Id;
-
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogWarning("Stripe: payment {PaymentIntentId} failed for user {UserId}. Error: {Error}",
-            paymentIntent.Id,
-            payment.UserId,
-            payment.ErrorMessage);
-
-        return ProcessStripeWebhookResult.Completed("Платеж отклонен");
-    }
-
-    private async Task<ProcessStripeWebhookResult> HandleCancelledPayment(
-        Payment payment,
-        StripePaymentIntentObject paymentIntent,
-        CancellationToken cancellationToken)
-    {
-        payment.Status = PaymentStatus.Cancelled;
-        payment.ErrorMessage = "Платеж отменен";
-        payment.ExternalPaymentId = paymentIntent.Id;
-
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation("Stripe: payment {PaymentIntentId} cancelled for user {UserId}",
-            paymentIntent.Id,
-            payment.UserId);
-
-        return ProcessStripeWebhookResult.Completed("Платеж отменен");
-    }
 }
 

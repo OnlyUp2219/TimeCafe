@@ -47,18 +47,6 @@ app.UseAuthorization();
 
 app.UseSwaggerDevelopment();
 
-app.MapPost("/payments/webhook/stripe", async (
-    [FromServices] ISender sender,
-    [FromBody] StripeWebhookPayload payload,
-    HttpRequest request) =>
-{
-    var signature = request.Headers["Stripe-Signature"].ToString();
-    var command = new ProcessStripeWebhookCommand(payload, signature);
-    var result = await sender.Send(command);
-    return result.ToHttpResultV2(onSuccess: _ => Results.Ok());
-})
-.AllowAnonymous();
-
 var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();
 billingGroup.MapControllers();

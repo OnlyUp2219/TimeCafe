@@ -24,7 +24,11 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 ["RabbitMQ:Password"] = "test",
                 ["Stripe:PublishableKey"] = "pk_test",
                 ["Stripe:SecretKey"] = "sk_test",
-                ["Stripe:DefaultReturnUrl"] = "https://example.com/return"
+                ["Stripe:WebhookSecret"] = string.Empty,
+                ["Stripe:DefaultReturnUrl"] = "https://example.com/return",
+                ["Jwt:SigningKey"] = "test-signing-key-minimum-32-characters-long-for-hmacsha256",
+                ["Jwt:Issuer"] = "test-issuer",
+                ["Jwt:Audience"] = "test-audience"
             };
             cfg.AddInMemoryCollection(overrides);
         });

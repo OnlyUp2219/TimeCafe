@@ -22,7 +22,10 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             var overrides = new Dictionary<string, string?>
             {
                 ["ConnectionStrings:DefaultConnection"] = string.Empty,
-                ["CORS:PolicyName"] = "TestPolicy"
+                ["CORS:PolicyName"] = "TestPolicy",
+                ["Jwt:SigningKey"] = "test-signing-key-minimum-32-characters-long-for-hmacsha256",
+                ["Jwt:Issuer"] = "test-issuer",
+                ["Jwt:Audience"] = "test-audience"
             };
             cfg.AddInMemoryCollection(overrides);
         });

@@ -390,3 +390,4 @@ secrets.local.*
 # !docs/**/*.md
 
 FluentUI/
+DesktopApp/
