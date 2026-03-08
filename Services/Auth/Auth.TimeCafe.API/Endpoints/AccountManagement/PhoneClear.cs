@@ -18,10 +18,7 @@ public class PhoneClear : ICarterModule
             var command = new ClearPhoneCommand(userId);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireAuthorization()
         .WithName("ClearPhone")

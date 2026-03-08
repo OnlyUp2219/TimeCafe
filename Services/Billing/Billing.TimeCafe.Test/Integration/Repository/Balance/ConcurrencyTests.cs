@@ -37,9 +37,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
 
         var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
-        var createTasks = userIds.Select(userId =>
-        {
-            return Task.Run(async () =>
+        var createTasks = userIds.Select(userId => Task.Run(async () =>
             {
                 using var scope = CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -49,8 +47,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                     TotalDeposited = DefaultsGuid.DefaultAmount
                 };
                 return await repository.CreateAsync(balance);
-            });
-        }).ToList();
+            })).ToList();
 
         var results = await Task.WhenAll(createTasks);
 
@@ -78,7 +75,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var current = await repository.GetByUserIdAsync(userId);
-            current!.CurrentBalance = DefaultsGuid.DefaultAmount + (i * DefaultsGuid.SmallAmount);
+            current!.CurrentBalance = DefaultsGuid.DefaultAmount + i * DefaultsGuid.SmallAmount;
             current.LastUpdated = DateTimeOffset.UtcNow;
             return await repository.UpdateAsync(current);
         }).ToList();
@@ -245,7 +242,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var balance = await repository.GetByUserIdAsync(userId);
             if (balance != null)
             {
-                balance.CurrentBalance = DefaultsGuid.DefaultAmount + (i * DefaultsGuid.SmallAmount);
+                balance.CurrentBalance = DefaultsGuid.DefaultAmount + i * DefaultsGuid.SmallAmount;
                 balance.LastUpdated = DateTimeOffset.UtcNow;
                 await repository.UpdateAsync(balance);
             }
@@ -271,7 +268,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
     public async Task Repository_StressTest_ParallelOperations()
     {
 
-        var operationCount = 50;
+        const int operationCount = 50;
         var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
         var tasks = new List<Task>();

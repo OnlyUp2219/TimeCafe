@@ -32,9 +32,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
     {
         var userIds = new[] { DefaultsGuid.UserId, DefaultsGuid.UserId2, DefaultsGuid.UserId3 };
 
-        var createTasks = userIds.Select(userId =>
-        {
-            return Task.Run(async () =>
+        var createTasks = userIds.Select(userId => Task.Run(async () =>
             {
                 using var scope = CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -43,8 +41,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     DefaultsGuid.DefaultAmount,
                     TransactionSource.Manual);
                 return await repository.CreateAsync(transaction);
-            });
-        }).ToList();
+            })).ToList();
 
         var results = await Task.WhenAll(createTasks);
 
@@ -66,9 +63,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
         await ClearCacheAsync();
         var userId = DefaultsGuid.UserId;
 
-        var createTasks = Enumerable.Range(0, 5).Select(i =>
-        {
-            return Task.Run(async () =>
+        var createTasks = Enumerable.Range(0, 5).Select(i => Task.Run(async () =>
             {
                 using var scope = CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -77,8 +72,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     DefaultsGuid.SmallAmount * (i + 1),
                     TransactionSource.Manual);
                 return await repository.CreateAsync(transaction);
-            });
-        }).ToList();
+            })).ToList();
 
         var results = await Task.WhenAll(createTasks);
 

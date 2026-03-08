@@ -45,7 +45,7 @@ public class ClearPhoneCommandHandler(
             if (user == null)
                 return ClearPhoneResult.UserNotFound();
 
-            if (string.IsNullOrWhiteSpace(user.PhoneNumber) && user.PhoneNumberConfirmed == false)
+            if (string.IsNullOrWhiteSpace(user.PhoneNumber) && !user.PhoneNumberConfirmed)
                 return ClearPhoneResult.Cleared();
 
             user.PhoneNumber = null;

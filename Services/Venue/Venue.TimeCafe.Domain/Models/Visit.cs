@@ -53,7 +53,7 @@ public class Visit
         var duration = (exitTime - entryTime).TotalMinutes;
 
         return tariffBillingType == BillingType.Hourly
-                ? (decimal)Math.Ceiling(duration / 60) * (tariffPricePerMinute * 60)
+                ? (decimal)Math.Ceiling(duration / 60) * tariffPricePerMinute * 60
                 : (decimal)Math.Ceiling(duration) * tariffPricePerMinute;
     }
 }

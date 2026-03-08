@@ -160,7 +160,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(InvalidData.EmptyUserId.ToString(), Page: 1, PageSize: 10));
+        var action = async () => await sender.Send(new GetTransactionHistoryQuery(InvalidData.EmptyUserId, Page: 1, PageSize: 10));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

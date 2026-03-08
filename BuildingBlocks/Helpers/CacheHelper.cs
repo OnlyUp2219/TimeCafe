@@ -8,6 +8,22 @@ public static class CacheHelper
         AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
     };
 
+    private static readonly JsonSerializerOptions SerializeOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
+    };
+
+    private static readonly JsonSerializerOptions DeserializeOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        Converters =
+        {
+            new DateOnlyJsonConverter(),
+            new NullableDateOnlyJsonConverter()
+        }
+    };
+
 
     /// <summary>
     /// Удаляет несколько ключей из кэша параллельно.
@@ -47,18 +63,13 @@ public static class CacheHelper
     {
         try
         {
-            if (Value == null)
+            if (EqualityComparer<T>.Default.Equals(Value, default))
             {
                 logger.LogWarning("Попытка записать null в кэш: {Key}", key);
                 return;
             }
 
-            var json = JsonSerializer.Serialize(Value,
-                new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    ReferenceHandler = ReferenceHandler.IgnoreCycles
-                });
+            var json = JsonSerializer.Serialize(Value, SerializeOptions);
 
             await cache.SetStringAsync(key, json, options ?? DefaultOptions);
 
@@ -89,15 +100,8 @@ public static class CacheHelper
                 return default;
             }
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
-            options.Converters.Add(new DateOnlyJsonConverter());
-            options.Converters.Add(new NullableDateOnlyJsonConverter());
-
             logger.LogDebug("Redis: Получены данные для ключа {Key}", key);
-            return JsonSerializer.Deserialize<T>(cached, options);
+            return JsonSerializer.Deserialize<T>(cached, DeserializeOptions);
         }
         catch (Exception ex)
         {

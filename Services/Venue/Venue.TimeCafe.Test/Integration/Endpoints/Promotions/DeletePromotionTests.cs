@@ -68,7 +68,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/venue/promotions//");
+        var response = await Client.DeleteAsync("/venue/promotions//");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

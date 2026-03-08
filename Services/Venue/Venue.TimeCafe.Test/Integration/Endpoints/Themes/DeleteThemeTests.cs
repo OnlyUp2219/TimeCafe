@@ -90,7 +90,7 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     [Fact]
     public async Task Endpoint_DeleteTheme_Should_Return405_WhenThemeIdIsEmpty()
     {
-        var response = await Client.DeleteAsync($"/venue/themes/");
+        var response = await Client.DeleteAsync("/venue/themes/");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

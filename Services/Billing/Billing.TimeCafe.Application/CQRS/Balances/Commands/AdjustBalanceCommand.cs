@@ -41,7 +41,7 @@ public class AdjustBalanceCommandValidator : AbstractValidator<AdjustBalanceComm
             .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
 
         RuleFor(x => x.SourceId)
-            .Must(x => string.IsNullOrEmpty(x) || (Guid.TryParse(x, out var guid) && guid != Guid.Empty))
+            .Must(x => string.IsNullOrEmpty(x) || Guid.TryParse(x, out var guid) && guid != Guid.Empty)
             .WithMessage("Некорректный SourceId")
             .When(x => !string.IsNullOrEmpty(x.SourceId));
 

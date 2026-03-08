@@ -19,7 +19,7 @@ public record LoginUserResult(
 
     public static LoginUserResult LoginSuccess(TokensDto tokensDto) =>
         new(true, Message: "Успешный вход",
-            TokensDto: tokensDto, EmailConfirmed: true);
+EmailConfirmed: true, TokensDto: tokensDto);
 }
 
 public class LoginUserCommandValidator : AbstractValidator<LoginUserCommand>

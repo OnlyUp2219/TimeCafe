@@ -24,7 +24,7 @@ builder.Services.AddRedis(builder.Configuration);
 
 // HttpClient
 builder.Services.AddTransient<AuthorizationDelegatingHandler>();
-builder.Services.AddHttpClient("BillingApi", (sp, client) =>
+builder.Services.AddHttpClient("BillingApi", (_, client) =>
 {
     var billingBaseUrl = builder.Configuration["Services:Billing:BaseUrl"] ?? "http://localhost:8004";
     client.BaseAddress = new Uri(billingBaseUrl);
@@ -73,6 +73,9 @@ app.MapGet("/health", () => Results.Ok("OK"))
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}
 
 

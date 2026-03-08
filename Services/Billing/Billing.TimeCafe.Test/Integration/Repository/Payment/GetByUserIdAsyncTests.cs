@@ -15,12 +15,12 @@ public class GetByUserIdAsyncTests : BasePaymentRepositoryTest
         var result = await repository.GetByUserIdAsync(DefaultsGuid.UserId, page: 1, pageSize: 10);
 
         result.Should().HaveCount(3);
-        result.Select(x => x.PaymentId).Should().Contain(new[]
-        {
+        result.Select(x => x.PaymentId).Should().Contain(
+        [
             DefaultsGuid.PaymentId,
             DefaultsGuid.PaymentId2,
             DefaultsGuid.PaymentId3
-        });
+        ]);
     }
 
     [Fact]

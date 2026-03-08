@@ -25,7 +25,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)401);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("UserNotFound");
@@ -129,7 +129,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     public async Task Endpoint_ConfirmEmail_Should_ReturnSuccess_WhenValidToken()
     {
         // Arrange
-        var email = "unconfirmed@example.com";
+        const string email = "unconfirmed@example.com";
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(email);
@@ -172,7 +172,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("ValidationError");
@@ -200,7 +200,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("ValidationError");
@@ -221,7 +221,7 @@ public class EmailConfirmationTests : BaseEndpointTest
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync("unconfirmed@example.com");
-        var malformedToken = "invalid_base64_without_padding";
+        const string malformedToken = "invalid_base64_without_padding";
         var dto = new { UserId = user!.Id, Token = malformedToken };
 
         // Act
@@ -248,7 +248,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     public async Task Endpoint_ConfirmEmail_Should_ReturnInvalidToken_WhenTokenFromAnotherUser()
     {
         // Arrange
-        var anotherEmail = "another_user@example.com";
+        const string anotherEmail = "another_user@example.com";
         var token = await GenerateConfirmationTokenAsync(anotherEmail);
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -279,7 +279,7 @@ public class EmailConfirmationTests : BaseEndpointTest
     public async Task Endpoint_ConfirmEmail_Should_WorkWithRateLimiterOverrides()
     {
         // Arrange
-        var email = "unconfirmed@example.com";
+        const string email = "unconfirmed@example.com";
         var token = await GenerateConfirmationTokenAsync(email);
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();

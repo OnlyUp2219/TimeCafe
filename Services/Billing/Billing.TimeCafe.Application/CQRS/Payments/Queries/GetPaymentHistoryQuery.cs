@@ -18,10 +18,9 @@ public record GetPaymentHistoryResult(
     public static GetPaymentHistoryResult InvalidUserId() =>
         new(false, Code: "InvalidUserId", Message: "Некорректный ID пользователя", StatusCode: 400);
 
-    public static GetPaymentHistoryResult WithPayments(List<PaymentDto> payments, int totalCount, int page, int pageSize) =>
+    public static GetPaymentHistoryResult WithPayments(List<PaymentDto> payments, int totalCount, int pageSize) =>
         new(true, payments, totalCount, (totalCount + pageSize - 1) / pageSize);
 }
-//TODO: DTO in DTOs folder
 public record PaymentDto(
     Guid PaymentId,
     string? ExternalPaymentId,
@@ -65,15 +64,15 @@ public class GetPaymentHistoryQueryHandler(
         var totalCount = await _paymentRepository.GetTotalCountByUserIdAsync(userId, cancellationToken);
         var payments = await _paymentRepository.GetByUserIdAsync(userId, page, pageSize, cancellationToken);
 
-        var paymentDtos = payments.Select(p => new PaymentDto(
+        var paymentDtos = payments.ConvertAll(p => new PaymentDto(
             p.PaymentId,
             p.ExternalPaymentId,
             p.Amount,
             p.Status.ToString(),
             p.CreatedAt,
             p.CompletedAt,
-            p.ErrorMessage)).ToList();
+            p.ErrorMessage));
 
-        return GetPaymentHistoryResult.WithPayments(paymentDtos, totalCount, page, pageSize);
+        return GetPaymentHistoryResult.WithPayments(paymentDtos, totalCount, pageSize);
     }
 }

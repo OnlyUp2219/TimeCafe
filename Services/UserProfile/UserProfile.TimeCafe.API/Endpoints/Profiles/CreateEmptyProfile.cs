@@ -8,7 +8,7 @@ public class CreateEmptyProfile : ICarterModule
             [FromServices] ISender sender,
             [AsParameters] CreateEmptyProfileDto dto) =>
         {
-            var command = new CreateEmptyCommand((dto.UserId));
+            var command = new CreateEmptyCommand(dto.UserId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message }, statusCode: r.StatusCode ?? 201));
         })

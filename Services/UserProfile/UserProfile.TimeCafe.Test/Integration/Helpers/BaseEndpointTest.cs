@@ -76,9 +76,9 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         }
     }
 
-    protected byte[] LoadTestImage()
+    protected static byte[] LoadTestImage()
     {
-        var imagePath = @"f:\IT\TimeCafe\diagrams\Er-diagrama.png";
+        const string imagePath = @"f:\IT\TimeCafe\diagrams\Er-diagrama.png";
 
         if (!File.Exists(imagePath))
         {
@@ -89,7 +89,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
     }
 
 
-    protected async Task<bool> VerifyS3ObjectExistsAsync(string bucketName, string key, IAmazonS3 s3Client)
+    protected static async Task<bool> VerifyS3ObjectExistsAsync(string bucketName, string key, IAmazonS3 s3Client)
     {
         try
         {

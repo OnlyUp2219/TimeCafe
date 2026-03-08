@@ -11,7 +11,7 @@ public class GetPhotoProfile : ICarterModule
         {
             var query = new GetProfilePhotoQuery(dto.UserId);
             var result = await sender.Send(query, ct);
-            return result.ToHttpResultV2(r => Results.File(r.Stream!, r.ContentType!, enableRangeProcessing: true));
+            return result.ToHttpResultV2(r => Results.File(r.Stream!, r.ContentType, enableRangeProcessing: true));
         })
         .WithTags("ProfilePhoto")
         .WithName("GetProfilePhoto")

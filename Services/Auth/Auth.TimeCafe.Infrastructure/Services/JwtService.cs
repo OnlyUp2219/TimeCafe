@@ -74,7 +74,9 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
         if (securityToken is not JwtSecurityToken jwt ||
             !jwt.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
             throw new SecurityTokenException("Invalid token");
+        }
 
         return principal;
     }
@@ -126,7 +128,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
     public async Task<bool> RevokeRefreshTokenAsync(string refreshToken, CancellationToken cancellationToken = default)
     {
         var tokenEntity = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == refreshToken, cancellationToken);
-        if (tokenEntity == null || tokenEntity.IsRevoked)
+        if (tokenEntity?.IsRevoked != false)
             return false;
         tokenEntity.IsRevoked = true;
         await _context.SaveChangesAsync(cancellationToken);

@@ -21,7 +21,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
             });
 
         MapperMock.Setup(m => m.Map(It.IsAny<EndVisitCommand>(), It.IsAny<Visit>()))
-            .Callback((EndVisitCommand cmd, Visit v) =>
+            .Callback((EndVisitCommand _, Visit _) =>
             {
             });
     }

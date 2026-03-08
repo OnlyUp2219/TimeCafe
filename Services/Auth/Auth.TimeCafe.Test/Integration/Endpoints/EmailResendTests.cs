@@ -24,7 +24,7 @@ public class EmailResendTests : BaseEndpointTest
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)401);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("UserNotFound");

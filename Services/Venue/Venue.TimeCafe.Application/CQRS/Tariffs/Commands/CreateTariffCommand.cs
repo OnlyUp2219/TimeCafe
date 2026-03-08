@@ -45,7 +45,7 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
             .IsInEnum().WithMessage("Неверный тип биллинга");
 
         RuleFor(x => x.ThemeId)
-            .Must(id => string.IsNullOrWhiteSpace(id) || (Guid.TryParse(id, out var guid) && guid != Guid.Empty))
+            .Must(id => string.IsNullOrWhiteSpace(id) || Guid.TryParse(id, out var guid) && guid != Guid.Empty)
             .WithMessage("Неверный идентификатор темы");
     }
 }

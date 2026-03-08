@@ -11,10 +11,7 @@ public static class RedisExtensions
         var connectionString = redisSection["ConnectionString"]
             ?? throw new InvalidOperationException("Redis:ConnectionString is not configured.");
 
-        services.AddStackExchangeRedisCache(options =>
-        {
-            options.Configuration = connectionString;
-        });
+        services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
 
         return services;
     }

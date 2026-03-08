@@ -57,10 +57,10 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
 
         if (transactions == null || transactions.Count == 0)
         {
-            return GetTransactionHistoryResult.GetSuccess(new List<TransactionDto>(), totalCount, request.PageSize);
+            return GetTransactionHistoryResult.GetSuccess([], totalCount, request.PageSize);
         }
 
-        var dtos = transactions.Select(t => new TransactionDto(
+        var dtos = transactions.ConvertAll(t => new TransactionDto(
             t.TransactionId,
             t.UserId,
             t.Amount,
@@ -69,7 +69,7 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
             (int)t.Status,
             t.Comment,
             t.CreatedAt,
-            t.BalanceAfter)).ToList();
+            t.BalanceAfter));
 
         return GetTransactionHistoryResult.GetSuccess(dtos, totalCount, request.PageSize);
     }

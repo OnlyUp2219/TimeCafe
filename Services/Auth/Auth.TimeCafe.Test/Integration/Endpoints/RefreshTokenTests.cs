@@ -14,7 +14,7 @@ public class RefreshTokenTests : BaseEndpointTest
     {
         var raw = setCookies.First(c => c.StartsWith(name + "=", StringComparison.OrdinalIgnoreCase));
         var firstPart = raw.Split(';', 2)[0];
-        return firstPart.Substring(name.Length + 1);
+        return firstPart[(name.Length + 1)..];
     }
 
     private static HttpRequestMessage CreateRefreshRequest(string refreshToken)

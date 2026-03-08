@@ -6,14 +6,14 @@ namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 /// </summary>
 public class TestPermissionService : IPermissionService
 {
-    private readonly Dictionary<Guid, HashSet<Permission>> _userPermissions = new();
+    private readonly Dictionary<Guid, HashSet<Permission>> _userPermissions = [];
 
     /// <summary>
     /// Настраивает разрешения для пользователя.
     /// </summary>
     public TestPermissionService SetPermissions(Guid userId, params Permission[] permissions)
     {
-        _userPermissions[userId] = new HashSet<Permission>(permissions);
+        _userPermissions[userId] = [.. permissions];
         return this;
     }
 
@@ -22,7 +22,7 @@ public class TestPermissionService : IPermissionService
     /// </summary>
     public TestPermissionService SetAsAdmin(Guid userId)
     {
-        _userPermissions[userId] = new HashSet<Permission>(Enum.GetValues<Permission>());
+        _userPermissions[userId] = [.. Enum.GetValues<Permission>()];
         return this;
     }
 

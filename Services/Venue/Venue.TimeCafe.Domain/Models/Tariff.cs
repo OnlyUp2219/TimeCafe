@@ -22,5 +22,5 @@ public class Tariff
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset LastModified { get; set; } = DateTimeOffset.UtcNow;
 
-    public virtual ICollection<Visit> Visits { get; set; } = new List<Visit>();
+    public virtual ICollection<Visit> Visits { get; set; } = [];
 }

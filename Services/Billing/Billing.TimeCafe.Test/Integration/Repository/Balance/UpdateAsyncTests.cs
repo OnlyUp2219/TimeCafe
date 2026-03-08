@@ -279,7 +279,7 @@ public class UpdateAsyncTests : BaseBalanceRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var largeAmount = 999999999.99m;
+        const decimal largeAmount = 999999999.99m;
         balance.CurrentBalance = largeAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
 

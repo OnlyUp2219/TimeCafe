@@ -280,8 +280,8 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<WhoAmIResponse>();
         content!.UserId.Should().Be(_adminUserId.ToString());
-        content.Permissions.Should().Contain(Permission.AdminView.ToString());
-        content.Permissions.Should().Contain(Permission.ClientEdit.ToString());
+        content.Permissions.Should().Contain(nameof(Permission.AdminView));
+        content.Permissions.Should().Contain(nameof(Permission.ClientEdit));
         content.Permissions.Should().HaveCount(8);
     }
 
@@ -299,9 +299,9 @@ public class AuthorizationEndpointTests : IClassFixture<IntegrationApiFactory>, 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var content = await response.Content.ReadFromJsonAsync<WhoAmIResponse>();
         content!.UserId.Should().Be(_clientUserId.ToString());
-        content.Permissions.Should().Contain(Permission.ClientView.ToString());
-        content.Permissions.Should().Contain(Permission.ClientEdit.ToString());
-        content.Permissions.Should().NotContain(Permission.AdminView.ToString());
+        content.Permissions.Should().Contain(nameof(Permission.ClientView));
+        content.Permissions.Should().Contain(nameof(Permission.ClientEdit));
+        content.Permissions.Should().NotContain(nameof(Permission.AdminView));
         content.Permissions.Should().HaveCount(4);
     }
 

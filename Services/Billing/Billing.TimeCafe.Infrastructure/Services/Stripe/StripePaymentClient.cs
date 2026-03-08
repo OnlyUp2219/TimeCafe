@@ -71,14 +71,14 @@ public class StripePaymentClient : IStripePaymentClient
     {
         try
         {
-            _logger.LogInformation("Creating Stripe checkout session: Amount={Amount}, Currency={Currency}, UserId={UserId}", 
+            _logger.LogInformation("Creating Stripe checkout session: Amount={Amount}, Currency={Currency}, UserId={UserId}",
                 request.Amount, request.Currency, request.UserId);
 
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
-                LineItems = new List<SessionLineItemOptions>
-                {
+                LineItems =
+                [
                     new()
                     {
                         PriceData = new SessionLineItemPriceDataOptions
@@ -93,7 +93,7 @@ public class StripePaymentClient : IStripePaymentClient
                         },
                         Quantity = 1
                     }
-                },
+                ],
                 SuccessUrl = request.SuccessUrl,
                 CancelUrl = request.CancelUrl,
                 Metadata = new Dictionary<string, string>

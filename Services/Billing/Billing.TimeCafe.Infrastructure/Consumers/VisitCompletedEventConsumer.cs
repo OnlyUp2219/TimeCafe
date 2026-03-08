@@ -38,7 +38,7 @@ public class VisitCompletedEventConsumer(
 
             if (balance.CurrentBalance < evt.Amount)
             {
-                balance.Debt += (evt.Amount - balance.CurrentBalance);
+                balance.Debt += evt.Amount - balance.CurrentBalance;
                 balance.CurrentBalance = 0;
             }
             else

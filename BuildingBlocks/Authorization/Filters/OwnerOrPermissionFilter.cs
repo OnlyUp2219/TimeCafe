@@ -3,7 +3,7 @@ using System.Security.Claims;
 namespace BuildingBlocks.Authorization.Filters;
 
 /// <summary>
-/// IDOR защита: пользователь владелец ресурса ИЛИ имеет разрешение (админ).
+/// <para>IDOR защита: пользователь владелец ресурса ИЛИ имеет разрешение (админ).</para>
 /// </summary>
 public class OwnerOrPermissionFilter : IEndpointFilter
 {
@@ -41,14 +41,13 @@ public class OwnerOrPermissionFilter : IEndpointFilter
         var requestedUserId = ExtractUserIdFromRequest(context);
 
         // Свой ресурс — пропускаем
-        if (requestedUserId.HasValue && requestedUserId.Value == currentUserId)
+        if (requestedUserId == currentUserId)
+        {
             return await next(context);
+        }
 
         // Проверяем разрешение (для чужих данных)
-        var permissionService = httpContext.RequestServices.GetService<IPermissionService>();
-
-        if (permissionService == null)
-            return Results.Forbid();
+        var permissionService = httpContext.RequestServices.GetRequiredService<IPermissionService>();
 
         var hasPermission = _mode switch
         {
@@ -58,35 +57,45 @@ public class OwnerOrPermissionFilter : IEndpointFilter
         };
 
         if (!hasPermission)
+        {
             return Results.Forbid();
+        }
 
         return await next(context);
     }
 
     private Guid? ExtractUserIdFromRequest(EndpointFilterInvocationContext context)
     {
-        if (context.HttpContext.Request.RouteValues.TryGetValue(_userIdParameterName, out var routeValue))
+        if (context.HttpContext.Request.RouteValues.TryGetValue(_userIdParameterName, out var routeValue) && Guid.TryParse(routeValue?.ToString(), out var routeUserId))
         {
-            if (Guid.TryParse(routeValue?.ToString(), out var routeUserId))
-                return routeUserId;
+            return routeUserId;
         }
 
         var queryValue = context.HttpContext.Request.Query[_userIdParameterName].FirstOrDefault();
         if (Guid.TryParse(queryValue, out var queryUserId))
+        {
             return queryUserId;
+        }
 
         foreach (var arg in context.Arguments)
         {
-            if (arg == null) continue;
+            if (arg == null)
+            {
+                continue;
+            }
 
             if (arg is Guid guidArg)
+            {
                 return guidArg;
+            }
 
             var userIdProperty = arg.GetType().GetProperty("UserId")
                               ?? arg.GetType().GetProperty(_userIdParameterName);
 
             if (userIdProperty?.GetValue(arg) is Guid propValue)
+            {
                 return propValue;
+            }
         }
 
         return null;

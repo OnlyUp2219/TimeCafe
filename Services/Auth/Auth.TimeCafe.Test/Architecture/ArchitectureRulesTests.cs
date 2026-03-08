@@ -5,13 +5,12 @@ using System.Text.RegularExpressions;
 
 namespace Auth.TimeCafe.Test.Architecture;
 
-public class ArchitectureRulesTests
+public partial class ArchitectureRulesTests
 {
     private readonly Assembly _application = typeof(LoginUserCommand).Assembly;
-    private readonly Assembly _infrastructure = typeof(JwtService).Assembly;
 
     [Fact]
-    public void Api_Endpoints_Should_Have_WithDescription_Summary_Name_Tags_And_BeAsync()
+    public void Api_Endpoints_Should_Have_WithDescription_Summary_Name_Tags_And_UseAsyncHandlers()
     {
         var repoRoot = FindRepoRoot();
         repoRoot.Should().NotBeNull("Не удалось найти корень репозитория (TimeCafe.sln)");
@@ -25,6 +24,7 @@ public class ArchitectureRulesTests
         var publicEndpoints = new[] {
             "EmailConfirmation.cs", "ResetPassword.cs", "EmailResend.cs",
             "Registration.cs", "ExternalProviders.cs",
+            "GoogleProvider.cs", "MicrosoftProvider.cs",
             "Login.cs", "LoginV2.cs", "Logout.cs", "RefreshToken.cs", "RefreshTokenV2.cs"
         };
 
@@ -56,7 +56,7 @@ public class ArchitectureRulesTests
 
             (text.Contains("async (") || text.Contains("await ")).Should().BeTrue(file + " should use async/await in handler lambda");
 
-            var hasBindingAttributes = Regex.IsMatch(text, "\\[(FromServices|FromRoute|FromBody|FromQuery|FromHeader|FromForm)\\b", RegexOptions.IgnoreCase);
+            var hasBindingAttributes = MyRegex().IsMatch(text);
             hasBindingAttributes.Should().BeTrue(file + " should use parameter binding attributes like [FromServices], [FromRoute], [FromBody], [FromQuery], [FromHeader], or [FromForm]");
         }
     }
@@ -68,7 +68,8 @@ public class ArchitectureRulesTests
         while (cur != null)
         {
             var sln = Path.Combine(cur.FullName, "TimeCafe.sln");
-            if (File.Exists(sln)) return cur.FullName;
+            if (File.Exists(sln))
+                return cur.FullName;
             cur = cur.Parent;
         }
         return null;
@@ -80,14 +81,13 @@ public class ArchitectureRulesTests
         var types = _application.GetTypes().ToList();
 
 
-        var requestTypes = types.Where(t => t.IsValueType || t.IsClass)
-            .Where(t => t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequest<>))
-                        || (t.IsValueType && (t.Name.EndsWith("Query") || t.Name.EndsWith("Command"))))
+        var requestTypes = types.Where(t => (t.IsValueType || t.IsClass) && (t.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequest<>))
+                        || t.IsValueType && (t.Name.EndsWith("Query") || t.Name.EndsWith("Command"))))
             .ToList();
 
         requestTypes.Should().NotBeEmpty("Application layer должен содержать команды и запросы");
 
-        var validators = types.Where(t => t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(AbstractValidator<>)).ToList();
+        var validators = types.Where(t => t.BaseType?.IsGenericType == true && t.BaseType.GetGenericTypeDefinition() == typeof(AbstractValidator<>)).ToList();
 
         var errors = new List<string>();
 
@@ -95,25 +95,36 @@ public class ArchitectureRulesTests
 
         foreach (var req in requestTypes)
         {
-            if (!(req.Name.EndsWith("Command") || req.Name.EndsWith("Query")))
-            {
-                errors.Add($"{req.Name} должен заканчиваться на Command или Query");
-            }
-
-            var hasValidator = validators.Any(v => v.BaseType!.GetGenericArguments()[0] == req);
-            if (!hasValidator)
-            {
-                errors.Add($"Должен существовать валидатор для {req.Name}");
-            }
-
-            var hasHandler = handlers.Any(h => h.Name.EndsWith(req.Name + "Handler") || h.GetInterfaces().Any(i =>
-                i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>) && i.GetGenericArguments()[0] == req));
-            if (!hasHandler)
-            {
-                errors.Add($"Должен существовать handler для {req.Name} (название должно заканчиваться на {req.Name}Handler или реализовывать IRequestHandler<,>)");
-            }
+            ValidateRequestTypeName(req, errors);
+            ValidateRequestHasValidator(req, validators, errors);
+            ValidateRequestHasHandler(req, handlers, errors);
         }
 
         errors.Should().BeEmpty("Архитектурные проблемы:\n" + string.Join("\n", errors));
     }
+
+    private static void ValidateRequestTypeName(Type req, List<string> errors)
+    {
+        if (!(req.Name.EndsWith("Command") || req.Name.EndsWith("Query")))
+            errors.Add($"{req.Name} должен заканчиваться на Command или Query");
+    }
+
+    private static void ValidateRequestHasValidator(Type req, List<Type> validators, List<string> errors)
+    {
+        var hasValidator = validators.Any(v => v.BaseType!.GetGenericArguments()[0] == req);
+        if (!hasValidator)
+            errors.Add($"Должен существовать валидатор для {req.Name}");
+    }
+
+    private static void ValidateRequestHasHandler(Type req, List<Type> handlers, List<string> errors)
+    {
+        var hasHandler = handlers.Any(h => h.Name.EndsWith(req.Name + "Handler") || h.GetInterfaces().Any(i =>
+            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(MediatR.IRequestHandler<,>) && i.GetGenericArguments()[0] == req));
+
+        if (!hasHandler)
+            errors.Add($"Должен существовать handler для {req.Name} (название должно заканчиваться на {req.Name}Handler или реализовывать IRequestHandler<,>)");
+    }
+
+    [GeneratedRegex("\\[(FromServices|FromRoute|FromBody|FromQuery|FromHeader|FromForm)\\b", RegexOptions.IgnoreCase, "ru-RU")]
+    private static partial Regex MyRegex();
 }

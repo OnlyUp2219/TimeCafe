@@ -21,7 +21,7 @@ public class AuthorizationTestEndpoints : ICarterModule
                 message = "Доступ к админскому ресурсу разрешён",
                 userId,
                 endpoint = "admin-only",
-                requiredPermission = Permission.AdminView.ToString()
+                requiredPermission = nameof(Permission.AdminView)
             });
         })
         .WithName("TestAdminOnly")
@@ -36,7 +36,7 @@ public class AuthorizationTestEndpoints : ICarterModule
                 message = "Доступ разрешён клиенту или админу",
                 userId,
                 endpoint = "client-or-admin",
-                requiredPermissions = new[] { Permission.ClientView.ToString(), Permission.AdminView.ToString() }
+                requiredPermissions = new[] { nameof(Permission.ClientView), nameof(Permission.AdminView) }
             });
         })
         .WithName("TestClientOrAdmin")
@@ -51,7 +51,7 @@ public class AuthorizationTestEndpoints : ICarterModule
                 message = "Доступ разрешён — есть все нужные разрешения",
                 userId,
                 endpoint = "multi-permission",
-                requiredPermissions = new[] { Permission.ClientView.ToString(), Permission.ClientEdit.ToString() }
+                requiredPermissions = new[] { nameof(Permission.ClientView), nameof(Permission.ClientEdit) }
             });
         })
         .WithName("TestMultiPermission")
@@ -108,7 +108,7 @@ public class AuthorizationTestEndpoints : ICarterModule
                 message = "Админское создание разрешено",
                 userId,
                 endpoint = "POST admin-create",
-                requiredPermission = Permission.AdminCreate.ToString()
+                requiredPermission = nameof(Permission.AdminCreate)
             });
         })
         .WithName("TestAdminCreate")

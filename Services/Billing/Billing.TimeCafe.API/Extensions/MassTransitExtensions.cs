@@ -12,10 +12,7 @@ public static class MassTransitExtensions
             {
                 x.AddBillingMassTransit();
 
-                x.UsingInMemory((context, cfg) =>
-                {
-                    cfg.ConfigureEndpoints(context);
-                });
+                x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
             });
 
             return services;
@@ -45,10 +42,7 @@ public static class MassTransitExtensions
             });
         });
 
-        services.Configure<MassTransitHostOptions>(options =>
-        {
-            options.StopTimeout = TimeSpan.FromSeconds(30);
-        });
+        services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
 
         return services;
     }

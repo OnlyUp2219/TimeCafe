@@ -37,7 +37,7 @@ public static class JwtAuthenticationExtensions
                     ClockSkew = TimeSpan.FromMinutes(1)
                 };
 
-#if (DEBUG)
+#if DEBUG
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -56,11 +56,9 @@ public static class JwtAuthenticationExtensions
 #endif
             });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(DefaultUserPolicy, policy => policy.RequireAuthenticatedUser());
-            options.AddPolicy(AdminOnlyPolicy, policy => policy.RequireRole("admin"));
-        });
+        services.AddAuthorizationBuilder()
+            .AddPolicy(DefaultUserPolicy, policy => policy.RequireAuthenticatedUser())
+            .AddPolicy(AdminOnlyPolicy, policy => policy.RequireRole("admin"));
 
         return services;
     }

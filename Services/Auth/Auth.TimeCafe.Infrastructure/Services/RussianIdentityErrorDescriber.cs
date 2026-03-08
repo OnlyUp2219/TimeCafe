@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services;
 
 public class RussianIdentityErrorDescriber : IdentityErrorDescriber
 {
@@ -17,28 +17,28 @@ public class RussianIdentityErrorDescriber : IdentityErrorDescriber
         };
 
     public override IdentityError PasswordRequiresLower()
-          => new IdentityError
+          => new()
           {
               Code = nameof(PasswordRequiresLower),
               Description = "Пароль должен содержать хотя бы одну строчную букву ('a'-'z', 'а'-'я')."
           };
 
     public override IdentityError PasswordRequiresUpper()
-        => new IdentityError
+        => new()
         {
             Code = nameof(PasswordRequiresUpper),
             Description = "Пароль должен содержать хотя бы одну заглавную букву."
         };
 
     public override IdentityError PasswordRequiresDigit()
-        => new IdentityError
+        => new()
         {
             Code = nameof(PasswordRequiresDigit),
             Description = "Пароль должен содержать хотя бы одну цифру."
         };
 
     public override IdentityError PasswordTooShort(int length)
-        => new IdentityError
+        => new()
         {
             Code = nameof(PasswordTooShort),
             Description = $"Пароль должен содержать не менее {length} символов."

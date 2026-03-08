@@ -19,10 +19,7 @@ public class PhoneSave : ICarterModule
             var command = new SavePhoneCommand(userId, model.PhoneNumber);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber }));
         })
         .RequireAuthorization()
         .WithName("SavePhone")

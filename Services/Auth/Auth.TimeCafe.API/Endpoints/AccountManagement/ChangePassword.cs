@@ -23,10 +23,7 @@ public sealed class ChangePassword : ICarterModule
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(
-                onSuccess: r =>
-                {
-                    return Results.Ok(new { message = r.Message, refreshTokensRevoked = r.RefreshTokensRevoked });
-                }
+                onSuccess: r => Results.Ok(new { message = r.Message, refreshTokensRevoked = r.RefreshTokensRevoked })
             );
 
         })

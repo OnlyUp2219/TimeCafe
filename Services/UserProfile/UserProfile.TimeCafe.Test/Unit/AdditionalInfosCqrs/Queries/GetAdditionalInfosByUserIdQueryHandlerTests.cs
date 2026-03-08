@@ -12,7 +12,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         userRepoMock.Setup(r => r.GetProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Profile { UserId = userId });
         repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Enumerable.Empty<AdditionalInfo>());
+            .ReturnsAsync([]);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);

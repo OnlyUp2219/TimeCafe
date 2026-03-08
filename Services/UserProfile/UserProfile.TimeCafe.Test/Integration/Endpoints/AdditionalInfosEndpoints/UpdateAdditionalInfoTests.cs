@@ -17,7 +17,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
 
         // Update info
-        var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = TestData.TestInfoTexts.UpdatedInfo, createdBy = (string?)null };
+        var updateDto = new { infoId, userId = userId.ToString(), infoText = TestData.TestInfoTexts.UpdatedInfo, createdBy = (string?)null };
 
         // Act
         var response = await Client.PutAsJsonAsync("/userprofile/infos", updateDto);
@@ -69,7 +69,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
         var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
 
-        var updateDto = new { infoId = infoId, userId = userId.ToString(), infoText = "", createdBy = (string?)null };
+        var updateDto = new { infoId, userId = userId.ToString(), infoText = "", createdBy = (string?)null };
 
         // Act
         var response = await Client.PutAsJsonAsync("/userprofile/infos", updateDto);

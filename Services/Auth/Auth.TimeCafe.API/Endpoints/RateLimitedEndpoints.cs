@@ -5,16 +5,11 @@ public class RateLimitedEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/api/test-rate-limit", (
-            HttpContext context,
-            [FromServices] RateLimitConfig cfg) =>
-        {
-
-            return Results.Ok(new
+            ) => Results.Ok(new
             {
                 success = true,
                 time = DateTimeOffset.UtcNow
-            });
-        })
+            }))
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .RequireAuthorization()

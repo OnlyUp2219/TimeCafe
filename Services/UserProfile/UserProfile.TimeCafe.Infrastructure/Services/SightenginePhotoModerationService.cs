@@ -5,6 +5,11 @@ public class SightenginePhotoModerationService(
     IConfiguration configuration,
     ILogger<SightenginePhotoModerationService> logger) : IPhotoModerationService
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     private readonly HttpClient _httpClient = httpClient;
     private readonly ILogger<SightenginePhotoModerationService> _logger = logger;
     private readonly string _apiUser = configuration["Sightengine:ApiUser"] ?? throw new InvalidOperationException("Configuration value 'Sightengine:ApiUser' is missing.");
@@ -25,14 +30,11 @@ public class SightenginePhotoModerationService(
             content.Add(new StringContent(_apiUser), "api_user");
             content.Add(new StringContent(_apiSecret), "api_secret");
 
-            var response = await _httpClient.PostAsync(_apiUrl, content, cancellationToken);
+            using var response = await _httpClient.PostAsync(_apiUrl, content, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var jsonResponse = await response.Content.ReadAsStringAsync(cancellationToken);
-            var result = JsonSerializer.Deserialize<SightengineResponse>(jsonResponse, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var result = JsonSerializer.Deserialize<SightengineResponse>(jsonResponse, JsonOptions);
 
             if (result == null)
             {

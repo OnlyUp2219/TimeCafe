@@ -17,16 +17,13 @@ public partial class Initial : Migration
                 PromotionId = table.Column<Guid>(type: "uuid", nullable: false),
                 Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                 Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
-                DiscountPercent = table.Column<decimal>(type: "numeric(5,2)", precision: 5, scale: 2, nullable: true),
+                DiscountPercent = table.Column<decimal>(type: "numeric(5,2)", nullable: true, precision: 5, scale: 2),
                 ValidFrom = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 ValidTo = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
                 CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
             },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Promotions", x => x.PromotionId);
-            });
+            constraints: table => table.PrimaryKey("PK_Promotions", x => x.PromotionId));
 
         migrationBuilder.CreateTable(
             name: "Themes",
@@ -37,10 +34,7 @@ public partial class Initial : Migration
                 Emoji = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
                 Colors = table.Column<string>(type: "jsonb", nullable: true)
             },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Themes", x => x.ThemeId);
-            });
+            constraints: table => table.PrimaryKey("PK_Themes", x => x.ThemeId));
 
         migrationBuilder.CreateTable(
             name: "Tariffs",
@@ -49,7 +43,7 @@ public partial class Initial : Migration
                 TariffId = table.Column<Guid>(type: "uuid", nullable: false),
                 Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                 Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                PricePerMinute = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                PricePerMinute = table.Column<decimal>(type: "numeric(18,2)", nullable: false, precision: 18, scale: 2),
                 BillingType = table.Column<int>(type: "integer", nullable: false),
                 ThemeId = table.Column<Guid>(type: "uuid", nullable: true),
                 IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
@@ -76,7 +70,7 @@ public partial class Initial : Migration
                 TariffId = table.Column<Guid>(type: "uuid", nullable: false),
                 EntryTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 ExitTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                CalculatedCost = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                CalculatedCost = table.Column<decimal>(type: "numeric(18,2)", nullable: true, precision: 18, scale: 2),
                 Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 1)
             },
             constraints: table =>
@@ -98,7 +92,7 @@ public partial class Initial : Migration
         migrationBuilder.CreateIndex(
             name: "IX_Promotions_ValidFrom_ValidTo",
             table: "Promotions",
-            columns: new[] { "ValidFrom", "ValidTo" });
+            columns: ["ValidFrom", "ValidTo"]);
 
         migrationBuilder.CreateIndex(
             name: "IX_Tariffs_BillingType",
@@ -138,7 +132,7 @@ public partial class Initial : Migration
         migrationBuilder.CreateIndex(
             name: "IX_Visits_UserId_Status",
             table: "Visits",
-            columns: new[] { "UserId", "Status" });
+            columns: ["UserId", "Status"]);
     }
 
     /// <inheritdoc />

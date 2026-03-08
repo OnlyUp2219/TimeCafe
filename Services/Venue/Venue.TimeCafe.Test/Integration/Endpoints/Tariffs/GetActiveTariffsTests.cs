@@ -18,7 +18,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
-            var activeTariffs = tariffs.EnumerateArray().Where(t => (t.TryGetProperty("isActive", out var a) && a.GetBoolean()) || (t.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean())).ToList();
+            var activeTariffs = tariffs.EnumerateArray().Where(t => t.TryGetProperty("isActive", out var a) && a.GetBoolean() || t.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean()).ToList();
             activeTariffs.Should().HaveCountGreaterThanOrEqualTo(2);
         }
         catch (Exception)
@@ -68,7 +68,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
             json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             foreach (var tariff in tariffs.EnumerateArray())
             {
-                var isActive = (tariff.TryGetProperty("isActive", out var a) && a.GetBoolean()) || (tariff.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean());
+                var isActive = tariff.TryGetProperty("isActive", out var a) && a.GetBoolean() || tariff.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean();
                 isActive.Should().BeTrue();
             }
         }

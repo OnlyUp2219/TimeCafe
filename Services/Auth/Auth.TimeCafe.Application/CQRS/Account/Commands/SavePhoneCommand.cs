@@ -35,11 +35,13 @@ public class SavePhoneCommandValidator : AbstractValidator<SavePhoneCommand>
             .NotEmpty().WithMessage("Номер телефона не может быть пустым")
             .Must(phone =>
             {
-                if (string.IsNullOrWhiteSpace(phone)) return false;
+                if (string.IsNullOrWhiteSpace(phone))
+                    return false;
                 var digits = 0;
                 foreach (var ch in phone)
                 {
-                    if (char.IsDigit(ch)) digits++;
+                    if (char.IsDigit(ch))
+                        digits++;
                 }
                 return digits >= 10 && digits <= 15;
             }).WithMessage("Неверный формат номера телефона. Используйте формат +375291234567");
@@ -61,7 +63,7 @@ public class SavePhoneCommandHandler(
                 return SavePhoneResult.UserNotFound();
 
             var normalizedPhone = NormalizePhone(request.PhoneNumber);
-            if (string.Equals(user.PhoneNumber, normalizedPhone, StringComparison.Ordinal) && user.PhoneNumberConfirmed == false)
+            if (string.Equals(user.PhoneNumber, normalizedPhone, StringComparison.Ordinal) && !user.PhoneNumberConfirmed)
                 return SavePhoneResult.Saved(normalizedPhone);
 
             user.PhoneNumber = normalizedPhone;
@@ -81,16 +83,19 @@ public class SavePhoneCommandHandler(
 
     private static string NormalizePhone(string phoneNumber)
     {
-        if (string.IsNullOrWhiteSpace(phoneNumber)) return phoneNumber;
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            return phoneNumber;
 
         var buffer = new char[phoneNumber.Length];
         var idx = 0;
         foreach (var ch in phoneNumber)
         {
-            if (char.IsDigit(ch)) buffer[idx++] = ch;
+            if (char.IsDigit(ch))
+                buffer[idx++] = ch;
         }
 
-        if (idx == 0) return phoneNumber;
+        if (idx == 0)
+            return phoneNumber;
         return "+" + new string(buffer, 0, idx);
     }
 }

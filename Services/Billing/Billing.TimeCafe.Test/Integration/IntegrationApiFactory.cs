@@ -64,7 +64,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(_dbName));
     }
 
-    private void ReplaceRedis(IServiceCollection services)
+    private static void ReplaceRedis(IServiceCollection services)
     {
         var cacheDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDistributedCache));
         if (cacheDescriptor != null)
@@ -81,10 +81,10 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         services.AddDistributedMemoryCache();
     }
 
-    private void ReplaceMassTransit(IServiceCollection services)
+    private static void ReplaceMassTransit(IServiceCollection services)
     {
         var descriptorsToRemove = services
-            .Where(d => d.ServiceType.Namespace != null && d.ServiceType.Namespace.StartsWith("MassTransit"))
+            .Where(d => d.ServiceType.Namespace?.StartsWith("MassTransit") == true)
             .ToList();
 
         foreach (var descriptor in descriptorsToRemove)
@@ -94,8 +94,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
 
         var descriptorsToRemoveImpl = services
             .Where(d => d.ImplementationType != null
-                        && d.ImplementationType.Namespace != null
-                        && d.ImplementationType.Namespace.StartsWith("MassTransit"))
+                        && d.ImplementationType.Namespace?.StartsWith("MassTransit") == true)
             .ToList();
 
         foreach (var descriptor in descriptorsToRemoveImpl)
@@ -106,14 +105,11 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         services.AddMassTransit(cfg =>
         {
             cfg.AddBillingMassTransit();
-            cfg.UsingInMemory((context, busCfg) =>
-            {
-                busCfg.ConfigureEndpoints(context);
-            });
+            cfg.UsingInMemory((context, busCfg) => busCfg.ConfigureEndpoints(context));
         });
     }
 
-    private void ReplaceStripe(IServiceCollection services)
+    private static void ReplaceStripe(IServiceCollection services)
     {
         var stripeDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IStripePaymentClient));
         if (stripeDescriptor != null)
