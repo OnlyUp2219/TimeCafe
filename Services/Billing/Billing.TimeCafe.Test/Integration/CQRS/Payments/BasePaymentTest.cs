@@ -156,14 +156,15 @@ public abstract class BasePaymentTest : IDisposable
     {
         return new StripeWebhookPayload
         {
-            Type = "payment_intent.succeeded",
+            Type = "checkout.session.completed",
             Data = new StripeWebhookData
             {
                 Object = new StripePaymentIntentObject
                 {
-                    Id = paymentIntentId,
-                    Amount = (long)amountInCents,
-                    Status = "succeeded",
+                    Id = $"cs_test_{paymentIntentId}",
+                    AmountTotal = (long)amountInCents,
+                    PaymentIntentId = paymentIntentId,
+                    Status = "complete",
                     Created = createdAt ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 }
             }
@@ -176,14 +177,15 @@ public abstract class BasePaymentTest : IDisposable
     {
         return new StripeWebhookPayload
         {
-            Type = "payment_intent.payment_failed",
+            Type = "checkout.session.async_payment_failed",
             Data = new StripeWebhookData
             {
                 Object = new StripePaymentIntentObject
                 {
-                    Id = paymentIntentId,
-                    Amount = 50000,
-                    Status = "requires_payment_method",
+                    Id = $"cs_test_{paymentIntentId}",
+                    AmountTotal = 50000,
+                    PaymentIntentId = paymentIntentId,
+                    Status = "async_payment_failed",
                     Created = createdAt ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 }
             }
@@ -196,14 +198,15 @@ public abstract class BasePaymentTest : IDisposable
     {
         return new StripeWebhookPayload
         {
-            Type = "payment_intent.canceled",
+            Type = "checkout.session.expired",
             Data = new StripeWebhookData
             {
                 Object = new StripePaymentIntentObject
                 {
-                    Id = paymentIntentId,
-                    Amount = 50000,
-                    Status = "canceled",
+                    Id = $"cs_test_{paymentIntentId}",
+                    AmountTotal = 50000,
+                    PaymentIntentId = paymentIntentId,
+                    Status = "expired",
                     Created = createdAt ?? DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 }
             }

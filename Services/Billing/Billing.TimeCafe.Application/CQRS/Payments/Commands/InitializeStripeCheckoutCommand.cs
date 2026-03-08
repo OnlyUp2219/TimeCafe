@@ -80,9 +80,6 @@ public class InitializeStripeCheckoutCommandHandler(
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;
 
-        _logger.LogInformation("Initializing Stripe checkout: Amount={Amount}, Currency={Currency}, UserId={UserId}", 
-            request.Amount, currency, userId);
-
         var successUrl = string.IsNullOrWhiteSpace(request.SuccessUrl)
             ? settings.CheckoutSuccessUrl
             : request.SuccessUrl;
@@ -129,8 +126,6 @@ public class InitializeStripeCheckoutCommandHandler(
 
         payment.ExternalPaymentId = response.SessionId;
         await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation("Checkout session created: {SessionId} for user {UserId}", response.SessionId, userId);
 
         return InitializeStripeCheckoutResult.CheckoutCreated(payment, response.SessionId, response.CheckoutUrl!);
     }

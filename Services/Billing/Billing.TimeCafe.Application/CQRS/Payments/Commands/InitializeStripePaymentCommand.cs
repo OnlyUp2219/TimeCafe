@@ -53,13 +53,11 @@ public class InitializeStripePaymentCommandValidator : AbstractValidator<Initial
 public class InitializeStripePaymentCommandHandler(
     IPaymentRepository paymentRepository,
     IStripePaymentClient stripeClient,
-    IOptions<StripeOptions> options,
-    ILogger<InitializeStripePaymentCommandHandler> logger) : IRequestHandler<InitializeStripePaymentCommand, InitializeStripePaymentResult>
+    IOptions<StripeOptions> options) : IRequestHandler<InitializeStripePaymentCommand, InitializeStripePaymentResult>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IStripePaymentClient _stripeClient = stripeClient;
     private readonly IOptions<StripeOptions> _options = options;
-    private readonly ILogger _logger = logger;
 
     public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken)
     {
@@ -113,10 +111,6 @@ public class InitializeStripePaymentCommandHandler(
         payment.Status = PaymentStatus.Pending;
 
         await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-
-        _logger.LogInformation("Stripe: created payment intent {PaymentIntentId} for user {UserId}",
-            payment.ExternalPaymentId,
-            payment.UserId);
 
         return InitializeStripePaymentResult.PaymentCreated(payment, providerResponse.ClientSecret, providerResponse.PublishableKey);
     }

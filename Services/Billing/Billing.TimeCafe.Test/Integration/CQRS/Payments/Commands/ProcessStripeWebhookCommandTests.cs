@@ -261,14 +261,15 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = new StripeWebhookPayload
         {
-            Type = "payment_intent.succeeded",
+            Type = "checkout.session.completed",
             Data = new StripeWebhookData
             {
                 Object = new StripePaymentIntentObject
                 {
-                    Id = externalPaymentId,
-                    Amount = (long)(Defaults.DefaultAmount * 100),
-                    Status = "succeeded",
+                    Id = $"cs_test_{externalPaymentId}",
+                    AmountTotal = (long)(Defaults.DefaultAmount * 100),
+                    PaymentIntentId = externalPaymentId,
+                    Status = "complete",
                     Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     Metadata = new Dictionary<string, string> { { "paymentId", paymentId.ToString() } }
                 }
@@ -286,7 +287,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Completed);
-        payment.ExternalPaymentId.Should().Be(externalPaymentId);
+        payment.ExternalData.Should().Contain(externalPaymentId);
     }
 
     [Fact]
