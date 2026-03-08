@@ -127,6 +127,6 @@ public class LogoutTests : BaseEndpointTest
     {
         response.Headers.TryGetValues("Set-Cookie", out var cookies).Should().BeTrue();
         var raw = cookies!.First(c => c.StartsWith(cookieName + "=", StringComparison.OrdinalIgnoreCase));
-        return raw.Split(';', 2)[0].Substring(cookieName.Length + 1);
+        return raw.Split(';', 2)[0][(cookieName.Length + 1)..];
     }
 }

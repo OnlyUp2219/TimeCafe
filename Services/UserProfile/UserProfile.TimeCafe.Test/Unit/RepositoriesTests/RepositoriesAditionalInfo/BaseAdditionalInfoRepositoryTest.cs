@@ -2,6 +2,11 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditional
 
 public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
 {
+    private static readonly JsonSerializerOptions CacheSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     protected readonly ApplicationDbContext Context;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<AdditionalInfoRepository>> CacheLoggerMock;
@@ -25,12 +30,12 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
         var userId1 = Guid.NewGuid();
         var userId2 = Guid.NewGuid();
 
-        TestInfos = new List<AdditionalInfo>
-        {
+        TestInfos =
+        [
             new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "First info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-10) },
             new() { InfoId = Guid.NewGuid(), UserId = userId1, InfoText = "Second info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-5) },
             new() { InfoId = Guid.NewGuid(), UserId = userId2, InfoText = "Another user info", CreatedAt = DateTimeOffset.UtcNow.AddMinutes(-2) }
-        };
+        ];
     }
 
     protected async Task SeedAsync()
@@ -41,10 +46,7 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
 
     protected void SetupCache<T>(string key, T value)
     {
-        var json = JsonSerializer.Serialize(value, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(value, CacheSerializerOptions);
         var bytes = System.Text.Encoding.UTF8.GetBytes(json);
         CacheMock.Setup(c => c.GetAsync(key, It.IsAny<CancellationToken>()))
             .ReturnsAsync(bytes);
@@ -74,7 +76,8 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         if (disposing)
         {
             Context?.Dispose();

@@ -56,6 +56,6 @@ app.MapGet("/health", () => Results.Ok("OK"))
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program;
 
 

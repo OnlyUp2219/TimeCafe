@@ -22,10 +22,7 @@ public class EmailChange : ICarterModule
             var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireAuthorization()
         .RequireRateLimiting("OneRequestPerInterval")
@@ -45,10 +42,7 @@ public class EmailChange : ICarterModule
             var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: false);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { callbackUrl = r.CallbackUrl });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));
         })
         .RequireAuthorization()
         .RequireRateLimiting("OneRequestPerInterval")
@@ -64,10 +58,7 @@ public class EmailChange : ICarterModule
             var command = new ConfirmEmailChangeCommand(request.UserId, request.NewEmail, request.Token);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .WithName("ConfirmEmailChange")
         .WithSummary("Подтверждение смены email")

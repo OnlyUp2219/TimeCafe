@@ -17,8 +17,8 @@ public record UploadProfilePhotoResult(
     string? ContentType = null) : ICqrsResultV2
 {
     public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) =>
-        new(true, Key: key, Url: url, Size: size, ContentType: contentType,
-            StatusCode: 201, Message: "Фото загружено");
+        new(true, Message: "Фото загружено", StatusCode: 201, Key: key, Url: url,
+Size: size, ContentType: contentType);
     public static UploadProfilePhotoResult Failed() =>
         new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
     public static UploadProfilePhotoResult ProfileNotFound() =>
@@ -73,7 +73,7 @@ public class UploadProfilePhotoCommandHandler(
                 uploadStream.Position = 0;
 
                 var moderationBytes = uploadStream.ToArray();
-                using var moderationStream = new MemoryStream(moderationBytes);
+                await using var moderationStream = new MemoryStream(moderationBytes);
                 var moderationResult = await _moderationService.ModeratePhotoAsync(moderationStream, cancellationToken);
 
                 if (!moderationResult.IsSafe)
@@ -111,7 +111,7 @@ public class UploadProfilePhotoCommandHandler(
             }
             finally
             {
-                uploadStream.Dispose();
+                await uploadStream.DisposeAsync();
             }
         }
         catch (Exception ex)

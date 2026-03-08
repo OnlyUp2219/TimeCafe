@@ -14,10 +14,10 @@ public class TwilioSender(ILogger<TwilioSender> logger) : ITwilioSender
             TwilioClient.Init(accountSid, authToken);
 
             var message = await MessageResource.CreateAsync(
-                body: $"Ваш код подтверждения: {token}",
-                from: new Twilio.Types.PhoneNumber(twilioPhoneNumber),
                 to: new Twilio.Types.PhoneNumber(phoneNumber)
-            );
+,
+                from: new Twilio.Types.PhoneNumber(twilioPhoneNumber),
+                body: $"Ваш код подтверждения: {token}");
 
             if (message.ErrorCode == null)
             {

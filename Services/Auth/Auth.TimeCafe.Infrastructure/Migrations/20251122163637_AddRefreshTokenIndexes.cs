@@ -28,7 +28,7 @@ public partial class AddRefreshTokenIndexes : Migration
         migrationBuilder.CreateIndex(
             name: "IX_RefreshTokens_UserId_IsRevoked",
             table: "RefreshTokens",
-            columns: new[] { "UserId", "IsRevoked" });
+            columns: ["UserId", "IsRevoked"]);
     }
 
     /// <inheritdoc />

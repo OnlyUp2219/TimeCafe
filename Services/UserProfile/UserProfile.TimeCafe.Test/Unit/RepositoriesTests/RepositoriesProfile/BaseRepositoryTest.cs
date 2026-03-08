@@ -2,6 +2,11 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public abstract class BaseRepositoryTest : IDisposable
 {
+    private static readonly JsonSerializerOptions CacheSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     protected readonly ApplicationDbContext Context;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<UserRepositories>> LoggerMock;
@@ -38,10 +43,7 @@ public abstract class BaseRepositoryTest : IDisposable
 
     protected void SetupCache<T>(string key, T value)
     {
-        var json = JsonSerializer.Serialize(value, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(value, CacheSerializerOptions);
         var bytes = System.Text.Encoding.UTF8.GetBytes(json);
         CacheMock.Setup(c => c.GetAsync(key, It.IsAny<CancellationToken>()))
             .ReturnsAsync(bytes);
@@ -71,7 +73,8 @@ public abstract class BaseRepositoryTest : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         if (disposing)
         {

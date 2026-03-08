@@ -7,8 +7,8 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     {
         await ClearDatabaseAndCacheAsync();
         var targetDate = DateTimeOffset.UtcNow;
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1), isActive: true);
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5), isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1));
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5));
 
         var response = await Client.GetAsync($"/venue/promotions/active/{targetDate:yyyy-MM-ddTHH:mm:ss}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -32,7 +32,7 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     {
         await ClearDatabaseAndCacheAsync();
         var futureDate = DateTimeOffset.UtcNow.AddDays(100);
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, validFrom: TestData.DateTimeData.GetValidFromDate(), validTo: TestData.DateTimeData.GetValidToDate(), isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: TestData.DateTimeData.GetValidFromDate(), validTo: TestData.DateTimeData.GetValidToDate());
 
         var response = await Client.GetAsync($"/venue/promotions/active/{futureDate:yyyy-MM-ddTHH:mm:ss}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -56,9 +56,9 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     {
         await ClearDatabaseAndCacheAsync();
         var targetDate = DateTimeOffset.UtcNow;
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1), isActive: true);
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5), isActive: true);
-        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent, validFrom: targetDate.AddDays(5), validTo: targetDate.AddDays(10), isActive: true);
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1));
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5));
+        await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent, isActive: true, validFrom: targetDate.AddDays(5), validTo: targetDate.AddDays(10));
 
         var response = await Client.GetAsync($"/venue/promotions/active/{targetDate:yyyy-MM-ddTHH:mm:ss}");
         var jsonString = await response.Content.ReadAsStringAsync();

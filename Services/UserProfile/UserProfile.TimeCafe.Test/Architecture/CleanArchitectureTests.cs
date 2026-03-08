@@ -1,15 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Architecture;
 
-/// <summary>
-/// Тесты архитектурных ограничений Clean Architecture.
-/// Проверяют правильность зависимостей между слоями проекта.
-/// 
-/// Правила Clean Architecture:
-/// - Domain: не зависит ни от кого (только .NET базовые типы)
-/// - Application: зависит только от Domain
-/// - Infrastructure: зависит от Domain и Application
-/// - API: зависит от Domain, Application, Infrastructure
-/// </summary>
 public class CleanArchitectureTests
 {
     private const string DomainProject = "UserProfile.TimeCafe.Domain";
@@ -24,7 +14,7 @@ public class CleanArchitectureTests
         var assembly = typeof(UserProfile.TimeCafe.Domain.Models.Profile).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
-            .Where(name => name != null && name.StartsWith("UserProfile.TimeCafe"))
+            .Where(name => name?.StartsWith("UserProfile.TimeCafe") == true)
             .ToList();
 
         // Assert
@@ -39,7 +29,7 @@ public class CleanArchitectureTests
         var assembly = typeof(UserProfile.TimeCafe.Application.CQRS.Profiles.Commands.CreateProfileCommand).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
-            .Where(name => name != null && name.StartsWith("UserProfile.TimeCafe"))
+            .Where(name => name?.StartsWith("UserProfile.TimeCafe") == true)
             .ToList();
 
         // Assert
@@ -60,7 +50,7 @@ public class CleanArchitectureTests
         var assembly = typeof(UserProfile.TimeCafe.Infrastructure.Data.ApplicationDbContext).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
-            .Where(name => name != null && name.StartsWith("UserProfile.TimeCafe"))
+            .Where(name => name?.StartsWith("UserProfile.TimeCafe") == true)
             .ToList();
 
         // Assert
@@ -81,7 +71,7 @@ public class CleanArchitectureTests
         var assembly = typeof(Program).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
-            .Where(name => name != null && name.StartsWith("UserProfile.TimeCafe"))
+            .Where(name => name?.StartsWith("UserProfile.TimeCafe") == true)
             .ToList();
 
         // Assert

@@ -53,7 +53,7 @@ public class PermissionsAndRolesTests
 
         var tokensRevoked = await jwt.RevokeUserTokensAsync(admin.Id, CancellationToken.None);
 
-        foreach (var permission in Enum.GetValues(typeof(Permission)).Cast<Permission>())
+        foreach (var permission in Enum.GetValues<Permission>().Cast<Permission>())
         {
             var hasPermission = await permissionService.HasPermissionAsync(admin.Id, permission);
             hasPermission.Should().BeTrue();
@@ -74,7 +74,7 @@ public class PermissionsAndRolesTests
             var hasPermission = await permissionService.HasPermissionAsync(client.Id, permission);
             hasPermission.Should().BeTrue();
         }
-        var forbidden = Enum.GetValues(typeof(Permission)).Cast<Permission>().Except(allowed);
+        var forbidden = Enum.GetValues<Permission>().Cast<Permission>().Except(allowed);
         foreach (var permission in forbidden)
         {
             var hasPermission = await permissionService.HasPermissionAsync(client.Id, permission);

@@ -11,7 +11,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId));
         }
 
         result.Success.Should().BeTrue();
@@ -33,7 +33,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId));
         }
 
         result.Success.Should().BeTrue();
@@ -56,7 +56,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId1.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId1));
         }
 
         result.Success.Should().BeTrue();
@@ -68,7 +68,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_PaginateCorrectly()
     {
         var userId = Defaults.UserId;
-        var pageSize = 2;
+        const int pageSize = 2;
 
         await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.SmallAmount, PaymentStatus.Pending, null);
         await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Pending, null);
@@ -79,14 +79,14 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            page1 = await sender.Send(new GetPaymentHistoryQuery(userId.ToString(), 1, pageSize));
+            page1 = await sender.Send(new GetPaymentHistoryQuery(userId, 1, pageSize));
         }
 
         GetPaymentHistoryResult page2;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            page2 = await sender.Send(new GetPaymentHistoryQuery(userId.ToString(), 2, pageSize));
+            page2 = await sender.Send(new GetPaymentHistoryQuery(userId, 2, pageSize));
         }
 
         page1.Success.Should().BeTrue();
@@ -103,7 +103,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     {
         var userId = Defaults.UserId;
         var paymentId = Defaults.PaymentId;
-        var amount = 555m;
+        const decimal amount = 555m;
         const PaymentStatus status = PaymentStatus.Completed;
         const string externalId = "pi_test_external_123";
 
@@ -113,13 +113,13 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId));
         }
 
         result.Success.Should().BeTrue();
         result.Payments.Should().HaveCount(1);
 
-        var payment = result.Payments!.First();
+        var payment = result.Payments![0];
         payment.PaymentId.Should().Be(paymentId);
         payment.Amount.Should().Be(amount);
         payment.Status.Should().Be(status.ToString());
@@ -154,7 +154,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 0, 20));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 0, 20));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -165,7 +165,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 1, 0));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 1, 0));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -176,7 +176,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId.ToString(), 1, 101));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 1, 101));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -195,15 +195,15 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId));
         }
 
         result.Success.Should().BeTrue();
         result.Payments.Should().HaveCount(4);
-        result.Payments.Should().Contain(p => p.Status == PaymentStatus.Pending.ToString());
-        result.Payments.Should().Contain(p => p.Status == PaymentStatus.Completed.ToString());
-        result.Payments.Should().Contain(p => p.Status == PaymentStatus.Failed.ToString());
-        result.Payments.Should().Contain(p => p.Status == PaymentStatus.Cancelled.ToString());
+        result.Payments.Should().Contain(p => p.Status == nameof(PaymentStatus.Pending));
+        result.Payments.Should().Contain(p => p.Status == nameof(PaymentStatus.Completed));
+        result.Payments.Should().Contain(p => p.Status == nameof(PaymentStatus.Failed));
+        result.Payments.Should().Contain(p => p.Status == nameof(PaymentStatus.Cancelled));
     }
 
     [Fact]
@@ -218,12 +218,12 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString()));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId));
         }
 
         result.Success.Should().BeTrue();
-        var payment = result.Payments!.First();
-        payment.CreatedAt.Should().NotBe(default(DateTimeOffset));
+        var payment = result.Payments![0];
+        payment.CreatedAt.Should().NotBe(default);
     }
 
     [Fact]
@@ -241,7 +241,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(userId.ToString(), 1, 100));
+            result = await sender.Send(new GetPaymentHistoryQuery(userId, 1, 100));
         }
 
         result.Success.Should().BeTrue();

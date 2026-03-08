@@ -8,7 +8,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
     {
         builder.UseEnvironment("Testing");
 
-        builder.ConfigureAppConfiguration((ctx, cfg) =>
+        builder.ConfigureAppConfiguration((_, cfg) =>
         {
             var overrides = new Dictionary<string, string?>
             {

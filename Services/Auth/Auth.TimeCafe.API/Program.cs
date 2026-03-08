@@ -12,7 +12,7 @@ builder.Host.UseSerilog();
 builder.Services.AddDatabase(builder.Configuration);
 
 // Identity
-builder.Services.AddIdentityConfiguration(builder.Configuration);
+builder.Services.AddIdentityConfiguration();
 
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
@@ -34,7 +34,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Swagger param 
-builder.Services.AddSwaggerConfiguration(builder.Configuration);
+builder.Services.AddSwaggerConfiguration();
 
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
@@ -97,7 +97,7 @@ authGroup.MapGet("/test-publish", async (IPublishEndpoint pub) =>
     return Results.Ok("Событие отправлено!");
 });
 
-authGroup.MapGet("/test-yarp", async (IPublishEndpoint pub) =>
+authGroup.MapGet("/test-yarp", () =>
 {
     var user = new ApplicationUser()
     {
@@ -109,5 +109,8 @@ authGroup.MapGet("/test-yarp", async (IPublishEndpoint pub) =>
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}
 

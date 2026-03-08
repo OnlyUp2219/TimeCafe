@@ -49,7 +49,7 @@ public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IO
 
     public async Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
-        var subject = "Подтвердите ваш email";
+        const string subject = "Подтвердите ваш email";
         var htmlMessage = EmailTemplates.GetConfirmationEmailTemplate(confirmationLink);
         await SendEmailAsync(email, subject, htmlMessage);
     }
@@ -59,14 +59,14 @@ public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IO
         if (string.IsNullOrWhiteSpace(_options.FrontendBaseUrl))
             throw new InvalidOperationException("Postmark FrontendBaseUrl is not configured.");
 
-        var subject = "Сброс пароля";
+        const string subject = "Сброс пароля";
         var htmlMessage = EmailTemplates.GetPasswordResetLinkTemplate(resetLink);
         await SendEmailAsync(email, subject, htmlMessage);
     }
 
     public async Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
     {
-        var subject = "Код для сброса пароля";
+        const string subject = "Код для сброса пароля";
         var htmlMessage = EmailTemplates.GetPasswordResetCodeTemplate(resetCode);
         await SendEmailAsync(email, subject, htmlMessage);
     }

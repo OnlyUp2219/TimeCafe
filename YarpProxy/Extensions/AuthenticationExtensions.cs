@@ -35,7 +35,7 @@ public static class AuthenticationExtensions
                      IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
                      ClockSkew = TimeSpan.FromMinutes(1)
                  };
-#if (DEBUG)
+#if DEBUG
                  {
                      options.Events = new JwtBearerEvents
                      {

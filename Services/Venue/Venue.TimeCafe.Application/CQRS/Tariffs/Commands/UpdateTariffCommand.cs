@@ -48,7 +48,7 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
             .IsInEnum().WithMessage("Некорректный тип биллинга");
 
         RuleFor(x => x.ThemeId)
-            .Must(x => string.IsNullOrWhiteSpace(x) || (Guid.TryParse(x, out var guid) && guid != Guid.Empty))
+            .Must(x => string.IsNullOrWhiteSpace(x) || Guid.TryParse(x, out var guid) && guid != Guid.Empty)
             .WithMessage("Темы не существует")
             .When(x => !string.IsNullOrWhiteSpace(x.ThemeId));
     }

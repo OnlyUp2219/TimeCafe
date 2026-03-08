@@ -11,10 +11,9 @@ public class EnumSchemaFilter : ISchemaFilter
         schema.Format = "int32";
 
         var enumNames = Enum.GetNames(context.Type);
-        schema.Enum = enumNames
+        schema.Enum = [.. enumNames
             .Select(name => new OpenApiInteger((int)Enum.Parse(context.Type, name)))
-            .Cast<IOpenApiAny>()
-            .ToList();
+            .Cast<IOpenApiAny>()];
 
         var descriptions = enumNames
             .Select(name => $"{name}={(int)Enum.Parse(context.Type, name)}");

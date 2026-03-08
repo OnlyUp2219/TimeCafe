@@ -27,10 +27,7 @@ public partial class Initial : Migration
                 ProfileStatus = table.Column<byte>(type: "smallint", nullable: false),
                 BanReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true)
             },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Profiles", x => x.UserId);
-            });
+            constraints: table => table.PrimaryKey("PK_Profiles", x => x.UserId));
 
         migrationBuilder.CreateTable(
             name: "AdditionalInfo",

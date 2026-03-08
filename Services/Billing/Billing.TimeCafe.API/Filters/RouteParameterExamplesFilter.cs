@@ -6,8 +6,8 @@ public class RouteParameterExamplesFilter : IOperationFilter
     {
         var examples = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["userId"] = new GetUserDebtDtoExample().GetExamples().UserId.ToString(),
-            ["transactionId"] = new GetTransactionDtoExample().GetExamples().TransactionId.ToString()
+            ["userId"] = new GetUserDebtDtoExample().GetExamples().UserId,
+            ["transactionId"] = new GetTransactionDtoExample().GetExamples().TransactionId
         };
 
         foreach (var parameter in operation.Parameters)

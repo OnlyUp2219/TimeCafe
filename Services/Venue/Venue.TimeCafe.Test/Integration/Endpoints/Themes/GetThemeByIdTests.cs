@@ -69,7 +69,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Fact]
     public async Task Endpoint_GetThemeById_Should_Return200_WhenThemeIdIsEmpty()
     {
-        var response = await Client.GetAsync($"/venue/themes/");
+        var response = await Client.GetAsync("/venue/themes/");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

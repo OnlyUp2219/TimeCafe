@@ -1,6 +1,3 @@
 namespace UserProfile.TimeCafe.API.Extensions;
 
-public static class SwaggerUIExtensions
-{
-
-}
+public static class SwaggerUIExtensions;

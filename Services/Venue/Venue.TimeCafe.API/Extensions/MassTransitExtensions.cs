@@ -12,9 +12,7 @@ public static class MassTransitExtensions
 
         var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
-        services.AddMassTransit(x =>
-        {
-            x.UsingRabbitMq((context, cfg) =>
+        services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitMqSection["Host"]!, h =>
                 {
@@ -23,19 +21,12 @@ public static class MassTransitExtensions
                 });
 
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                cfg.Publish<VisitCompletedEvent>(p =>
-                {
-                    p.ExchangeType = "fanout";
-                });
+                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
                 cfg.ConfigureEndpoints(context);
-            });
-        });
+            }));
 
-        services.Configure<MassTransitHostOptions>(options =>
-        {
-            options.StopTimeout = TimeSpan.FromSeconds(30);
-        });
+        services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
 
         return services;
     }

@@ -21,7 +21,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         // Отключить автоматические миграции в тестах
         builder.UseSetting("SkipMigrations", "true");
 
-        builder.ConfigureAppConfiguration((ctx, cfg) =>
+        builder.ConfigureAppConfiguration((_, cfg) =>
         {
             var overrides = new Dictionary<string, string?>
             {
@@ -80,7 +80,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 options.DefaultScheme = TestAuthHandler.AuthenticationScheme;
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
-                TestAuthHandler.AuthenticationScheme, options => { });
+                TestAuthHandler.AuthenticationScheme, _ => { });
         });
     }
 }

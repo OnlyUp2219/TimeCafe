@@ -65,15 +65,19 @@ public class RequestEmailChangeCommandHandler(
 
         var currentEmail = user.Email ?? string.Empty;
         if (string.Equals(currentEmail, request.NewEmail, StringComparison.OrdinalIgnoreCase))
+        {
             return _environment.IsDevelopment()
                 ? RequestEmailChangeResult.EmailUnchanged()
                 : RequestEmailChangeResult.Sent();
+        }
 
         var existing = await _userManager.FindByEmailAsync(request.NewEmail);
         if (existing != null && existing.Id != user.Id)
+        {
             return _environment.IsDevelopment()
                 ? RequestEmailChangeResult.EmailAlreadyInUse()
                 : RequestEmailChangeResult.Sent();
+        }
 
         var token = await _userManager.GenerateChangeEmailTokenAsync(user, request.NewEmail);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

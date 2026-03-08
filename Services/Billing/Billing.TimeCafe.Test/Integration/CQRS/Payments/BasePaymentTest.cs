@@ -149,7 +149,7 @@ public abstract class BasePaymentTest : IDisposable
     protected async Task<List<PaymentModel>> GetPaymentsByUserIdAsync(string userId, int page = 1, int pageSize = 100)
         => await GetPaymentsByUserIdAsync(Guid.Parse(userId), page, pageSize);
 
-    protected StripeWebhookPayload CreateStripeSuccessWebhook(
+    protected static StripeWebhookPayload CreateStripeSuccessWebhook(
         string paymentIntentId,
         decimal amountInCents,
         long? createdAt = null)
@@ -171,7 +171,7 @@ public abstract class BasePaymentTest : IDisposable
         };
     }
 
-    protected StripeWebhookPayload CreateStripeFailedWebhook(
+    protected static StripeWebhookPayload CreateStripeFailedWebhook(
         string paymentIntentId,
         long? createdAt = null)
     {
@@ -192,7 +192,7 @@ public abstract class BasePaymentTest : IDisposable
         };
     }
 
-    protected StripeWebhookPayload CreateStripeCancelledWebhook(
+    protected static StripeWebhookPayload CreateStripeCancelledWebhook(
         string paymentIntentId,
         long? createdAt = null)
     {
@@ -213,7 +213,7 @@ public abstract class BasePaymentTest : IDisposable
         };
     }
 
-    protected StripeWebhookPayload CreateStripeCheckoutCompletedWebhook(
+    protected static StripeWebhookPayload CreateStripeCheckoutCompletedWebhook(
         string sessionId,
         decimal amountInCents,
         string? paymentIntentId = null,

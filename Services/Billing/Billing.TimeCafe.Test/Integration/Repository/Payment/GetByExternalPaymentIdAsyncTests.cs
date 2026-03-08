@@ -70,8 +70,8 @@ public class GetByExternalPaymentIdAsyncTests : BasePaymentRepositoryTest
     {
         await CreateTestPaymentAsync(
             paymentId: DefaultsGuid.PaymentId,
-            externalPaymentId: Defaults.StripePaymentIntentId,
-            status: PaymentStatus.Completed);
+            status: PaymentStatus.Completed,
+            externalPaymentId: Defaults.StripePaymentIntentId);
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();

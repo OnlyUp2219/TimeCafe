@@ -38,7 +38,7 @@ public class ProcessStripeWebhookCommandValidator : AbstractValidator<ProcessStr
             .NotNull().WithMessage("Пустое тело запроса");
 
         RuleFor(x => x.Payload)
-            .Must(p => p is { Data: { Object: { Id.Length: > 0 } } })
+            .Must(p => p is { Data.Object.Id.Length: > 0 })
             .WithMessage("Платёж не найден");
     }
 }
@@ -125,8 +125,8 @@ public class ProcessStripeWebhookCommandHandler(
                 .FirstOrDefault(p =>
                     p.Status == PaymentStatus.Pending &&
                     (string.Equals(p.ExternalPaymentId, stripeObjectId, StringComparison.OrdinalIgnoreCase)
-                     || (!string.IsNullOrWhiteSpace(stripePaymentIntentId)
-                         && string.Equals(p.ExternalPaymentId, stripePaymentIntentId, StringComparison.OrdinalIgnoreCase))
+                     || !string.IsNullOrWhiteSpace(stripePaymentIntentId)
+                         && string.Equals(p.ExternalPaymentId, stripePaymentIntentId, StringComparison.OrdinalIgnoreCase)
                      || Math.Abs(p.Amount - amountFromStripe) <= 0.01m));
         }
 
@@ -154,9 +154,9 @@ public class ProcessStripeWebhookCommandHandler(
         if (string.Equals(payload.Type, "checkout.session.async_payment_failed", StringComparison.OrdinalIgnoreCase))
         {
             payment.Status = PaymentStatus.Failed;
-            payment.ErrorMessage = "Асинхронный платёж отклонён";
+            payment.ErrorMessage = "Stripe: асинхронный платёж отклонён";
             await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
-            return ProcessStripeWebhookResult.Completed("Асинхронный платёж отклонён");
+            return ProcessStripeWebhookResult.Completed("Stripe: асинхронный платёж отклонён");
         }
 
         if (string.Equals(payload.Type, "checkout.session.expired", StringComparison.OrdinalIgnoreCase))

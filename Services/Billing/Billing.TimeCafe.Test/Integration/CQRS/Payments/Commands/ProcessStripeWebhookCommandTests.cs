@@ -7,8 +7,8 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     {
         var userId = Defaults.UserId3;
         var paymentId = Defaults.PaymentId5;
-        var checkoutSessionId = "cs_test_checkout_session";
-        var amount = 250m;
+        const string checkoutSessionId = "cs_test_checkout_session";
+        const decimal amount = 250m;
 
         await CreateBalanceAsync(userId);
         await CreatePaymentAsync(paymentId, userId, amount, PaymentStatus.Pending, checkoutSessionId);
@@ -210,7 +210,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
         var paymentId = Defaults.PaymentId2;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
         var paymentAmount = Defaults.DefaultAmount;
-        var stripeAmount = 600m;
+        const decimal stripeAmount = 600m;
 
         await CreateBalanceAsync(userId);
         await CreatePaymentAsync(paymentId, userId, paymentAmount, PaymentStatus.Pending, externalPaymentId);
@@ -271,7 +271,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
                     PaymentIntentId = externalPaymentId,
                     Status = "complete",
                     Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                    Metadata = new Dictionary<string, string> { { "paymentId", paymentId.ToString() } }
+                    Metadata = new Dictionary<string, string> { { "paymentId", paymentId } }
                 }
             }
         };

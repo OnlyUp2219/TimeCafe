@@ -27,6 +27,6 @@ public static class ProfilePhotoUrlMapper
 
     public static IReadOnlyList<Profile> WithApiUrl(IEnumerable<Profile> profiles)
     {
-        return profiles.Select(WithApiUrl).ToArray();
+        return [.. profiles.Select(WithApiUrl)];
     }
 }

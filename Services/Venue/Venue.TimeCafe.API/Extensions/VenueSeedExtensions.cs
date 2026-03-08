@@ -62,10 +62,8 @@ public static class VenueSeedExtensions
         var themeByName = await dbContext.Themes
             .ToDictionaryAsync(x => x.Name, x => x.ThemeId, StringComparer.OrdinalIgnoreCase);
 
-        Guid? ResolveThemeId(string name)
-        {
-            return themeByName.TryGetValue(name, out var value) ? value : null;
-        }
+        Guid? ResolveThemeId(string name) =>
+            themeByName.TryGetValue(name, out var value) ? value : null;
 
         var now = DateTimeOffset.UtcNow;
         var requiredTariffs = new[]

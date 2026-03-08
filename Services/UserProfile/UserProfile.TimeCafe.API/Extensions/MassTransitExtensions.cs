@@ -12,10 +12,7 @@ public static class MassTransitExtensions
             {
                 x.AddConsumer<UserRegisteredConsumer>();
 
-                x.UsingInMemory((context, cfg) =>
-                {
-                    cfg.ConfigureEndpoints(context);
-                });
+                x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
             });
 
             return services;
@@ -42,10 +39,7 @@ public static class MassTransitExtensions
                 cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
 
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                cfg.Publish<VisitCompletedEvent>(p =>
-                {
-                    p.ExchangeType = "fanout";
-                });
+                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
                 cfg.ReceiveEndpoint("user-profile.user-registered", e =>
                 {
@@ -58,10 +52,7 @@ public static class MassTransitExtensions
             });
         });
 
-        services.Configure<MassTransitHostOptions>(options =>
-        {
-            options.StopTimeout = TimeSpan.FromSeconds(30);
-        });
+        services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
 
         return services;
     }

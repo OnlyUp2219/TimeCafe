@@ -51,20 +51,20 @@ public class PermissionEnumTests
     public void Permission_Should_HaveClientPermissions()
     {
         // Assert
-        Enum.IsDefined(typeof(Permission), Permission.ClientView).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.ClientEdit).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.ClientDelete).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.ClientCreate).Should().BeTrue();
+        Enum.IsDefined(Permission.ClientView).Should().BeTrue();
+        Enum.IsDefined(Permission.ClientEdit).Should().BeTrue();
+        Enum.IsDefined(Permission.ClientDelete).Should().BeTrue();
+        Enum.IsDefined(Permission.ClientCreate).Should().BeTrue();
     }
 
     [Fact]
     public void Permission_Should_HaveAdminPermissions()
     {
         // Assert
-        Enum.IsDefined(typeof(Permission), Permission.AdminView).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.AdminEdit).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.AdminDelete).Should().BeTrue();
-        Enum.IsDefined(typeof(Permission), Permission.AdminCreate).Should().BeTrue();
+        Enum.IsDefined(Permission.AdminView).Should().BeTrue();
+        Enum.IsDefined(Permission.AdminEdit).Should().BeTrue();
+        Enum.IsDefined(Permission.AdminDelete).Should().BeTrue();
+        Enum.IsDefined(Permission.AdminCreate).Should().BeTrue();
     }
 
     [Fact]
@@ -97,8 +97,8 @@ public class PermissionCheckModeTests
     public void PermissionCheckMode_Should_HaveAnyAndAllValues()
     {
         // Assert
-        Enum.IsDefined(typeof(PermissionCheckMode), PermissionCheckMode.Any).Should().BeTrue();
-        Enum.IsDefined(typeof(PermissionCheckMode), PermissionCheckMode.All).Should().BeTrue();
+        Enum.IsDefined(PermissionCheckMode.Any).Should().BeTrue();
+        Enum.IsDefined(PermissionCheckMode.All).Should().BeTrue();
     }
 
     [Fact]

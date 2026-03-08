@@ -75,7 +75,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         _logger.LogWarning("Validation error: {Errors}", string.Join(", ", exception.Errors.Select(e => e.ErrorMessage)));
 
         const string code = "ValidationError";
-        var statusCode = (int)HttpStatusCode.UnprocessableEntity;
+        const int statusCode = (int)HttpStatusCode.UnprocessableEntity;
         var errors = exception.Errors
             .Select(e => new { code = "Validation", message = e.ErrorMessage })
             .ToArray();
@@ -104,7 +104,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
             });
     }
 
-    private async Task WriteErrorAsync(HttpContext context, int statusCode, object payload)
+    private static async Task WriteErrorAsync(HttpContext context, int statusCode, object payload)
     {
         if (context.Response.HasStarted)
         {
@@ -121,7 +121,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         _logger.LogError(exception, "Unhandled exception occurred");
 
         const string code = "InternalServerError";
-        var statusCode = (int)HttpStatusCode.InternalServerError;
+        const int statusCode = (int)HttpStatusCode.InternalServerError;
 
         await WriteErrorAsync(context,
             statusCode,

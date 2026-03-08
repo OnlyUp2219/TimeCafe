@@ -2,7 +2,7 @@ namespace Auth.TimeCafe.API.Extensions;
 
 public static class IdentityExtensions
 {
-    public static IServiceCollection AddIdentityConfiguration(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIdentityConfiguration(this IServiceCollection services)
     {
         services
         .AddIdentityCore<ApplicationUser>(options =>
@@ -23,10 +23,7 @@ public static class IdentityExtensions
         .AddDefaultTokenProviders()
         .AddErrorDescriber<RussianIdentityErrorDescriber>();
 
-        services.Configure<DataProtectionTokenProviderOptions>(options =>
-        {
-            options.TokenLifespan = TimeSpan.FromMinutes(10);
-        });
+        services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromMinutes(10));
 
         services.AddScoped<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
 

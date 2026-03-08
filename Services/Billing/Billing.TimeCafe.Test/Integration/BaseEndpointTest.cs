@@ -7,9 +7,6 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
     protected HttpClient CreateClientWithConfig(IDictionary<string, string?> overrides)
     {
-        return Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(overrides));
-        }).CreateClient();
+        return Factory.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(overrides))).CreateClient();
     }
 }

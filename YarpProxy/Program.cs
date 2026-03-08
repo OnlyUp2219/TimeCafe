@@ -47,7 +47,7 @@ app.MapPost("/dev/admin-token", (HttpContext httpContext, IConfiguration configu
     var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
     var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
 
-    var userId = "00000000-0000-0000-0000-000000000001";
+    const string userId = "00000000-0000-0000-0000-000000000001";
     var now = DateTime.UtcNow;
     var expires = now.AddHours(12);
 
@@ -91,4 +91,4 @@ app.MapPost("/dev/admin-token", (HttpContext httpContext, IConfiguration configu
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program;

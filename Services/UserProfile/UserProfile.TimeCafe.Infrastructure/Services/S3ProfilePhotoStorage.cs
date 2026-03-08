@@ -1,18 +1,16 @@
+using System.Net;
 using Amazon.S3;
 using Amazon.S3.Model;
-
-using System.Net;
-
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 
-public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, ILogger<S3ProfilePhotoStorage> logger) : IProfilePhotoStorage
+public class S3ProfilePhotoStorage(
+    IAmazonS3 s3,
+    S3Options s3Options) : IProfilePhotoStorage
 {
     private readonly IAmazonS3 _s3 = s3;
     private readonly S3Options _s3Options = s3Options;
-    private readonly ILogger<S3ProfilePhotoStorage> _logger = logger;
-
     public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
     {
         var key = BuildKey(userId);
@@ -91,8 +89,9 @@ public class S3ProfilePhotoStorage(IAmazonS3 s3, S3Options s3Options, ILogger<S3
 
     private static string SanitizeAscii(string value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return "file";
-        var filtered = new string(value.Where(ch => ch <= sbyte.MaxValue).ToArray());
+        if (string.IsNullOrWhiteSpace(value))
+            return "file";
+        var filtered = new string([.. value.Where(ch => ch <= sbyte.MaxValue)]);
         return string.IsNullOrWhiteSpace(filtered) ? "file" : filtered;
     }
 }

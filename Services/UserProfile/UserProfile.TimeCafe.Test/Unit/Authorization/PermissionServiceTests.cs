@@ -114,7 +114,7 @@ public class AlwaysAllowPermissionServiceTests
         public Task<bool> HasAllPermissionsAsync(Guid userId, params Permission[] permissions) => Task.FromResult(true);
     }
 
-    private readonly IPermissionService _service = new TestAlwaysAllowService();
+    private readonly TestAlwaysAllowService _service = new();
     private readonly Guid _testUserId = Auth.DefaultUserId;
 
     [Fact]

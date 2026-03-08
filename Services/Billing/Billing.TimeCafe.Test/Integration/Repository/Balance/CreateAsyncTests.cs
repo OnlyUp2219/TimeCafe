@@ -193,7 +193,7 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
     {
 
         var userId = DefaultsGuid.UserId;
-        var largeAmount = 999999999.99m;
+        const decimal largeAmount = 999999999.99m;
         var balance = new BalanceModel(userId) { CurrentBalance = largeAmount };
 
         using var scope = CreateScope();

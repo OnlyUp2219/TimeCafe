@@ -8,6 +8,14 @@ public class CqrsResultException : Exception
     {
     }
 
+    public CqrsResultException(string? message) : base(message)
+    {
+    }
+
+    public CqrsResultException(string? message, Exception? innerException) : base(message, innerException)
+    {
+    }
+
     public CqrsResultException(ICqrsResultV2 result) : base(
         $"Name:{result.Code} " +
         $"Message:{result.Message} " +

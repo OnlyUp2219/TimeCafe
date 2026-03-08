@@ -15,17 +15,14 @@ public partial class InitialCreate : Migration
             columns: table => new
             {
                 UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                CurrentBalance = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
-                TotalDeposited = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
-                TotalSpent = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
-                Debt = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
+                CurrentBalance = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m, precision: 18, scale: 2),
+                TotalDeposited = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m, precision: 18, scale: 2),
+                TotalSpent = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m, precision: 18, scale: 2),
+                Debt = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m, precision: 18, scale: 2),
                 LastUpdated = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                 CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
             },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_Balances", x => x.UserId);
-            });
+            constraints: table => table.PrimaryKey("PK_Balances", x => x.UserId));
 
         migrationBuilder.CreateTable(
             name: "Transactions",
@@ -33,14 +30,14 @@ public partial class InitialCreate : Migration
             {
                 TransactionId = table.Column<Guid>(type: "uuid", nullable: false),
                 UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, precision: 18, scale: 2),
                 Type = table.Column<int>(type: "integer", nullable: false),
                 Source = table.Column<int>(type: "integer", nullable: false),
                 SourceId = table.Column<Guid>(type: "uuid", nullable: true),
                 Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 2),
                 Comment = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                 CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
-                BalanceAfter = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false)
+                BalanceAfter = table.Column<decimal>(type: "numeric(18,2)", nullable: false, precision: 18, scale: 2)
             },
             constraints: table =>
             {
@@ -59,7 +56,7 @@ public partial class InitialCreate : Migration
             {
                 PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
                 UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, precision: 18, scale: 2),
                 PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                 ExternalPaymentId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                 Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 1),
@@ -130,7 +127,7 @@ public partial class InitialCreate : Migration
         migrationBuilder.CreateIndex(
             name: "IX_Transactions_Source_SourceId",
             table: "Transactions",
-            columns: new[] { "Source", "SourceId" });
+            columns: ["Source", "SourceId"]);
 
         migrationBuilder.CreateIndex(
             name: "IX_Transactions_SourceId",

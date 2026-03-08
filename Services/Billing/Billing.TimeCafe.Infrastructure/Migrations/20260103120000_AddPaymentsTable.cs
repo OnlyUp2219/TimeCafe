@@ -16,7 +16,7 @@ public partial class AddPaymentsTable : Migration
             {
                 PaymentId = table.Column<Guid>(type: "uuid", nullable: false),
                 UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                Amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
+                Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, precision: 18, scale: 2),
                 PaymentMethod = table.Column<int>(type: "integer", nullable: false),
                 ExternalPaymentId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                 Status = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),

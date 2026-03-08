@@ -37,7 +37,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)401);
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("UserNotFound");
@@ -56,8 +56,8 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         // Arrange
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
-        var invalidCode = "999999";
+        const string phone = "+79123456789";
+        const string invalidCode = "999999";
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
@@ -92,18 +92,12 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     public async Task Endpoint_VerifySmsMock_Should_ReturnCaptchaInvalid_WhenCaptchaWrong()
     {
         // Arrange 
-        var factoryWithMockCaptcha = Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                services.AddScoped<ICaptchaValidator>(_ => new FakeCaptchaValidator { IsValid = false });
-            });
-        });
+        var factoryWithMockCaptcha = Factory.WithWebHostBuilder(builder => builder.ConfigureTestServices(services => services.AddScoped<ICaptchaValidator>(_ => new FakeCaptchaValidator { IsValid = false })));
         var client = factoryWithMockCaptcha.CreateClient();
 
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
-        var invalidCode = "999999";
+        const string phone = "+79123456789";
+        const string invalidCode = "999999";
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
 
         // Act 
@@ -136,7 +130,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         // Arrange
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
+        const string phone = "+79123456789";
         var code = await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -166,7 +160,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         // Arrange
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
+        const string phone = "+79123456789";
         await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -198,7 +192,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         // Arrange
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
+        const string phone = "+79123456789";
         var code = await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
@@ -250,7 +244,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         // Arrange
         var (_, accessToken) = await CreateAuthenticatedUserAsync();
-        var phone = "+79123456789";
+        const string phone = "+79123456789";
         await GenerateMockCodeAsync(accessToken, phone);
         using var client = CreateClientWithDisabledRateLimiter();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);

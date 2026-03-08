@@ -46,10 +46,7 @@ public class ResetPassword : ICarterModule
             var command = new ForgotPasswordCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")

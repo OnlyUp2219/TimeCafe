@@ -48,7 +48,7 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
             .Must(t => t != default).WithMessage("Время входа некорректно");
 
         RuleFor(x => x.ExitTime)
-            .Must((cmd, exit) => exit == null || exit.Value != default).WithMessage("Время выхода некорректно")
+            .Must((_, exit) => exit == null || exit.Value != default).WithMessage("Время выхода некорректно")
             .Must((cmd, exit) => exit == null || exit.Value >= cmd.EntryTime).WithMessage("Время выхода не может быть раньше времени входа");
 
         RuleFor(x => x.CalculatedCost)

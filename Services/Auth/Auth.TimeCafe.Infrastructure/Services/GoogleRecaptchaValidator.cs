@@ -5,6 +5,8 @@ public class GoogleRecaptchaValidator(
     IConfiguration configuration,
     ILogger<GoogleRecaptchaValidator> logger) : ICaptchaValidator
 {
+    private const string VerifyEndpoint = "https://www.google.com/recaptcha/api/siteverify";
+
     private readonly HttpClient _httpClient = httpClient;
     private readonly string _secretKey = configuration["GoogleRecaptcha:SecretKey"]
             ?? throw new InvalidOperationException("GoogleRecaptcha:SecretKey не настроен в конфигурации");
@@ -21,12 +23,11 @@ public class GoogleRecaptchaValidator(
         try
         {
             var response = await _httpClient.PostAsync(
-                "https://www.google.com/recaptcha/api/siteverify",
-                new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["secret"] = _secretKey,
-                    ["response"] = token
-                })
+                VerifyEndpoint,
+                new FormUrlEncodedContent([
+                    new KeyValuePair<string, string>("secret", _secretKey),
+                    new KeyValuePair<string, string>("response", token)
+                ])
             );
 
             if (!response.IsSuccessStatusCode)
@@ -37,20 +38,28 @@ public class GoogleRecaptchaValidator(
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
 
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var result = JsonSerializer.Deserialize<RecaptchaResponse>(jsonResponse, options);
+            using var jsonDocument = JsonDocument.Parse(jsonResponse);
+            var root = jsonDocument.RootElement;
+            var isSuccess = root.TryGetProperty("success", out var successElement) && successElement.GetBoolean();
 
-            if (result?.Success == true)
+            if (isSuccess)
             {
                 _logger.LogInformation("reCAPTCHA успешно пройдена");
                 return true;
             }
 
+            string[] errorCodes = [];
+            if (root.TryGetProperty("error-codes", out var errorCodesElement) && errorCodesElement.ValueKind == JsonValueKind.Array)
+            {
+                errorCodes = [.. errorCodesElement
+                    .EnumerateArray()
+                    .Where(x => x.ValueKind == JsonValueKind.String)
+                    .Select(x => x.GetString() ?? string.Empty)
+                    .Where(x => !string.IsNullOrWhiteSpace(x))];
+            }
+
             _logger.LogWarning("reCAPTCHA не пройдена. Ошибки: {Errors}",
-                string.Join(", ", result?.ErrorCodes ?? Array.Empty<string>()));
+                string.Join(", ", errorCodes));
             return false;
         }
         catch (Exception ex)
@@ -58,13 +67,5 @@ public class GoogleRecaptchaValidator(
             _logger.LogError(ex, "Ошибка при валидации reCAPTCHA");
             return false;
         }
-    }
-
-    private class RecaptchaResponse
-    {
-        public bool Success { get; set; }
-
-        [System.Text.Json.Serialization.JsonPropertyName("error-codes")]
-        public string[]? ErrorCodes { get; set; }
     }
 }

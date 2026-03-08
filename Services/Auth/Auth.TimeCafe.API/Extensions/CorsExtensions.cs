@@ -7,9 +7,7 @@ public static class CorsExtensions
         if (string.IsNullOrWhiteSpace(corsPolicyName))
             throw new InvalidOperationException("CORS:PolicyName is not configured.");
 
-        services.AddCors(options =>
-        {
-            options.AddPolicy(corsPolicyName, p =>
+        services.AddCors(options => options.AddPolicy(corsPolicyName, p =>
                 p.AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()
@@ -44,8 +42,7 @@ public static class CorsExtensions
                     "http://127.0.0.1:8004",
                     "http://localhost:8004",
                     "http://main-api:8004"
-                ));
-        });
+                )));
 
         return services;
     }

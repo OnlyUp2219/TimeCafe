@@ -13,10 +13,7 @@ public class EmailConfirmation : ICarterModule
             var command = new ConfirmEmailCommand(request.UserId, request.Token);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .WithName("ConfirmEmail")
         .WithSummary("Подтверждение email пользователя")

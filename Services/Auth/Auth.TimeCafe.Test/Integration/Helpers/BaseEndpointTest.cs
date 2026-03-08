@@ -31,10 +31,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             ["RateLimiter:EmailSms:MaxRequests"] = "10000"
         };
 
-        return Factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration((_, conf) => conf.AddInMemoryCollection(overrides));
-        }).CreateClient();
+        return Factory.WithWebHostBuilder(builder => builder.ConfigureAppConfiguration((_, conf) => conf.AddInMemoryCollection(overrides))).CreateClient();
     }
 
     protected async Task<string> GenerateConfirmationTokenAsync(string email)

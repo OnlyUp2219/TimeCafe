@@ -48,7 +48,7 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/venue/promotions//");
+        var response = await Client.GetAsync("/venue/promotions//");
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

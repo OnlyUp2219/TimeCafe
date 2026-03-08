@@ -46,7 +46,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/venue/promotions//deactivate", null);
+        var response = await Client.PostAsync("/venue/promotions//deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

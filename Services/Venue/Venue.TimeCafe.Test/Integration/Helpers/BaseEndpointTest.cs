@@ -31,7 +31,8 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             if (connectionMultiplexer != null)
             {
                 var db = connectionMultiplexer.GetDatabase();
-                var server = connectionMultiplexer.GetServer(connectionMultiplexer.GetEndPoints().First());
+                var endPoints = connectionMultiplexer.GetEndPoints();
+                var server = connectionMultiplexer.GetServer(endPoints[0]);
 
                 var keys = server.Keys(pattern: "venue:*").ToArray();
                 if (keys.Length > 0)
@@ -113,16 +114,10 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        Tariff tariff;
-        if (tariffId.HasValue)
-        {
-            tariff = await context.Tariffs.FindAsync(tariffId.Value)
-                ?? throw new InvalidOperationException($"Tariff with ID {tariffId} not found");
-        }
-        else
-        {
-            tariff = await SeedTariffAsync();
-        }
+        var tariff = tariffId.HasValue
+            ? await context.Tariffs.FindAsync(tariffId.Value)
+                ?? throw new InvalidOperationException($"Tariff with ID {tariffId} not found")
+            : await SeedTariffAsync();
 
         var visit = new Visit
         {

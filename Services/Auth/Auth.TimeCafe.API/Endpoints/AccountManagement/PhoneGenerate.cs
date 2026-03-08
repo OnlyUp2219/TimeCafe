@@ -20,10 +20,7 @@ public class PhoneGenerate : ICarterModule
             var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message, token = r.Token });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message, token = r.Token }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
@@ -43,10 +40,7 @@ public class PhoneGenerate : ICarterModule
             var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: false);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
-            {
-                return Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message });
-            });
+            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")

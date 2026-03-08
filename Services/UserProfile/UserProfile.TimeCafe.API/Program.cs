@@ -36,10 +36,6 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddPermissionAuthorizationDev();
 }
-else
-{
-    // TODO : Register real IPermissionService here
-}
 
 // S3 storage (photos)
 builder.Services.AddS3(builder.Configuration);
@@ -49,13 +45,10 @@ builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerati
 
 // Swagger & Carter
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerConfiguration(builder.Configuration);
+builder.Services.AddSwaggerConfiguration();
 builder.Services.AddCarter();
 
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter());
-});
+builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter()));
 
 var app = builder.Build();
 
@@ -81,6 +74,9 @@ app.MapGet("/health", () => Results.Ok("OK"))
 
 await app.RunAsync();
 
-public partial class Program { }
+public partial class Program
+{
+    protected Program() { }
+}
 
 

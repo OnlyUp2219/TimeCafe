@@ -46,7 +46,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/venue/promotions//activate", null);
+        var response = await Client.PostAsync("/venue/promotions//activate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 

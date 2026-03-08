@@ -11,13 +11,13 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
     {
         var raw = setCookies.First(c => c.StartsWith(name + "=", StringComparison.OrdinalIgnoreCase));
         var firstPart = raw.Split(';', 2)[0];
-        return firstPart.Substring(name.Length + 1);
+        return firstPart[(name.Length + 1)..];
     }
 
     private async Task<(string email, string oldPassword, string accessToken, string refreshToken)> CreateUserAndLoginAsync()
     {
         var email = $"user_{Guid.NewGuid():N}@example.com";
-        var oldPassword = "OldP@ssw0rd!";
+        const string oldPassword = "OldP@ssw0rd!";
 
         // создаём пользователя
         using var scope = Factory.Services.CreateScope();
@@ -144,7 +144,7 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
         // Assert
         try
         {
-            response.StatusCode.Should().Be((HttpStatusCode)422);
+            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
             var json = JsonDocument.Parse(jsonString).RootElement;
             json.TryGetProperty("code", out var code).Should().BeTrue();
             code.GetString()!.Should().Be("ValidationError");
