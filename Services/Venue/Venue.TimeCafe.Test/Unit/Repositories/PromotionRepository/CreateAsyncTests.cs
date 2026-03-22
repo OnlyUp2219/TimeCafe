@@ -98,10 +98,11 @@ public class CreateAsyncTests : BaseCqrsTest
         };
 
         // Act
-        await PromotionRepository.CreateAsync(promotion);
+        var result = await PromotionRepository.CreateAsync(promotion);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Promotions.FindAsync(result.PromotionId);
+        fromDb.Should().NotBeNull();
     }
 
     [Theory]

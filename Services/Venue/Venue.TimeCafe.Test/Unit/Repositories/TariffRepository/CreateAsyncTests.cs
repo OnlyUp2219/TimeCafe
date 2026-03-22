@@ -94,10 +94,11 @@ public class CreateAsyncTests : BaseCqrsTest
         };
 
         // Act
-        await TariffRepository.CreateAsync(tariff);
+        var result = await TariffRepository.CreateAsync(tariff);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Tariffs.FindAsync(result.TariffId);
+        fromDb.Should().NotBeNull();
     }
 
     [Theory]

@@ -87,8 +87,8 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
     [Theory]
     [InlineData("", "Desc", 10, BillingType.PerMinute, false, "Название тарифа обязательно")]
     [InlineData(null, "Desc", 10, BillingType.PerMinute, false, "Название тарифа обязательно")]
-    [InlineData("Valid Name", "Desc", 0, BillingType.PerMinute, false, "Цена за минуту должна быть больше 0")]
-    [InlineData("Valid Name", "Desc", -1, BillingType.PerMinute, false, "Цена за минуту должна быть больше 0")]
+    [InlineData("Valid Name", "Desc", 0, BillingType.PerMinute, false, "Цена должна быть больше 0")]
+    [InlineData("Valid Name", "Desc", -1, BillingType.PerMinute, false, "Цена должна быть больше 0")]
     [InlineData("Valid Name", "Desc", 10, BillingType.PerMinute, true, null)]
     public async Task Validator_Should_ValidateCorrectly(string? name, string? description, decimal price, BillingType billingType, bool isValid, string? expectedError)
     {

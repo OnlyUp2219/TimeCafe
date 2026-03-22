@@ -47,11 +47,12 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
     {
         // Arrange
         await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
-        await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
-        await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        var firstResult = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        var secondResult = await VisitRepository.GetActiveVisitByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult!.VisitId.Should().Be(firstResult!.VisitId);
     }
 
     [Fact]

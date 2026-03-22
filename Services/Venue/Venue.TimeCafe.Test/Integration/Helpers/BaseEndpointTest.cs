@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Caching.Hybrid;
 using Venue.TimeCafe.Domain.Constants;
 
 namespace Venue.TimeCafe.Test.Integration.Helpers;
@@ -18,33 +19,18 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         context.Visits.RemoveRange(context.Visits);
         await context.SaveChangesAsync();
 
-        try
-        {
-            // Дополнительно очищаем кэш через IDistributedCache для надежности
-            var distCache = scope.ServiceProvider.GetService<IDistributedCache>();
-            if (distCache != null)
-            {
-                await distCache.RemoveAsync(CacheKeys.Theme_All);
-            }
+        var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        await hybridCache.RemoveByTagAsync(CacheTags.Tariffs);
+        await hybridCache.RemoveByTagAsync(CacheTags.Themes);
+        await hybridCache.RemoveByTagAsync(CacheTags.Promotions);
+        await hybridCache.RemoveByTagAsync(CacheTags.Visits);
 
-            var connectionMultiplexer = scope.ServiceProvider.GetService<StackExchange.Redis.IConnectionMultiplexer>();
-            if (connectionMultiplexer != null)
-            {
-                var db = connectionMultiplexer.GetDatabase();
-                var endPoints = connectionMultiplexer.GetEndPoints();
-                var server = connectionMultiplexer.GetServer(endPoints[0]);
-
-                var keys = server.Keys(pattern: "venue:*").ToArray();
-                if (keys.Length > 0)
-                {
-                    await db.KeyDeleteAsync(keys);
-                }
-            }
-        }
-        catch
-        {
-            // Redis может быть не доступен в тестах, игнорируем
-        }
+        await hybridCache.RemoveAsync(CacheKeys.Tariff_All);
+        await hybridCache.RemoveAsync(CacheKeys.Tariff_Active);
+        await hybridCache.RemoveAsync(CacheKeys.Theme_All);
+        await hybridCache.RemoveAsync(CacheKeys.Visit_Active);
+        await hybridCache.RemoveAsync(CacheKeys.Promotion_All);
+        await hybridCache.RemoveAsync(CacheKeys.Promotion_Active);
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute, bool isActive = true)

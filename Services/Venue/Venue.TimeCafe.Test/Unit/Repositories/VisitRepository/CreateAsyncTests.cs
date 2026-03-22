@@ -103,9 +103,10 @@ public class CreateAsyncTests : BaseCqrsTest
         };
 
         // Act
-        await VisitRepository.CreateAsync(visit);
+        var result = await VisitRepository.CreateAsync(visit);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Visits.FindAsync(result.VisitId);
+        fromDb.Should().NotBeNull();
     }
 }

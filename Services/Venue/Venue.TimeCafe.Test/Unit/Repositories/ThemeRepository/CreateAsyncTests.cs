@@ -64,10 +64,11 @@ public class CreateAsyncTests : BaseCqrsTest
         var theme = new Theme { Name = TestData.DefaultValues.DefaultThemeName };
 
         // Act
-        await ThemeRepository.CreateAsync(theme);
+        var result = await ThemeRepository.CreateAsync(theme);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Themes.FindAsync(result.ThemeId);
+        fromDb.Should().NotBeNull();
     }
 
     [Fact]

@@ -64,11 +64,11 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData(0, 10, false, "Номер страницы должен быть больше 0")]
-    [InlineData(-1, 10, false, "Номер страницы должен быть больше 0")]
+    [InlineData(0, 10, false, "Страница должна быть больше 0")]
+    [InlineData(-1, 10, false, "Страница должна быть больше 0")]
     [InlineData(1, 0, false, "Размер страницы должен быть больше 0")]
     [InlineData(1, -1, false, "Размер страницы должен быть больше 0")]
-    [InlineData(1, 101, false, "Размер страницы не может превышать 100")]
+    [InlineData(1, 101, false, "Размер страницы не может быть больше 100")]
     [InlineData(1, 10, true, null)]
     [InlineData(1, 100, true, null)]
     public async Task Validator_Should_ValidateCorrectly(int pageNumber, int pageSize, bool isValid, string? expectedError)

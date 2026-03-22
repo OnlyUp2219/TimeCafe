@@ -90,8 +90,8 @@ public class EmailResendTests : BaseEndpointTest
     }
 
     [Theory]
-    [InlineData("", "Email не может быть пустым")]
-    [InlineData("invalid-email", "Неверный формат Email")]
+    [InlineData("", "Email обязателен")]
+    [InlineData("invalid-email", "Некорректный формат email")]
     public async Task Endpoint_Resend_Should_ReturnValidationError_WhenInvalidCommand(string email, string expectedMessagePart)
     {
         // Arrange

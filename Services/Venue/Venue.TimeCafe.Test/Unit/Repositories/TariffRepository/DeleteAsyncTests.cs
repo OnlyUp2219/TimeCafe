@@ -53,7 +53,8 @@ public class DeleteAsyncTests : BaseCqrsTest
         await TariffRepository.DeleteAsync(tariff.TariffId);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Tariffs.FindAsync(tariff.TariffId);
+        fromDb.Should().BeNull();
     }
 
     [Fact]

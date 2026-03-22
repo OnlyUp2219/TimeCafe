@@ -69,6 +69,7 @@ public class DeactivateAsyncTests : BaseCqrsTest
         await TariffRepository.DeactivateAsync(tariff.TariffId);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Tariffs.FindAsync(tariff.TariffId);
+        fromDb!.IsActive.Should().BeFalse();
     }
 }

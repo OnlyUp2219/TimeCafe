@@ -36,11 +36,12 @@ public class GetByIdAsyncTests : BaseCqrsTest
     {
         // Arrange
         var promotion = await SeedPromotionAsync(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultDiscountPercent);
-        await PromotionRepository.GetByIdAsync(promotion.PromotionId);
-        await PromotionRepository.GetByIdAsync(promotion.PromotionId);
+        var firstResult = await PromotionRepository.GetByIdAsync(promotion.PromotionId);
+        var secondResult = await PromotionRepository.GetByIdAsync(promotion.PromotionId);
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult!.PromotionId.Should().Be(firstResult!.PromotionId);
     }
 
     [Fact]

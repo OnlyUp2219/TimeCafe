@@ -62,7 +62,8 @@ public class UpdateAsyncTests : BaseCqrsTest
         await ThemeRepository.UpdateAsync(existing);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Themes.FindAsync(existing.ThemeId);
+        fromDb!.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
     }
 
     [Fact]

@@ -7,11 +7,6 @@ public abstract class BaseCqrsTest : IDisposable
 {
     protected readonly ApplicationDbContext Context;
     protected readonly HybridCache HybridCache;
-    protected readonly Mock<IDistributedCache> CacheMock;
-    protected readonly Mock<ILogger<TariffRepository>> TariffLoggerMock;
-    protected readonly Mock<ILogger<PromotionRepository>> PromotionLoggerMock;
-    protected readonly Mock<ILogger<ThemeRepository>> ThemeLoggerMock;
-    protected readonly Mock<ILogger<VisitRepository>> VisitLoggerMock;
     protected readonly ITariffRepository TariffRepository;
     protected readonly IPromotionRepository PromotionRepository;
     protected readonly IThemeRepository ThemeRepository;
@@ -35,31 +30,10 @@ public abstract class BaseCqrsTest : IDisposable
 #pragma warning restore EXTEXP0018
         HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
 
-        CacheMock = new Mock<IDistributedCache>();
-        TariffLoggerMock = new Mock<ILogger<TariffRepository>>();
-        PromotionLoggerMock = new Mock<ILogger<PromotionRepository>>();
-        ThemeLoggerMock = new Mock<ILogger<ThemeRepository>>();
-        VisitLoggerMock = new Mock<ILogger<VisitRepository>>();
-
-        SetupDefaultCacheMocks();
-
         TariffRepository = new TariffRepository(Context, HybridCache);
         PromotionRepository = new PromotionRepository(Context, HybridCache);
         ThemeRepository = new ThemeRepository(Context, HybridCache);
         VisitRepository = new VisitRepository(Context, HybridCache);
-    }
-
-    private void SetupDefaultCacheMocks()
-    {
-        CacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((byte[]?)null);
-
-        CacheMock.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(),
-            It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        CacheMock.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m)

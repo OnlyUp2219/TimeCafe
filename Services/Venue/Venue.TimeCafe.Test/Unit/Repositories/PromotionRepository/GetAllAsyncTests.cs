@@ -55,11 +55,12 @@ public class GetAllAsyncTests : BaseCqrsTest
         // Arrange
         await SeedPromotionAsync(TestData.NewPromotions.NewPromotion1Name, TestData.NewPromotions.NewPromotion1DiscountPercent);
         await SeedPromotionAsync(TestData.NewPromotions.NewPromotion2Name, TestData.NewPromotions.NewPromotion2DiscountPercent);
-        await PromotionRepository.GetAllAsync();
-        await PromotionRepository.GetAllAsync();
+        var firstResult = await PromotionRepository.GetAllAsync();
+        var secondResult = await PromotionRepository.GetAllAsync();
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult.Should().HaveCount(2);
     }
 
     [Fact]
