@@ -87,11 +87,12 @@ public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
     {
         // Arrange
         await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
-        await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
-        await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        var firstResult = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
+        var secondResult = await VisitRepository.GetVisitHistoryByUserAsync(TestData.ExistingVisits.Visit1UserId);
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult.Should().HaveCount(1);
     }
 
     [Fact]

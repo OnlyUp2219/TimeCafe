@@ -5,15 +5,8 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public abstract class BaseRepositoryTest : IDisposable
 {
-    private static readonly JsonSerializerOptions CacheSerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
-
     protected readonly ApplicationDbContext Context;
     protected readonly HybridCache HybridCache;
-    protected readonly Mock<IDistributedCache> CacheMock;
-    protected readonly Mock<ILogger<UserRepositories>> LoggerMock;
     protected readonly UserRepositories Repository;
     protected readonly List<Profile> TestProfiles;
     private bool _disposed;
@@ -35,8 +28,6 @@ public abstract class BaseRepositoryTest : IDisposable
 #pragma warning restore EXTEXP0018
         HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
 
-        CacheMock = new Mock<IDistributedCache>();
-        LoggerMock = new Mock<ILogger<UserRepositories>>();
         Repository = new UserRepositories(Context, HybridCache);
 
         TestProfiles =
@@ -51,30 +42,6 @@ public abstract class BaseRepositoryTest : IDisposable
     {
         Context.Profiles.AddRange(TestProfiles);
         await Context.SaveChangesAsync();
-    }
-
-    protected void SetupCache<T>(string key, T value)
-    {
-        var json = JsonSerializer.Serialize(value, CacheSerializerOptions);
-        var bytes = System.Text.Encoding.UTF8.GetBytes(json);
-        CacheMock.Setup(c => c.GetAsync(key, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(bytes);
-    }
-
-    protected void SetupCacheNoData()
-    {
-        CacheMock.Setup(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((byte[]?)null);
-    }
-
-    protected void SetupCacheOperations()
-    {
-        CacheMock.Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(),
-            It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
-
-        CacheMock.Setup(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .Returns(Task.CompletedTask);
     }
 
     public void Dispose()

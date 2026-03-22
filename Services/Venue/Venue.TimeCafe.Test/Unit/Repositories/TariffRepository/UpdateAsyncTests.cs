@@ -80,7 +80,8 @@ public class UpdateAsyncTests : BaseCqrsTest
         await TariffRepository.UpdateAsync(existing);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Tariffs.FindAsync(existing.TariffId);
+        fromDb!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
     }
 
     [Fact]

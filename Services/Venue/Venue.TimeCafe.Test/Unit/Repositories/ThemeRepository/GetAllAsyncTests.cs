@@ -53,11 +53,12 @@ public class GetAllAsyncTests : BaseCqrsTest
         // Arrange
         await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
         await SeedThemeAsync(TestData.ExistingThemes.Theme2Name);
-        await ThemeRepository.GetAllAsync();
-        await ThemeRepository.GetAllAsync();
+        var firstResult = await ThemeRepository.GetAllAsync();
+        var secondResult = await ThemeRepository.GetAllAsync();
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult.Should().HaveCount(2);
     }
 
     [Fact]

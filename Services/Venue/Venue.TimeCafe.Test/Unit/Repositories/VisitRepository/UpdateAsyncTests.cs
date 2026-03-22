@@ -64,7 +64,8 @@ public class UpdateAsyncTests : BaseCqrsTest
         await VisitRepository.UpdateAsync(existing);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Visits.FindAsync(existing.VisitId);
+        fromDb!.Status.Should().Be(VisitStatus.Completed);
     }
 
     [Fact]

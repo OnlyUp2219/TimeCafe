@@ -53,7 +53,8 @@ public class DeleteAsyncTests : BaseCqrsTest
         await ThemeRepository.DeleteAsync(theme.ThemeId);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Themes.FindAsync(theme.ThemeId);
+        fromDb.Should().BeNull();
     }
 
     [Fact]

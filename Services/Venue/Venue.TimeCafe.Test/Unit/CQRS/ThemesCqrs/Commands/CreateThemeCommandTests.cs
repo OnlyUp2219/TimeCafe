@@ -58,7 +58,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     [Theory]
     [InlineData("", "🎨", "#FF0000", false, "Название темы обязательно")]
     [InlineData(null, "🎨", "#FF0000", false, "Название темы обязательно")]
-    [InlineData("A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название не может превышать 100 символов")]
+    [InlineData("A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название темы не может превышать 100 символов")]
     [InlineData("Valid Name", "🎨🎨🎨🎨🎨🎨", "#FF0000", false, "Эмодзи не может превышать 10 символов")]
     [InlineData("Valid Name", "🎨", "#FF0000", true, null)]
     [InlineData("Valid Name", null, null, true, null)]

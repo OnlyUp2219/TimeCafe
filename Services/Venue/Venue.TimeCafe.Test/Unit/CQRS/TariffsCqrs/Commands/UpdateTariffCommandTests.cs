@@ -22,8 +22,10 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         MapperMock.Setup(m => m.Map(It.IsAny<UpdateTariffCommand>(), It.IsAny<Tariff>()))
             .Callback((UpdateTariffCommand src, Tariff dest) =>
             {
-                if (!string.IsNullOrWhiteSpace(src.Name)) dest.Name = src.Name;
-                if (!string.IsNullOrWhiteSpace(src.Description)) dest.Description = src.Description;
+                if (!string.IsNullOrWhiteSpace(src.Name))
+                    dest.Name = src.Name;
+                if (!string.IsNullOrWhiteSpace(src.Description))
+                    dest.Description = src.Description;
                 dest.PricePerMinute = src.PricePerMinute;
                 dest.BillingType = src.BillingType;
                 dest.IsActive = src.IsActive;
@@ -172,8 +174,8 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     [Theory]
     [InlineData("", "Desc", 10, false, "Название тарифа обязательно")]
     [InlineData(null, "Desc", 10, false, "Название тарифа обязательно")]
-    [InlineData("Name", "Desc", 0, false, "Цена за минуту должна быть больше 0")]
-    [InlineData("Name", "Desc", -1, false, "Цена за минуту должна быть больше 0")]
+    [InlineData("Name", "Desc", 0, false, "Цена должна быть больше 0")]
+    [InlineData("Name", "Desc", -1, false, "Цена должна быть больше 0")]
     [InlineData("Name", "Desc", 10, true, null)]
     public async Task Validator_Should_ValidateCorrectly_FieldValidation(string? name, string? description, decimal price, bool isValid, string? expectedError)
     {

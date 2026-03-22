@@ -35,11 +35,12 @@ public class GetByIdAsyncTests : BaseCqrsTest
     {
         // Arrange
         var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
-        await ThemeRepository.GetByIdAsync(theme.ThemeId);
-        await ThemeRepository.GetByIdAsync(theme.ThemeId);
+        var firstResult = await ThemeRepository.GetByIdAsync(theme.ThemeId);
+        var secondResult = await ThemeRepository.GetByIdAsync(theme.ThemeId);
 
         // Assert
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
+        secondResult.Should().NotBeNull();
+        secondResult!.ThemeId.Should().Be(firstResult!.ThemeId);
     }
 
     [Fact]

@@ -45,7 +45,8 @@ public partial class ArchitectureRulesTests
         while (cur != null)
         {
             var sln = Path.Combine(cur.FullName, "TimeCafe.sln");
-            if (File.Exists(sln))
+            var slnx = Path.Combine(cur.FullName, "TimeCafe.slnx");
+            if (File.Exists(sln) || File.Exists(slnx))
                 return cur.FullName;
             cur = cur.Parent;
         }

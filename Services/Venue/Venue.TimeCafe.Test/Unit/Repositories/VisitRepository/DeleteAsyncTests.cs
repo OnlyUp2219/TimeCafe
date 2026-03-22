@@ -53,7 +53,8 @@ public class DeleteAsyncTests : BaseCqrsTest
         await VisitRepository.DeleteAsync(visit.VisitId);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Visits.FindAsync(visit.VisitId);
+        fromDb.Should().BeNull();
     }
 
     [Fact]

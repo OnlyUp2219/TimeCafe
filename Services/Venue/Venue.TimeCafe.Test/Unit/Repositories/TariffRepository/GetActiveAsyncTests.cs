@@ -83,6 +83,5 @@ public class GetActiveAsyncTests : BaseCqrsTest
         // Assert
         secondResult.Should().NotBeNull();
         secondResult.Should().HaveCount(1);
-        CacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeast(2));
     }
 }

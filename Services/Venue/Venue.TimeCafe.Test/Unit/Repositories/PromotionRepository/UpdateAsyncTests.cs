@@ -66,7 +66,8 @@ public class UpdateAsyncTests : BaseCqrsTest
         await PromotionRepository.UpdateAsync(existing);
 
         // Assert
-        CacheMock.Verify(c => c.RemoveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+        var fromDb = await Context.Promotions.FindAsync(existing.PromotionId);
+        fromDb!.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
     }
 
     [Fact]

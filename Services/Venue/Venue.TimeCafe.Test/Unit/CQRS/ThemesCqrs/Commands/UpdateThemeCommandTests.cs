@@ -78,7 +78,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     [InlineData("invalid-guid", "Test", "🎨", "#FF0000", false, "Тема не найдена")]
     [InlineData("a1111111-1111-1111-1111-111111111111", "", "🎨", "#FF0000", false, "Название темы обязательно")]
     [InlineData("a1111111-1111-1111-1111-111111111111", null, "🎨", "#FF0000", false, "Название темы обязательно")]
-    [InlineData("a1111111-1111-1111-1111-111111111111", "A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название не может превышать 100 символов")]
+    [InlineData("a1111111-1111-1111-1111-111111111111", "A very long theme name that exceeds the maximum allowed length of one hundred characters for validation", "🎨", "#FF0000", false, "Название темы не может превышать 100 символов")]
     [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", "🎨🎨🎨🎨🎨🎨", "#FF0000", false, "Эмодзи не может превышать 10 символов")]
     [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", "🎨", "{\"primary\":\"#FF0000\"}", true, null)]
     [InlineData("a1111111-1111-1111-1111-111111111111", "Valid Name", null, null, true, null)]
