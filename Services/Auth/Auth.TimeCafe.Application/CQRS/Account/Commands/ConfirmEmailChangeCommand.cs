@@ -33,14 +33,9 @@ public class ConfirmEmailChangeCommandValidator : AbstractValidator<ConfirmEmail
 {
     public ConfirmEmailChangeCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.NewEmail)
-            .NotEmpty().WithMessage("Email не может быть пустым")
-            .EmailAddress().WithMessage("Неверный формат Email");
+        RuleFor(x => x.NewEmail).ValidEmail();
     }
 }
 

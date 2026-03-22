@@ -15,6 +15,17 @@ public static class RedisExtensions
 
         services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ => StackExchange.Redis.ConnectionMultiplexer.Connect(connectionString));
 
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache(options =>
+        {
+            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            {
+                Expiration = TimeSpan.FromMinutes(30),
+                LocalCacheExpiration = TimeSpan.FromMinutes(5)
+            };
+        });
+#pragma warning restore EXTEXP0018
+
         return services;
     }
 }

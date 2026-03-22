@@ -24,10 +24,7 @@ public class GetPromotionByIdQueryValidator : AbstractValidator<GetPromotionById
 {
     public GetPromotionByIdQueryValidator()
     {
-        RuleFor(x => x.PromotionId)
-            .NotEmpty().WithMessage("Акция не найдена")
-           .NotNull().WithMessage("Акция не найдена")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Акция не найдена");
+        RuleFor(x => x.PromotionId).ValidEntityId("Акция не найдена");
     }
 }
 

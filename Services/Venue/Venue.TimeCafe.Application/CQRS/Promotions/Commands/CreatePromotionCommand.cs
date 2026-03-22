@@ -27,21 +27,14 @@ public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotion
 {
     public CreatePromotionCommandValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название акции обязательно")
-            .MaximumLength(200).WithMessage("Название не может превышать 200 символов");
+        RuleFor(x => x.Name).ValidName("Название акции", 200);
 
-        RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("Описание акции обязательно")
-            .MaximumLength(1000).WithMessage("Описание не может превышать 1000 символов");
+        RuleFor(x => x.Description).ValidDescription(1000);
 
-        RuleFor(x => x.DiscountPercent)
-            .GreaterThan(0).WithMessage("Процент скидки должен быть больше 0")
-            .LessThanOrEqualTo(100).WithMessage("Процент скидки не может превышать 100")
+        RuleFor(x => x.DiscountPercent).ValidDiscountPercent()
             .When(x => x.DiscountPercent.HasValue);
 
-        RuleFor(x => x.ValidFrom)
-            .LessThan(x => x.ValidTo).WithMessage("Дата начала должна быть раньше даты окончания");
+        RuleFor(x => x.ValidFrom).ValidFromBeforeValidTo(x => x.ValidTo);
     }
 }
 

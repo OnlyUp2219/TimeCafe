@@ -23,8 +23,8 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(visitDto);
-        VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId)).ReturnsAsync(true);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
+        VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -37,7 +37,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
         var command = new DeleteVisitCommand(visitId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync((VisitWithTariffDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -60,8 +60,8 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ReturnsAsync(visitDto);
-        VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId)).ReturnsAsync(false);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
+        VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -76,7 +76,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
         var visitId = TestData.ExistingVisits.Visit1UserId;
         var command = new DeleteVisitCommand(visitId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId)).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

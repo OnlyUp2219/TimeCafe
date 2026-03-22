@@ -36,17 +36,11 @@ public class InitializeStripePaymentCommandValidator : AbstractValidator<Initial
 {
     public InitializeStripePaymentCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
-            .GreaterThanOrEqualTo(50).WithMessage("Минимальная сумма платежа 50 рублей");
+        RuleFor(x => x.Amount).ValidPaymentAmount();
 
-        RuleFor(x => x.ReturnUrl)
-            .Must(url => string.IsNullOrWhiteSpace(url) || Uri.IsWellFormedUriString(url, UriKind.Absolute))
-            .WithMessage("ReturnUrl некорректен");
+        RuleFor(x => x.ReturnUrl).ValidUrl("ReturnUrl");
     }
 }
 
@@ -87,7 +81,7 @@ public class InitializeStripePaymentCommandHandler(
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await _paymentRepository.CreateAsync(payment, cancellationToken).ConfigureAwait(false);
+        await _paymentRepository.CreateAsync(payment, cancellationToken);
 
         var createRequest = new StripeCreatePaymentRequest(
             payment.PaymentId,
@@ -97,20 +91,20 @@ public class InitializeStripePaymentCommandHandler(
             description,
             returnUrl);
 
-        var providerResponse = await _stripeClient.CreatePaymentAsync(createRequest, cancellationToken).ConfigureAwait(false);
+        var providerResponse = await _stripeClient.CreatePaymentAsync(createRequest, cancellationToken);
 
         if (!providerResponse.Success)
         {
             payment.Status = PaymentStatus.Failed;
             payment.ErrorMessage = providerResponse.Error;
-            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+            await _paymentRepository.UpdateAsync(payment, cancellationToken);
             return InitializeStripePaymentResult.ProviderError(providerResponse.Error ?? "Stripe возвращает ошибку");
         }
 
         payment.ExternalPaymentId = providerResponse.ExternalPaymentId;
         payment.Status = PaymentStatus.Pending;
 
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+        await _paymentRepository.UpdateAsync(payment, cancellationToken);
 
         return InitializeStripePaymentResult.PaymentCreated(payment, providerResponse.ClientSecret, providerResponse.PublishableKey);
     }

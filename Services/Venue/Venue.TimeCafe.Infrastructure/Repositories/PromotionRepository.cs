@@ -2,205 +2,128 @@ namespace Venue.TimeCafe.Infrastructure.Repositories;
 
 public class PromotionRepository(
     ApplicationDbContext context,
-    IDistributedCache cache,
-    ILogger<PromotionRepository> cacheLogger) : IPromotionRepository
+    HybridCache cache) : IPromotionRepository
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger;
+    private readonly HybridCache _cache = cache;
 
-    public async Task<Promotion?> GetByIdAsync(Guid promotionId)
+    public async Task<Promotion?> GetByIdAsync(Guid promotionId, CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<Promotion>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_ById(promotionId)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Promotions
-            .FirstOrDefaultAsync(p => p.PromotionId == promotionId)
-            .ConfigureAwait(false);
-
-        if (entity != null)
-        {
-            await CacheHelper.SetAsync(
-                _cache,
-                _cacheLogger,
-                CacheKeys.Promotion_ById(promotionId),
-                entity).ConfigureAwait(false);
-        }
-
-        return entity;
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Promotion_ById(promotionId),
+            async ct => await _context.Promotions
+                .FirstOrDefaultAsync(p => p.PromotionId == promotionId, ct),
+            tags: [CacheTags.Promotions, CacheTags.Promotion(promotionId)],
+            cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<Promotion>> GetAllAsync()
+    public async Task<IEnumerable<Promotion>> GetAllAsync(CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<IEnumerable<Promotion>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Promotions
-            .AsNoTracking()
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        return await _cache.GetOrCreateAsync<List<Promotion>>(
             CacheKeys.Promotion_All,
-            entity).ConfigureAwait(false);
-
-        return entity;
+            async ct => await _context.Promotions
+                .AsNoTracking()
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync(ct),
+            tags: [CacheTags.Promotions],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<IEnumerable<Promotion>> GetActiveAsync()
+    public async Task<IEnumerable<Promotion>> GetActiveAsync(CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<IEnumerable<Promotion>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_Active).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Promotions
-            .AsNoTracking()
-            .Where(p => p.IsActive)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        return await _cache.GetOrCreateAsync<List<Promotion>>(
             CacheKeys.Promotion_Active,
-            entity).ConfigureAwait(false);
-
-        return entity;
+            async ct => await _context.Promotions
+                .AsNoTracking()
+                .Where(p => p.IsActive)
+                .OrderByDescending(p => p.CreatedAt)
+                .ToListAsync(ct),
+            tags: [CacheTags.Promotions],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<IEnumerable<Promotion>> GetActiveByDateAsync(DateTimeOffset date)
+    public async Task<IEnumerable<Promotion>> GetActiveByDateAsync(DateTimeOffset date, CancellationToken ct = default)
     {
         var dateKey = date.ToString("yyyy-MM-dd");
-        var cached = await CacheHelper.GetAsync<IEnumerable<Promotion>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_ActiveByDate(dateKey)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Promotions
-            .AsNoTracking()
-            .Where(p => p.IsActive && p.ValidFrom <= date && p.ValidTo >= date)
-            .OrderByDescending(p => p.DiscountPercent)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        return await _cache.GetOrCreateAsync<List<Promotion>>(
             CacheKeys.Promotion_ActiveByDate(dateKey),
-            entity,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(1) }).ConfigureAwait(false);
-
-        return entity;
+            async ct => await _context.Promotions
+                .AsNoTracking()
+                .Where(p => p.IsActive && p.ValidFrom <= date && p.ValidTo >= date)
+                .OrderByDescending(p => p.DiscountPercent)
+                .ToListAsync(ct),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromHours(1) },
+            tags: [CacheTags.Promotions],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<Promotion> CreateAsync(Promotion promotion)
+    public async Task<Promotion> CreateAsync(Promotion promotion, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(promotion);
 
         promotion.CreatedAt = DateTimeOffset.UtcNow;
         _context.Promotions.Add(promotion);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All,
-            CacheKeys.Promotion_Active).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Promotions, ct);
 
         return promotion;
     }
 
-    public async Task<Promotion> UpdateAsync(Promotion promotion)
+    public async Task<Promotion> UpdateAsync(Promotion promotion, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(promotion);
 
-        var existingPromotion = await _context.Promotions.FindAsync(promotion.PromotionId);
+        var existingPromotion = await _context.Promotions.FindAsync([promotion.PromotionId], ct);
         if (existingPromotion == null)
             return null!;
 
         _context.Entry(existingPromotion).CurrentValues.SetValues(promotion);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All,
-            CacheKeys.Promotion_Active,
-            CacheKeys.Promotion_ById(promotion.PromotionId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Promotions, ct);
 
         return promotion;
     }
 
-    public async Task<bool> DeleteAsync(Guid promotionId)
+    public async Task<bool> DeleteAsync(Guid promotionId, CancellationToken ct = default)
     {
-        var promotion = await _context.Promotions.FindAsync(promotionId);
+        var promotion = await _context.Promotions.FindAsync([promotionId], ct);
         if (promotion == null)
             return false;
 
         _context.Promotions.Remove(promotion);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All,
-            CacheKeys.Promotion_Active,
-            CacheKeys.Promotion_ById(promotionId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Promotions, ct);
 
         return true;
     }
 
-    public async Task<bool> ActivateAsync(Guid promotionId)
+    public async Task<bool> ActivateAsync(Guid promotionId, CancellationToken ct = default)
     {
-        var promotion = await _context.Promotions.FindAsync(promotionId);
+        var promotion = await _context.Promotions.FindAsync([promotionId], ct);
         if (promotion == null)
             return false;
 
         promotion.IsActive = true;
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All,
-            CacheKeys.Promotion_Active,
-            CacheKeys.Promotion_ById(promotionId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Promotions, ct);
 
         return true;
     }
 
-    public async Task<bool> DeactivateAsync(Guid promotionId)
+    public async Task<bool> DeactivateAsync(Guid promotionId, CancellationToken ct = default)
     {
-        var promotion = await _context.Promotions.FindAsync(promotionId);
+        var promotion = await _context.Promotions.FindAsync([promotionId], ct);
         if (promotion == null)
             return false;
 
         promotion.IsActive = false;
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Promotion_All,
-            CacheKeys.Promotion_Active,
-            CacheKeys.Promotion_ById(promotionId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Promotions, ct);
 
         return true;
     }

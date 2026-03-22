@@ -23,7 +23,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ReturnsAsync(visitDto);
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -38,7 +38,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
         var userId = TestData.NonExistingIds.NonExistingUserId;
         var query = new GetActiveVisitByUserQuery(userId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ReturnsAsync((VisitWithTariffDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -53,7 +53,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
         var userId = TestData.ExistingVisits.Visit1UserId;
         var query = new GetActiveVisitByUserQuery(userId.ToString());
 
-        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId)).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

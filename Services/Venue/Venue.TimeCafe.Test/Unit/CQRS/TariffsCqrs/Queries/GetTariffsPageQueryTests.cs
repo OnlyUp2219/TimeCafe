@@ -19,8 +19,8 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
             new() { TariffId = Guid.NewGuid(), Name = TestData.ExistingTariffs.Tariff2Name, PricePerMinute = TestData.ExistingTariffs.Tariff2PricePerMinute }
         };
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize)).ReturnsAsync(tariffs);
-        TariffRepositoryMock.Setup(r => r.GetTotalCountAsync()).ReturnsAsync(15);
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize, It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetTotalCountAsync(It.IsAny<CancellationToken>())).ReturnsAsync(15);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -36,8 +36,8 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
         var query = new GetTariffsPageQuery(10, TestData.DefaultValues.DefaultPageSize);
         var tariffs = new List<TariffWithThemeDto>();
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(10, TestData.DefaultValues.DefaultPageSize)).ReturnsAsync(tariffs);
-        TariffRepositoryMock.Setup(r => r.GetTotalCountAsync()).ReturnsAsync(5);
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(10, TestData.DefaultValues.DefaultPageSize, It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetTotalCountAsync(It.IsAny<CancellationToken>())).ReturnsAsync(5);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -52,7 +52,7 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetTariffsPageQuery(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize);
 
-        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

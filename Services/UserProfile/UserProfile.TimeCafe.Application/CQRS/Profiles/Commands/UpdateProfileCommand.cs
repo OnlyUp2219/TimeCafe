@@ -33,20 +33,14 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
             .NotEmpty().WithMessage("Такого пользователя не существует")
             .Must(id => id != Guid.Empty).WithMessage("Такого пользователя не существует");
 
-        RuleFor(x => x.User.FirstName)
-            .NotEmpty().WithMessage("Имя обязательно")
-            .MaximumLength(100).WithMessage("Имя не может превышать 100 символов");
+        RuleFor(x => x.User.FirstName).ValidName("Имя");
 
-        RuleFor(x => x.User.LastName)
-            .NotEmpty().WithMessage("Фамилия обязательна")
-            .MaximumLength(100).WithMessage("Фамилия не может превышать 100 символов");
+        RuleFor(x => x.User.LastName).ValidName("Фамилия");
 
         RuleFor(x => x.User.Gender)
             .IsInEnum().WithMessage("Пол указан некорректно");
 
-        RuleFor(x => x.User.BirthDate)
-            .Must(date => date == null || date <= DateOnly.FromDateTime(DateTime.UtcNow))
-            .WithMessage("Дата рождения не может быть в будущем");
+        RuleFor(x => x.User.BirthDate).ValidBirthDate();
     }
 }
 

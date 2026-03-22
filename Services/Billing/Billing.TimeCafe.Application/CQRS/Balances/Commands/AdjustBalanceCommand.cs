@@ -36,20 +36,15 @@ public class AdjustBalanceCommandValidator : AbstractValidator<AdjustBalanceComm
 {
     public AdjustBalanceCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.SourceId)
-            .Must(x => string.IsNullOrEmpty(x) || Guid.TryParse(x, out var guid) && guid != Guid.Empty)
-            .WithMessage("Некорректный SourceId")
+        RuleFor(x => x.SourceId).ValidOptionalEntityId("Некорректный SourceId")
             .When(x => !string.IsNullOrEmpty(x.SourceId));
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля");
 
-        RuleFor(x => x.Comment)
-            .MaximumLength(500).WithMessage("Комментарий не может превышать 500 символов");
+        RuleFor(x => x.Comment).ValidComment();
     }
 }
 

@@ -19,7 +19,7 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
             new() { TariffId = Guid.NewGuid(), Name = "Tariff 2", PricePerMinute = 20m, IsActive = true }
         };
 
-        TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -34,7 +34,7 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
         var query = new GetActiveTariffsQuery();
         var tariffs = new List<TariffWithThemeDto>();
 
-        TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -48,7 +48,7 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetActiveTariffsQuery();
 
-        TariffRepositoryMock.Setup(r => r.GetActiveAsync()).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

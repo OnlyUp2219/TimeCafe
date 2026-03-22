@@ -24,7 +24,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
             BillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -39,7 +39,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
         var query = new GetTariffByIdQuery(tariffId.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync((TariffWithThemeDto?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -54,7 +54,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         var tariffId = Guid.NewGuid();
         var query = new GetTariffByIdQuery(tariffId.ToString());
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

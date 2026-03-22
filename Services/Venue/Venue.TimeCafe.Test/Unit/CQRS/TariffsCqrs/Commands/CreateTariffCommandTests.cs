@@ -30,7 +30,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
             IsActive = true
         };
 
-        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -51,7 +51,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new InvalidOperationException("Database error"));
+        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Database error"));
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -73,7 +73,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>())).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

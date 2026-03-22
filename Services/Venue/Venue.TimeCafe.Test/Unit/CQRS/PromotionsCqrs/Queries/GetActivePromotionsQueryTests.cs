@@ -19,7 +19,7 @@ public class GetActivePromotionsQueryTests : BaseCqrsHandlerTest
             new(TestData.ExistingPromotions.Promotion2Id) { Name = TestData.ExistingPromotions.Promotion2Name, Description = TestData.ExistingPromotions.Promotion2Description, IsActive = true, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() }
         };
 
-        PromotionRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(promotions);
+        PromotionRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(promotions);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -34,7 +34,7 @@ public class GetActivePromotionsQueryTests : BaseCqrsHandlerTest
         var query = new GetActivePromotionsQuery();
         var promotions = new List<Promotion>();
 
-        PromotionRepositoryMock.Setup(r => r.GetActiveAsync()).ReturnsAsync(promotions);
+        PromotionRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ReturnsAsync(promotions);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -48,7 +48,7 @@ public class GetActivePromotionsQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetActivePromotionsQuery();
 
-        PromotionRepositoryMock.Setup(r => r.GetActiveAsync()).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetActiveAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

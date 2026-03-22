@@ -28,28 +28,18 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
     public UpdateTariffCommandValidator()
     {
 
-        RuleFor(x => x.TariffId)
-            .NotEmpty().WithMessage("Тариф не найден")
-           .NotNull().WithMessage("Тариф не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
 
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название тарифа обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+        RuleFor(x => x.Name).ValidName("Название тарифа");
 
-        RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
-            .When(x => !string.IsNullOrEmpty(x.Description));
+        RuleFor(x => x.Description).ValidOptionalDescription();
 
-        RuleFor(x => x.PricePerMinute)
-            .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
+        RuleFor(x => x.PricePerMinute).ValidPrice();
 
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Некорректный тип биллинга");
 
-        RuleFor(x => x.ThemeId)
-            .Must(x => string.IsNullOrWhiteSpace(x) || Guid.TryParse(x, out var guid) && guid != Guid.Empty)
-            .WithMessage("Темы не существует")
+        RuleFor(x => x.ThemeId).ValidOptionalEntityId("Темы не существует")
             .When(x => !string.IsNullOrWhiteSpace(x.ThemeId));
     }
 }

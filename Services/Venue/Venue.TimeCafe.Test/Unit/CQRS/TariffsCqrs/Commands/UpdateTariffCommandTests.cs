@@ -63,8 +63,8 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariffDto);
-        TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>())).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariffDto);
+        TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -86,7 +86,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync((TariffWithThemeDto?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -115,8 +115,8 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariffDto);
-        TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>())).ThrowsAsync(new Exception("Update failed"));
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariffDto);
+        TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Update failed"));
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -140,7 +140,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             null,
             true);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -212,8 +212,8 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             themeId.ToString(),
             true);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId)).ReturnsAsync(tariffDto);
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(themeId)).ReturnsAsync((Theme?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariffDto);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(themeId, It.IsAny<CancellationToken>())).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

@@ -2,111 +2,73 @@ namespace Venue.TimeCafe.Infrastructure.Repositories;
 
 public class ThemeRepository(
     ApplicationDbContext context,
-    IDistributedCache cache,
-    ILogger<ThemeRepository> cacheLogger) : IThemeRepository
+    HybridCache cache) : IThemeRepository
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger;
+    private readonly HybridCache _cache = cache;
 
-    public async Task<Theme?> GetByIdAsync(Guid themeId)
+    public async Task<Theme?> GetByIdAsync(Guid themeId, CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<Theme>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Theme_ById(themeId)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Themes
-            .FirstOrDefaultAsync(t => t.ThemeId == themeId)
-            .ConfigureAwait(false);
-
-        if (entity != null)
-        {
-            await CacheHelper.SetAsync(
-                _cache,
-                _cacheLogger,
-                CacheKeys.Theme_ById(themeId),
-                entity).ConfigureAwait(false);
-        }
-
-        return entity;
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Theme_ById(themeId),
+            async ct => await _context.Themes
+                .FirstOrDefaultAsync(t => t.ThemeId == themeId, ct),
+            tags: [CacheTags.Themes, CacheTags.Theme(themeId)],
+            cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<Theme>> GetAllAsync()
+    public async Task<IEnumerable<Theme>> GetAllAsync(CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<IEnumerable<Theme>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Theme_All).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Themes
-            .AsNoTracking()
-            .OrderBy(t => t.Name)
-            .ToListAsync()
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        return await _cache.GetOrCreateAsync<List<Theme>>(
             CacheKeys.Theme_All,
-            entity).ConfigureAwait(false);
-
-        return entity;
+            async ct => await _context.Themes
+                .AsNoTracking()
+                .OrderBy(t => t.Name)
+                .ToListAsync(ct),
+            tags: [CacheTags.Themes],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<Theme> CreateAsync(Theme theme)
+    public async Task<Theme> CreateAsync(Theme theme, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(theme);
 
         _context.Themes.Add(theme);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Theme_All).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Themes, ct);
 
         return theme;
     }
 
-    public async Task<Theme> UpdateAsync(Theme theme)
+    public async Task<Theme> UpdateAsync(Theme theme, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(theme);
 
-        var existingTheme = await _context.Themes.FindAsync(theme.ThemeId);
+        var existingTheme = await _context.Themes.FindAsync([theme.ThemeId], ct);
         if (existingTheme == null)
             return null!;
 
         _context.Entry(existingTheme).CurrentValues.SetValues(theme);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Theme_All,
-            CacheKeys.Theme_ById(theme.ThemeId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Themes, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return theme;
     }
 
-    public async Task<bool> DeleteAsync(Guid themeId)
+    public async Task<bool> DeleteAsync(Guid themeId, CancellationToken ct = default)
     {
-        var theme = await _context.Themes.FindAsync(themeId);
+        var theme = await _context.Themes.FindAsync([themeId], ct);
         if (theme == null)
             return false;
 
         _context.Themes.Remove(theme);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Theme_All,
-            CacheKeys.Theme_ById(themeId)).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Themes, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return true;
     }

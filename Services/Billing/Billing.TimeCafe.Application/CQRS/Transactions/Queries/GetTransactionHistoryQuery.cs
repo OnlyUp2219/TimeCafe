@@ -26,16 +26,11 @@ public class GetTransactionHistoryQueryValidator : AbstractValidator<GetTransact
 {
     public GetTransactionHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.Page)
-            .GreaterThan(0).WithMessage("Страница должна быть больше 0");
+        RuleFor(x => x.Page).ValidPageNumber();
 
-        RuleFor(x => x.PageSize)
-            .GreaterThan(0).WithMessage("Размер страницы должен быть больше 0")
-            .LessThanOrEqualTo(100).WithMessage("Размер страницы не может быть больше 100");
+        RuleFor(x => x.PageSize).ValidPageSize();
     }
 }
 

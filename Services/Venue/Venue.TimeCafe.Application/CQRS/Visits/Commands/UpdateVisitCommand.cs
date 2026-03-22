@@ -27,32 +27,17 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
 {
     public UpdateVisitCommandValidator()
     {
-        RuleFor(x => x.VisitId)
-            .NotEmpty().WithMessage("Посещение не найдено")
-           .NotNull().WithMessage("Посещение не найдено")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Посещение не найдено");
+        RuleFor(x => x.VisitId).ValidEntityId("Посещение не найдено");
 
+        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
 
-        RuleFor(x => x.TariffId)
-            .NotEmpty().WithMessage("Тариф не найден")
-           .NotNull().WithMessage("Тариф не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-           .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.EntryTime).ValidEntryTime();
 
-        RuleFor(x => x.EntryTime)
-            .NotEmpty().WithMessage("Время входа обязательно")
-            .Must(t => t != default).WithMessage("Время входа некорректно");
+        RuleFor(x => x.ExitTime).ValidExitTime(x => x.EntryTime);
 
-        RuleFor(x => x.ExitTime)
-            .Must((_, exit) => exit == null || exit.Value != default).WithMessage("Время выхода некорректно")
-            .Must((cmd, exit) => exit == null || exit.Value >= cmd.EntryTime).WithMessage("Время выхода не может быть раньше времени входа");
-
-        RuleFor(x => x.CalculatedCost)
-            .Must(cost => cost == null || cost >= 0).WithMessage("Стоимость не может быть отрицательной");
+        RuleFor(x => x.CalculatedCost).ValidCalculatedCost();
 
         RuleFor(x => x.Status)
             .IsInEnum().WithMessage("Статус посещения некорректен");

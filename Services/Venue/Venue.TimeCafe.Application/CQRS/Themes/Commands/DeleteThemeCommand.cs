@@ -23,10 +23,7 @@ public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
 {
     public DeleteThemeCommandValidator()
     {
-        RuleFor(x => x.ThemeId)
-            .NotEmpty().WithMessage("Тема не найдена")
-           .NotNull().WithMessage("Тема не найдена")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тема не найдена");
+        RuleFor(x => x.ThemeId).ValidEntityId("Тема не найдена");
     }
 }
 

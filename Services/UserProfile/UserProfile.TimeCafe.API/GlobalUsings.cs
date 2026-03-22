@@ -24,6 +24,7 @@ global using Swashbuckle.AspNetCore.Filters;
 global using UserProfile.TimeCafe.API.DTOs;
 global using UserProfile.TimeCafe.API.Extensions;
 global using UserProfile.TimeCafe.Application;
+global using UserProfile.TimeCafe.Application.DependencyInjection;
 global using UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 global using UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 global using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;

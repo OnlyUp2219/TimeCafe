@@ -2,6 +2,7 @@ global using BuildingBlocks.Authorization.Filters;
 global using BuildingBlocks.Enum;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Utilities;
+global using BuildingBlocks.Validation;
 
 global using FluentValidation;
 

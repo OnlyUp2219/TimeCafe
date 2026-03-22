@@ -34,12 +34,11 @@ public class GetPaymentHistoryQueryValidator : AbstractValidator<GetPaymentHisto
 {
     public GetPaymentHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Некорректный ID пользователя")
-            .Must(x => Guid.TryParse(x, out _)).WithMessage("Некорректный ID пользователя");
+        RuleFor(x => x.UserId).ValidEntityId("Некорректный ID пользователя");
 
-        RuleFor(x => x.Page).GreaterThanOrEqualTo(1).WithMessage("Некорректный номер страницы");
-        RuleFor(x => x.PageSize).GreaterThanOrEqualTo(1).LessThanOrEqualTo(100).WithMessage("Размер страницы от 1 до 100");
+        RuleFor(x => x.Page).ValidPageNumber();
+
+        RuleFor(x => x.PageSize).ValidPageSize();
     }
 }
 

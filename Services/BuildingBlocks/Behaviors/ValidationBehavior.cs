@@ -16,7 +16,7 @@ public class ValidationBehavior<TRequest, TResponse>(IEnumerable<IValidator<TReq
 
         foreach (var validator in _validators)
         {
-            var result = await validator.ValidateAsync(context, cancellationToken).ConfigureAwait(false);
+            var result = await validator.ValidateAsync(context, cancellationToken);
             if (!result.IsValid)
                 failures.AddRange(result.Errors);
         }

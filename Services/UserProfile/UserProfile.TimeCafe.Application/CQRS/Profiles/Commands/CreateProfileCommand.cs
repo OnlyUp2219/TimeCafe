@@ -24,18 +24,11 @@ public class CreateProfileCommandValidator : AbstractValidator<CreateProfileComm
 {
     public CreateProfileCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Такого пользователя не существует")
-           .NotNull().WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
 
-        RuleFor(x => x.FirstName)
-            .NotEmpty().WithMessage("Имя обязательно")
-            .MaximumLength(100).WithMessage("Имя не может превышать 100 символов");
+        RuleFor(x => x.FirstName).ValidName("Имя");
 
-        RuleFor(x => x.LastName)
-            .NotEmpty().WithMessage("Фамилия обязательна")
-            .MaximumLength(100).WithMessage("Фамилия не может превышать 100 символов");
+        RuleFor(x => x.LastName).ValidName("Фамилия");
     }
 }
 

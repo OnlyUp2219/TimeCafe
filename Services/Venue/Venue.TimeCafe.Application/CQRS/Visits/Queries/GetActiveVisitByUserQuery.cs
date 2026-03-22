@@ -24,10 +24,7 @@ public class GetActiveVisitByUserQueryValidator : AbstractValidator<GetActiveVis
 {
     public GetActiveVisitByUserQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-           .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
     }
 }
 

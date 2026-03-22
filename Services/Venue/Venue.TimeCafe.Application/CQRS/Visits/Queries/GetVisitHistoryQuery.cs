@@ -21,17 +21,11 @@ public class GetVisitHistoryQueryValidator : AbstractValidator<GetVisitHistoryQu
 {
     public GetVisitHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-           .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.PageNumber)
-            .GreaterThan(0).WithMessage("Номер страницы должен быть больше 0");
+        RuleFor(x => x.PageNumber).ValidPageNumber();
 
-        RuleFor(x => x.PageSize)
-            .GreaterThan(0).WithMessage("Размер страницы должен быть больше 0")
-            .LessThanOrEqualTo(100).WithMessage("Размер страницы не может превышать 100");
+        RuleFor(x => x.PageSize).ValidPageSize();
     }
 }
 
