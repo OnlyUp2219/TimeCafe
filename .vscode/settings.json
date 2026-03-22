@@ -4,5 +4,9 @@
       "file": "./.github/GitConventions.Copilot.md",
       "text": "Всегда используй инструкцию из этого файла для генерации сообщений коммитов. Не используй никакие другие инструкции, даже если они будут предоставлены в чате."
     }
-  ]
+  ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "onlyup2219",
+    "projectKey": "OnlyUp2219_TimeCafe"
+  }
 }
