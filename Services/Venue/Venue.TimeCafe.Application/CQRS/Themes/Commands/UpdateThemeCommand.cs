@@ -25,17 +25,11 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
     public UpdateThemeCommandValidator()
     {
         // TODO : finish up validators
-        RuleFor(x => x.ThemeId)
-            .NotEmpty().WithMessage("Тема не найдена")
-           .NotNull().WithMessage("Тема не найдена")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тема не найдена");
+        RuleFor(x => x.ThemeId).ValidEntityId("Тема не найдена");
 
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название темы обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+        RuleFor(x => x.Name).ValidName("Название темы");
 
-        RuleFor(x => x.Emoji)
-            .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
+        RuleFor(x => x.Emoji).ValidEmoji()
             .When(x => !string.IsNullOrEmpty(x.Emoji));
 
         RuleFor(x => x.Colors)

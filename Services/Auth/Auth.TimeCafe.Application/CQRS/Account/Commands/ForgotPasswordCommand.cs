@@ -27,9 +27,7 @@ public class ForgotPasswordCommandValidator : AbstractValidator<ForgotPasswordCo
 {
     public ForgotPasswordCommandValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email обязателен")
-            .EmailAddress().WithMessage("Некорректный формат email");
+        RuleFor(x => x.Email).ValidEmail();
     }
 }
 

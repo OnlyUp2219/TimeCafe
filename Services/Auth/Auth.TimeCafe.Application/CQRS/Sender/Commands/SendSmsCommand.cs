@@ -15,9 +15,7 @@ public class SendSmsCommandValidator : AbstractValidator<SendSmsCommand>
         RuleFor(x => x.TwilioPhoneNumber)
             .NotEmpty().WithMessage("TwilioPhoneNumber обязателен");
 
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Номер телефона обязателен")
-            .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Неверный формат номера телефона");
+        RuleFor(x => x.PhoneNumber).ValidPhone();
 
         RuleFor(x => x.Token)
             .NotEmpty().WithMessage("Токен верификации обязателен");

@@ -26,9 +26,7 @@ public class ResetPasswordCommandValidator : AbstractValidator<ResetPasswordComm
 {
     public ResetPasswordCommandValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email обязателен")
-            .EmailAddress().WithMessage("Некорректный формат email");
+        RuleFor(x => x.Email).ValidEmail();
 
         RuleFor(x => x.ResetCode)
             .NotEmpty().WithMessage("Код обязателен");

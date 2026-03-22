@@ -1,8 +1,8 @@
-namespace Billing.TimeCafe.Application;
+namespace Auth.TimeCafe.Application.DependencyInjection;
 
 public static class CqrsDependencyInjection
 {
-    public static IServiceCollection AddBillingCqrs(this IServiceCollection services)
+    public static IServiceCollection AddAuthCqrs(this IServiceCollection services)
     {
         var assembly = Assembly.GetExecutingAssembly();
         services.AddMediatR(assembly);

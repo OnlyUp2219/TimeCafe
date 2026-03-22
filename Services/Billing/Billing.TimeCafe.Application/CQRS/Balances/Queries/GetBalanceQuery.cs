@@ -21,9 +21,7 @@ public class GetBalanceQueryValidator : AbstractValidator<GetBalanceQuery>
 {
     public GetBalanceQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Баланс не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Баланс не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Баланс не найден");
     }
 }
 

@@ -19,7 +19,7 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
             new() { TariffId = Guid.NewGuid(), Name = "Tariff 2", PricePerMinute = 20m, BillingType = BillingType.PerMinute }
         };
 
-        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute)).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute, It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -34,7 +34,7 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
         var query = new GetTariffsByBillingTypeQuery(BillingType.Hourly);
         var tariffs = new List<TariffWithThemeDto>();
 
-        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.Hourly)).ReturnsAsync(tariffs);
+        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.Hourly, It.IsAny<CancellationToken>())).ReturnsAsync(tariffs);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -48,7 +48,7 @@ public class GetTariffsByBillingTypeQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetTariffsByBillingTypeQuery(BillingType.PerMinute);
 
-        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute)).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetByBillingTypeAsync(BillingType.PerMinute, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

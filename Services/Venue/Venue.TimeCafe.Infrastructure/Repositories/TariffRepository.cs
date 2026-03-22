@@ -2,346 +2,237 @@ namespace Venue.TimeCafe.Infrastructure.Repositories;
 
 public class TariffRepository(
     ApplicationDbContext context,
-    IDistributedCache cache,
-    ILogger<TariffRepository> cacheLogger) : ITariffRepository
+    HybridCache cache) : ITariffRepository
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger;
+    private readonly HybridCache _cache = cache;
 
-    public async Task<TariffWithThemeDto?> GetByIdAsync(Guid tariffId)
+    public async Task<TariffWithThemeDto?> GetByIdAsync(Guid tariffId, CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<TariffWithThemeDto>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_ById(tariffId)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await (from t in _context.Tariffs
-                            join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
-                            from th in thGroup.DefaultIfEmpty()
-                            where t.TariffId == tariffId
-                            select new TariffWithThemeDto
-                            {
-                                TariffId = t.TariffId,
-                                Name = t.Name,
-                                Description = t.Description,
-                                PricePerMinute = t.PricePerMinute,
-                                BillingType = t.BillingType,
-                                IsActive = t.IsActive,
-                                CreatedAt = t.CreatedAt,
-                                LastModified = t.LastModified,
-                                ThemeId = th.ThemeId,
-                                ThemeName = th != null ? th.Name : string.Empty,
-                                ThemeEmoji = th != null ? th.Emoji : null,
-                                ThemeColors = th != null ? th.Colors : null
-                            })
-                      .AsNoTracking()
-                      .FirstOrDefaultAsync()
-                      .ConfigureAwait(false);
-
-        if (entity != null)
-        {
-            await CacheHelper.SetAsync(
-                _cache,
-                _cacheLogger,
-                CacheKeys.Tariff_ById(tariffId),
-                entity).ConfigureAwait(false);
-        }
-
-        return entity;
-    }
-
-    public async Task<IEnumerable<TariffWithThemeDto>> GetAllAsync()
-    {
-        var cached = await CacheHelper.GetAsync<IEnumerable<TariffWithThemeDto>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await (from t in _context.Tariffs
-                            join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
-                            from th in thGroup.DefaultIfEmpty()
-                            orderby t.CreatedAt descending
-                            select new TariffWithThemeDto
-                            {
-                                TariffId = t.TariffId,
-                                Name = t.Name,
-                                Description = t.Description,
-                                PricePerMinute = t.PricePerMinute,
-                                BillingType = t.BillingType,
-                                IsActive = t.IsActive,
-                                CreatedAt = t.CreatedAt,
-                                LastModified = t.LastModified,
-                                ThemeId = th.ThemeId,
-                                ThemeName = th != null ? th.Name : string.Empty,
-                                ThemeEmoji = th != null ? th.Emoji : null,
-                                ThemeColors = th != null ? th.Colors : null
-                            })
-                            .AsNoTracking()
-                            .ToListAsync()
-                            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            entity).ConfigureAwait(false);
-
-        return entity;
-    }
-
-    public async Task<IEnumerable<TariffWithThemeDto>> GetActiveAsync()
-    {
-        var cached = await CacheHelper.GetAsync<IEnumerable<TariffWithThemeDto>>(
-        _cache,
-        _cacheLogger,
-        CacheKeys.Tariff_Active).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await (from t in _context.Tariffs
-                            join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
-                            from th in thGroup.DefaultIfEmpty()
-                            where t.IsActive
-                            orderby t.Name
-                            select new TariffWithThemeDto
-                            {
-                                TariffId = t.TariffId,
-                                Name = t.Name,
-                                Description = t.Description,
-                                PricePerMinute = t.PricePerMinute,
-                                BillingType = t.BillingType,
-                                IsActive = t.IsActive,
-                                CreatedAt = t.CreatedAt,
-                                LastModified = t.LastModified,
-                                ThemeId = th.ThemeId,
-                                ThemeName = th != null ? th.Name : string.Empty,
-                                ThemeEmoji = th != null ? th.Emoji : null,
-                                ThemeColors = th != null ? th.Colors : null
-                            }
-                            )
-                            .AsNoTracking()
-                            .ToListAsync()
-                            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-        _cache,
-        _cacheLogger,
-        CacheKeys.Tariff_Active,
-        entity).ConfigureAwait(false);
-
-        return entity;
-    }
-    public async Task<IEnumerable<TariffWithThemeDto>> GetByBillingTypeAsync(BillingType billingType)
-    {
-        var cached = await CacheHelper.GetAsync<IEnumerable<TariffWithThemeDto>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_ByBillingType((int)billingType)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entities = await (from t in _context.Tariffs
-                              join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
-                              from th in thGroup.DefaultIfEmpty()
-                              where t.BillingType == billingType && t.IsActive
-                              orderby t.PricePerMinute
-                              select new TariffWithThemeDto
-                              {
-                                  TariffId = t.TariffId,
-                                  Name = t.Name,
-                                  Description = t.Description,
-                                  PricePerMinute = t.PricePerMinute,
-                                  BillingType = t.BillingType,
-                                  IsActive = t.IsActive,
-                                  CreatedAt = t.CreatedAt,
-                                  LastModified = t.LastModified,
-                                  ThemeId = th.ThemeId,
-                                  ThemeName = th != null ? th.Name : string.Empty,
-                                  ThemeEmoji = th != null ? th.Emoji : null,
-                                  ThemeColors = th != null ? th.Colors : null
-                              })
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Tariff_ById(tariffId),
+            async ct => await (from t in _context.Tariffs
+                               join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
+                               from th in thGroup.DefaultIfEmpty()
+                               where t.TariffId == tariffId
+                               select new TariffWithThemeDto
+                               {
+                                   TariffId = t.TariffId,
+                                   Name = t.Name,
+                                   Description = t.Description,
+                                   PricePerMinute = t.PricePerMinute,
+                                   BillingType = t.BillingType,
+                                   IsActive = t.IsActive,
+                                   CreatedAt = t.CreatedAt,
+                                   LastModified = t.LastModified,
+                                   ThemeId = th.ThemeId,
+                                   ThemeName = th != null ? th.Name : string.Empty,
+                                   ThemeEmoji = th != null ? th.Emoji : null,
+                                   ThemeColors = th != null ? th.Colors : null
+                               })
                               .AsNoTracking()
-                              .ToListAsync()
-                              .ConfigureAwait(false);
+                              .FirstOrDefaultAsync(ct),
+            tags: [CacheTags.Tariffs, CacheTags.Tariff(tariffId)],
+            cancellationToken: ct);
+    }
 
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+    public async Task<IEnumerable<TariffWithThemeDto>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+            CacheKeys.Tariff_All,
+            async ct => await (from t in _context.Tariffs
+                               join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
+                               from th in thGroup.DefaultIfEmpty()
+                               orderby t.CreatedAt descending
+                               select new TariffWithThemeDto
+                               {
+                                   TariffId = t.TariffId,
+                                   Name = t.Name,
+                                   Description = t.Description,
+                                   PricePerMinute = t.PricePerMinute,
+                                   BillingType = t.BillingType,
+                                   IsActive = t.IsActive,
+                                   CreatedAt = t.CreatedAt,
+                                   LastModified = t.LastModified,
+                                   ThemeId = th.ThemeId,
+                                   ThemeName = th != null ? th.Name : string.Empty,
+                                   ThemeEmoji = th != null ? th.Emoji : null,
+                                   ThemeColors = th != null ? th.Colors : null
+                               })
+                              .AsNoTracking()
+                              .ToListAsync(ct),
+            tags: [CacheTags.Tariffs],
+            cancellationToken: ct) ?? [];
+    }
+
+    public async Task<IEnumerable<TariffWithThemeDto>> GetActiveAsync(CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+            CacheKeys.Tariff_Active,
+            async ct => await (from t in _context.Tariffs
+                               join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
+                               from th in thGroup.DefaultIfEmpty()
+                               where t.IsActive
+                               orderby t.Name
+                               select new TariffWithThemeDto
+                               {
+                                   TariffId = t.TariffId,
+                                   Name = t.Name,
+                                   Description = t.Description,
+                                   PricePerMinute = t.PricePerMinute,
+                                   BillingType = t.BillingType,
+                                   IsActive = t.IsActive,
+                                   CreatedAt = t.CreatedAt,
+                                   LastModified = t.LastModified,
+                                   ThemeId = th.ThemeId,
+                                   ThemeName = th != null ? th.Name : string.Empty,
+                                   ThemeEmoji = th != null ? th.Emoji : null,
+                                   ThemeColors = th != null ? th.Colors : null
+                               })
+                              .AsNoTracking()
+                              .ToListAsync(ct),
+            tags: [CacheTags.Tariffs],
+            cancellationToken: ct) ?? [];
+    }
+
+    public async Task<IEnumerable<TariffWithThemeDto>> GetByBillingTypeAsync(BillingType billingType, CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
             CacheKeys.Tariff_ByBillingType((int)billingType),
-            entities).ConfigureAwait(false);
-
-        return entities;
+            async ct => await (from t in _context.Tariffs
+                               join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
+                               from th in thGroup.DefaultIfEmpty()
+                               where t.BillingType == billingType && t.IsActive
+                               orderby t.PricePerMinute
+                               select new TariffWithThemeDto
+                               {
+                                   TariffId = t.TariffId,
+                                   Name = t.Name,
+                                   Description = t.Description,
+                                   PricePerMinute = t.PricePerMinute,
+                                   BillingType = t.BillingType,
+                                   IsActive = t.IsActive,
+                                   CreatedAt = t.CreatedAt,
+                                   LastModified = t.LastModified,
+                                   ThemeId = th.ThemeId,
+                                   ThemeName = th != null ? th.Name : string.Empty,
+                                   ThemeEmoji = th != null ? th.Emoji : null,
+                                   ThemeColors = th != null ? th.Colors : null
+                               })
+                              .AsNoTracking()
+                              .ToListAsync(ct),
+            tags: [CacheTags.Tariffs],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize)
+    public async Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
     {
-        var versionStr = await _cache.GetStringAsync(CacheKeys.TariffPagesVersion()).ConfigureAwait(false);
-        var version = int.TryParse(versionStr, out var v) ? v : 1;
-        var cacheKey = CacheKeys.Tariff_Page(pageNumber, version);
-
-        var cached = await CacheHelper.GetAsync<IEnumerable<TariffWithThemeDto>>(
-            _cache,
-            _cacheLogger,
-            cacheKey).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var items = await (from t in _context.Tariffs
-                           join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
-                           from th in thGroup.DefaultIfEmpty()
-                           orderby t.CreatedAt descending
-                           select new TariffWithThemeDto
-                           {
-                               TariffId = t.TariffId,
-                               Name = t.Name,
-                               Description = t.Description,
-                               PricePerMinute = t.PricePerMinute,
-                               BillingType = t.BillingType,
-                               IsActive = t.IsActive,
-                               CreatedAt = t.CreatedAt,
-                               LastModified = t.LastModified,
-                               ThemeId = th.ThemeId,
-                               ThemeName = th != null ? th.Name : string.Empty,
-                               ThemeEmoji = th != null ? th.Emoji : null,
-                               ThemeColors = th != null ? th.Colors : null
-                           })
-                           .AsNoTracking()
-                           .Skip((pageNumber - 1) * pageSize)
-                           .Take(pageSize)
-                           .ToListAsync()
-                           .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
-            cacheKey,
-            items,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) })
-            .ConfigureAwait(false);
-
-        return items;
+        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+            CacheKeys.Tariff_Page(pageNumber),
+            async ct => await (from t in _context.Tariffs
+                               join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
+                               from th in thGroup.DefaultIfEmpty()
+                               orderby t.CreatedAt descending
+                               select new TariffWithThemeDto
+                               {
+                                   TariffId = t.TariffId,
+                                   Name = t.Name,
+                                   Description = t.Description,
+                                   PricePerMinute = t.PricePerMinute,
+                                   BillingType = t.BillingType,
+                                   IsActive = t.IsActive,
+                                   CreatedAt = t.CreatedAt,
+                                   LastModified = t.LastModified,
+                                   ThemeId = th.ThemeId,
+                                   ThemeName = th != null ? th.Name : string.Empty,
+                                   ThemeEmoji = th != null ? th.Emoji : null,
+                                   ThemeColors = th != null ? th.Colors : null
+                               })
+                              .AsNoTracking()
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize)
+                              .ToListAsync(ct),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Tariffs],
+            cancellationToken: ct) ?? [];
     }
 
-    public async Task<int> GetTotalCountAsync()
+    public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
     {
-        return await _context.Tariffs.CountAsync();
+        return await _context.Tariffs.CountAsync(ct);
     }
 
-    public async Task<Tariff> CreateAsync(Tariff tariff)
+    public async Task<Tariff> CreateAsync(Tariff tariff, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tariff);
 
         tariff.CreatedAt = DateTimeOffset.UtcNow;
         tariff.LastModified = DateTimeOffset.UtcNow;
         _context.Tariffs.Add(tariff);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            CacheKeys.Tariff_Active,
-            CacheKeys.Tariff_ByBillingType((int)tariff.BillingType));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.TariffPagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return tariff;
     }
 
-    public async Task<Tariff> UpdateAsync(Tariff tariff)
+    public async Task<Tariff> UpdateAsync(Tariff tariff, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(tariff);
 
-        var existingTariff = await _context.Tariffs.FindAsync(tariff.TariffId);
+        var existingTariff = await _context.Tariffs.FindAsync([tariff.TariffId], ct);
         if (existingTariff == null)
             return null!;
 
         tariff.LastModified = DateTimeOffset.UtcNow;
         _context.Entry(existingTariff).CurrentValues.SetValues(tariff);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            CacheKeys.Tariff_Active,
-            CacheKeys.Tariff_ById(tariff.TariffId),
-            CacheKeys.Tariff_ByBillingType((int)tariff.BillingType));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.TariffPagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return tariff;
     }
 
-    public async Task<bool> DeleteAsync(Guid tariffId)
+    public async Task<bool> DeleteAsync(Guid tariffId, CancellationToken ct = default)
     {
-        var tariff = await _context.Tariffs.FindAsync(tariffId);
+        var tariff = await _context.Tariffs.FindAsync([tariffId], ct);
         if (tariff == null)
             return false;
 
         _context.Tariffs.Remove(tariff);
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            CacheKeys.Tariff_Active,
-            CacheKeys.Tariff_ById(tariffId),
-            CacheKeys.Tariff_ByBillingType((int)tariff.BillingType));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.TariffPagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return true;
     }
 
-    public async Task<bool> ActivateAsync(Guid tariffId)
+    public async Task<bool> ActivateAsync(Guid tariffId, CancellationToken ct = default)
     {
-        var tariff = await _context.Tariffs.FindAsync(tariffId);
+        var tariff = await _context.Tariffs.FindAsync([tariffId], ct);
         if (tariff == null)
             return false;
 
         tariff.IsActive = true;
         tariff.LastModified = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            CacheKeys.Tariff_Active,
-            CacheKeys.Tariff_ById(tariffId),
-            CacheKeys.Tariff_ByBillingType((int)tariff.BillingType));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.TariffPagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return true;
     }
 
-    public async Task<bool> DeactivateAsync(Guid tariffId)
+    public async Task<bool> DeactivateAsync(Guid tariffId, CancellationToken ct = default)
     {
-        var tariff = await _context.Tariffs.FindAsync(tariffId);
+        var tariff = await _context.Tariffs.FindAsync([tariffId], ct);
         if (tariff == null)
             return false;
 
         tariff.IsActive = false;
         tariff.LastModified = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync().ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Tariff_All,
-            CacheKeys.Tariff_Active,
-            CacheKeys.Tariff_ById(tariffId),
-            CacheKeys.Tariff_ByBillingType((int)tariff.BillingType));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.TariffPagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
 
         return true;
     }

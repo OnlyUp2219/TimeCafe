@@ -26,25 +26,9 @@ public class SavePhoneCommandValidator : AbstractValidator<SavePhoneCommand>
 {
     public SavePhoneCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Номер телефона не может быть пустым")
-            .Must(phone =>
-            {
-                if (string.IsNullOrWhiteSpace(phone))
-                    return false;
-                var digits = 0;
-                foreach (var ch in phone)
-                {
-                    if (char.IsDigit(ch))
-                        digits++;
-                }
-                return digits >= 10 && digits <= 15;
-            }).WithMessage("Неверный формат номера телефона. Используйте формат +375291234567");
+        RuleFor(x => x.PhoneNumber).ValidPhone();
     }
 }
 

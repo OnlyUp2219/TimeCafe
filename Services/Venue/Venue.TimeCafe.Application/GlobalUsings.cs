@@ -4,6 +4,7 @@ global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Extensions;
+global using BuildingBlocks.Validation;
 
 global using FluentValidation;
 

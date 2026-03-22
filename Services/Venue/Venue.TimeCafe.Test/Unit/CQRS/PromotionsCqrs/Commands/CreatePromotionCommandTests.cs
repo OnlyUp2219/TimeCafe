@@ -25,7 +25,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
             IsActive = true
         };
 
-        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -42,7 +42,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
         var validTo = TestData.DateTimeData.GetValidToDate();
         var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo);
 
-        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>())).ThrowsAsync(new InvalidOperationException());
+        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -60,7 +60,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
         var validTo = TestData.DateTimeData.GetValidToDate();
         var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo);
 
-        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>())).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

@@ -24,10 +24,7 @@ public class GetTariffByIdQueryValidator : AbstractValidator<GetTariffByIdQuery>
 {
     public GetTariffByIdQueryValidator()
     {
-        RuleFor(x => x.TariffId)
-              .NotEmpty().WithMessage("Тариф не найден")
-             .NotNull().WithMessage("Тариф не найден")
-              .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
     }
 }
 

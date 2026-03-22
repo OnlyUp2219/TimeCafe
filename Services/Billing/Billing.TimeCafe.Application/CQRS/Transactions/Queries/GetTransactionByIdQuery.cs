@@ -20,9 +20,7 @@ public class GetTransactionByIdQueryValidator : AbstractValidator<GetTransaction
 {
     public GetTransactionByIdQueryValidator()
     {
-        RuleFor(x => x.TransactionId)
-            .NotEmpty().WithMessage("Транзакция не найдена")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Транзакция не найдена");
+        RuleFor(x => x.TransactionId).ValidEntityId("Транзакция не найдена");
     }
 }
 

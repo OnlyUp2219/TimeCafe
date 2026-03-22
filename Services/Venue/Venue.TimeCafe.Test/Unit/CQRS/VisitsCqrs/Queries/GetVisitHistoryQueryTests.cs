@@ -20,7 +20,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
             new() { VisitId = Guid.NewGuid(), UserId = userId, TariffId = Guid.NewGuid(), Status = VisitStatus.Completed }
         };
 
-        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10)).ReturnsAsync(visits);
+        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>())).ReturnsAsync(visits);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -36,7 +36,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
         var query = new GetVisitHistoryQuery(userId.ToString(), 1, 10);
         var visits = new List<VisitWithTariffDto>();
 
-        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10)).ReturnsAsync(visits);
+        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>())).ReturnsAsync(visits);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -51,7 +51,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
         var userId = TestData.ExistingVisits.Visit1UserId;
         var query = new GetVisitHistoryQuery(userId.ToString(), 1, 10);
 
-        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10)).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

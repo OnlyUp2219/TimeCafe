@@ -24,22 +24,13 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
 {
     public UpdateAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.InfoId)
-            .NotEmpty().WithMessage("Информации отсутствует")
-           .NotNull().WithMessage("Информации отсутствует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Информации отсутствует");
+        RuleFor(x => x.InfoId).ValidEntityId("Информации отсутствует");
 
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Такого пользователя не существует")
-           .NotNull().WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
 
-        RuleFor(x => x.InfoText)
-            .NotEmpty().WithMessage("Текст информации обязателен")
-            .MaximumLength(2000).WithMessage("Текст не может превышать 2000 символов");
+        RuleFor(x => x.InfoText).ValidInfoText();
 
-        RuleFor(x => x.CreatedBy)
-            .MaximumLength(450).WithMessage("Создано кем - не может превышать 450 символов");
+        RuleFor(x => x.CreatedBy).ValidCreatedBy();
     }
 }
 

@@ -15,8 +15,8 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>())).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -30,7 +30,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new UpdateThemeCommand(TestData.NonExistingIds.NonExistingThemeId.ToString(), TestData.ExistingThemes.Theme1Name, TestData.ExistingThemes.Theme1Emoji, TestData.ExistingThemes.Theme1Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId))).ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId), It.IsAny<CancellationToken>())).ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -45,8 +45,8 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ReturnsAsync(theme);
-        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>())).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -62,7 +62,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id.ToString(), TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
-        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id))).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

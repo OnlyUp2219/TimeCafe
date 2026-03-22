@@ -16,8 +16,8 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
         var command = new DeletePromotionCommand(promotionId.ToString());
         var promotion = new Promotion(promotionId) { Name = TestData.DefaultValues.DefaultPromotionName, Description = TestData.DefaultValues.DefaultPromotionDescription, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.DeleteAsync(promotionId)).ReturnsAsync(true);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.DeleteAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -30,7 +30,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     {
         var command = new DeletePromotionCommand(TestData.NonExistingIds.NonExistingPromotionIdString);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId)).ReturnsAsync((Promotion?)null);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -46,8 +46,8 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
         var command = new DeletePromotionCommand(promotionId.ToString());
         var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.DeleteAsync(promotionId)).ReturnsAsync(false);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.DeleteAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -62,7 +62,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
         var command = new DeletePromotionCommand(promotionId.ToString());
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

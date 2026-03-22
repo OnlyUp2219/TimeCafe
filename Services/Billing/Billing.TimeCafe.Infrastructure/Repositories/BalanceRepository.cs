@@ -2,42 +2,25 @@ namespace Billing.TimeCafe.Infrastructure.Repositories;
 
 public class BalanceRepository(
     ApplicationDbContext context,
-    IDistributedCache cache,
-    ILogger<BalanceRepository> cacheLogger) : IBalanceRepository
+    HybridCache cache) : IBalanceRepository
 {
     private readonly ApplicationDbContext _context = context;
-    private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger;
+    private readonly HybridCache _cache = cache;
 
     public async Task<Balance?> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<Balance>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Balance_ByUserId(userId)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var balance = await _context.Balances
-            .AsNoTracking()
-            .FirstOrDefaultAsync(b => b.UserId == userId, ct)
-            .ConfigureAwait(false);
-
-        if (balance != null)
-        {
-            await CacheHelper.SetAsync(
-                _cache,
-                _cacheLogger,
-                CacheKeys.Balance_ByUserId(userId),
-                balance).ConfigureAwait(false);
-        }
-
-        return balance;
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Balance_ByUserId(userId),
+            async token => await _context.Balances
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.UserId == userId, token),
+            tags: [CacheTags.Balances, CacheTags.Balance(userId)],
+            cancellationToken: ct);
     }
 
     public async Task<Balance> CreateAsync(Balance balance, CancellationToken ct = default)
     {
-        var existingBalance = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+        var existingBalance = await GetByUserIdAsync(balance.UserId, ct);
         if (existingBalance != null)
             return existingBalance;
 
@@ -45,29 +28,26 @@ public class BalanceRepository(
 
         try
         {
-            await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+            await _context.SaveChangesAsync(ct);
         }
         catch (DbUpdateException)
         {
-            var created = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+            await _cache.RemoveAsync(CacheKeys.Balance_ByUserId(balance.UserId), ct);
+            var created = await GetByUserIdAsync(balance.UserId, ct);
             if (created != null)
                 return created;
             throw;
         }
         catch (ArgumentException)
         {
-            var created = await GetByUserIdAsync(balance.UserId, ct).ConfigureAwait(false);
+            await _cache.RemoveAsync(CacheKeys.Balance_ByUserId(balance.UserId), ct);
+            var created = await GetByUserIdAsync(balance.UserId, ct);
             if (created != null)
                 return created;
             throw;
         }
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Balance_All,
-            CacheKeys.Balance_ByUserId(balance.UserId),
-            CacheKeys.Debtors_All).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
 
         return balance;
     }
@@ -75,14 +55,9 @@ public class BalanceRepository(
     public async Task<Balance> UpdateAsync(Balance balance, CancellationToken ct = default)
     {
         _context.Balances.Update(balance);
-        await _context.SaveChangesAsync(ct).ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        await CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Balance_All,
-            CacheKeys.Balance_ByUserId(balance.UserId),
-            CacheKeys.Debtors_All).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
 
         return balance;
     }
@@ -90,34 +65,20 @@ public class BalanceRepository(
     public async Task<bool> ExistsAsync(Guid userId, CancellationToken ct = default)
     {
         return await _context.Balances
-            .AnyAsync(b => b.UserId == userId, ct)
-            .ConfigureAwait(false);
+            .AnyAsync(b => b.UserId == userId, ct);
     }
 
     public async Task<List<Balance>> GetUsersWithDebtAsync(CancellationToken ct = default)
     {
-        var cached = await CacheHelper.GetAsync<List<Balance>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Debtors_All).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var debtors = await _context.Balances
-            .AsNoTracking()
-            .Where(b => b.Debt > 0)
-            .OrderByDescending(b => b.Debt)
-            .ToListAsync(ct)
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        return await _cache.GetOrCreateAsync(
             CacheKeys.Debtors_All,
-            debtors,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) })
-            .ConfigureAwait(false);
-
-        return debtors;
+            async token => await _context.Balances
+                .AsNoTracking()
+                .Where(b => b.Debt > 0)
+                .OrderByDescending(b => b.Debt)
+                .ToListAsync(token),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
+            tags: [CacheTags.Balances],
+            cancellationToken: ct);
     }
 }

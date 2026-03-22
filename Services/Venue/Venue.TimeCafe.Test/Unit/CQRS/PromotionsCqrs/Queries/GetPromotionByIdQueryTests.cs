@@ -16,7 +16,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
         var query = new GetPromotionByIdQuery(promotionId.ToString());
         var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -30,7 +30,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetPromotionByIdQuery(TestData.NonExistingIds.NonExistingPromotionIdString);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId)).ReturnsAsync((Promotion?)null);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -45,7 +45,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
         var promotionId = TestData.ExistingPromotions.Promotion2Id;
         var query = new GetPromotionByIdQuery(promotionId.ToString());
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

@@ -36,14 +36,9 @@ public class GeneratePhoneVerificationCommandValidator : AbstractValidator<Gener
 {
     public GeneratePhoneVerificationCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-           .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.PhoneNumber)
-            .NotEmpty().WithMessage("Номер телефона не может быть пустым")
-            .Matches(@"^\+\d{10,15}$").WithMessage("Неверный формат номера телефона. Используйте формат +12345678901");
+        RuleFor(x => x.PhoneNumber).ValidPhone();
     }
 }
 

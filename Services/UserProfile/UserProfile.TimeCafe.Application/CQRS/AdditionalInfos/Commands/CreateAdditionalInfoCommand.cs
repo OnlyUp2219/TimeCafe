@@ -24,17 +24,11 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
 {
     public CreateAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Такого пользователя не существует")
-           .NotNull().WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
 
-        RuleFor(x => x.InfoText)
-            .NotEmpty().WithMessage("Текст информации обязателен")
-            .MaximumLength(2000).WithMessage("Текст не может превышать 2000 символов");
+        RuleFor(x => x.InfoText).ValidInfoText();
 
-        RuleFor(x => x.CreatedBy)
-            .MaximumLength(450).WithMessage("CreatedBy не может превышать 450 символов")
+        RuleFor(x => x.CreatedBy).ValidCreatedBy()
             .When(x => !string.IsNullOrEmpty(x.CreatedBy));
     }
 }

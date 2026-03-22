@@ -30,23 +30,16 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
 {
     public CreateTariffCommandValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название тарифа обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+        RuleFor(x => x.Name).ValidName("Название тарифа");
 
-        RuleFor(x => x.Description)
-            .MaximumLength(500).WithMessage("Описание не может превышать 500 символов")
-            .When(x => !string.IsNullOrEmpty(x.Description));
+        RuleFor(x => x.Description).ValidOptionalDescription();
 
-        RuleFor(x => x.PricePerMinute)
-            .GreaterThan(0).WithMessage("Цена за минуту должна быть больше 0");
+        RuleFor(x => x.PricePerMinute).ValidPrice();
 
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Неверный тип биллинга");
 
-        RuleFor(x => x.ThemeId)
-            .Must(id => string.IsNullOrWhiteSpace(id) || Guid.TryParse(id, out var guid) && guid != Guid.Empty)
-            .WithMessage("Неверный идентификатор темы");
+        RuleFor(x => x.ThemeId).ValidOptionalEntityId("Неверный идентификатор темы");
     }
 }
 

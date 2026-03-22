@@ -29,9 +29,7 @@ public class ResendConfirmationCommandValidator : AbstractValidator<ResendConfir
 {
     public ResendConfirmationCommandValidator()
     {
-        RuleFor(x => x.Email)
-            .NotEmpty().WithMessage("Email не может быть пустым")
-            .EmailAddress().WithMessage("Неверный формат Email");
+        RuleFor(x => x.Email).ValidEmail();
     }
 }
 

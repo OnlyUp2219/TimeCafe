@@ -1,163 +1,102 @@
 namespace UserProfile.TimeCafe.Infrastructure.Repositories;
 
-public class UserRepositories(ApplicationDbContext context, IDistributedCache cache, ILogger<UserRepositories> cacheLogger) : IUserRepositories
+public class UserRepositories(ApplicationDbContext context, HybridCache cache) : IUserRepositories
 {
-
     private readonly ApplicationDbContext _context = context;
-    private readonly IDistributedCache _cache = cache;
-    private readonly ILogger _cacheLogger = cacheLogger;
+    private readonly HybridCache _cache = cache;
 
     public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken? cancellationToken)
     {
-        var cached = await CacheHelper.GetAsync<IEnumerable<Profile>>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Profile_All).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Profiles
-            .AsNoTracking()
-            .OrderByDescending(c => c.CreatedAt)
-            .ToListAsync(cancellationToken ?? CancellationToken.None)
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync<IEnumerable<Profile>>(
-            _cache,
-            _cacheLogger,
+        var ct = cancellationToken ?? CancellationToken.None;
+        return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_All,
-            entity).ConfigureAwait(false);
-
-        return entity;
+            async token => await _context.Profiles
+                .AsNoTracking()
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync(token),
+            tags: [CacheTags.Profiles],
+            cancellationToken: ct);
     }
 
     public async Task<IEnumerable<Profile?>> GetProfilesPageAsync(int pageNumber, int pageSize, CancellationToken? cancellationToken)
     {
-        var versionStr = await _cache.GetStringAsync(CacheKeys.ProfilePagesVersion()).ConfigureAwait(false);
-        var version = int.TryParse(versionStr, out var v) ? v : 1;
-
-        var cacheKey = CacheKeys.Profile_Page(pageNumber, version);
-
-        var cached = await CacheHelper.GetAsync<IEnumerable<Profile>>(
-            _cache,
-            _cacheLogger,
-            cacheKey).ConfigureAwait(false);
-        if (cached != null) return cached;
-
-        var items = await _context.Profiles
-            .AsNoTracking()
-            .OrderByDescending(c => c.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken ?? CancellationToken.None)
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
-            cacheKey,
-            items,
-            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) }).ConfigureAwait(false);
-
-        return items;
+        var ct = cancellationToken ?? CancellationToken.None;
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Profile_Page(pageNumber),
+            async token => await _context.Profiles
+                .AsNoTracking()
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(token),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Profiles],
+            cancellationToken: ct);
     }
 
     public async Task<int> GetTotalPageAsync(CancellationToken? cancellationToken)
     {
-        return await _context.Profiles.CountAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+        return await _context.Profiles.CountAsync(cancellationToken ?? CancellationToken.None);
     }
 
     public async Task<Profile?> GetProfileByIdAsync(Guid userId, CancellationToken? cancellationToken)
     {
-        var cached = await CacheHelper.GetAsync<Profile>(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Profile_ById(userId)).ConfigureAwait(false);
-        if (cached != null)
-            return cached;
-
-        var entity = await _context.Profiles
-            .FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken ?? CancellationToken.None)
-            .ConfigureAwait(false);
-
-        await CacheHelper.SetAsync(
-            _cache,
-            _cacheLogger,
+        var ct = cancellationToken ?? CancellationToken.None;
+        return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_ById(userId),
-            entity).ConfigureAwait(false);
-
-        return entity;
+            async token => await _context.Profiles
+                .FirstOrDefaultAsync(c => c.UserId == userId, token),
+            tags: [CacheTags.Profiles, CacheTags.Profile(userId)],
+            cancellationToken: ct);
     }
 
     public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
+        var ct = cancellationToken ?? CancellationToken.None;
         profile.CreatedAt = DateTimeOffset.UtcNow;
         _context.Profiles.Add(profile);
-        await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-            _cache,
-            _cacheLogger,
-            CacheKeys.Profile_All);
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
-
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
 
         return profile;
     }
 
     public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken)
     {
+        var ct = cancellationToken ?? CancellationToken.None;
         var existingClient = await _context.Profiles.FindAsync(profile.UserId);
 
         if (existingClient is null)
-        {
             return null;
-        }
 
         _context.Entry(existingClient).CurrentValues.SetValues(profile);
-        await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-
-        var removeAll = CacheHelper.RemoveKeysAsync(
-               _cache,
-               _cacheLogger,
-               CacheKeys.Profile_All,
-               CacheKeys.Profile_ById(profile.UserId));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
-
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
 
         return profile;
     }
 
     public async Task DeleteProfileAsync(Guid userId, CancellationToken? cancellationToken)
     {
-        var client = await _context.Profiles.FindAsync(userId).ConfigureAwait(false);
+        var ct = cancellationToken ?? CancellationToken.None;
+        var client = await _context.Profiles.FindAsync(userId);
 
         if (client is null)
-        {
             return;
-        }
 
         _context.Profiles.Remove(client);
-        await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-               _cache,
-               _cacheLogger,
-               CacheKeys.Profile_All,
-               CacheKeys.Profile_ById(client.UserId));
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
-
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
     }
 
     public async Task CreateEmptyAsync(Guid userId, CancellationToken? cancellationToken)
     {
+        var ct = cancellationToken ?? CancellationToken.None;
         var exist = await _context.Profiles
-            .AnyAsync(u => u.UserId == userId, cancellationToken ?? CancellationToken.None)
-            .ConfigureAwait(false);
+            .AnyAsync(u => u.UserId == userId, ct);
         if (exist)
             return;
 
@@ -171,15 +110,8 @@ public class UserRepositories(ApplicationDbContext context, IDistributedCache ca
             CreatedAt = DateTimeOffset.UtcNow,
         });
 
-        await _context.SaveChangesAsync(cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+        await _context.SaveChangesAsync(ct);
 
-        var removeAll = CacheHelper.RemoveKeysAsync(
-        _cache,
-        _cacheLogger,
-        CacheKeys.Profile_All);
-        var removePage = CacheHelper.InvalidatePagesCacheAsync(_cache, CacheKeys.ProfilePagesVersion());
-        await Task.WhenAll(removeAll, removePage).ConfigureAwait(false);
-
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
     }
-
 }

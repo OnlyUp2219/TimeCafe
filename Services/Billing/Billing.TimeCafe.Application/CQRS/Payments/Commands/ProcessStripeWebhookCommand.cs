@@ -98,17 +98,17 @@ public class ProcessStripeWebhookCommandHandler(
             metadataUserId);
 
         var payment = await _paymentRepository.GetByExternalPaymentIdAsync(stripeObjectId, cancellationToken)
-            .ConfigureAwait(false);
+            ;
 
         if (payment == null && !string.IsNullOrWhiteSpace(stripePaymentIntentId))
         {
             payment = await _paymentRepository.GetByExternalPaymentIdAsync(stripePaymentIntentId, cancellationToken)
-                .ConfigureAwait(false);
+                ;
         }
 
         if (payment == null && Guid.TryParse(metadataPaymentId, out var paymentId))
         {
-            payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken).ConfigureAwait(false);
+            payment = await _paymentRepository.GetByIdAsync(paymentId, cancellationToken);
         }
 
         if (payment == null && Guid.TryParse(metadataUserId, out var metadataUserGuid))
@@ -118,7 +118,7 @@ public class ProcessStripeWebhookCommandHandler(
                 : paymentIntent.Amount / 100m;
 
             var recentUserPayments = await _paymentRepository.GetByUserIdAsync(metadataUserGuid, 1, 20, cancellationToken)
-                .ConfigureAwait(false);
+                ;
 
             payment = recentUserPayments
                 .OrderByDescending(p => p.CreatedAt)
@@ -155,7 +155,7 @@ public class ProcessStripeWebhookCommandHandler(
         {
             payment.Status = PaymentStatus.Failed;
             payment.ErrorMessage = "Stripe: асинхронный платёж отклонён";
-            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+            await _paymentRepository.UpdateAsync(payment, cancellationToken);
             return ProcessStripeWebhookResult.Completed("Stripe: асинхронный платёж отклонён");
         }
 
@@ -163,7 +163,7 @@ public class ProcessStripeWebhookCommandHandler(
         {
             payment.Status = PaymentStatus.Cancelled;
             payment.ErrorMessage = "Сессия оплаты истекла";
-            await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+            await _paymentRepository.UpdateAsync(payment, cancellationToken);
             return ProcessStripeWebhookResult.Completed("Сессия оплаты истекла");
         }
 
@@ -189,7 +189,7 @@ public class ProcessStripeWebhookCommandHandler(
             TransactionType.Deposit,
             TransactionSource.Payment,
             payment.PaymentId.ToString(),
-            "Пополнение баланса через Stripe Checkout"), cancellationToken).ConfigureAwait(false);
+            "Пополнение баланса через Stripe Checkout"), cancellationToken);
 
         if (!adjustResult.Success)
         {
@@ -197,7 +197,7 @@ public class ProcessStripeWebhookCommandHandler(
             {
                 payment.Status = PaymentStatus.Failed;
                 payment.ErrorMessage = adjustResult.Message ?? "Не удалось зачислить оплату";
-                await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+                await _paymentRepository.UpdateAsync(payment, cancellationToken);
                 return ProcessStripeWebhookResult.ProviderError(adjustResult.Message ?? "Ошибка зачисления платежа");
             }
         }
@@ -215,7 +215,7 @@ public class ProcessStripeWebhookCommandHandler(
             });
         }
 
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+        await _paymentRepository.UpdateAsync(payment, cancellationToken);
 
         _logger.LogInformation("Stripe: checkout session {SessionId} completed for user {UserId}",
             session.Id,

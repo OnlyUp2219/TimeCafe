@@ -26,8 +26,8 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         };
         var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.UpdateData.UpdatedPromotionName, TestData.UpdateData.UpdatedPromotionDescription, TestData.UpdateData.UpdatedDiscountPercent, validFrom, validTo, true);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -43,7 +43,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         var validTo = TestData.DateTimeData.GetValidToDate();
         var command = new UpdatePromotionCommand(TestData.NonExistingIds.NonExistingPromotionIdString, TestData.ExistingPromotions.Promotion1Name, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId)).ReturnsAsync((Promotion?)null);
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -67,8 +67,8 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         };
         var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ReturnsAsync(promotion);
-        PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>())).ThrowsAsync(new Exception("Update failed"));
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
+        PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Update failed"));
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));
@@ -87,7 +87,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         var validTo = TestData.DateTimeData.GetValidToDate();
         var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
-        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId)).ThrowsAsync(new Exception());
+        PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

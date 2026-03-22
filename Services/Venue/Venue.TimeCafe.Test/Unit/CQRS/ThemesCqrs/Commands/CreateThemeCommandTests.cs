@@ -15,7 +15,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
         var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.NewThemes.NewTheme1Name, Emoji = TestData.NewThemes.NewTheme1Emoji, Colors = TestData.NewThemes.NewTheme1Colors };
 
-        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ReturnsAsync(theme);
+        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -30,7 +30,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
-        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>()))!.ReturnsAsync((Theme?)null);
+        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>()))!.ReturnsAsync((Theme?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -44,7 +44,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
     {
         var command = new CreateThemeCommand(TestData.NewThemes.NewTheme1Name, TestData.NewThemes.NewTheme1Emoji, TestData.NewThemes.NewTheme1Colors);
 
-        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>())).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(command, CancellationToken.None));

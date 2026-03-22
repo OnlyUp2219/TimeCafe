@@ -32,19 +32,11 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 {
     public CreateVisitCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .NotNull().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.TariffId)
-            .NotEmpty().WithMessage("Тариф не найден")
-            .NotNull().WithMessage("Тариф не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
 
-        RuleFor(x => x.PlannedMinutes)
-            .GreaterThan(0).WithMessage("Время посещения должно быть больше 0 минут")
-            .LessThanOrEqualTo(12 * 60).WithMessage("Максимальное планируемое время — 12 часов")
+        RuleFor(x => x.PlannedMinutes).ValidPlannedMinutes()
             .When(x => x.PlannedMinutes.HasValue);
     }
 }

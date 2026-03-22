@@ -21,12 +21,9 @@ public class CreateThemeCommandValidator : AbstractValidator<CreateThemeCommand>
 {
     public CreateThemeCommandValidator()
     {
-        RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название темы обязательно")
-            .MaximumLength(100).WithMessage("Название не может превышать 100 символов");
+        RuleFor(x => x.Name).ValidName("Название темы");
 
-        RuleFor(x => x.Emoji)
-            .MaximumLength(10).WithMessage("Эмодзи не может превышать 10 символов")
+        RuleFor(x => x.Emoji).ValidEmoji()
             .When(x => !string.IsNullOrEmpty(x.Emoji));
     }
 }

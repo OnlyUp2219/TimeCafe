@@ -19,7 +19,7 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
             new() { ThemeId = TestData.ExistingThemes.Theme2Id, Name = TestData.ExistingThemes.Theme2Name }
         };
 
-        ThemeRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(themes);
+        ThemeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(themes);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -34,7 +34,7 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
         var query = new GetAllThemesQuery();
         var themes = new List<Theme>();
 
-        ThemeRepositoryMock.Setup(r => r.GetAllAsync()).ReturnsAsync(themes);
+        ThemeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(themes);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -48,7 +48,7 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
     {
         var query = new GetAllThemesQuery();
 
-        ThemeRepositoryMock.Setup(r => r.GetAllAsync()).ThrowsAsync(new Exception());
+        ThemeRepositoryMock.Setup(r => r.GetAllAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var ex = await Assert.ThrowsAsync<CqrsResultException>(
             () => _handler.Handle(query, CancellationToken.None));

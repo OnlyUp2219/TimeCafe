@@ -1,8 +1,6 @@
-global using BuildingBlocks.Helpers;
-
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
-global using Microsoft.Extensions.Caching.Distributed;
+global using Microsoft.Extensions.Caching.Hybrid;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 

@@ -24,10 +24,7 @@ public class GetAdditionalInfoByIdQueryValidator : AbstractValidator<GetAddition
 {
     public GetAdditionalInfoByIdQueryValidator()
     {
-        RuleFor(x => x.InfoId)
-            .NotEmpty().WithMessage("Информации отсутствует")
-           .NotNull().WithMessage("Информации отсутствует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Информации отсутствует");
+        RuleFor(x => x.InfoId).ValidEntityId("Информации отсутствует");
     }
 }
 

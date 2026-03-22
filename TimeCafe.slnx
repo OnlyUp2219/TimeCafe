@@ -1,0 +1,65 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="arm64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Services/">
+    <Project Path="Services/BuildingBlocks/BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/Services/Auth/">
+    <Project Path="Services/Auth/Auth.TimeCafe.API/Auth.TimeCafe.API.csproj" />
+    <Project Path="Services/Auth/Auth.TimeCafe.Application/Auth.TimeCafe.Application.csproj" />
+    <Project Path="Services/Auth/Auth.TimeCafe.Domain/Auth.TimeCafe.Domain.csproj" />
+    <Project Path="Services/Auth/Auth.TimeCafe.Infrastructure/Auth.TimeCafe.Infrastructure.csproj">
+      <BuildDependency Project="Services/BuildingBlocks/BuildingBlocks.csproj" />
+    </Project>
+    <Project Path="Services/Auth/Auth.TimeCafe.Test/Auth.TimeCafe.Test.csproj" />
+  </Folder>
+  <Folder Name="/Services/Billing/">
+    <Project Path="Services/Billing/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj" />
+    <Project Path="Services/Billing/Billing.TimeCafe.Application/Billing.TimeCafe.Application.csproj" />
+    <Project Path="Services/Billing/Billing.TimeCafe.Domain/Billing.TimeCafe.Domain.csproj" />
+    <Project Path="Services/Billing/Billing.TimeCafe.Infrastructure/Billing.TimeCafe.Infrastructure.csproj" />
+    <Project Path="Services/Billing/Billing.TimeCafe.Test/Billing.TimeCafe.Test.csproj" />
+  </Folder>
+  <Folder Name="/Services/UserProfile/">
+    <Project Path="Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj" />
+    <Project Path="Services/UserProfile/UserProfile.TimeCafe.Application/UserProfile.TimeCafe.Application.csproj" />
+    <Project Path="Services/UserProfile/UserProfile.TimeCafe.Domain/UserProfile.TimeCafe.Domain.csproj" />
+    <Project Path="Services/UserProfile/UserProfile.TimeCafe.Infrastructure/UserProfile.TimeCafe.Infrastructure.csproj">
+      <BuildDependency Project="Services/BuildingBlocks/BuildingBlocks.csproj" />
+    </Project>
+    <Project Path="Services/UserProfile/UserProfile.TimeCafe.Test/UserProfile.TimeCafe.Test.csproj" />
+  </Folder>
+  <Folder Name="/Services/Venue/">
+    <Project Path="Services/Venue/Venue.TimeCafe.API/Venue.TimeCafe.API.csproj" />
+    <Project Path="Services/Venue/Venue.TimeCafe.Application/Venue.TimeCafe.Application.csproj" />
+    <Project Path="Services/Venue/Venue.TimeCafe.Domain/Venue.TimeCafe.Domain.csproj" />
+    <Project Path="Services/Venue/Venue.TimeCafe.Infrastructure/Venue.TimeCafe.Infrastructure.csproj" />
+    <Project Path="Services/Venue/Venue.TimeCafe.Test/Venue.TimeCafe.Test.csproj" />
+  </Folder>
+  <Folder Name="/Services/Yarp/">
+    <Project Path="Services/YarpProxy/YarpProxy.csproj" />
+  </Folder>
+  <Folder Name="/WebApp/">
+    <Project Path="WebApp/TimeCafe.React.UI/timecafe.react.ui.esproj">
+      <Platform Project="AnyCPU" />
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Элементы решения/">
+    <File Path=".dockerignore" />
+    <File Path=".env" />
+    <File Path="Directory.Packages.props" />
+    <File Path="docker-compose.override.yml" />
+    <File Path="docker-compose.yml" />
+  </Folder>
+  <Project Path="docker-compose.dcproj">
+    <Platform Project="AnyCPU" />
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

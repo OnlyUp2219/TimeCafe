@@ -4,6 +4,7 @@ global using Auth.TimeCafe.API.Middleware;
 global using Auth.TimeCafe.API.Services;
 global using Auth.TimeCafe.Application;
 global using Auth.TimeCafe.Application.Contracts;
+global using Auth.TimeCafe.Application.DependencyInjection;
 global using Auth.TimeCafe.Application.CQRS.Account.Commands;
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Application.Permissions;

@@ -28,7 +28,7 @@ builder.Services.AddEmailSender(builder.Configuration);
 builder.Services.AddSmsServices(builder.Configuration);
 
 // CQRS (MediatR + Pipeline Behaviors)
-builder.Services.AddUserProfileCqrs();
+builder.Services.AddAuthCqrs();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

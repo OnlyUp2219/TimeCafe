@@ -35,30 +35,13 @@ public class InitializeStripeCheckoutCommandValidator : AbstractValidator<Initia
 {
     public InitializeStripeCheckoutCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
-            .GreaterThanOrEqualTo(50m).WithMessage("Минимальная сумма платежа 50 ₽ (требование Stripe)");
+        RuleFor(x => x.Amount).ValidPaymentAmount();
 
-        RuleFor(x => x.SuccessUrl)
-            .Must(IsValidUrlWithPlaceholder)
-            .WithMessage("SuccessUrl некорректен");
+        RuleFor(x => x.SuccessUrl).ValidUrlWithPlaceholder("SuccessUrl");
 
-        RuleFor(x => x.CancelUrl)
-            .Must(IsValidUrlWithPlaceholder)
-            .WithMessage("CancelUrl некорректен");
-    }
-
-    private static bool IsValidUrlWithPlaceholder(string? url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            return true;
-
-        var urlToValidate = url.Replace("{CHECKOUT_SESSION_ID}", "placeholder");
-        return Uri.IsWellFormedUriString(urlToValidate, UriKind.Absolute);
+        RuleFor(x => x.CancelUrl).ValidUrlWithPlaceholder("CancelUrl");
     }
 }
 
@@ -105,7 +88,7 @@ public class InitializeStripeCheckoutCommandHandler(
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        await _paymentRepository.CreateAsync(payment, cancellationToken).ConfigureAwait(false);
+        await _paymentRepository.CreateAsync(payment, cancellationToken);
 
         var createRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
@@ -116,7 +99,7 @@ public class InitializeStripeCheckoutCommandHandler(
             successUrl,
             cancelUrl);
 
-        var response = await _stripeClient.CreateCheckoutSessionAsync(createRequest, cancellationToken).ConfigureAwait(false);
+        var response = await _stripeClient.CreateCheckoutSessionAsync(createRequest, cancellationToken);
 
         if (!response.Success || string.IsNullOrWhiteSpace(response.SessionId))
         {
@@ -125,7 +108,7 @@ public class InitializeStripeCheckoutCommandHandler(
         }
 
         payment.ExternalPaymentId = response.SessionId;
-        await _paymentRepository.UpdateAsync(payment, cancellationToken).ConfigureAwait(false);
+        await _paymentRepository.UpdateAsync(payment, cancellationToken);
 
         return InitializeStripeCheckoutResult.CheckoutCreated(payment, response.SessionId, response.CheckoutUrl!);
     }
