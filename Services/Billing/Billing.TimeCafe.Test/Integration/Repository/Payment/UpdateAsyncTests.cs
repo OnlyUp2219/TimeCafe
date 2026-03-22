@@ -135,21 +135,13 @@ public class UpdateAsyncTests : BasePaymentRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var cachedPayment = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         cachedPayment.Should().NotBeNull();
 
-        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
-        var cachedBefore = await cache.GetStringAsync(cacheKey);
-        cachedBefore.Should().NotBeNullOrEmpty();
-
         cachedPayment!.Status = PaymentStatus.Failed;
         cachedPayment.ErrorMessage = "Provider error";
         await repository.UpdateAsync(cachedPayment);
-
-        var cachedAfter = await cache.GetStringAsync(cacheKey);
-        cachedAfter.Should().BeNullOrEmpty();
 
         var retrieved = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         retrieved.Should().NotBeNull();

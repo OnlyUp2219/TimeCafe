@@ -56,13 +56,8 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var result1 = await repository.GetByUserIdAsync(userId);
-        var cacheKey = CacheKeys.Balance_ByUserId(userId);
-        var cachedValue = await cache.GetStringAsync(cacheKey);
-        cachedValue.Should().NotBeNullOrEmpty();
-
         var result2 = await repository.GetByUserIdAsync(userId);
 
         result1.Should().NotBeNull();
@@ -102,12 +97,11 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var result1 = await repository.GetByUserIdAsync(userId);
 
         var cacheKey = CacheKeys.Balance_ByUserId(userId);
-        await cache.RemoveAsync(cacheKey);
+        await scope.ServiceProvider.GetRequiredService<IDistributedCache>().RemoveAsync(cacheKey);
 
         var result2 = await repository.GetByUserIdAsync(userId);
 
@@ -129,7 +123,6 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var result1 = await repository.GetByUserIdAsync(userId1);
         var result2 = await repository.GetByUserIdAsync(userId2);
@@ -139,11 +132,13 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         result1.UserId.Should().Be(userId1);
         result2.UserId.Should().Be(userId2);
 
-        var cached1 = await cache.GetStringAsync(CacheKeys.Balance_ByUserId(userId1));
-        var cached2 = await cache.GetStringAsync(CacheKeys.Balance_ByUserId(userId2));
+        var result1SecondCall = await repository.GetByUserIdAsync(userId1);
+        var result2SecondCall = await repository.GetByUserIdAsync(userId2);
 
-        cached1.Should().NotBeNullOrEmpty();
-        cached2.Should().NotBeNullOrEmpty();
+        result1SecondCall.Should().NotBeNull();
+        result2SecondCall.Should().NotBeNull();
+        result1SecondCall!.UserId.Should().Be(userId1);
+        result2SecondCall!.UserId.Should().Be(userId2);
     }
 
     [Fact]

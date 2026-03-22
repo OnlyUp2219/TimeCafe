@@ -26,8 +26,8 @@ global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.OpenApi.Any;
-global using Microsoft.OpenApi.Models;
+global using Microsoft.Extensions.Caching.Hybrid;
+global using Microsoft.OpenApi;
 
 global using Scalar.AspNetCore;
 

@@ -114,7 +114,6 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var payment = new PaymentModel(DefaultsGuid.PaymentId)
         {
@@ -127,8 +126,12 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
 
         await repository.CreateAsync(payment);
 
-        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
-        var cachedValue = await cache.GetStringAsync(cacheKey);
-        cachedValue.Should().NotBeNullOrEmpty();
+        var read1 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
+        var read2 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
+
+        read1.Should().NotBeNull();
+        read2.Should().NotBeNull();
+        read1!.PaymentId.Should().Be(DefaultsGuid.PaymentId);
+        read1.PaymentId.Should().Be(read2!.PaymentId);
     }
 }

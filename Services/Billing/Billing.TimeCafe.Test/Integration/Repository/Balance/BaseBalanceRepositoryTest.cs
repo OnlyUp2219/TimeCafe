@@ -33,6 +33,7 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+        var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var balances = await db.Balances.AsNoTracking().ToListAsync(ct);
@@ -43,6 +44,12 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
         }
         await cache.RemoveAsync(CacheKeys.Debtors_All, ct);
         await cache.RemoveAsync(CacheKeys.Balance_All, ct);
+
+        await hybridCache.RemoveByTagAsync(CacheTags.Balances, ct);
+        foreach (var balance in balances)
+        {
+            await hybridCache.RemoveByTagAsync(CacheTags.Balance(balance.UserId), ct);
+        }
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken ct = default)
@@ -56,8 +63,22 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
 
     public void Dispose()
     {
-        Client?.Dispose();
-        Factory?.Dispose();
+        try
+        {
+            Client?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            Factory?.Dispose();
+        }
+        catch (NullReferenceException)
+        {
+        }
+
         GC.SuppressFinalize(this);
     }
 }

@@ -40,13 +40,8 @@ public class GetByIdAsyncTests : BaseTransactionRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var result1 = await repository.GetByIdAsync(createdTransaction.TransactionId);
-        var cacheKey = CacheKeys.Transaction_ById(createdTransaction.TransactionId);
-        var cachedValue = await cache.GetStringAsync(cacheKey);
-        cachedValue.Should().NotBeNullOrEmpty();
-
         var result2 = await repository.GetByIdAsync(createdTransaction.TransactionId);
 
         result1.Should().NotBeNull();

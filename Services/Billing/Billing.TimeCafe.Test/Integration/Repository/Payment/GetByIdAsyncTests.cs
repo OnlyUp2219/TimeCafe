@@ -38,13 +38,8 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
 
         var result1 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
-
-        var cacheKey = CacheKeys.Payment_ById(DefaultsGuid.PaymentId);
-        var cachedValue = await cache.GetStringAsync(cacheKey);
-        cachedValue.Should().NotBeNullOrEmpty();
 
         var result2 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
 

@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditionalInfo;
 
 public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
@@ -8,6 +11,7 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
     };
 
     protected readonly ApplicationDbContext Context;
+    protected readonly HybridCache HybridCache;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<AdditionalInfoRepository>> CacheLoggerMock;
     protected readonly AdditionalInfoRepository Repository;
@@ -23,9 +27,17 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
         Context = new ApplicationDbContext(options);
         Context.Database.EnsureCreated();
 
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDistributedMemoryCache();
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache();
+#pragma warning restore EXTEXP0018
+        HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
+
         CacheMock = new Mock<IDistributedCache>();
         CacheLoggerMock = new Mock<ILogger<AdditionalInfoRepository>>();
-        Repository = new AdditionalInfoRepository(Context, CacheMock.Object, CacheLoggerMock.Object);
+        Repository = new AdditionalInfoRepository(Context, HybridCache);
 
         var userId1 = Guid.NewGuid();
         var userId2 = Guid.NewGuid();

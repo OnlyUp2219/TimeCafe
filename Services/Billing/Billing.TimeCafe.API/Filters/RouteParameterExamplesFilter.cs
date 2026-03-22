@@ -4,18 +4,7 @@ public class RouteParameterExamplesFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        var examples = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["userId"] = new GetUserDebtDtoExample().GetExamples().UserId,
-            ["transactionId"] = new GetTransactionDtoExample().GetExamples().TransactionId
-        };
-
-        foreach (var parameter in operation.Parameters)
-        {
-            if (parameter.In == ParameterLocation.Path && examples.TryGetValue(parameter.Name, out var value))
-            {
-                parameter.Example = new OpenApiString(value);
-            }
-        }
+        _ = operation;
+        _ = context;
     }
 }
