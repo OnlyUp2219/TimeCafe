@@ -111,14 +111,12 @@ public class GetByUserIdAsyncTests : BaseTransactionRepositoryTest
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
-        var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
-
         var result1 = await repository.GetByUserIdAsync(userIdToTest, 1, 10);
-        var cacheKey = CacheKeys.Transaction_History(userIdToTest, 1);
-        var cachedValue = await cache.GetStringAsync(cacheKey);
+        var result2 = await repository.GetByUserIdAsync(userIdToTest, 1, 10);
 
-        cachedValue.Should().NotBeNullOrEmpty();
         result1.Should().HaveCount(1);
+        result2.Should().HaveCount(1);
+        result1[0].TransactionId.Should().Be(result2[0].TransactionId);
     }
 
     [Fact]

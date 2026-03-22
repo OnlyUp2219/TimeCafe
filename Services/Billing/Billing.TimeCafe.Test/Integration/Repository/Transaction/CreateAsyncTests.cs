@@ -64,15 +64,11 @@ public class CreateAsyncTests : BaseTransactionRepositoryTest
     public async Task Repository_CreateAsync_Should_InvalidateUserHistoryCache()
     {
         await ClearCacheAsync();
-        var transaction1 = await CreateTestTransactionAsync();
+        await CreateTestTransactionAsync();
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
-
-        var cacheKey = CacheKeys.Transaction_History(DefaultsGuid.UserId, 1);
-        var cachedBefore = await scope.ServiceProvider
-            .GetRequiredService<IDistributedCache>()
-            .GetStringAsync(cacheKey);
+        var historyBefore = await repository.GetByUserIdAsync(DefaultsGuid.UserId, 1, 10);
 
         var transaction2 = TransactionModel.CreateDeposit(
             DefaultsGuid.UserId,
@@ -81,12 +77,10 @@ public class CreateAsyncTests : BaseTransactionRepositoryTest
 
         await repository.CreateAsync(transaction2);
 
-        var cachedAfter = await scope.ServiceProvider
-            .GetRequiredService<IDistributedCache>()
-            .GetStringAsync(cacheKey);
+        var historyAfter = await repository.GetByUserIdAsync(DefaultsGuid.UserId, 1, 10);
 
-        cachedBefore.Should().BeNull();
-        cachedAfter.Should().BeNull();
+        historyBefore.Should().HaveCount(1);
+        historyAfter.Should().HaveCount(2);
     }
 
     [Fact]

@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public abstract class BaseRepositoryTest : IDisposable
@@ -8,6 +11,7 @@ public abstract class BaseRepositoryTest : IDisposable
     };
 
     protected readonly ApplicationDbContext Context;
+    protected readonly HybridCache HybridCache;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<UserRepositories>> LoggerMock;
     protected readonly UserRepositories Repository;
@@ -23,9 +27,17 @@ public abstract class BaseRepositoryTest : IDisposable
         Context = new ApplicationDbContext(options);
         Context.Database.EnsureCreated();
 
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDistributedMemoryCache();
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache();
+#pragma warning restore EXTEXP0018
+        HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
+
         CacheMock = new Mock<IDistributedCache>();
         LoggerMock = new Mock<ILogger<UserRepositories>>();
-        Repository = new UserRepositories(Context, CacheMock.Object, LoggerMock.Object);
+        Repository = new UserRepositories(Context, HybridCache);
 
         TestProfiles =
         [

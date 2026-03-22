@@ -46,11 +46,17 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+        var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
 
         await cache.RemoveAsync(CacheKeys.Transaction_All, ct);
         await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId), ct);
         await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId2), ct);
         await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId3), ct);
+
+        await hybridCache.RemoveByTagAsync(CacheTags.Transactions, ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId2), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId3), ct);
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken ct = default)
@@ -63,8 +69,22 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
 
     public void Dispose()
     {
-        Client?.Dispose();
-        Factory?.Dispose();
+        try
+        {
+            Client?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            Factory?.Dispose();
+        }
+        catch (NullReferenceException)
+        {
+        }
+
         GC.SuppressFinalize(this);
     }
 }

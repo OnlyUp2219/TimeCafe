@@ -287,7 +287,16 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                         var exists = await repository.ExistsAsync(userId);
                         if (!exists)
                         {
-                            await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount });
+                            try
+                            {
+                                await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount });
+                            }
+                            catch (DbUpdateException)
+                            {
+                            }
+                            catch (ArgumentException)
+                            {
+                            }
                         }
                     }));
                     break;

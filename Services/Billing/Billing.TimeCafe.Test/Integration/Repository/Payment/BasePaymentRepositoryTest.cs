@@ -42,6 +42,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
+        var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var payments = db.Payments.ToList();
@@ -56,6 +57,16 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId), ct);
         await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId2), ct);
         await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId3), ct);
+
+        await hybridCache.RemoveByTagAsync(CacheTags.Payments, ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId2), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId3), ct);
+
+        foreach (var payment in payments)
+        {
+            await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(payment.UserId), ct);
+        }
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken ct = default)
@@ -68,8 +79,22 @@ public abstract class BasePaymentRepositoryTest : IDisposable
 
     public void Dispose()
     {
-        Client?.Dispose();
-        Factory?.Dispose();
+        try
+        {
+            Client?.Dispose();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            Factory?.Dispose();
+        }
+        catch (NullReferenceException)
+        {
+        }
+
         GC.SuppressFinalize(this);
     }
 }

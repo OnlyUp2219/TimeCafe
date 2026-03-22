@@ -1,8 +1,12 @@
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Venue.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsTest : IDisposable
 {
     protected readonly ApplicationDbContext Context;
+    protected readonly HybridCache HybridCache;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<TariffRepository>> TariffLoggerMock;
     protected readonly Mock<ILogger<PromotionRepository>> PromotionLoggerMock;
@@ -23,6 +27,14 @@ public abstract class BaseCqrsTest : IDisposable
         Context = new ApplicationDbContext(options);
         Context.Database.EnsureCreated();
 
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDistributedMemoryCache();
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache();
+#pragma warning restore EXTEXP0018
+        HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
+
         CacheMock = new Mock<IDistributedCache>();
         TariffLoggerMock = new Mock<ILogger<TariffRepository>>();
         PromotionLoggerMock = new Mock<ILogger<PromotionRepository>>();
@@ -31,10 +43,10 @@ public abstract class BaseCqrsTest : IDisposable
 
         SetupDefaultCacheMocks();
 
-        TariffRepository = new TariffRepository(Context, CacheMock.Object, TariffLoggerMock.Object);
-        PromotionRepository = new PromotionRepository(Context, CacheMock.Object, PromotionLoggerMock.Object);
-        ThemeRepository = new ThemeRepository(Context, CacheMock.Object, ThemeLoggerMock.Object);
-        VisitRepository = new VisitRepository(Context, CacheMock.Object, VisitLoggerMock.Object);
+        TariffRepository = new TariffRepository(Context, HybridCache);
+        PromotionRepository = new PromotionRepository(Context, HybridCache);
+        ThemeRepository = new ThemeRepository(Context, HybridCache);
+        VisitRepository = new VisitRepository(Context, HybridCache);
     }
 
     private void SetupDefaultCacheMocks()
@@ -125,7 +137,8 @@ public abstract class BaseCqrsTest : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         if (disposing)
         {

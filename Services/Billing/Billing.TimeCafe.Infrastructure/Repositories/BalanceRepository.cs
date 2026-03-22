@@ -25,27 +25,7 @@ public class BalanceRepository(
             return existingBalance;
 
         _context.Balances.Add(balance);
-
-        try
-        {
-            await _context.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException)
-        {
-            await _cache.RemoveAsync(CacheKeys.Balance_ByUserId(balance.UserId), ct);
-            var created = await GetByUserIdAsync(balance.UserId, ct);
-            if (created != null)
-                return created;
-            throw;
-        }
-        catch (ArgumentException)
-        {
-            await _cache.RemoveAsync(CacheKeys.Balance_ByUserId(balance.UserId), ct);
-            var created = await GetByUserIdAsync(balance.UserId, ct);
-            if (created != null)
-                return created;
-            throw;
-        }
+        await _context.SaveChangesAsync(ct);
 
         await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
 

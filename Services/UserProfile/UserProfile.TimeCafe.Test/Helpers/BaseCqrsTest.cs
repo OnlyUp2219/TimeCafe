@@ -1,8 +1,12 @@
+using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace UserProfile.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsTest : IDisposable
 {
     protected readonly ApplicationDbContext Context;
+    protected readonly HybridCache HybridCache;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<UserRepositories>> LoggerMock;
     protected readonly IUserRepositories Repository;
@@ -17,9 +21,17 @@ public abstract class BaseCqrsTest : IDisposable
         Context = new ApplicationDbContext(options);
         Context.Database.EnsureCreated();
 
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddDistributedMemoryCache();
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache();
+#pragma warning restore EXTEXP0018
+        HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
+
         CacheMock = new Mock<IDistributedCache>();
         LoggerMock = new Mock<ILogger<UserRepositories>>();
-        Repository = new UserRepositories(Context, CacheMock.Object, LoggerMock.Object);
+        Repository = new UserRepositories(Context, HybridCache);
 
         SetupDefaultCacheMocks();
     }
@@ -73,7 +85,8 @@ public abstract class BaseCqrsTest : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
 
         if (disposing)
         {
