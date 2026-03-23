@@ -90,6 +90,8 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
         await _context.SaveChangesAsync(ct);
 
         await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
+        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfos, ct);
+        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfoByUser(userId), ct);
     }
 
     public async Task CreateEmptyAsync(Guid userId, CancellationToken? cancellationToken)

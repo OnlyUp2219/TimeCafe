@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Domain.Permissions;
+namespace Auth.TimeCafe.Domain.Enums;
 
 public enum Permission
 {

@@ -1,4 +1,4 @@
-namespace Venue.TimeCafe.Domain.Models;
+namespace Venue.TimeCafe.Domain.Enums;
 
 public enum BillingType
 {

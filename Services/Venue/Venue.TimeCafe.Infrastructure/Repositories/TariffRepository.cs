@@ -189,6 +189,7 @@ public class TariffRepository(
         await _context.SaveChangesAsync(ct);
 
         await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Visits, ct);
 
         return tariff;
     }
@@ -203,6 +204,7 @@ public class TariffRepository(
         await _context.SaveChangesAsync(ct);
 
         await _cache.RemoveByTagAsync(CacheTags.Tariffs, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Visits, ct);
 
         return true;
     }

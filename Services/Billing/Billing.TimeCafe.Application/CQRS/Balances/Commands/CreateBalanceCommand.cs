@@ -22,8 +22,7 @@ public class CreateBalanceCommandValidator : AbstractValidator<CreateBalanceComm
     public CreateBalanceCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+            .ValidEntityId("Пользователь не найден");
     }
 }
 

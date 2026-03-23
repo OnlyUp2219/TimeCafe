@@ -11,7 +11,7 @@ public class CleanArchitectureTests
     public void Domain_Should_NotDependOnAnyOtherLayer()
     {
         // Arrange
-        var assembly = typeof(Auth.TimeCafe.Domain.Permissions.Permission).Assembly;
+        var assembly = typeof(Auth.TimeCafe.Domain.Enums.Permission).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .Where(name => name?.StartsWith("Auth.TimeCafe") == true)
@@ -89,7 +89,7 @@ public class CleanArchitectureTests
     public void Domain_Should_NotReferenceEntityFramework()
     {
         // Arrange
-        var assembly = typeof(Auth.TimeCafe.Domain.Permissions.Permission).Assembly;
+        var assembly = typeof(Auth.TimeCafe.Domain.Enums.Permission).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .ToList();
@@ -117,7 +117,7 @@ public class CleanArchitectureTests
     public void Domain_Should_NotReferenceAspNetCore()
     {
         // Arrange
-        var assembly = typeof(Auth.TimeCafe.Domain.Permissions.Permission).Assembly;
+        var assembly = typeof(Auth.TimeCafe.Domain.Enums.Permission).Assembly;
         var referencedAssemblies = assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .ToList();

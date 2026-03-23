@@ -22,8 +22,7 @@ public class GetUserDebtQueryValidator : AbstractValidator<GetUserDebtQuery>
     public GetUserDebtQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Пользователь не найден")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Пользователь не найден");
+            .ValidEntityId("Пользователь не найден");
     }
 }
 

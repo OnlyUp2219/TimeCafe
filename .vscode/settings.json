@@ -8,5 +8,8 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "onlyup2219",
     "projectKey": "OnlyUp2219_TimeCafe"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "Test-Path": true
   }
 }
