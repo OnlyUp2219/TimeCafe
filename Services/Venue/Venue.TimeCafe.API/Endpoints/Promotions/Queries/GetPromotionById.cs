@@ -4,11 +4,11 @@ public class GetPromotionById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/promotions/{promotionId}", async (
+        app.MapGet("/promotions/{promotionId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetPromotionByIdDto dto) =>
+            Guid promotionId) =>
         {
-            var query = new GetPromotionByIdQuery(dto.PromotionId);
+            var query = new GetPromotionByIdQuery(promotionId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { promotion = r.Promotion }));
         })

@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record DeleteAdditionalInfoCommand(string InfoId) : IRequest<DeleteAdditionalInfoResult>;
+public record DeleteAdditionalInfoCommand(Guid InfoId) : IRequest<DeleteAdditionalInfoResult>;
 
 public record DeleteAdditionalInfoResult(
     bool Success,
@@ -23,7 +23,7 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
 {
     public DeleteAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.InfoId).ValidEntityId("Информации отсутствует");
+        RuleFor(x => x.InfoId).ValidGuidEntityId("Информации отсутствует");
     }
 }
 
@@ -35,8 +35,7 @@ public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var infoId = Guid.Parse(request.InfoId);
-            var deleted = await _repository.DeleteAdditionalInfoAsync(infoId, cancellationToken);
+            var deleted = await _repository.DeleteAdditionalInfoAsync(request.InfoId, cancellationToken);
 
             if (!deleted)
                 return DeleteAdditionalInfoResult.InfoNotFound();

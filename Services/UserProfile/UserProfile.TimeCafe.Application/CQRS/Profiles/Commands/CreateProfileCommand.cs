@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record CreateProfileCommand(string UserId, string FirstName, string LastName, Gender Gender) : IRequest<CreateProfileResult>;
+public record CreateProfileCommand(Guid UserId, string FirstName, string LastName, Gender Gender) : IRequest<CreateProfileResult>;
 
 public record CreateProfileResult(
     bool Success,
@@ -24,7 +24,7 @@ public class CreateProfileCommandValidator : AbstractValidator<CreateProfileComm
 {
     public CreateProfileCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
 
         RuleFor(x => x.FirstName).ValidName("Имя");
 
@@ -40,15 +40,13 @@ public class CreateProfileCommandHandler(IUserRepositories repository) : IReques
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var existing = await _repository.GetProfileByIdAsync(userId, cancellationToken);
+            var existing = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (existing != null)
                 return CreateProfileResult.ProfileAlreadyExists();
 
             var profile = new Profile
             {
-                UserId = userId,
+                UserId = request.UserId,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Gender = request.Gender,

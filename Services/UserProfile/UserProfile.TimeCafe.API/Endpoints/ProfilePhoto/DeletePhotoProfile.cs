@@ -4,12 +4,12 @@ public class DeletePhotoProfile : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/S3/image/{userId}", async (
+        app.MapDelete("/S3/image/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] DeletePhotoProfileDto dto,
+            Guid userId,
             CancellationToken ct) =>
         {
-            var cmd = new DeleteProfilePhotoCommand(dto.UserId);
+            var cmd = new DeleteProfilePhotoCommand(userId);
             var result = await sender.Send(cmd, ct);
             return result.ToHttpResultV2(_ => Results.NoContent());
         })

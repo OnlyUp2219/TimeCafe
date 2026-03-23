@@ -18,13 +18,10 @@ public static class SwaggerExtensions
 
             c.SwaggerDoc("v1", new() { Title = "TimeCafe UserProfile API", Version = "v1" });
             c.EnableAnnotations();
-            c.ExampleFilters();
 
             c.AddSecurityDefinition("Bearer", bearerScheme);
 
         });
-        services.AddSwaggerExamples();
-        services.AddSwaggerExamplesFromAssemblyOf<CreateProfileDtoExample>();
 
         return services;
     }

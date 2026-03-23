@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record CreateAdditionalInfoCommand(string UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
+public record CreateAdditionalInfoCommand(Guid UserId, string InfoText, string? CreatedBy = null) : IRequest<CreateAdditionalInfoResult>;
 
 public record CreateAdditionalInfoResult(
     bool Success,
@@ -24,7 +24,7 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
 {
     public CreateAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
 
         RuleFor(x => x.InfoText).ValidInfoText();
 
@@ -42,15 +42,13 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile == null)
                 return CreateAdditionalInfoResult.ProfileNotFound();
 
             var info = new AdditionalInfo
             {
-                UserId = userId,
+                UserId = request.UserId,
                 InfoText = request.InfoText,
                 CreatedBy = request.CreatedBy,
                 CreatedAt = DateTimeOffset.UtcNow

@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record UpdateAdditionalInfoCommand(string InfoId, string UserId, string InfoText, string? CreatedBy = null) : IRequest<UpdateAdditionalInfoResult>;
+public record UpdateAdditionalInfoCommand(Guid InfoId, Guid UserId, string InfoText, string? CreatedBy = null) : IRequest<UpdateAdditionalInfoResult>;
 
 public record UpdateAdditionalInfoResult(
     bool Success,
@@ -24,9 +24,9 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
 {
     public UpdateAdditionalInfoCommandValidator()
     {
-        RuleFor(x => x.InfoId).ValidEntityId("Информации отсутствует");
+        RuleFor(x => x.InfoId).ValidGuidEntityId("Информации отсутствует");
 
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
 
         RuleFor(x => x.InfoText).ValidInfoText();
 
@@ -42,18 +42,15 @@ public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-            var infoId = Guid.Parse(request.InfoId);
-
-            var existing = await _repository.GetAdditionalInfoByIdAsync(infoId, cancellationToken);
+            var existing = await _repository.GetAdditionalInfoByIdAsync(request.InfoId, cancellationToken);
             if (existing == null)
                 return UpdateAdditionalInfoResult.InfoNotFound();
 
             //TODO : Mapping and updating CreatedBy
             var additionalInfo = new AdditionalInfo
             {
-                InfoId = infoId,
-                UserId = userId,
+                InfoId = request.InfoId,
+                UserId = request.UserId,
                 InfoText = request.InfoText,
                 CreatedAt = existing.CreatedAt,
                 CreatedBy = request.CreatedBy,

@@ -20,6 +20,21 @@ public static class ValidationExtensions
             .WithMessage(message);
     }
 
+    public static IRuleBuilderOptions<T, Guid> ValidGuidEntityId<T>(
+        this IRuleBuilder<T, Guid> ruleBuilder, string message)
+    {
+        return ruleBuilder
+            .NotEqual(Guid.Empty).WithMessage(message);
+    }
+
+    public static IRuleBuilderOptions<T, Guid?> ValidOptionalGuidEntityId<T>(
+        this IRuleBuilder<T, Guid?> ruleBuilder, string message)
+    {
+        return ruleBuilder
+            .Must(x => !x.HasValue || x.Value != Guid.Empty)
+            .WithMessage(message);
+    }
+
     public static IRuleBuilderOptions<T, int> ValidPageNumber<T>(
         this IRuleBuilder<T, int> ruleBuilder)
     {

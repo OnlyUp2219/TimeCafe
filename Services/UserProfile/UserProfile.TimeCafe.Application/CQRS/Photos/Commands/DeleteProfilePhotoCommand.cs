@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record DeleteProfilePhotoCommand(string UserId) : IRequest<DeleteProfilePhotoResult>;
+public record DeleteProfilePhotoCommand(Guid UserId) : IRequest<DeleteProfilePhotoResult>;
 
 public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
 {
@@ -18,7 +18,7 @@ public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfil
 {
     public DeleteProfilePhotoCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
     }
 }
 
@@ -31,13 +31,11 @@ public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUse
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile is null)
                 return DeleteProfilePhotoResult.ProfileNotFound();
 
-            var deleted = await _storage.DeleteAsync(userId, cancellationToken);
+            var deleted = await _storage.DeleteAsync(request.UserId, cancellationToken);
             if (!deleted)
                 return DeleteProfilePhotoResult.PhotoNotFound();
 

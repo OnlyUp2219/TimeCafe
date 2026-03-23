@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record EndVisitCommand(string VisitId) : IRequest<EndVisitResult>;
+public record EndVisitCommand(Guid VisitId) : IRequest<EndVisitResult>;
 
 public record EndVisitResult(
     bool Success,
@@ -25,7 +25,7 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
 {
     public EndVisitCommandValidator()
     {
-        RuleFor(x => x.VisitId).ValidEntityId("Посещение не найдено");
+        RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
     }
 }
 
@@ -40,9 +40,7 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
     {
         try
         {
-            var visitId = Guid.Parse(request.VisitId);
-
-            var existing = await _repository.GetByIdAsync(visitId);
+            var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
                 return EndVisitResult.VisitNotFound();
 

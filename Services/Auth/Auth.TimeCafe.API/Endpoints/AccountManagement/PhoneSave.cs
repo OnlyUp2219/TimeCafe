@@ -1,5 +1,7 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
+public record SavePhoneRequest(string PhoneNumber);
+
 public class PhoneSave : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -14,7 +16,8 @@ public class PhoneSave : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new SavePhoneCommand(userId, model.PhoneNumber);
             var result = await sender.Send(command);

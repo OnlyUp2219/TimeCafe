@@ -1,5 +1,8 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
+public record ResetPasswordRequest(string Email, string ResetCode, string NewPassword);
+public record ResetPasswordEmailRequest(string Email);
+
 public class ResetPassword : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)

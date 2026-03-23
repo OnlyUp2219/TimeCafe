@@ -20,9 +20,6 @@ global using Scalar.AspNetCore;
 
 global using Serilog;
 
-global using Swashbuckle.AspNetCore.Filters;
-
-global using UserProfile.TimeCafe.API.DTOs;
 global using UserProfile.TimeCafe.API.Extensions;
 global using UserProfile.TimeCafe.Application;
 global using UserProfile.TimeCafe.Application.DependencyInjection;

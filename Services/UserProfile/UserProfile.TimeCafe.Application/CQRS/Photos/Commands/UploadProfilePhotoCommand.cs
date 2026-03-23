@@ -3,7 +3,7 @@ using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record UploadProfilePhotoCommand(string UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
+public record UploadProfilePhotoCommand(Guid UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
 
 public record UploadProfilePhotoResult(
     bool Success,
@@ -30,7 +30,7 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
     {
         var opts = photoOptions.Value;
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
 
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
@@ -58,8 +58,7 @@ public class UploadProfilePhotoCommandHandler(
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile is null)
                 return UploadProfilePhotoResult.ProfileNotFound();
 
@@ -95,7 +94,7 @@ public class UploadProfilePhotoCommandHandler(
 
                 uploadStream.Position = 0;
 
-                var result = await _storage.UploadAsync(userId, uploadStream, request.ContentType, request.FileName, cancellationToken);
+                var result = await _storage.UploadAsync(request.UserId, uploadStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Size is null || result.ContentType is null)
                     return UploadProfilePhotoResult.Failed();
@@ -103,7 +102,7 @@ public class UploadProfilePhotoCommandHandler(
                 profile.PhotoUrl = result.Key;
                 await _userRepository.UpdateProfileAsync(profile, cancellationToken);
 
-                var responseUrl = ProfilePhotoUrlMapper.BuildApiUrl(userId);
+                var responseUrl = ProfilePhotoUrlMapper.BuildApiUrl(request.UserId);
                 return UploadProfilePhotoResult.Ok(result.Key, responseUrl, result.Size.Value, result.ContentType);
             }
             finally

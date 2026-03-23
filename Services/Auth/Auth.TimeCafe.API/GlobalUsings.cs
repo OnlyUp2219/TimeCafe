@@ -1,4 +1,3 @@
-global using Auth.TimeCafe.API.DTOs;
 global using Auth.TimeCafe.API.Extensions;
 global using Auth.TimeCafe.API.Middleware;
 global using Auth.TimeCafe.API.Services;
@@ -41,8 +40,6 @@ global using Microsoft.OpenApi;
 global using Scalar.AspNetCore;
 
 global using Serilog;
-
-global using Swashbuckle.AspNetCore.Filters;
 
 global using System.Security.Claims;
 global using System.Text;

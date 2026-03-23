@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
-public record GetThemeByIdQuery(string ThemeId) : IRequest<GetThemeByIdResult>;
+public record GetThemeByIdQuery(Guid ThemeId) : IRequest<GetThemeByIdResult>;
 
 public record GetThemeByIdResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetThemeByIdQueryValidator : AbstractValidator<GetThemeByIdQuery>
 {
     public GetThemeByIdQueryValidator()
     {
-        RuleFor(x => x.ThemeId).ValidEntityId("Тема не найдена");
+        RuleFor(x => x.ThemeId).ValidGuidEntityId("Тема не найдена");
     }
 }
 
@@ -36,9 +36,7 @@ public class GetThemeByIdQueryHandler(IThemeRepository repository) : IRequestHan
     {
         try
         {
-            var themeId = Guid.Parse(request.ThemeId);
-
-            var theme = await _repository.GetByIdAsync(themeId);
+            var theme = await _repository.GetByIdAsync(request.ThemeId);
 
             if (theme == null)
                 return GetThemeByIdResult.ThemeNotFound();

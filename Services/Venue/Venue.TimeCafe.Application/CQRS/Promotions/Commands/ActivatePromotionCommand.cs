@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record ActivatePromotionCommand(string PromotionId) : IRequest<ActivatePromotionResult>;
+public record ActivatePromotionCommand(Guid PromotionId) : IRequest<ActivatePromotionResult>;
 
 public record ActivatePromotionResult(
     bool Success,
@@ -23,7 +23,7 @@ public class ActivatePromotionCommandValidator : AbstractValidator<ActivatePromo
 {
     public ActivatePromotionCommandValidator()
     {
-        RuleFor(x => x.PromotionId).ValidEntityId("Акция не найдена");
+        RuleFor(x => x.PromotionId).ValidGuidEntityId("Акция не найдена");
     }
 }
 
@@ -35,13 +35,11 @@ public class ActivatePromotionCommandHandler(IPromotionRepository repository) : 
     {
         try
         {
-            var promotionId = Guid.Parse(request.PromotionId);
-
-            var existing = await _repository.GetByIdAsync(promotionId);
+            var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
                 return ActivatePromotionResult.PromotionNotFound();
 
-            var result = await _repository.ActivateAsync(promotionId);
+            var result = await _repository.ActivateAsync(request.PromotionId);
 
             if (!result)
                 return ActivatePromotionResult.ActivateFailed();

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record UpdateThemeCommand(string ThemeId, string Name, string? Emoji, string? Colors) : IRequest<UpdateThemeResult>;
+public record UpdateThemeCommand(Guid ThemeId, string Name, string? Emoji, string? Colors) : IRequest<UpdateThemeResult>;
 
 public record UpdateThemeResult(
     bool Success,
@@ -25,7 +25,7 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
     public UpdateThemeCommandValidator()
     {
         // TODO : finish up validators
-        RuleFor(x => x.ThemeId).ValidEntityId("Тема не найдена");
+        RuleFor(x => x.ThemeId).ValidGuidEntityId("Тема не найдена");
 
         RuleFor(x => x.Name).ValidName("Название темы");
 
@@ -61,9 +61,7 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
     {
         try
         {
-            var themeId = Guid.Parse(request.ThemeId);
-
-            var existing = await _repository.GetByIdAsync(themeId);
+            var existing = await _repository.GetByIdAsync(request.ThemeId);
             if (existing == null)
                 return UpdateThemeResult.ThemeNotFound();
 

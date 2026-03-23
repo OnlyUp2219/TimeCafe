@@ -4,11 +4,11 @@ public class GetTariffById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/tariffs/{TariffId}", async (
+        app.MapGet("/tariffs/{tariffId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetTariffByIdDto dto) =>
+            Guid tariffId) =>
         {
-            var query = new GetTariffByIdQuery(dto.TariffId);
+            var query = new GetTariffByIdQuery(tariffId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariff = r.Tariff }));
         })

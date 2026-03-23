@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record UpdateTariffCommand(string TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, string? ThemeId, bool IsActive) : IRequest<UpdateTariffResult>;
+public record UpdateTariffCommand(Guid TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, Guid? ThemeId, bool IsActive) : IRequest<UpdateTariffResult>;
 
 public record UpdateTariffResult(
     bool Success,
@@ -27,8 +27,7 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 {
     public UpdateTariffCommandValidator()
     {
-
-        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
 
         RuleFor(x => x.Name).ValidName("Название тарифа");
 
@@ -39,8 +38,8 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Некорректный тип биллинга");
 
-        RuleFor(x => x.ThemeId).ValidOptionalEntityId("Темы не существует")
-            .When(x => !string.IsNullOrWhiteSpace(x.ThemeId));
+        RuleFor(x => x.ThemeId).ValidOptionalGuidEntityId("Темы не существует")
+            .When(x => x.ThemeId.HasValue);
     }
 }
 
@@ -56,19 +55,16 @@ public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepo
     {
         try
         {
-            var tariffId = Guid.Parse(request.TariffId);
-
-            var existing = await _repository.GetByIdAsync(tariffId);
+            var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
                 return UpdateTariffResult.TariffNotFound();
 
             var tariff = _mapper.Map<Tariff>(existing);
             _mapper.Map(request, tariff);
 
-            if (!string.IsNullOrWhiteSpace(request.ThemeId))
+            if (request.ThemeId.HasValue)
             {
-                var themeId = Guid.Parse(request.ThemeId);
-                var themeExists = await _themeRepository.GetByIdAsync(themeId);
+                var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
                 if (themeExists == null)
                     return UpdateTariffResult.ThemeNotFound();
             }

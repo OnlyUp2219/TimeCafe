@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
-public record GetPromotionByIdQuery(string PromotionId) : IRequest<GetPromotionByIdResult>;
+public record GetPromotionByIdQuery(Guid PromotionId) : IRequest<GetPromotionByIdResult>;
 
 public record GetPromotionByIdResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetPromotionByIdQueryValidator : AbstractValidator<GetPromotionById
 {
     public GetPromotionByIdQueryValidator()
     {
-        RuleFor(x => x.PromotionId).ValidEntityId("Акция не найдена");
+        RuleFor(x => x.PromotionId).ValidGuidEntityId("Акция не найдена");
     }
 }
 
@@ -36,9 +36,7 @@ public class GetPromotionByIdQueryHandler(IPromotionRepository repository) : IRe
     {
         try
         {
-            var promotionId = Guid.Parse(request.PromotionId);
-
-            var promotion = await _repository.GetByIdAsync(promotionId);
+            var promotion = await _repository.GetByIdAsync(request.PromotionId);
 
             if (promotion == null)
                 return GetPromotionByIdResult.PromotionNotFound();

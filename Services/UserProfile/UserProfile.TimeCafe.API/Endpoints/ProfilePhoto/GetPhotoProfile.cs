@@ -4,12 +4,12 @@ public class GetPhotoProfile : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/S3/image/{userId}", async (
+        app.MapGet("/S3/image/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetPhotoProfileDto dto,
+            Guid userId,
             CancellationToken ct) =>
         {
-            var query = new GetProfilePhotoQuery(dto.UserId);
+            var query = new GetProfilePhotoQuery(userId);
             var result = await sender.Send(query, ct);
             return result.ToHttpResultV2(r => Results.File(r.Stream!, r.ContentType, enableRangeProcessing: true));
         })

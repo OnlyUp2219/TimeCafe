@@ -4,11 +4,11 @@ public class ActivatePromotion : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/promotions/{promotionId}/activate", async (
+        app.MapPost("/promotions/{promotionId:guid}/activate", async (
             [FromServices] ISender sender,
-            [AsParameters] ActivatePromotionDto dto) =>
+            Guid promotionId) =>
         {
-            var command = new ActivatePromotionCommand(dto.PromotionId);
+            var command = new ActivatePromotionCommand(promotionId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

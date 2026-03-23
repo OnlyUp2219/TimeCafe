@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetActiveVisitByUserQuery(string UserId) : IRequest<GetActiveVisitByUserResult>;
+public record GetActiveVisitByUserQuery(Guid UserId) : IRequest<GetActiveVisitByUserResult>;
 
 public record GetActiveVisitByUserResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetActiveVisitByUserQueryValidator : AbstractValidator<GetActiveVis
 {
     public GetActiveVisitByUserQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
     }
 }
 
@@ -36,9 +36,7 @@ public class GetActiveVisitByUserQueryHandler(IVisitRepository repository) : IRe
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var visit = await _repository.GetActiveVisitByUserAsync(userId);
+            var visit = await _repository.GetActiveVisitByUserAsync(request.UserId);
 
             if (visit == null)
                 return GetActiveVisitByUserResult.VisitNotFound();

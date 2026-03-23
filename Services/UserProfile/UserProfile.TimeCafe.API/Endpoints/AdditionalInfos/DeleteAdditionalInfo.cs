@@ -4,11 +4,11 @@ public class DeleteAdditionalInfo : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/infos/{infoId}", async (
+        app.MapDelete("/infos/{infoId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] DeleteAdditionalInfoDto dto) =>
+            Guid infoId) =>
         {
-            var command = new DeleteAdditionalInfoCommand(dto.InfoId);
+            var command = new DeleteAdditionalInfoCommand(infoId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

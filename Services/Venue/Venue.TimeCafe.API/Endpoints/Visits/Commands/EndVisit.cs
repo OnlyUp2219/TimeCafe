@@ -4,11 +4,11 @@ public class EndVisit : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/visits/end", async (
+        app.MapPost("/visits/{visitId:guid}/end", async (
             [FromServices] ISender sender,
-            [FromBody] EndVisitDto dto) =>
+            Guid visitId) =>
         {
-            var command = new EndVisitCommand(dto.VisitId);
+            var command = new EndVisitCommand(visitId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, visit = r.Visit, calculatedCost = r.CalculatedCost }));
         })

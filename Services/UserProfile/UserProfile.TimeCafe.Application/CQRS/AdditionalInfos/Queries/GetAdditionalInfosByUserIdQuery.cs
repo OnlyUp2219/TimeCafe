@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfosByUserIdQuery(string UserId) : IRequest<GetAdditionalInfosByUserIdResult>;
+public record GetAdditionalInfosByUserIdQuery(Guid UserId) : IRequest<GetAdditionalInfosByUserIdResult>;
 
 public record GetAdditionalInfosByUserIdResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetAdditionalInfosByUserIdQueryValidator : AbstractValidator<GetAdd
 {
     public GetAdditionalInfosByUserIdQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
     }
 }
 
@@ -37,13 +37,11 @@ public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository re
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var profile = await _userRepository.GetProfileByIdAsync(userId, cancellationToken);
+            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile == null)
                 return GetAdditionalInfosByUserIdResult.ProfileNotFound();
 
-            var infos = await _repository.GetAdditionalInfosByUserIdAsync(userId, cancellationToken);
+            var infos = await _repository.GetAdditionalInfosByUserIdAsync(request.UserId, cancellationToken);
 
             return GetAdditionalInfosByUserIdResult.GetSuccess(infos);
         }

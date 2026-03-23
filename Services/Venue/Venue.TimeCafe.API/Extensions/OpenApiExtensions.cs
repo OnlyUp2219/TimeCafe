@@ -17,35 +17,10 @@ public static class OpenApiExtensions
             };
 
             c.SwaggerDoc("v1", new() { Title = "TimeCafe Venue API", Version = "v1" });
-            c.ExampleFilters();
 
             c.AddSecurityDefinition("Bearer", bearerScheme);
 
         });
-        services.AddSwaggerExamples();
-
-        services.AddSwaggerExamplesFromAssemblyOf<CreateVisitDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<EndVisitDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<DeleteVisitDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<UpdateVisitDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetVisitByIdDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetActiveVisitByUserDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<HasActiveVisitDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetVisitHistoryDtoExample>();
-
-        services.AddSwaggerExamplesFromAssemblyOf<CreateTariffDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<UpdateTariffDtoExample>();
-
-        services.AddSwaggerExamplesFromAssemblyOf<CreatePromotionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<UpdatePromotionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<DeletePromotionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ActivatePromotionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<DeactivatePromotionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetPromotionByIdDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetActivePromotionsByDateDtoExample>();
-
-        services.AddSwaggerExamplesFromAssemblyOf<CreateThemeDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<UpdateThemeDtoExample>();
 
         return services;
     }
