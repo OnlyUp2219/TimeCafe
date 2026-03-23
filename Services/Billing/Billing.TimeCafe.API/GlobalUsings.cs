@@ -1,6 +1,4 @@
-global using Billing.TimeCafe.API.DTOs;
 global using Billing.TimeCafe.API.Extensions;
-global using Billing.TimeCafe.API.Filters;
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
 global using Billing.TimeCafe.Application.CQRS.Balances.Queries;
 global using Billing.TimeCafe.Application.CQRS.Payments.Commands;
@@ -32,6 +30,3 @@ global using Microsoft.OpenApi;
 global using Scalar.AspNetCore;
 
 global using Serilog;
-
-global using Swashbuckle.AspNetCore.Filters;
-global using Swashbuckle.AspNetCore.SwaggerGen;

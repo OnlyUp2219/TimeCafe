@@ -1,11 +1,11 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
 public record AdjustBalanceCommand(
-    string UserId,
+    Guid UserId,
     decimal Amount,
     TransactionType Type,
     TransactionSource Source,
-    string? SourceId = null,
+    Guid? SourceId = null,
     string? Comment = null) : IRequest<AdjustBalanceResult>;
 
 public record AdjustBalanceResult(
@@ -36,10 +36,10 @@ public class AdjustBalanceCommandValidator : AbstractValidator<AdjustBalanceComm
 {
     public AdjustBalanceCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.SourceId).ValidOptionalEntityId("Некорректный SourceId")
-            .When(x => !string.IsNullOrEmpty(x.SourceId));
+        RuleFor(x => x.SourceId).ValidOptionalGuidEntityId("Некорректный SourceId")
+            .When(x => x.SourceId.HasValue);
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля");
@@ -57,8 +57,7 @@ public class AdjustBalanceCommandHandler(
 
     public async Task<AdjustBalanceResult> Handle(AdjustBalanceCommand request, CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(request.UserId);
-        var sourceId = !string.IsNullOrEmpty(request.SourceId) ? Guid.Parse(request.SourceId) : (Guid?)null;
+        var sourceId = request.SourceId;
 
         if (sourceId.HasValue)
         {
@@ -68,10 +67,10 @@ public class AdjustBalanceCommandHandler(
                 return AdjustBalanceResult.DuplicateTransaction();
         }
 
-        var balance = await _balanceRepository.GetByUserIdAsync(userId, cancellationToken);
+        var balance = await _balanceRepository.GetByUserIdAsync(request.UserId, cancellationToken);
         if (balance == null)
         {
-            balance = new Balance(userId);
+            balance = new Balance(request.UserId);
             balance = await _balanceRepository.CreateAsync(balance, cancellationToken);
         }
 
@@ -94,7 +93,7 @@ public class AdjustBalanceCommandHandler(
         var transaction = new Transaction
         {
             TransactionId = Guid.NewGuid(),
-            UserId = userId,
+            UserId = request.UserId,
             Amount = request.Amount,
             Type = request.Type,
             Source = request.Source,

@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 
-public record GetTransactionByIdQuery(string TransactionId) : IRequest<GetTransactionByIdResult>;
+public record GetTransactionByIdQuery(Guid TransactionId) : IRequest<GetTransactionByIdResult>;
 
 public record GetTransactionByIdResult(
     bool Success,
@@ -20,7 +20,7 @@ public class GetTransactionByIdQueryValidator : AbstractValidator<GetTransaction
 {
     public GetTransactionByIdQueryValidator()
     {
-        RuleFor(x => x.TransactionId).ValidEntityId("Транзакция не найдена");
+        RuleFor(x => x.TransactionId).ValidGuidEntityId("Транзакция не найдена");
     }
 }
 
@@ -30,8 +30,7 @@ public class GetTransactionByIdQueryHandler(ITransactionRepository repository) :
 
     public async Task<GetTransactionByIdResult> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
     {
-        var transactionId = Guid.Parse(request.TransactionId);
-        var transaction = await _repository.GetByIdAsync(transactionId, cancellationToken);
+        var transaction = await _repository.GetByIdAsync(request.TransactionId, cancellationToken);
         if (transaction == null)
             return GetTransactionByIdResult.TransactionNotFound();
 

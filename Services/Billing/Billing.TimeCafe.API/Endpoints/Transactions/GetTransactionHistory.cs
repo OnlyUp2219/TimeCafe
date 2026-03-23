@@ -4,19 +4,21 @@ public class GetTransactionHistory : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/transactions/history/{userId}", async (
+        app.MapGet("/transactions/history/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetTransactionHistoryDto dto) =>
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10) =>
         {
-            var query = new GetTransactionHistoryQuery(dto.UserId, dto.Page, dto.PageSize);
+            var query = new GetTransactionHistoryQuery(userId, page, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {
                 transactions = r.Transactions,
                 pagination = new
                 {
-                    currentPage = dto.Page,
-                    pageSize = dto.PageSize,
+                    currentPage = page,
+                    pageSize = pageSize,
                     totalCount = r.TotalCount,
                     totalPages = r.TotalPages
                 }

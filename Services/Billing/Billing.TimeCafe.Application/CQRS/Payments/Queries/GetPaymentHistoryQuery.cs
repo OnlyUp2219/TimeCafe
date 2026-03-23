@@ -1,7 +1,7 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Queries;
 
 public record GetPaymentHistoryQuery(
-    string UserId,
+    Guid UserId,
     int Page = 1,
     int PageSize = 20) : IRequest<GetPaymentHistoryResult>;
 
@@ -34,7 +34,7 @@ public class GetPaymentHistoryQueryValidator : AbstractValidator<GetPaymentHisto
 {
     public GetPaymentHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Некорректный ID пользователя");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Некорректный ID пользователя");
 
         RuleFor(x => x.Page).ValidPageNumber();
 
@@ -51,17 +51,11 @@ public class GetPaymentHistoryQueryHandler(
 
     public async Task<GetPaymentHistoryResult> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(request.UserId, out var userId))
-        {
-            _logger.LogWarning("Invalid user ID format: {UserId}", request.UserId);
-            return GetPaymentHistoryResult.InvalidUserId();
-        }
-
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);
 
-        var totalCount = await _paymentRepository.GetTotalCountByUserIdAsync(userId, cancellationToken);
-        var payments = await _paymentRepository.GetByUserIdAsync(userId, page, pageSize, cancellationToken);
+        var totalCount = await _paymentRepository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
+        var payments = await _paymentRepository.GetByUserIdAsync(request.UserId, page, pageSize, cancellationToken);
 
         var paymentDtos = payments.ConvertAll(p => new PaymentDto(
             p.PaymentId,

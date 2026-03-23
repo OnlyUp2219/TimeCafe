@@ -4,11 +4,11 @@ public class GetBalance : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/balance/{userId}", async (
+        app.MapGet("/balance/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetBalanceDto dto) =>
+            Guid userId) =>
         {
-            var query = new GetBalanceQuery(dto.UserId);
+            var query = new GetBalanceQuery(userId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {

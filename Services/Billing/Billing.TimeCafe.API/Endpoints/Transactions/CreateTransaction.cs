@@ -1,20 +1,22 @@
 namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
+public record CreateTransactionRequest(Guid UserId, decimal Amount, TransactionType Type, TransactionSource Source, Guid? SourceId, string? Comment);
+
 public class CreateTransaction : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/transactions", async (
             [FromServices] ISender sender,
-            [FromBody] AdjustBalanceDto dto) =>
+            [FromBody] CreateTransactionRequest request) =>
         {
             var command = new AdjustBalanceCommand(
-                dto.UserId,
-                dto.Amount,
-                (TransactionType)dto.Type,
-                (TransactionSource)dto.Source,
-                dto.SourceId,
-                dto.Comment);
+                request.UserId,
+                request.Amount,
+                request.Type,
+                request.Source,
+                request.SourceId,
+                request.Comment);
 
             var result = await sender.Send(command);
             // TODO : Add Mapping

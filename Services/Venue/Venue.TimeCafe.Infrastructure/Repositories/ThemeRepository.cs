@@ -12,6 +12,7 @@ public class ThemeRepository(
         return await _cache.GetOrCreateAsync(
             CacheKeys.Theme_ById(themeId),
             async ct => await _context.Themes
+                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.ThemeId == themeId, ct),
             tags: [CacheTags.Themes, CacheTags.Theme(themeId)],
             cancellationToken: ct);

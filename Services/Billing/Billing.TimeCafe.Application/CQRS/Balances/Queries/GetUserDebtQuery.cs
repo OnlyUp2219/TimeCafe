@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetUserDebtQuery(string UserId) : IRequest<GetUserDebtResult>;
+public record GetUserDebtQuery(Guid UserId) : IRequest<GetUserDebtResult>;
 
 public record GetUserDebtResult(
     bool Success,
@@ -22,7 +22,7 @@ public class GetUserDebtQueryValidator : AbstractValidator<GetUserDebtQuery>
     public GetUserDebtQueryValidator()
     {
         RuleFor(x => x.UserId)
-            .ValidEntityId("Пользователь не найден");
+            .ValidGuidEntityId("Пользователь не найден");
     }
 }
 
@@ -32,11 +32,10 @@ public class GetUserDebtQueryHandler(IBalanceRepository repository) : IRequestHa
 
     public async Task<GetUserDebtResult> Handle(GetUserDebtQuery request, CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(request.UserId);
-        var balance = await _repository.GetByUserIdAsync(userId, cancellationToken);
+        var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
         if (balance == null)
         {
-            balance = new Balance(userId);
+            balance = new Balance(request.UserId);
             await _repository.CreateAsync(balance, cancellationToken);
         }
 

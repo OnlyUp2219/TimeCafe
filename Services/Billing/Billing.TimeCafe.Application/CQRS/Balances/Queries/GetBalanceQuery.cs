@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetBalanceQuery(string UserId) : IRequest<GetBalanceResult>;
+public record GetBalanceQuery(Guid UserId) : IRequest<GetBalanceResult>;
 
 public record GetBalanceResult(
     bool Success,
@@ -21,7 +21,7 @@ public class GetBalanceQueryValidator : AbstractValidator<GetBalanceQuery>
 {
     public GetBalanceQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Баланс не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Баланс не найден");
     }
 }
 
@@ -31,12 +31,11 @@ public class GetBalanceQueryHandler(IBalanceRepository repository) : IRequestHan
 
     public async Task<GetBalanceResult> Handle(GetBalanceQuery request, CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(request.UserId);
-        var balance = await _repository.GetByUserIdAsync(userId, cancellationToken);
+        var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
 
         if (balance == null)
         {
-            balance = new Balance(userId);
+            balance = new Balance(request.UserId);
             await _repository.CreateAsync(balance, cancellationToken);
         }
 

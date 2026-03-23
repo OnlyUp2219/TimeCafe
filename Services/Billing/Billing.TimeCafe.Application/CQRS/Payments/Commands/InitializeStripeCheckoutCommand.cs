@@ -1,7 +1,7 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
 
 public record InitializeStripeCheckoutCommand(
-    string UserId,
+    Guid UserId,
     decimal Amount,
     string? SuccessUrl,
     string? CancelUrl,
@@ -35,7 +35,7 @@ public class InitializeStripeCheckoutCommandValidator : AbstractValidator<Initia
 {
     public InitializeStripeCheckoutCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
         RuleFor(x => x.Amount).ValidPaymentAmount();
 
@@ -58,8 +58,6 @@ public class InitializeStripeCheckoutCommandHandler(
 
     public async Task<InitializeStripeCheckoutResult> Handle(InitializeStripeCheckoutCommand request, CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(request.UserId);
-
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;
 
@@ -75,13 +73,13 @@ public class InitializeStripeCheckoutCommandHandler(
             return InitializeStripeCheckoutResult.ConfigurationMissing();
 
         var description = string.IsNullOrWhiteSpace(request.Description)
-            ? $"Пополнение баланса пользователя {userId}"
+            ? $"Пополнение баланса пользователя {request.UserId}"
             : request.Description;
 
         var payment = new Payment
         {
             PaymentId = Guid.NewGuid(),
-            UserId = userId,
+            UserId = request.UserId,
             Amount = request.Amount,
             PaymentMethod = PaymentMethod.Online,
             Status = PaymentStatus.Pending,

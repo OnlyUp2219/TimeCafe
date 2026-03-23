@@ -7,19 +7,21 @@ public class GetPaymentHistory : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/payments/history/{userId}", async (
+        app.MapGet("/payments/history/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetPaymentHistoryDto dto) =>
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20) =>
         {
-            var query = new GetPaymentHistoryQuery(dto.UserId, dto.Page, dto.PageSize);
+            var query = new GetPaymentHistoryQuery(userId, page, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {
                 payments = r.Payments,
                 pagination = new
                 {
-                    currentPage = dto.Page,
-                    pageSize = dto.PageSize,
+                    currentPage = page,
+                    pageSize = pageSize,
                     totalCount = r.TotalCount,
                     totalPages = r.TotalPages
                 }
