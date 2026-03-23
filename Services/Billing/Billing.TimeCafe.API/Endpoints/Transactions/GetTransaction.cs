@@ -4,11 +4,11 @@ public class GetTransaction : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/transactions/{transactionId}", async (
+        app.MapGet("/transactions/{transactionId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetTransactionDto dto) =>
+            Guid transactionId) =>
         {
-            var query = new GetTransactionByIdQuery(dto.TransactionId);
+            var query = new GetTransactionByIdQuery(transactionId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { transaction = r.Transaction }));
         })

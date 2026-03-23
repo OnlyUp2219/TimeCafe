@@ -45,6 +45,7 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_ById(userId),
             async token => await _context.Profiles
+                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == userId, token),
             tags: [CacheTags.Profiles, CacheTags.Profile(userId)],
             cancellationToken: ct);

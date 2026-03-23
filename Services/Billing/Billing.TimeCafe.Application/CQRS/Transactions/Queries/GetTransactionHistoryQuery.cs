@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 
-public record GetTransactionHistoryQuery(string UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
+public record GetTransactionHistoryQuery(Guid UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
 
 public record GetTransactionHistoryResult(
     bool Success,
@@ -26,7 +26,7 @@ public class GetTransactionHistoryQueryValidator : AbstractValidator<GetTransact
 {
     public GetTransactionHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
         RuleFor(x => x.Page).ValidPageNumber();
 
@@ -40,12 +40,10 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
 
     public async Task<GetTransactionHistoryResult> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(request.UserId);
-
-        var totalCount = await _repository.GetTotalCountByUserIdAsync(userId, cancellationToken);
+        var totalCount = await _repository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
 
         var transactions = await _repository.GetByUserIdAsync(
-            userId,
+            request.UserId,
             request.Page,
             request.PageSize,
             cancellationToken);

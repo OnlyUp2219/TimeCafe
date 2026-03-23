@@ -17,19 +17,10 @@ public static class OpenApiExtensions
             };
 
             c.SwaggerDoc("v1", new() { Title = "TimeCafe Billing API", Version = "v1" });
-            c.ExampleFilters();
-            c.OperationFilter<RouteParameterExamplesFilter>();
-            c.SchemaFilter<EnumSchemaFilter>();
 
             c.AddSecurityDefinition("Bearer", bearerScheme);
 
         });
-        services.AddSwaggerExamples();
-
-        services.AddSwaggerExamplesFromAssemblyOf<AdjustBalanceDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetTransactionDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetTransactionHistoryDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<GetUserDebtDtoExample>();
 
         return services;
     }

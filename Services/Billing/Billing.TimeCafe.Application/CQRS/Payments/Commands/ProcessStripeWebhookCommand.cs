@@ -184,11 +184,11 @@ public class ProcessStripeWebhookCommandHandler(
             : payment.Amount;
 
         var adjustResult = await _sender.Send(new AdjustBalanceCommand(
-            payment.UserId.ToString(),
+            payment.UserId,
             amountFromStripe,
             TransactionType.Deposit,
             TransactionSource.Payment,
-            payment.PaymentId.ToString(),
+            payment.PaymentId,
             "Пополнение баланса через Stripe Checkout"), cancellationToken);
 
         if (!adjustResult.Success)

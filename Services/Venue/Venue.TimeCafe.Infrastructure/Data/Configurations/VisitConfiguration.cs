@@ -9,8 +9,7 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.HasKey(v => v.VisitId);
 
         builder.Property(v => v.UserId)
-            .IsRequired()
-            .HasMaxLength(450);
+            .IsRequired();
 
         builder.Property(v => v.EntryTime)
             .IsRequired();

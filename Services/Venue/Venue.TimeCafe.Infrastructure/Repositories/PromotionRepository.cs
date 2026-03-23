@@ -12,6 +12,7 @@ public class PromotionRepository(
         return await _cache.GetOrCreateAsync(
             CacheKeys.Promotion_ById(promotionId),
             async ct => await _context.Promotions
+                .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.PromotionId == promotionId, ct),
             tags: [CacheTags.Promotions, CacheTags.Promotion(promotionId)],
             cancellationToken: ct);

@@ -15,6 +15,7 @@ public class AdditionalInfoRepository(
         return await _cache.GetOrCreateAsync(
             CacheKeys.AdditionalInfo_ByUserId(userId),
             async token => await _context.AdditionalInfos
+                .AsNoTracking()
                 .Where(i => i.UserId == userId)
                 .OrderByDescending(i => i.CreatedAt)
                 .ToListAsync(token),
@@ -30,6 +31,7 @@ public class AdditionalInfoRepository(
         return await _cache.GetOrCreateAsync(
             CacheKeys.AdditionalInfo_ById(infoId),
             async token => await _context.AdditionalInfos
+                .AsNoTracking()
                 .FirstOrDefaultAsync(i => i.InfoId == infoId, token),
             tags: [CacheTags.AdditionalInfos],
             cancellationToken: ct);
