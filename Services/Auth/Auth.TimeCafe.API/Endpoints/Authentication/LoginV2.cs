@@ -1,6 +1,10 @@
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
-public record LoginRequest(string Email, string Password);
+public record LoginRequest(
+    /// <example>user@example.com</example>
+    string Email,
+    /// <example>P@ssw0rd123</example>
+    string Password);
 
 public class LoginV2 : ICarterModule
 {
@@ -40,6 +44,7 @@ public class LoginV2 : ICarterModule
         .WithTags("Authentication")
         .WithName("LoginV2")
         .WithSummary("Аутентификация пользователя через JWT (v2)")
+        .Produces(200)
         .WithDescription("Возвращает только access токен в JSON и устанавливает refresh токен в httpOnly cookie.");
     }
 }

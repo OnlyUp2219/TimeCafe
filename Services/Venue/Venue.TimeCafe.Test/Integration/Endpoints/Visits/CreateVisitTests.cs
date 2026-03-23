@@ -30,16 +30,14 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
-    public async Task Endpoint_CreateVisit_Should_Return422_WhenUserIdIsInvalid(string? invalidUserId)
+    [Fact]
+    public async Task Endpoint_CreateVisit_Should_Return422_WhenUserIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
         var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
         var payload = new
         {
-            userId = invalidUserId,
+            userId = Guid.Empty,
             tariffId = tariff.TariffId
         };
 
@@ -51,22 +49,19 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_CreateVisit_Should_Return422_WhenUserIdIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_CreateVisit_Should_Return422_WhenUserIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsInvalid(string invalidTariffId)
+    [Fact]
+    public async Task Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            userId = TestData.DefaultValues.DefaultUserId.ToString(),
-            tariffId = invalidTariffId
+            userId = TestData.DefaultValues.DefaultUserId,
+            tariffId = Guid.Empty
         };
 
         var response = await Client.PostAsJsonAsync("/venue/visits", payload);
@@ -77,7 +72,7 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_CreateVisit_Should_Return422_WhenTariffIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

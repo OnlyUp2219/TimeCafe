@@ -13,7 +13,7 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnTrue_WhenUserHasActiveVisit()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new HasActiveVisitQuery(userId.ToString());
+        var query = new HasActiveVisitQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.HasActiveVisitAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
@@ -27,7 +27,7 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFalse_WhenUserHasNoActiveVisit()
     {
         var userId = TestData.NonExistingIds.NonExistingUserId;
-        var query = new HasActiveVisitQuery(userId.ToString());
+        var query = new HasActiveVisitQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.HasActiveVisitAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
@@ -41,7 +41,7 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new HasActiveVisitQuery(userId.ToString());
+        var query = new HasActiveVisitQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.HasActiveVisitAsync(userId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -55,11 +55,11 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string? userId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string userIdStr, bool isValid)
     {
-        var query = new HasActiveVisitQuery(userId!);
+        var query = new HasActiveVisitQuery(Guid.Parse(userIdStr));
         var validator = new HasActiveVisitQueryValidator();
 
         var result = await validator.ValidateAsync(query);

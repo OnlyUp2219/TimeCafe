@@ -6,19 +6,19 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_ReturnPaymentsFromRealStripe_WhenUserHasPayments()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         await CreatePaymentAsync(
-            Defaults.PaymentId,
+            DefaultsGuid.PaymentId,
             userId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.DefaultAmount,
             PaymentStatus.Completed,
             externalPaymentId: StripeTestData.PaymentIntents.RealTest1);
 
         await CreatePaymentAsync(
-            Defaults.PaymentId2,
+            DefaultsGuid.PaymentId2,
             userId,
-            Defaults.SmallAmount,
+            DefaultsGuid.SmallAmount,
             PaymentStatus.Completed,
             externalPaymentId: StripeTestData.PaymentIntents.RealTest2);
 
@@ -40,7 +40,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_ReturnEmptyList_WhenUserHasNoPayments()
     {
         // Arrange
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -59,11 +59,11 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_FilterByUserIdCorrectly_WhenMultipleUsersHavePayments()
     {
         // Arrange
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId1, Defaults.DefaultAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser1);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId2, Defaults.SmallAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser2);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId1, DefaultsGuid.DefaultAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser1);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId2, DefaultsGuid.SmallAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser2);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -83,13 +83,13 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_HandlePaginationCorrectly_WhenRequestingDifferentPages()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         for (int i = 0; i < 15; i++)
         {
             await CreatePaymentAsync(
                 new Guid($"00000000-0000-0000-0000-{i:000000000000}"),
                 userId,
-                Defaults.DefaultAmount + i,
+                DefaultsGuid.DefaultAmount + i,
                 externalPaymentId: $"pi_test_{i}");
         }
 
@@ -114,13 +114,13 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_IncludeStripeMetadata_InPaymentDetails()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var externalPaymentId = StripeTestData.PaymentIntents.MetadataTest;
 
         await CreatePaymentAsync(
-            Defaults.PaymentId,
+            DefaultsGuid.PaymentId,
             userId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.DefaultAmount,
             PaymentStatus.Completed,
             externalPaymentId: externalPaymentId);
 
@@ -135,7 +135,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         var payment = result.Payments?.FirstOrDefault(p => p.ExternalPaymentId == externalPaymentId);
         payment.Should().NotBeNull();
         payment!.ExternalPaymentId.Should().StartWith("pi_");
-        payment.Amount.Should().Be(Defaults.DefaultAmount);
+        payment.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         payment.Status.Should().Be(nameof(PaymentStatus.Completed));
     }
 
@@ -143,13 +143,13 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_IncludeTimestamps_ForEachPayment()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         var beforeCreation = DateTime.UtcNow;
 
         await CreatePaymentAsync(
-            Defaults.PaymentId,
+            DefaultsGuid.PaymentId,
             userId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.DefaultAmount,
             externalPaymentId: StripeTestData.PaymentIntents.TimestampTest);
 
         var afterCreation = DateTime.UtcNow;
@@ -172,12 +172,12 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_ReturnAllPaymentStatuses_Correctly()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, StripeTestData.PaymentIntents.Pending);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.DefaultAmount, PaymentStatus.Completed, StripeTestData.PaymentIntents.Completed);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId, Defaults.DefaultAmount, PaymentStatus.Failed, StripeTestData.PaymentIntents.Failed);
-        await CreatePaymentAsync(Defaults.PaymentId4, userId, Defaults.DefaultAmount, PaymentStatus.Cancelled, StripeTestData.PaymentIntents.Cancelled);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, StripeTestData.PaymentIntents.Pending);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Completed, StripeTestData.PaymentIntents.Completed);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Failed, StripeTestData.PaymentIntents.Failed);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId4, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Cancelled, StripeTestData.PaymentIntents.Cancelled);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -207,7 +207,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         {
             using var scope = CreateScope();
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery("invalid-guid"));
+            result = await sender.Send(new GetPaymentHistoryQuery(Guid.Empty));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();
@@ -221,7 +221,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         {
             using var scope = CreateScope();
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 0, 10));
+            await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 0, 10));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();
@@ -235,7 +235,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         {
             using var scope = CreateScope();
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 1, 0));
+            await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 1, 0));
         };
 
         await action.Should().ThrowAsync<FluentValidation.ValidationException>();
@@ -245,13 +245,13 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
     public async Task Query_GetPaymentHistory_Should_HandleLargePageSizes_Correctly()
     {
         // Arrange
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         for (int i = 0; i < 50; i++)
         {
             await CreatePaymentAsync(
                 new Guid($"00000000-0000-0000-0001-{i:000000000000}"),
                 userId,
-                Defaults.DefaultAmount,
+                DefaultsGuid.DefaultAmount,
                 externalPaymentId: $"pi_test_large_{i}");
         }
 

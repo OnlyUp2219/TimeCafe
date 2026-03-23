@@ -6,7 +6,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(InvalidData.EmptyUserId, Page: 1, PageSize: 10);
+        var query = new GetTransactionHistoryQuery(InvalidDataGuid.EmptyUserId, Page: 1, PageSize: 10);
 
         var result = validator.Validate(query);
 
@@ -18,7 +18,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenPageZero()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 0, PageSize: 10);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 0, PageSize: 10);
 
         var result = validator.Validate(query);
 
@@ -30,7 +30,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenPageNegative()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: -1, PageSize: 10);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: -1, PageSize: 10);
 
         var result = validator.Validate(query);
 
@@ -42,7 +42,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenPageSizeZero()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 0);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 0);
 
         var result = validator.Validate(query);
 
@@ -54,7 +54,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenPageSizeNegative()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: -10);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: -10);
 
         var result = validator.Validate(query);
 
@@ -66,7 +66,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenPageSizeGreaterThan100()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 101);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 101);
 
         var result = validator.Validate(query);
 
@@ -78,7 +78,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Pass_WhenAllParametersValid()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 10);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 10);
 
         var result = validator.Validate(query);
 
@@ -90,7 +90,7 @@ public class GetTransactionHistoryQueryValidatorTests
     public void Validator_Validate_Should_Pass_WhenPageSizeIs100()
     {
         var validator = new GetTransactionHistoryQueryValidator();
-        var query = new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 100);
+        var query = new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 100);
 
         var result = validator.Validate(query);
 

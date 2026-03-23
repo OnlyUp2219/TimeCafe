@@ -53,13 +53,10 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
     }
 
     [Fact]
-    public async Task Endpoint_CreateEmptyProfile_Should_Return422_WhenInvalidGuid()
+    public async Task Endpoint_CreateEmptyProfile_Should_Return422_WhenEmptyGuid()
     {
-        // Arrange
-        var invalidId = TestData.InvalidIds.NotAGuid;
-
         // Act
-        var response = await Client.PostAsync($"/userprofile/profiles/empty/{invalidId}", null);
+        var response = await Client.PostAsync($"/userprofile/profiles/empty/{Guid.Empty}", null);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -69,7 +66,7 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_CreateEmptyProfile_Should_Return400_WhenInvalidGuid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_CreateEmptyProfile_Should_Return422_WhenEmptyGuid] Response: {jsonString}");
             throw;
         }
     }

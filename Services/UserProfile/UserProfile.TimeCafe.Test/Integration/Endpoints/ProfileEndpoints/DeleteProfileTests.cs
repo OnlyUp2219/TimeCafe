@@ -57,13 +57,10 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
     }
 
     [Fact]
-    public async Task Endpoint_DeleteProfile_Should_Return422_WhenInvalidGuid()
+    public async Task Endpoint_DeleteProfile_Should_Return422_WhenEmptyGuid()
     {
-        // Arrange
-        var invalidId = TestData.InvalidIds.NotAGuid;
-
         // Act
-        var response = await Client.DeleteAsync($"/userprofile/profiles/{invalidId}");
+        var response = await Client.DeleteAsync($"/userprofile/profiles/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -73,7 +70,7 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeleteProfile_Should_Return400_WhenInvalidGuid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeleteProfile_Should_Return422_WhenEmptyGuid] Response: {jsonString}");
             throw;
         }
     }

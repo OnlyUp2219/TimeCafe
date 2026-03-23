@@ -16,6 +16,8 @@ public class DeleteAdditionalInfo : ICarterModule
         .WithName("DeleteAdditionalInfo")
         .WithSummary("Удалить запись доп. информации")
         .WithDescription("Удаляет запись дополнительной информации по идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

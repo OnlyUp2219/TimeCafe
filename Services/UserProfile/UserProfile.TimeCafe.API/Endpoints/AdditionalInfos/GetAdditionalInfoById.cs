@@ -16,6 +16,8 @@ public class GetAdditionalInfoById : ICarterModule
         .WithName("GetAdditionalInfoById")
         .WithSummary("Получить доп. информацию по Id")
         .WithDescription("Возвращает запись дополнительной информации по идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

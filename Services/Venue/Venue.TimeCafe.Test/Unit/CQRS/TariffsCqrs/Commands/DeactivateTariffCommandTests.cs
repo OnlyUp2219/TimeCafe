@@ -13,7 +13,7 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenTariffDeactivated()
     {
         var tariffId = Guid.NewGuid();
-        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var command = new DeactivateTariffCommand(tariffId);
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
@@ -34,7 +34,7 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenTariffDoesNotExist()
     {
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
-        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var command = new DeactivateTariffCommand(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
@@ -49,7 +49,7 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
         var tariffId = Guid.NewGuid();
-        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var command = new DeactivateTariffCommand(tariffId);
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
@@ -72,7 +72,7 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var tariffId = Guid.NewGuid();
-        var command = new DeactivateTariffCommand(tariffId.ToString());
+        var command = new DeactivateTariffCommand(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -86,12 +86,10 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "Тариф не найден")]
-    [InlineData("not-a-guid", false, "Тариф не найден")]
     [InlineData("00000000-0000-0000-0000-000000000000", false, "Тариф не найден")]
-    public async Task Validator_Should_ValidateCorrectly_InvalidCases(string tariffId, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly_InvalidCases(string tariffIdStr, bool isValid, string? expectedError)
     {
-        var command = new DeactivateTariffCommand(tariffId);
+        var command = new DeactivateTariffCommand(Guid.Parse(tariffIdStr));
         var validator = new DeactivateTariffCommandValidator();
 
         var result = await validator.ValidateAsync(command);
@@ -106,7 +104,7 @@ public class DeactivateTariffCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Validator_Should_ValidateCorrectly_ValidGuid()
     {
-        var command = new DeactivateTariffCommand(Guid.NewGuid().ToString());
+        var command = new DeactivateTariffCommand(Guid.NewGuid());
         var validator = new DeactivateTariffCommandValidator();
 
         var result = await validator.ValidateAsync(command);

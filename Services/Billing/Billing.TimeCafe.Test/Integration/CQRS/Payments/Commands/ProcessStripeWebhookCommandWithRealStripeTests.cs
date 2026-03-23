@@ -5,9 +5,9 @@ public class ProcessStripeWebhookCommandWithRealStripeTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_HandleRealStripeWebhookPayload()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
-        var amount = Defaults.DefaultAmount;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
+        var amount = DefaultsGuid.DefaultAmount;
 
         await CreateBalanceAsync(userId);
 

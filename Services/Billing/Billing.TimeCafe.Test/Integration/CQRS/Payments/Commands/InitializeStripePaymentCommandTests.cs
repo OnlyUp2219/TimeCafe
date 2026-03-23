@@ -5,8 +5,8 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_InitializeStripePayment_Should_CreatePayment_WhenValidRequest()
     {
-        var userId = Defaults.UserId;
-        var amount = Defaults.DefaultAmount;
+        var userId = DefaultsGuid.UserId;
+        var amount = DefaultsGuid.DefaultAmount;
         var returnUrl = StripeTestData.Configuration.DefaultReturnUrl;
         var description = StripeTestData.Descriptions.BalanceReplenishment;
 
@@ -40,8 +40,8 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_InitializeStripePayment_Should_UseDefaultReturnUrl_WhenNotProvided()
     {
-        var userId = Defaults.UserId2;
-        var amount = Defaults.DefaultAmount;
+        var userId = DefaultsGuid.UserId2;
+        var amount = DefaultsGuid.DefaultAmount;
 
         InitializeStripePaymentResult result;
         using (var scope = CreateScope())
@@ -66,8 +66,8 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            InvalidData.EmptyUserId,
-            Defaults.DefaultAmount,
+            InvalidDataGuid.EmptyUserId,
+            DefaultsGuid.DefaultAmount,
             null,
             null));
 
@@ -81,7 +81,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            Defaults.UserId3,
+            DefaultsGuid.UserId3,
             0m,
             null,
             null));
@@ -96,7 +96,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            Defaults.UserId3,
+            DefaultsGuid.UserId3,
             Defaults.BelowMinimumAmount,
             null,
             null));
@@ -111,7 +111,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            Defaults.UserId3,
+            DefaultsGuid.UserId3,
             -100m,
             null,
             null));
@@ -126,8 +126,8 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            Defaults.UserId3,
-            Defaults.DefaultAmount,
+            DefaultsGuid.UserId3,
+            DefaultsGuid.DefaultAmount,
             "not-a-valid-url",
             null));
 
@@ -137,9 +137,9 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_InitializeStripePayment_Should_HandleMultiplePaymentsPerUser()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
-        var result1 = await CreatePaymentAndInitializeAsync(userId, Defaults.SmallAmount);
+        var result1 = await CreatePaymentAndInitializeAsync(userId, DefaultsGuid.SmallAmount);
         var result2 = await CreatePaymentAndInitializeAsync(userId, Defaults.MediumAmount);
 
         result1.Success.Should().BeTrue();
@@ -154,7 +154,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_InitializeStripePayment_Should_StorePaymentWithCorrectDetails()
     {
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
         var amount = Defaults.PremiumSubscriptionAmount;
         var description = StripeTestData.Descriptions.PremiumSubscription;
 
@@ -178,7 +178,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_InitializeStripePayment_Should_CreateUniqueExternalPaymentIds()
     {
-        var userId = Defaults.UserId3;
+        var userId = DefaultsGuid.UserId3;
 
         var result1 = await CreatePaymentAndInitializeAsync(userId, 100m);
         var result2 = await CreatePaymentAndInitializeAsync(userId, 100m);
@@ -193,14 +193,9 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
         return await sender.Send(new InitializeStripePaymentCommand(
-            userId.ToString(),
+            userId,
             amount,
             null,
             StripeTestData.Descriptions.BalanceReplenishment));
     }
-
-    private async Task<InitializeStripePaymentResult> CreatePaymentAndInitializeAsync(
-        string userId,
-        decimal amount)
-        => await CreatePaymentAndInitializeAsync(Guid.Parse(userId), amount);
 }

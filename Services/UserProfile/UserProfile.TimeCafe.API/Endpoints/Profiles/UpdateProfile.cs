@@ -1,11 +1,17 @@
 namespace UserProfile.TimeCafe.API.Endpoints.Profiles;
 
 public record UpdateProfileRequest(
+    /// <example>Иван</example>
     string FirstName,
+    /// <example>Иванов</example>
     string LastName,
+    /// <example>Петрович</example>
     string? MiddleName,
+    /// <example>https://s3.example.com/photos/user.jpg</example>
     string? PhotoUrl,
+    /// <example>1990-05-15</example>
     DateOnly? BirthDate,
+    /// <example>Male</example>
     Gender Gender);
 
 public class UpdateProfile : ICarterModule
@@ -36,6 +42,8 @@ public class UpdateProfile : ICarterModule
         .WithName("UpdateProfile")
         .WithSummary("Обновить профиль")
         .WithDescription("Обновляет существующий профиль пользователя.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

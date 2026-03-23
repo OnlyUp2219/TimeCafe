@@ -17,7 +17,8 @@ public class DeletePhotoProfile : ICarterModule
         .WithName("DeleteProfilePhoto")
         .WithSummary("Удалить фото профиля из S3")
         .WithDescription("Удаляет фото пользователя из S3 хранилища и очищает PhotoUrl в профиле.")
-        .WithOpenApi()
+        .Produces(204)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

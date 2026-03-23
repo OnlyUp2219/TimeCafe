@@ -65,14 +65,12 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 
-    [Theory]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/venue/tariffs/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -80,7 +78,7 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

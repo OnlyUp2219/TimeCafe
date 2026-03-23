@@ -15,7 +15,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             .ReturnsAsync([]);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.AdditionalInfos.Should().NotBeNull();
@@ -33,7 +33,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             .ReturnsAsync((Profile?)null);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
         result.Success.Should().BeFalse();
         result.Code.Should().Be("ProfileNotFound");
@@ -45,7 +45,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     public void Validator_Should_Pass_For_Valid_UserId()
     {
         var validator = new GetAdditionalInfosByUserIdQueryValidator();
-        var q = new GetAdditionalInfosByUserIdQuery(ExistingUsers.User1Id);
+        var q = new GetAdditionalInfosByUserIdQuery(Guid.Parse(ExistingUsers.User1Id));
         validator.Validate(q).IsValid.Should().BeTrue();
     }
 
@@ -53,7 +53,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
     public void Validator_Should_Fail_For_Empty_UserId()
     {
         var validator = new GetAdditionalInfosByUserIdQueryValidator();
-        var q = new GetAdditionalInfosByUserIdQuery(InvalidIds.EmptyString);
+        var q = new GetAdditionalInfosByUserIdQuery(Guid.Empty);
         validator.Validate(q).IsValid.Should().BeFalse();
     }
 
@@ -75,7 +75,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             .ReturnsAsync(list);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
         result.Success.Should().BeTrue();
         result.AdditionalInfos.Should().HaveCount(2);
@@ -94,7 +94,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => handler.Handle(new GetAdditionalInfosByUserIdQuery(userId.ToString()), CancellationToken.None));
+            () => handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None));
 
         ex.Result.Should().NotBeNull();
         ex.Result!.Success.Should().BeFalse();

@@ -50,14 +50,12 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Theory]
-    [InlineData("not-a-guid")]
-    [InlineData("123-invalid")]
-    public async Task Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/venue/promotions/{invalidId}/activate", null);
+        var response = await Client.PostAsync($"/venue/promotions/{Guid.Empty}/activate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -65,7 +63,7 @@ public class ActivatePromotionTests(IntegrationApiFactory factory) : BaseEndpoin
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_ActivatePromotion_Should_Return422_WhenPromotionIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

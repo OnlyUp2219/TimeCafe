@@ -8,7 +8,7 @@ public class CreateAdditionalInfoCommandHandlerTests
         // Arrange
         var repoMock = new Mock<IAdditionalInfoRepository>();
         var userRepoMock = new Mock<IUserRepositories>();
-        var command = new CreateAdditionalInfoCommand(ExistingUsers.User1Id, TestInfoTexts.TestInfo, "creator");
+        var command = new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), TestInfoTexts.TestInfo, "creator");
         var profile = new Profile
         {
             UserId = Guid.Parse(ExistingUsers.User1Id),
@@ -37,7 +37,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Pass_For_Valid_Data()
     {
         var validator = new CreateAdditionalInfoCommandValidator();
-        var cmd = new CreateAdditionalInfoCommand(ExistingUsers.User1Id, TestInfoTexts.TestInfo, "creator");
+        var cmd = new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), TestInfoTexts.TestInfo, "creator");
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeTrue();
     }
@@ -46,7 +46,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_When_UserId_Empty()
     {
         var validator = new CreateAdditionalInfoCommandValidator();
-        var cmd = new CreateAdditionalInfoCommand(InvalidIds.EmptyString, TestInfoTexts.TestInfo);
+        var cmd = new CreateAdditionalInfoCommand(Guid.Empty, TestInfoTexts.TestInfo);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -56,7 +56,7 @@ public class CreateAdditionalInfoCommandHandlerTests
     {
         var validator = new CreateAdditionalInfoCommandValidator();
         var longText = new string('x', 2001);
-        var cmd = new CreateAdditionalInfoCommand(ExistingUsers.User1Id, longText);
+        var cmd = new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), longText);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -67,7 +67,7 @@ public class CreateAdditionalInfoCommandHandlerTests
         // Arrange
         var repoMock = new Mock<IAdditionalInfoRepository>();
         var userRepoMock = new Mock<IUserRepositories>();
-        var command = new CreateAdditionalInfoCommand(NonExistingUsers.UserId1, TestInfoTexts.TestInfo, "creator");
+        var command = new CreateAdditionalInfoCommand(Guid.Parse(NonExistingUsers.UserId1), TestInfoTexts.TestInfo, "creator");
         userRepoMock.Setup(u => u.GetProfileByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Profile?)null);
         var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
@@ -103,7 +103,7 @@ public class CreateAdditionalInfoCommandHandlerTests
 
         // Act
         var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => handler.Handle(new CreateAdditionalInfoCommand(ExistingUsers.User1Id, "Txt"), CancellationToken.None));
+            () => handler.Handle(new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), "Txt"), CancellationToken.None));
 
         // Assert
         ex.Result.Should().NotBeNull();

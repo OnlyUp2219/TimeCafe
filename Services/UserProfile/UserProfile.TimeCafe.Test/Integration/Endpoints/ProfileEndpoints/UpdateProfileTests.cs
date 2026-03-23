@@ -10,7 +10,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         await SeedProfileAsync(userId, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
         var dto = new
         {
-            userId = userId.ToString(),
             firstName = TestData.ExistingUsers.User2FirstName,
             lastName = TestData.UpdateData.UpdatedLastName2,
             middleName = TestData.UpdateData.UpdatedMiddleName,
@@ -20,7 +19,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
+        var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{userId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -46,7 +45,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var userId = Guid.NewGuid();
         var dto = new
         {
-            userId = userId.ToString(),
             firstName = "Test",
             lastName = "User",
             middleName = (string?)null,
@@ -56,7 +54,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
+        var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{userId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -80,7 +78,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         // Arrange
         var dto = new
         {
-            userId = Guid.NewGuid().ToString(),
             firstName = "",
             lastName = "",
             middleName = (string?)null,
@@ -90,7 +87,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
+        var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{Guid.NewGuid()}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -117,7 +114,6 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
 
         var dto = new
         {
-            userId = userId.ToString(),
             firstName = TestData.ExistingUsers.User2FirstName,
             lastName = TestData.ExistingUsers.User2LastName,
             middleName = (string?)null,
@@ -127,7 +123,7 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         };
 
         // Act
-        var response = await Client.PutAsJsonAsync("/userprofile/profiles", dto);
+        var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{userId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert

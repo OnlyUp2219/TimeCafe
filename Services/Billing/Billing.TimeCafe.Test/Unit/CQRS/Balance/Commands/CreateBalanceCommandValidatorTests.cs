@@ -6,7 +6,7 @@ public class CreateBalanceCommandValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new CreateBalanceCommandValidator();
-        var cmd = new CreateBalanceCommand(InvalidData.EmptyUserId);
+        var cmd = new CreateBalanceCommand(InvalidDataGuid.EmptyUserId);
 
         var result = validator.Validate(cmd);
 
@@ -18,7 +18,7 @@ public class CreateBalanceCommandValidatorTests
     public void Validator_Validate_Should_Pass_WhenUserIdValid()
     {
         var validator = new CreateBalanceCommandValidator();
-        var cmd = new CreateBalanceCommand(Defaults.UserId);
+        var cmd = new CreateBalanceCommand(DefaultsGuid.UserId);
 
         var result = validator.Validate(cmd);
 

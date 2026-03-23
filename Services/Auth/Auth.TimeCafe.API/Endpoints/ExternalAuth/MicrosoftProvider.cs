@@ -20,6 +20,7 @@ public class MicrosoftProvider : ICarterModule
         })
         .WithName("MicrosoftLogin")
         .WithSummary("Инициирует вход через Microsoft")
+        .Produces(200)
         .WithDescription("Перенаправляет пользователя на страницу аутентификации Microsoft. После успешной аутентификации пользователь будет перенаправлен на callback URL.")
         .WithTags(Tag);
 
@@ -33,6 +34,7 @@ public class MicrosoftProvider : ICarterModule
             await ExternalProviderAuthHandler.HandleCallbackAsync(Provider, returnUrl, context, jwtService, userManager, db, logger))
         .WithName("MicrosoftLoginCallback")
         .WithSummary("Обрабатывает callback от Microsoft после аутентификации")
+        .Produces(200)
         .WithDescription("Принимает ответ от Microsoft, создает или обновляет пользователя в системе, генерирует JWT токены и перенаправляет на указанный URL с токенами.")
         .WithTags(Tag);
     }

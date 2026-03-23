@@ -17,7 +17,8 @@ public class GetPhotoProfile : ICarterModule
         .WithName("GetProfilePhoto")
         .WithSummary("Получить фото профиля из S3")
         .WithDescription("Загружает фото пользователя из S3 хранилища и возвращает его как файловый стрим. Поддерживает Range-запросы.")
-        .WithOpenApi()
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

@@ -71,7 +71,6 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Scalar.AspNetCore" Version="2.13.13" />
     <PackageVersion Include="Scalar.AspNetCore.Microsoft" Version="2.13.13" />
-    <PackageVersion Include="Scalar.AspNetCore.Swashbuckle" Version="2.13.13" />
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
@@ -81,11 +80,7 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageVersion Include="StackExchange.Redis" Version="2.9.32" />
     <PackageVersion Include="Stripe.net" Version="50.4.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore" Version="10.1.5" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Annotations" Version="10.1.5" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Filters" Version="10.0.1" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.Swagger" Version="10.1.5" />
-    <PackageVersion Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.5" />
+
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.5" />
     <PackageVersion Include="Twilio" Version="7.14.3" />

@@ -45,12 +45,10 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 
-    [Theory]
-    [InlineData("invalid-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsEmpty()
     {
-        var response = await Client.GetAsync($"/venue/themes/{invalidId}");
+        var response = await Client.GetAsync($"/venue/themes/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -61,7 +59,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

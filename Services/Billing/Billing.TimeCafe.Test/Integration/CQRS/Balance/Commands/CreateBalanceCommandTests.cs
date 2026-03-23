@@ -16,7 +16,7 @@ public class CreateBalanceCommandTests : IDisposable
     [Fact]
     public async Task Command_CreateBalance_Should_CreateNewBalance_WhenNotExists()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         CreateBalanceResult result;
         using (var scope = CreateScope())
@@ -34,15 +34,15 @@ public class CreateBalanceCommandTests : IDisposable
 
         using var scope2 = CreateScope();
         var db = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var created = await db.Balances.FindAsync(Guid.Parse(userId));
+        var created = await db.Balances.FindAsync(userId);
         created.Should().NotBeNull();
-        created!.UserId.Should().Be(Guid.Parse(userId));
+        created!.UserId.Should().Be(userId);
     }
 
     [Fact]
     public async Task Command_CreateBalance_Should_ReturnError_WhenAlreadyExists()
     {
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
 
         using (var scope = CreateScope())
         {
@@ -68,7 +68,7 @@ public class CreateBalanceCommandTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new CreateBalanceCommand(InvalidData.EmptyUserId));
+        var action = async () => await sender.Send(new CreateBalanceCommand(InvalidDataGuid.EmptyUserId));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

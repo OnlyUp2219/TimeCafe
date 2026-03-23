@@ -16,6 +16,8 @@ public class GetProfileById : ICarterModule
         .WithName("GetProfileById")
         .WithSummary("Получить профиль по UserId")
         .WithDescription("Возвращает профиль пользователя по идентификатору UserId.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

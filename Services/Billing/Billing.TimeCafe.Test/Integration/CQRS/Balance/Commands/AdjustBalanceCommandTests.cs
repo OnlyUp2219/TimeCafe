@@ -16,7 +16,7 @@ public class AdjustBalanceCommandTests : IDisposable
     [Fact]
     public async Task Command_AdjustBalance_Should_Deposit_IncreaseBalance_AndCreateTransaction()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         using (var scope = CreateScope())
         {
@@ -28,23 +28,23 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new AdjustBalanceCommand(userId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Manual));
+            result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Manual));
         }
 
         result.Success.Should().BeTrue();
         result.Transaction!.Type.Should().Be(TransactionType.Deposit);
-        result.Transaction.Amount.Should().Be(Defaults.SmallAmount);
+        result.Transaction.Amount.Should().Be(DefaultsGuid.SmallAmount);
 
         using var scope2 = CreateScope();
         var balances2 = scope2.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var fetched = await balances2.GetByUserIdAsync(Guid.Parse(userId));
-        fetched!.CurrentBalance.Should().Be(Defaults.SmallAmount);
+        var fetched = await balances2.GetByUserIdAsync(userId);
+        fetched!.CurrentBalance.Should().Be(DefaultsGuid.SmallAmount);
     }
 
     [Fact]
     public async Task Command_AdjustBalance_Should_Withdrawal_Block_WhenInsufficientFunds()
     {
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
 
         using (var scope = CreateScope())
         {
@@ -56,7 +56,7 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new AdjustBalanceCommand(userId, Defaults.DefaultAmount, TransactionType.Withdrawal, TransactionSource.Manual));
+            result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.DefaultAmount, TransactionType.Withdrawal, TransactionSource.Manual));
         }
 
         result.Success.Should().BeFalse();
@@ -67,14 +67,14 @@ public class AdjustBalanceCommandTests : IDisposable
     [Fact]
     public async Task Command_AdjustBalance_Should_Withdrawal_DecreaseBalance_AndCreateTransaction()
     {
-        var userId = Defaults.UserId3;
+        var userId = DefaultsGuid.UserId3;
 
         using (var scope = CreateScope())
         {
             var balances = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var balance = await balances.CreateAsync(new BalanceModel(userId));
-            balance.CurrentBalance = Defaults.UpdatedAmount;
-            balance.TotalDeposited = Defaults.UpdatedAmount;
+            balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
+            balance.TotalDeposited = DefaultsGuid.UpdatedAmount;
             await balances.UpdateAsync(balance);
         }
 
@@ -82,20 +82,20 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new AdjustBalanceCommand(userId, Defaults.SmallAmount, TransactionType.Withdrawal, TransactionSource.Manual));
+            result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Manual));
         }
 
         result.Success.Should().BeTrue();
-        result.Balance!.CurrentBalance.Should().Be(Defaults.UpdatedAmount - Defaults.SmallAmount);
+        result.Balance!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount - DefaultsGuid.SmallAmount);
         result.Transaction!.Type.Should().Be(TransactionType.Withdrawal);
-        result.Transaction.Amount.Should().Be(Defaults.SmallAmount);
+        result.Transaction.Amount.Should().Be(DefaultsGuid.SmallAmount);
     }
 
     [Fact]
     public async Task Command_AdjustBalance_Should_ReturnDuplicate_WhenSourceIdAlreadyUsed()
     {
-        var userId = Defaults.UserId;
-        var sourceId = Defaults.TransactionId;
+        var userId = DefaultsGuid.UserId;
+        var sourceId = DefaultsGuid.TransactionId;
 
         using (var scope = CreateScope())
         {
@@ -107,7 +107,7 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            first = await sender.Send(new AdjustBalanceCommand(userId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
+            first = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
         }
         first.Success.Should().BeTrue();
 
@@ -115,7 +115,7 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            second = await sender.Send(new AdjustBalanceCommand(userId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
+            second = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
         }
 
         second.Success.Should().BeFalse();
@@ -129,7 +129,7 @@ public class AdjustBalanceCommandTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new AdjustBalanceCommand(InvalidData.EmptyUserId, 0m, TransactionType.Deposit, TransactionSource.Manual));
+        var action = async () => await sender.Send(new AdjustBalanceCommand(InvalidDataGuid.EmptyUserId, 0m, TransactionType.Deposit, TransactionSource.Manual));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

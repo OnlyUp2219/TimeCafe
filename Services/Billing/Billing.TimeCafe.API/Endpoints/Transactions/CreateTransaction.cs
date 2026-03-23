@@ -1,6 +1,18 @@
 namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
-public record CreateTransactionRequest(Guid UserId, decimal Amount, TransactionType Type, TransactionSource Source, Guid? SourceId, string? Comment);
+public record CreateTransactionRequest(
+    /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+    Guid UserId,
+    /// <example>500.00</example>
+    decimal Amount,
+    /// <example>Deposit</example>
+    TransactionType Type,
+    /// <example>Manual</example>
+    TransactionSource Source,
+    /// <example>a1b2c3d4-e5f6-7890-abcd-ef1234567890</example>
+    Guid? SourceId,
+    /// <example>Пополнение баланса</example>
+    string? Comment);
 
 public class CreateTransaction : ICarterModule
 {
@@ -46,7 +58,7 @@ public class CreateTransaction : ICarterModule
         .WithName("CreateTransaction")
         .WithSummary("Создать транзакцию (пополнение/списание)")
         .WithDescription("Создаёт транзакцию и корректирует баланс пользователя")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

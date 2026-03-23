@@ -49,6 +49,8 @@ public sealed class CurrentUser : ICarterModule
         .RequireAuthorization()
         .WithName("GetCurrentUser")
         .WithSummary("Текущий пользователь")
+        .Produces(200)
+        .Produces(404)
         .WithDescription("Возвращает email и статус подтверждения email/телефона для текущего пользователя.");
     }
 }

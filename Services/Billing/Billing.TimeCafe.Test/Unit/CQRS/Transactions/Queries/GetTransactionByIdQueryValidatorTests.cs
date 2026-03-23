@@ -6,7 +6,7 @@ public class GetTransactionByIdQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenTransactionIdEmpty()
     {
         var validator = new GetTransactionByIdQueryValidator();
-        var query = new GetTransactionByIdQuery(InvalidData.EmptyUserId);
+        var query = new GetTransactionByIdQuery(InvalidDataGuid.EmptyUserId);
 
         var result = validator.Validate(query);
 
@@ -18,7 +18,7 @@ public class GetTransactionByIdQueryValidatorTests
     public void Validator_Validate_Should_Pass_WhenTransactionIdValid()
     {
         var validator = new GetTransactionByIdQueryValidator();
-        var query = new GetTransactionByIdQuery(Defaults.TransactionId);
+        var query = new GetTransactionByIdQuery(DefaultsGuid.TransactionId);
 
         var result = validator.Validate(query);
 

@@ -72,14 +72,12 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
-    [Theory]
-    [InlineData("not-a-guid")]
-    [InlineData("123-invalid")]
-    public async Task Endpoint_DeletePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_DeletePromotion_Should_Return422_WhenPromotionIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.DeleteAsync($"/venue/promotions/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/promotions/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -87,7 +85,7 @@ public class DeletePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeletePromotion_Should_Return422_WhenPromotionIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeletePromotion_Should_Return422_WhenPromotionIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

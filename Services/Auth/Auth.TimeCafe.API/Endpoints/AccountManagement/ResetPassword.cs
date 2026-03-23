@@ -1,7 +1,15 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record ResetPasswordRequest(string Email, string ResetCode, string NewPassword);
-public record ResetPasswordEmailRequest(string Email);
+public record ResetPasswordRequest(
+    /// <example>user@example.com</example>
+    string Email,
+    /// <example>Q2ZESjhOVGtMWUZ5...</example>
+    string ResetCode,
+    /// <example>NewP@ss456</example>
+    string NewPassword);
+public record ResetPasswordEmailRequest(
+    /// <example>user@example.com</example>
+    string Email);
 
 public class ResetPassword : ICarterModule
 {
@@ -20,6 +28,7 @@ public class ResetPassword : ICarterModule
         })
         .WithName("ResetPassword")
         .WithSummary("Сброс пароля по коду из письма")
+        .Produces(200)
         .WithDescription("Принимает email, resetCode (Base64Url) и новый пароль. Сбрасывает пароль через Identity reset token.");
 
         group.MapPost("/forgot-password-link-mock", async (
@@ -40,6 +49,7 @@ public class ResetPassword : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPasswordMock")
         .WithSummary("Mock: получение ссылки для сброса пароля без отправки email")
+        .Produces(200)
         .WithDescription("Тестовый endpoint: возвращает ссылку для сброса пароля, не отправляя email. Используется для тестирования фронта и интеграций.");
 
         group.MapPost("/forgot-password-link", async (
@@ -55,6 +65,7 @@ public class ResetPassword : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ForgotPassword")
         .WithSummary("Отправка ссылки для сброса пароля на email")
+        .Produces(200)
         .WithDescription("Отправляет письмо со ссылкой для сброса пароля на указанный email. Используется при восстановлении доступа.");
     }
 }

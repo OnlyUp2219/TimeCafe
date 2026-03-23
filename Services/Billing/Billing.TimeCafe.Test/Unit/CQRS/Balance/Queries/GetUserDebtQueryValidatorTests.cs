@@ -6,7 +6,7 @@ public class GetUserDebtQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new GetUserDebtQueryValidator();
-        var query = new GetUserDebtQuery(InvalidData.EmptyUserId);
+        var query = new GetUserDebtQuery(InvalidDataGuid.EmptyUserId);
 
         var result = validator.Validate(query);
 
@@ -19,7 +19,7 @@ public class GetUserDebtQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdDefault()
     {
         var validator = new GetUserDebtQueryValidator();
-        var query = new GetUserDebtQuery(InvalidData.EmptyUserId);
+        var query = new GetUserDebtQuery(InvalidDataGuid.EmptyUserId);
 
         var result = validator.Validate(query);
 
@@ -32,7 +32,7 @@ public class GetUserDebtQueryValidatorTests
     public void Validator_Validate_Should_Pass_WhenUserIdValid()
     {
         var validator = new GetUserDebtQueryValidator();
-        var query = new GetUserDebtQuery(Defaults.UserId);
+        var query = new GetUserDebtQuery(DefaultsGuid.UserId);
 
         var result = validator.Validate(query);
 

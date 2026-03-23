@@ -16,7 +16,8 @@ public class GetTransaction : ICarterModule
         .WithName("GetTransaction")
         .WithSummary("Получить транзакцию по ID")
         .WithDescription("Возвращает информацию о конкретной транзакции.")
-        .WithOpenApi()
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

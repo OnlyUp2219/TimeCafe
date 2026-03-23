@@ -16,6 +16,7 @@ public class HasActiveVisit : ICarterModule
         .WithName("HasActiveVisit")
         .WithSummary("Проверить наличие активного посещения")
         .WithDescription("Проверяет, есть ли активное посещение у пользователя.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

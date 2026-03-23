@@ -13,7 +13,7 @@ public class ActivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenTariffActivated()
     {
         var tariffId = Guid.NewGuid();
-        var command = new ActivateTariffCommand(tariffId.ToString());
+        var command = new ActivateTariffCommand(tariffId);
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
@@ -34,7 +34,7 @@ public class ActivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenTariffDoesNotExist()
     {
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
-        var command = new ActivateTariffCommand(tariffId.ToString());
+        var command = new ActivateTariffCommand(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
@@ -49,7 +49,7 @@ public class ActivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
         var tariffId = Guid.NewGuid();
-        var command = new ActivateTariffCommand(tariffId.ToString());
+        var command = new ActivateTariffCommand(tariffId);
         var tariff = new TariffWithThemeDto
         {
             TariffId = tariffId,
@@ -72,7 +72,7 @@ public class ActivateTariffCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var tariffId = Guid.NewGuid();
-        var command = new ActivateTariffCommand(tariffId.ToString());
+        var command = new ActivateTariffCommand(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -86,13 +86,11 @@ public class ActivateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("not-a-guid", false)]
     [InlineData("00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string tariffId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string tariffIdStr, bool isValid)
     {
-        var command = new ActivateTariffCommand(tariffId);
+        var command = new ActivateTariffCommand(Guid.Parse(tariffIdStr));
         var validator = new ActivateTariffCommandValidator();
 
         var result = await validator.ValidateAsync(command);

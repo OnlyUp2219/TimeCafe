@@ -15,6 +15,7 @@ public class GetActiveVisits : ICarterModule
         .WithName("GetActiveVisits")
         .WithSummary("Получить все активные посещения")
         .WithDescription("Возвращает список всех активных посещений.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

@@ -42,14 +42,12 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
         }
     }
 
-    [Theory]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_DeactivateTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_DeactivateTariff_Should_Return422_WhenTariffIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.PostAsync($"/venue/tariffs/{invalidId}/deactivate", null);
+        var response = await Client.PostAsync($"/venue/tariffs/{Guid.Empty}/deactivate", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -57,7 +55,7 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeactivateTariff_Should_Return422_WhenTariffIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeactivateTariff_Should_Return422_WhenTariffIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

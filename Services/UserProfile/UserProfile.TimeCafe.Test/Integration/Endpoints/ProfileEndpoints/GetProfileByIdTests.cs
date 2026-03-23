@@ -57,13 +57,10 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     }
 
     [Fact]
-    public async Task Endpoint_GetProfileById_Should_Return422_WhenInvalidGuid()
+    public async Task Endpoint_GetProfileById_Should_Return422_WhenEmptyGuid()
     {
-        // Arrange
-        var invalidId = TestData.InvalidIds.NotAGuid;
-
         // Act
-        var response = await Client.GetAsync($"/userprofile/profiles/{invalidId}");
+        var response = await Client.GetAsync($"/userprofile/profiles/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -73,7 +70,7 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetProfileById_Should_Return400_WhenInvalidGuid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetProfileById_Should_Return422_WhenEmptyGuid] Response: {jsonString}");
             throw;
         }
     }

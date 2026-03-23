@@ -37,7 +37,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
+        var command = new CreateVisitCommand(userId, tariffId);
         var visit = new Visit
         {
             VisitId = Guid.NewGuid(),
@@ -62,7 +62,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
+        var command = new CreateVisitCommand(userId, tariffId);
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync((Visit?)null!);
 
@@ -78,7 +78,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
+        var command = new CreateVisitCommand(userId, tariffId);
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -96,7 +96,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString());
+        var command = new CreateVisitCommand(userId, tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
@@ -112,7 +112,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString(), 120, true, true);
+        var command = new CreateVisitCommand(userId, tariffId, 120, true, true);
 
         VisitBalancePolicyServiceMock
             .Setup(x => x.CheckBeforeStartAsync(
@@ -137,7 +137,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId.ToString(), tariffId.ToString(), 90, true, true);
+        var command = new CreateVisitCommand(userId, tariffId, 90, true, true);
 
         VisitBalancePolicyServiceMock
             .Setup(x => x.CheckBeforeStartAsync(
@@ -157,16 +157,14 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", "11111111-1111-1111-1111-111111111111", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", "", false)]
-    [InlineData("not-a-guid", "11111111-1111-1111-1111-111111111111", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", "not-a-guid", false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", true, 30)]
     [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false, 0)]
     [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", true)]
-    public async Task Validator_Should_ValidateCorrectly(string? userId, string? tariffId, bool isValid, int? plannedMinutes = null)
+    public async Task Validator_Should_ValidateCorrectly(string userIdStr, string tariffIdStr, bool isValid, int? plannedMinutes = null)
     {
-        var command = new CreateVisitCommand(userId!, tariffId!, plannedMinutes, true, plannedMinutes.HasValue);
+        var command = new CreateVisitCommand(Guid.Parse(userIdStr), Guid.Parse(tariffIdStr), plannedMinutes, true, plannedMinutes.HasValue);
         var validator = new CreateVisitCommandValidator();
 
         var result = await validator.ValidateAsync(command);

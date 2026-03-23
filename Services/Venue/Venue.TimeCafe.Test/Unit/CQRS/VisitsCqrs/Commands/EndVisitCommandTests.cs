@@ -30,7 +30,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenVisitEnded()
     {
         var visitId = Guid.NewGuid();
-        var command = new EndVisitCommand(visitId.ToString());
+        var command = new EndVisitCommand(visitId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = visitId,
@@ -57,7 +57,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenVisitDoesNotExist()
     {
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
-        var command = new EndVisitCommand(visitId.ToString());
+        var command = new EndVisitCommand(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
@@ -72,7 +72,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsNull()
     {
         var visitId = Guid.NewGuid();
-        var command = new EndVisitCommand(visitId.ToString());
+        var command = new EndVisitCommand(visitId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = visitId,
@@ -98,7 +98,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var visitId = Guid.NewGuid();
-        var command = new EndVisitCommand(visitId.ToString());
+        var command = new EndVisitCommand(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -112,13 +112,11 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("not-a-guid", false)]
     [InlineData("00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string visitId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string visitIdStr, bool isValid)
     {
-        var command = new EndVisitCommand(visitId);
+        var command = new EndVisitCommand(Guid.Parse(visitIdStr));
         var validator = new EndVisitCommandValidator();
 
         var result = await validator.ValidateAsync(command);

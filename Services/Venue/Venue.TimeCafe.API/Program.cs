@@ -46,7 +46,6 @@ builder.Services.AddVenueCqrs();
 
 // Swagger & Carter
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiConfiguration();
 builder.Services.AddCarter();
 
@@ -62,7 +61,7 @@ app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSwaggerDevelopment();
+app.UseOpenApiDevelopment();
 
 var venueGroup = app.MapGroup("/venue");
 venueGroup.MapCarter();

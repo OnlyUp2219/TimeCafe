@@ -4,8 +4,16 @@ using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record ChangeEmailRequest(string NewEmail);
-public record ConfirmChangeEmailRequest(string UserId, string NewEmail, string Token);
+public record ChangeEmailRequest(
+    /// <example>newemail@example.com</example>
+    string NewEmail);
+public record ConfirmChangeEmailRequest(
+    /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+    string UserId,
+    /// <example>newemail@example.com</example>
+    string NewEmail,
+    /// <example>Q2ZESjhOVGtMWUZ5...</example>
+    string Token);
 
 public class EmailChange : ICarterModule
 {
@@ -32,6 +40,7 @@ public class EmailChange : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("RequestEmailChange")
         .WithSummary("Запрос на смену email")
+        .Produces(200)
         .WithDescription("Отправляет ссылку для подтверждения смены email на новый адрес.");
 
         group.MapPost("/change-mock", async (
@@ -53,6 +62,7 @@ public class EmailChange : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("RequestEmailChangeMock")
         .WithSummary("Mock: запрос на смену email")
+        .Produces(200)
         .WithDescription("Тестовый endpoint: возвращает callbackUrl для подтверждения смены email без реальной отправки письма.");
 
         group.MapPost("/change-confirm", async (
@@ -66,6 +76,7 @@ public class EmailChange : ICarterModule
         })
         .WithName("ConfirmEmailChange")
         .WithSummary("Подтверждение смены email")
+        .Produces(200)
         .WithDescription("Подтверждает смену email по токену, полученному по ссылке.");
     }
 }

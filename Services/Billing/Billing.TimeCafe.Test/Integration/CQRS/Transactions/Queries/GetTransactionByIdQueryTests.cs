@@ -16,20 +16,20 @@ public class GetTransactionByIdQueryTests : IDisposable
     [Fact]
     public async Task Query_GetTransactionById_Should_ReturnTransaction_WhenExists()
     {
-        var transactionId = Defaults.TransactionId;
-        var userId = Defaults.UserId;
+        var transactionId = DefaultsGuid.TransactionId;
+        var userId = DefaultsGuid.UserId;
 
         using (var scope = CreateScope())
         {
             var repo = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
             var transaction = TransactionModel.CreateDeposit(
                 userId,
-                Defaults.DefaultAmount,
+                DefaultsGuid.DefaultAmount,
                 TransactionSource.Payment,
-                Defaults.PaymentId,
+                DefaultsGuid.PaymentId,
                 comment: "Test transaction");
-            transaction.TransactionId = Guid.Parse(transactionId);
-            transaction.BalanceAfter = Defaults.DefaultAmount;
+            transaction.TransactionId = transactionId;
+            transaction.BalanceAfter = DefaultsGuid.DefaultAmount;
             await repo.CreateAsync(transaction);
         }
 
@@ -44,19 +44,19 @@ public class GetTransactionByIdQueryTests : IDisposable
         result.Transaction.Should().NotBeNull();
         result.Transaction!.TransactionId.Should().Be(transactionId);
         result.Transaction.UserId.Should().Be(userId);
-        result.Transaction.Amount.Should().Be(Defaults.DefaultAmount);
+        result.Transaction.Amount.Should().Be(DefaultsGuid.DefaultAmount);
         result.Transaction.Type.Should().Be((int)TransactionType.Deposit);
         result.Transaction.Source.Should().Be((int)TransactionSource.Payment);
-        result.Transaction.SourceId.Should().Be(Defaults.PaymentId);
+        result.Transaction.SourceId.Should().Be(DefaultsGuid.PaymentId);
         result.Transaction.Status.Should().Be((int)TransactionStatus.Completed);
         result.Transaction.Comment.Should().Be("Test transaction");
-        result.Transaction.BalanceAfter.Should().Be(Defaults.DefaultAmount);
+        result.Transaction.BalanceAfter.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
     public async Task Query_GetTransactionById_Should_ReturnNotFound_WhenNotExists()
     {
-        var nonExistentId = InvalidData.NonExistentPaymentId;
+        var nonExistentId = InvalidDataGuid.NonExistentPaymentId;
 
         GetTransactionByIdResult result;
         using (var scope = CreateScope())
@@ -77,7 +77,7 @@ public class GetTransactionByIdQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionByIdQuery(InvalidData.EmptyUserId));
+        var action = async () => await sender.Send(new GetTransactionByIdQuery(InvalidDataGuid.EmptyUserId));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

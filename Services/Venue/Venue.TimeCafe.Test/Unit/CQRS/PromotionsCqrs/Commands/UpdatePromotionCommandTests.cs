@@ -24,7 +24,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
             ValidTo = validTo,
             IsActive = true
         };
-        var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.UpdateData.UpdatedPromotionName, TestData.UpdateData.UpdatedPromotionDescription, TestData.UpdateData.UpdatedDiscountPercent, validFrom, validTo, true);
+        var command = new UpdatePromotionCommand(promotionId, TestData.UpdateData.UpdatedPromotionName, TestData.UpdateData.UpdatedPromotionDescription, TestData.UpdateData.UpdatedDiscountPercent, validFrom, validTo, true);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
         PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
@@ -41,7 +41,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
     {
         var validFrom = TestData.DateTimeData.GetValidFromDate();
         var validTo = TestData.DateTimeData.GetValidToDate();
-        var command = new UpdatePromotionCommand(TestData.NonExistingIds.NonExistingPromotionIdString, TestData.ExistingPromotions.Promotion1Name, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
+        var command = new UpdatePromotionCommand(TestData.NonExistingIds.NonExistingPromotionId, TestData.ExistingPromotions.Promotion1Name, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
@@ -65,7 +65,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
             ValidFrom = validFrom,
             ValidTo = validTo
         };
-        var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
+        var command = new UpdatePromotionCommand(promotionId, TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
         PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Update failed"));
@@ -85,7 +85,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         var promotionId = TestData.ExistingPromotions.Promotion3Id;
         var validFrom = TestData.DateTimeData.GetValidFromDate();
         var validTo = TestData.DateTimeData.GetValidToDate();
-        var command = new UpdatePromotionCommand(promotionId.ToString(), TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
+        var command = new UpdatePromotionCommand(promotionId, TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, 10m, validFrom, validTo, true);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -99,8 +99,7 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", "Name", "Desc", 10.0, true, false, "Акция не найдена")]
-    [InlineData("not-a-guid", "Name", "Desc", 10.0, true, false, "Акция не найдена")]
+    [InlineData("00000000-0000-0000-0000-000000000000", "Name", "Desc", 10.0, true, false, "Акция не найдена")]
     [InlineData("99999999-9999-9999-9999-999999999999", "", "Desc", 10.0, true, false, "Название акции обязательно")]
     [InlineData("99999999-9999-9999-9999-999999999999", null, "Desc", 10.0, true, false, "Название акции обязательно")]
     [InlineData("99999999-9999-9999-9999-999999999999", "Name", "", 10.0, true, false, "Описание обязательно")]
@@ -111,12 +110,12 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
     [InlineData("99999999-9999-9999-9999-999999999999", "Name", "Desc", 10.0, false, false, "Дата начала должна быть раньше даты окончания")]
     [InlineData("99999999-9999-9999-9999-999999999999", "Name", "Desc", 10.0, true, true, null)]
     [InlineData("99999999-9999-9999-9999-999999999999", "Name", "Desc", -999.0, true, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string promotionId, string? name, string? description, double discountDouble, bool validDates, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly(string promotionIdStr, string? name, string? description, double discountDouble, bool validDates, bool isValid, string? expectedError)
     {
         var validFrom = DateTimeOffset.UtcNow;
         var validTo = validDates ? validFrom.AddDays(30) : validFrom.AddDays(-1);
         var discount = discountDouble == -999.0 ? null : (decimal?)discountDouble;
-        var command = new UpdatePromotionCommand(promotionId, name!, description!, discount, validFrom, validTo, true);
+        var command = new UpdatePromotionCommand(Guid.Parse(promotionIdStr), name!, description!, discount, validFrom, validTo, true);
         var validator = new UpdatePromotionCommandValidator();
 
         var result = await validator.ValidateAsync(command);

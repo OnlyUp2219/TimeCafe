@@ -1,6 +1,16 @@
 namespace Billing.TimeCafe.API.Endpoints.Payments;
 
-public record InitializeCheckoutRequest(Guid UserId, decimal Amount, string? SuccessUrl, string? CancelUrl, string? Description);
+public record InitializeCheckoutRequest(
+    /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+    Guid UserId,
+    /// <example>1000.00</example>
+    decimal Amount,
+    /// <example>https://timecafe.ru/payment/success</example>
+    string? SuccessUrl,
+    /// <example>https://timecafe.ru/payment/cancel</example>
+    string? CancelUrl,
+    /// <example>Пополнение баланса</example>
+    string? Description);
 
 public class InitializeStripeCheckout : ICarterModule
 {
@@ -29,7 +39,7 @@ public class InitializeStripeCheckout : ICarterModule
         .WithName("InitializeStripeCheckout")
         .WithSummary("Инициализация платежа через Stripe Checkout")
         .WithDescription("Создаёт Stripe Checkout Session и возвращает URL для редиректа")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

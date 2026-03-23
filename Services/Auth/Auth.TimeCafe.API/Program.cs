@@ -31,10 +31,8 @@ builder.Services.AddSmsServices(builder.Configuration);
 builder.Services.AddAuthCqrs();
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 
-// Swagger param 
-builder.Services.AddSwaggerConfiguration();
+builder.Services.AddOpenApiConfiguration();
 
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
@@ -68,7 +66,7 @@ app.UseForwardedHeaders();
 
 await app.ApplyMigrationsAsync();
 
-app.UseSwaggerDevelopment();
+app.UseOpenApiDevelopment();
 
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);

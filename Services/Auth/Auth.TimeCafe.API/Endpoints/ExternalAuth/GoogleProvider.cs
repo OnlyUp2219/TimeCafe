@@ -20,6 +20,7 @@ public class GoogleProvider : ICarterModule
         })
         .WithName("GoogleLogin")
         .WithSummary("Инициирует вход через Google")
+        .Produces(200)
         .WithDescription("Перенаправляет пользователя на страницу аутентификации Google. После успешной аутентификации пользователь будет перенаправлен на callback URL.")
         .WithTags(Tag);
 
@@ -33,6 +34,7 @@ public class GoogleProvider : ICarterModule
             await ExternalProviderAuthHandler.HandleCallbackAsync(Provider, returnUrl, context, jwtService, userManager, db, logger))
         .WithName("GoogleLoginCallback")
         .WithSummary("Обрабатывает callback от Google после аутентификации")
+        .Produces(200)
         .WithDescription("Принимает ответ от Google, создает или обновляет пользователя в системе, генерирует JWT токены и перенаправляет на указанный URL с токенами.")
         .WithTags(Tag);
     }

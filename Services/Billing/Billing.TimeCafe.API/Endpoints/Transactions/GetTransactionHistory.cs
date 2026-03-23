@@ -28,7 +28,7 @@ public class GetTransactionHistory : ICarterModule
         .WithName("GetTransactionHistory")
         .WithSummary("История транзакций пользователя")
         .WithDescription("Возвращает историю транзакций с пагинацией (по 10 по умолчанию, макс 100).")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

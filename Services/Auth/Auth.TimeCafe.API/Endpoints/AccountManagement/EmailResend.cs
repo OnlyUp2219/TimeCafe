@@ -1,6 +1,8 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record ResendConfirmationRequest(string Email);
+public record ResendConfirmationRequest(
+    /// <example>user@example.com</example>
+    string Email);
 
 public class EmailResend : ICarterModule
 {
@@ -21,6 +23,7 @@ public class EmailResend : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ResendConfirmation")
         .WithSummary("Повторная отправка письма для подтверждения email")
+        .Produces(200)
         .WithDescription("Отправляет повторно письмо для подтверждения email пользователя. Используется, если первое письмо не дошло или истёк срок действия ссылки.");
 
 
@@ -37,6 +40,7 @@ public class EmailResend : ICarterModule
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("ResendConfirmationMock")
         .WithSummary("Mock: повторная отправка письма для подтверждения email")
+        .Produces(200)
         .WithDescription("Тестовый endpoint: возвращает callbackUrl для подтверждения email без реальной отправки письма.");
     }
 }

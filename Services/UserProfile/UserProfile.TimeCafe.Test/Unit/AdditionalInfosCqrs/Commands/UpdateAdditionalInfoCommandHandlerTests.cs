@@ -14,7 +14,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         repoMock.Setup(r => r.UpdateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AdditionalInfo a, CancellationToken _) => a);
         var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = existing.CreatedAt };
-        var cmd = new UpdateAdditionalInfoCommand(info.InfoId.ToString(), info.UserId.ToString(), info.InfoText, info.CreatedBy);
+        var cmd = new UpdateAdditionalInfoCommand(info.InfoId, info.UserId, info.InfoText, info.CreatedBy);
         var handler = new UpdateAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act
@@ -32,7 +32,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
     {
         var validator = new UpdateAdditionalInfoCommandValidator();
         var info = new AdditionalInfo { InfoId = Guid.Parse(AdditionalInfoData.Info1Id), UserId = Guid.Parse(ExistingUsers.User1Id), InfoText = TestInfoTexts.TestInfo };
-        var cmd = new UpdateAdditionalInfoCommand(info.InfoId.ToString(), info.UserId.ToString(), info.InfoText, info.CreatedBy);
+        var cmd = new UpdateAdditionalInfoCommand(info.InfoId, info.UserId, info.InfoText, info.CreatedBy);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeTrue();
     }
@@ -41,7 +41,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_When_Info_Null()
     {
         var validator = new UpdateAdditionalInfoCommandValidator();
-        var cmd = new UpdateAdditionalInfoCommand(null!, null!, null!, null);
+        var cmd = new UpdateAdditionalInfoCommand(Guid.Empty, Guid.Empty, null!, null);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -50,7 +50,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
     public void Validator_Should_Fail_When_InfoId_Invalid()
     {
         var validator = new UpdateAdditionalInfoCommandValidator();
-        var cmd = new UpdateAdditionalInfoCommand(InvalidIds.EmptyString, ExistingUsers.User1Id, "txt", null);
+        var cmd = new UpdateAdditionalInfoCommand(Guid.Empty, Guid.Parse(ExistingUsers.User1Id), "txt", null);
         var result = validator.Validate(cmd);
         result.IsValid.Should().BeFalse();
     }
@@ -64,7 +64,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         var repoMock = new Mock<IAdditionalInfoRepository>();
         repoMock.Setup(r => r.GetAdditionalInfoByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
         var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = DateTimeOffset.UtcNow };
-        var cmd = new UpdateAdditionalInfoCommand(info.InfoId.ToString(), info.UserId.ToString(), info.InfoText, info.CreatedBy);
+        var cmd = new UpdateAdditionalInfoCommand(info.InfoId, info.UserId, info.InfoText, info.CreatedBy);
         var handler = new UpdateAdditionalInfoCommandHandler(repoMock.Object);
 
         // Act

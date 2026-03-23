@@ -34,7 +34,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var userId = Guid.NewGuid();
         var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
+        var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
 
         _storageMock.Setup(s => s.UploadAsync(
                 userId,
@@ -69,7 +69,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
         var userId = Guid.Parse(NonExistingUsers.UserId1);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
+        var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
         var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
 
         // Act
@@ -97,7 +97,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var userId = Guid.NewGuid();
         await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
+        var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
 
         _storageMock.Setup(s => s.UploadAsync(
                 It.IsAny<Guid>(),
@@ -126,7 +126,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
     {
         // Arrange
         var stream = new MemoryStream(PhotoTestData.SmallPhotoBytes);
-        string userId = isEmpty ? InvalidIds.EmptyString : ExistingUsers.User1Id;
+        Guid userId = isEmpty ? Guid.Empty : Guid.Parse(ExistingUsers.User1Id);
         var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.SmallPhotoBytes.Length);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
@@ -154,7 +154,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream(PhotoTestData.SmallPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, contentType, PhotoTestData.TestFileName, PhotoTestData.SmallPhotoBytes.Length);
+        var command = new UploadProfilePhotoCommand(userId, stream, contentType, PhotoTestData.TestFileName, PhotoTestData.SmallPhotoBytes.Length);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -174,7 +174,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream(PhotoTestData.SmallPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, size);
+        var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, size);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -195,7 +195,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.NewGuid();
         var stream = new MemoryStream(PhotoTestData.SmallPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, contentType, PhotoTestData.TestFileName, PhotoTestData.SmallPhotoSize);
+        var command = new UploadProfilePhotoCommand(userId, stream, contentType, PhotoTestData.TestFileName, PhotoTestData.SmallPhotoSize);
         var validator = new UploadProfilePhotoCommandValidator(Options.Create(_photoOptions));
 
         // Act
@@ -215,7 +215,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         await Context.SaveChangesAsync();
 
         var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
-        var command = new UploadProfilePhotoCommand(userId.ToString(), stream, PhotoTestData.JpegContentType, "new-photo.jpg", PhotoTestData.ValidPhotoSize);
+        var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, "new-photo.jpg", PhotoTestData.ValidPhotoSize);
 
         _storageMock.Setup(s => s.UploadAsync(
                 It.IsAny<Guid>(),

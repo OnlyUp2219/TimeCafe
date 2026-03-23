@@ -13,7 +13,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenVisitDeleted()
     {
         var visitId = TestData.ExistingVisits.Visit1UserId;
-        var command = new DeleteVisitCommand(visitId.ToString());
+        var command = new DeleteVisitCommand(visitId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = visitId,
@@ -35,7 +35,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenVisitDoesNotExist()
     {
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
-        var command = new DeleteVisitCommand(visitId.ToString());
+        var command = new DeleteVisitCommand(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
@@ -50,7 +50,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
         var visitId = TestData.ExistingVisits.Visit1UserId;
-        var command = new DeleteVisitCommand(visitId.ToString());
+        var command = new DeleteVisitCommand(visitId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = visitId,
@@ -74,7 +74,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var visitId = TestData.ExistingVisits.Visit1UserId;
-        var command = new DeleteVisitCommand(visitId.ToString());
+        var command = new DeleteVisitCommand(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -88,13 +88,11 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "Посещение не найдено")]
-    [InlineData("not-a-guid", false, "Посещение не найдено")]
     [InlineData("00000000-0000-0000-0000-000000000000", false, "Посещение не найдено")]
     [InlineData("11111111-1111-1111-1111-111111111111", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string visitId, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly(string visitIdStr, bool isValid, string? expectedError)
     {
-        var command = new DeleteVisitCommand(visitId);
+        var command = new DeleteVisitCommand(Guid.Parse(visitIdStr));
         var validator = new DeleteVisitCommandValidator();
 
         var result = await validator.ValidateAsync(command);

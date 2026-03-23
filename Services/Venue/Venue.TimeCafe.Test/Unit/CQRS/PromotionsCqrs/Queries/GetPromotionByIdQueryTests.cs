@@ -13,7 +13,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenPromotionFound()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
-        var query = new GetPromotionByIdQuery(promotionId.ToString());
+        var query = new GetPromotionByIdQuery(promotionId);
         var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
@@ -28,7 +28,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenPromotionDoesNotExist()
     {
-        var query = new GetPromotionByIdQuery(TestData.NonExistingIds.NonExistingPromotionIdString);
+        var query = new GetPromotionByIdQuery(TestData.NonExistingIds.NonExistingPromotionId);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
@@ -43,7 +43,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion2Id;
-        var query = new GetPromotionByIdQuery(promotionId.ToString());
+        var query = new GetPromotionByIdQuery(promotionId);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -57,13 +57,11 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "Акция не найдена")]
-    [InlineData("not-a-guid", false, "Акция не найдена")]
     [InlineData("00000000-0000-0000-0000-000000000000", false, "Акция не найдена")]
     [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string promotionId, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly(string promotionIdStr, bool isValid, string? expectedError)
     {
-        var query = new GetPromotionByIdQuery(promotionId);
+        var query = new GetPromotionByIdQuery(Guid.Parse(promotionIdStr));
         var validator = new GetPromotionByIdQueryValidator();
 
         var result = await validator.ValidateAsync(query);

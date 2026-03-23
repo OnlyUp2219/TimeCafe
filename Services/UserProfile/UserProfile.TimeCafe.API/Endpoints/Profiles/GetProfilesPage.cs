@@ -24,6 +24,7 @@ public class GetProfilesPage : ICarterModule
         .WithName("GetProfilesPage")
         .WithSummary("Получить профили с пагинацией")
         .WithDescription("Возвращает страницу профилей с указанными параметрами пагинации.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

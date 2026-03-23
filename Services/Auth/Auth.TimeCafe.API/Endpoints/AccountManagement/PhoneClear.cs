@@ -13,7 +13,8 @@ public class PhoneClear : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new ClearPhoneCommand(userId);
             var result = await sender.Send(command);
@@ -23,6 +24,7 @@ public class PhoneClear : ICarterModule
         .RequireAuthorization()
         .WithName("ClearPhone")
         .WithSummary("Удалить номер телефона")
+        .Produces(200)
         .WithDescription("Удаляет номер телефона и сбрасывает флаг подтверждения для текущего пользователя.");
     }
 }

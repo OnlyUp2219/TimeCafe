@@ -1,6 +1,8 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record SavePhoneRequest(string PhoneNumber);
+public record SavePhoneRequest(
+    /// <example>+79001234567</example>
+    string PhoneNumber);
 
 public class PhoneSave : ICarterModule
 {
@@ -27,6 +29,7 @@ public class PhoneSave : ICarterModule
         .RequireAuthorization()
         .WithName("SavePhone")
         .WithSummary("Сохранить номер телефона")
+        .Produces(200)
         .WithDescription("Сохраняет неподтвержденный номер телефона для текущего пользователя.");
     }
 }

@@ -16,7 +16,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
     [Fact]
     public async Task Query_GetTransactionHistory_Should_ReturnEmpty_WhenNoTransactions()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         GetTransactionHistoryResult result;
         using (var scope = CreateScope())
@@ -35,8 +35,8 @@ public class GetTransactionHistoryQueryTests : IDisposable
     [Fact]
     public async Task Query_GetTransactionHistory_Should_ReturnTransactions_WhenExists()
     {
-        var userId = Defaults.UserId;
-        var userIdGuid = Guid.Parse(userId);
+        var userId = DefaultsGuid.UserId;
+        var userIdGuid = userId;
 
         using (var scope = CreateScope())
         {
@@ -44,19 +44,19 @@ public class GetTransactionHistoryQueryTests : IDisposable
 
             var transaction1 = TransactionModel.CreateDeposit(
                 userIdGuid,
-                Defaults.DefaultAmount,
+                DefaultsGuid.DefaultAmount,
                 TransactionSource.Payment,
-                Guid.Parse(Defaults.PaymentId),
+                DefaultsGuid.PaymentId,
                 comment: "First transaction");
-            transaction1.BalanceAfter = Defaults.DefaultAmount;
+            transaction1.BalanceAfter = DefaultsGuid.DefaultAmount;
 
             var transaction2 = TransactionModel.CreateWithdrawal(
                 userIdGuid,
-                Defaults.SmallAmount,
+                DefaultsGuid.SmallAmount,
                 TransactionSource.Visit,
-                Guid.Parse(Defaults.TariffId),
+                DefaultsGuid.TariffId,
                 comment: "Second transaction");
-            transaction2.BalanceAfter = Defaults.DefaultAmount - Defaults.SmallAmount;
+            transaction2.BalanceAfter = DefaultsGuid.DefaultAmount - DefaultsGuid.SmallAmount;
 
             await repo.CreateAsync(transaction1);
             await repo.CreateAsync(transaction2);
@@ -81,9 +81,9 @@ public class GetTransactionHistoryQueryTests : IDisposable
     [Fact]
     public async Task Query_GetTransactionHistory_Should_RespectPagination()
     {
-        var userId = Defaults.UserId2;
-        var userIdGuid = Guid.Parse(userId);
-        var sourceIds = new[] { Defaults.PaymentId, Defaults.PaymentId2, Defaults.PaymentId3, Defaults.PaymentId4, Defaults.PaymentId5 };
+        var userId = DefaultsGuid.UserId2;
+        var userIdGuid = userId;
+        var sourceIds = new[] { DefaultsGuid.PaymentId, DefaultsGuid.PaymentId2, DefaultsGuid.PaymentId3, DefaultsGuid.PaymentId4, DefaultsGuid.PaymentId5 };
 
         using (var scope = CreateScope())
         {
@@ -93,11 +93,11 @@ public class GetTransactionHistoryQueryTests : IDisposable
             {
                 var transaction = TransactionModel.CreateDeposit(
                     userIdGuid,
-                    Defaults.SmallAmount * (i + 1),
+                    DefaultsGuid.SmallAmount * (i + 1),
                     TransactionSource.Payment,
-                    Guid.Parse(sourceIds[i % sourceIds.Length]),
+                    sourceIds[i % sourceIds.Length],
                     comment: $"Transaction {i + 1}");
-                transaction.BalanceAfter = Defaults.SmallAmount * (i + 1);
+                transaction.BalanceAfter = DefaultsGuid.SmallAmount * (i + 1);
 
                 await repo.CreateAsync(transaction);
             }
@@ -119,9 +119,9 @@ public class GetTransactionHistoryQueryTests : IDisposable
     [Fact]
     public async Task Query_GetTransactionHistory_Should_ReturnSecondPage()
     {
-        var userId = Defaults.UserId3;
-        var userIdGuid = Guid.Parse(userId);
-        var sourceIds = new[] { Defaults.PaymentId, Defaults.PaymentId2, Defaults.PaymentId3, Defaults.PaymentId4, Defaults.PaymentId5 };
+        var userId = DefaultsGuid.UserId3;
+        var userIdGuid = userId;
+        var sourceIds = new[] { DefaultsGuid.PaymentId, DefaultsGuid.PaymentId2, DefaultsGuid.PaymentId3, DefaultsGuid.PaymentId4, DefaultsGuid.PaymentId5 };
 
         using (var scope = CreateScope())
         {
@@ -131,11 +131,11 @@ public class GetTransactionHistoryQueryTests : IDisposable
             {
                 var transaction = TransactionModel.CreateDeposit(
                     userIdGuid,
-                    Defaults.SmallAmount,
+                    DefaultsGuid.SmallAmount,
                     TransactionSource.Payment,
-                    Guid.Parse(sourceIds[i % sourceIds.Length]),
+                    sourceIds[i % sourceIds.Length],
                     comment: $"Transaction {i + 1}");
-                transaction.BalanceAfter = Defaults.SmallAmount * (i + 1);
+                transaction.BalanceAfter = DefaultsGuid.SmallAmount * (i + 1);
 
                 await repo.CreateAsync(transaction);
             }
@@ -160,7 +160,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(InvalidData.EmptyUserId, Page: 1, PageSize: 10));
+        var action = async () => await sender.Send(new GetTransactionHistoryQuery(InvalidDataGuid.EmptyUserId, Page: 1, PageSize: 10));
         await action.Should().ThrowAsync<ValidationException>();
     }
 
@@ -170,7 +170,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(Defaults.UserId, Page: 0, PageSize: 10));
+        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 0, PageSize: 10));
         await action.Should().ThrowAsync<ValidationException>();
     }
 
@@ -180,7 +180,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 0));
+        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 0));
         await action.Should().ThrowAsync<ValidationException>();
     }
 
@@ -190,7 +190,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(Defaults.UserId, Page: 1, PageSize: 101));
+        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 101));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

@@ -4,6 +4,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -26,7 +28,6 @@
 		<PackageReference Include="Scalar.AspNetCore.Microsoft" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		<PackageReference Include="Carter" />
-		<PackageReference Include="Swashbuckle.AspNetCore" />
 
 		<PackageReference Include="Serilog.AspNetCore" />
 		<PackageReference Include="Serilog.Sinks.Async" />
@@ -43,6 +44,10 @@
 		<ProjectReference Include="..\Venue.TimeCafe.Infrastructure\Venue.TimeCafe.Infrastructure.csproj" />
 		<ProjectReference Include="..\Venue.TimeCafe.Application\Venue.TimeCafe.Application.csproj" />
 		<ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\OpenApiTransformers.cs" Link="Extensions\OpenApiTransformers.cs" />
 	</ItemGroup>
 
 </Project>

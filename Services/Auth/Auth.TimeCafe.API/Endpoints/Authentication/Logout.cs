@@ -26,6 +26,7 @@ public class Logout : ICarterModule
             .WithTags("Authentication")
             .WithName("Logout")
             .WithSummary("Выход пользователя и отзыв refresh-токена")
+            .Produces(200)
             .WithDescription("Выход пользователя из системы (v2). Берёт refresh из httpOnly cookie, отзывает и удаляет cookie. Возвращает сообщение и статус отзыва.");
     }
 

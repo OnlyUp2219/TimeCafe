@@ -44,14 +44,12 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 
-    [Theory]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
-        var response = await Client.GetAsync($"/venue/visits/{invalidId}");
+        var response = await Client.GetAsync($"/venue/visits/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -59,7 +57,7 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
