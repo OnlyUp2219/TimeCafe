@@ -30,8 +30,7 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
             .NotNull().WithMessage("Профиль обязателен");
 
         RuleFor(x => x.User.UserId)
-            .NotEmpty().WithMessage("Такого пользователя не существует")
-            .Must(id => id != Guid.Empty).WithMessage("Такого пользователя не существует");
+            .ValidGuidId("Такого пользователя не существует");
 
         RuleFor(x => x.User.FirstName).ValidName("Имя");
 

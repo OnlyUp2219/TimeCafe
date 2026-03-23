@@ -33,6 +33,7 @@ global using Venue.TimeCafe.Application.CQRS.Themes.Queries;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
 global using Venue.TimeCafe.Application.CQRS.Visits.Queries;
 global using Venue.TimeCafe.Application.DependencyInjection;
+global using Venue.TimeCafe.Domain.Enums;
 global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure;
 global using Venue.TimeCafe.Infrastructure.Data;

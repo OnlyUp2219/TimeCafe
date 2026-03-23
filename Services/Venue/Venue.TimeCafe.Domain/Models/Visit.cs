@@ -57,9 +57,3 @@ public class Visit
                 : (decimal)Math.Ceiling(duration) * tariffPricePerMinute;
     }
 }
-
-public enum VisitStatus
-{
-    Active = 1,
-    Completed = 2,
-}

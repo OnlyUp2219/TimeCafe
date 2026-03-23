@@ -37,17 +37,3 @@ public class Profile
     [MaxLength(500)]
     public string? BanReason { get; set; }
 }
-
-public enum Gender : byte
-{
-    NotSpecified = 0,
-    Male = 1,
-    Female = 2
-}
-
-public enum ProfileStatus : byte
-{
-    Pending = 0,
-    Completed = 1,
-    Banned = 2
-}

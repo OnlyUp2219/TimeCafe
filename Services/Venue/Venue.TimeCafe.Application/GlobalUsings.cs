@@ -24,4 +24,5 @@ global using Venue.TimeCafe.Application.Contracts.Services;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
 global using Venue.TimeCafe.Application.DTOs;
 global using Venue.TimeCafe.Application.Mapping;
+global using Venue.TimeCafe.Domain.Enums;
 global using Venue.TimeCafe.Domain.Models;

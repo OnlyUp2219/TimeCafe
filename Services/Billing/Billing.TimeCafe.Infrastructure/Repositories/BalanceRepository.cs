@@ -38,6 +38,8 @@ public class BalanceRepository(
         await _context.SaveChangesAsync(ct);
 
         await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Transactions, ct);
+        await _cache.RemoveByTagAsync(CacheTags.TransactionByUser(balance.UserId), ct);
 
         return balance;
     }

@@ -25,9 +25,7 @@ public class CreateEmptyCommandValidator : AbstractValidator<CreateEmptyCommand>
     public CreateEmptyCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Такого пользователя не существует")
-           .NotNull().WithMessage("Такого пользователя не существует")
-            .Must(x => Guid.TryParse(x, out var guid) && guid != Guid.Empty).WithMessage("Такого пользователя не существует");
+            .ValidEntityId("Такого пользователя не существует");
     }
 }
 

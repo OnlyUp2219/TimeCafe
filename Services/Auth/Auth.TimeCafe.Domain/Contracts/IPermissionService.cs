@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Domain.Permissions;
+namespace Auth.TimeCafe.Domain.Contracts;
 
 public interface IPermissionService
 {

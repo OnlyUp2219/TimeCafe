@@ -4,7 +4,7 @@ global using Billing.TimeCafe.Application.DTOs.Transaction;
 global using Billing.TimeCafe.Application.Services.Payments;
 global using Billing.TimeCafe.Domain.Enums;
 global using Billing.TimeCafe.Domain.Models;
-global using Billing.TimeCafe.Domain.Repositories;
+global using Billing.TimeCafe.Domain.Contracts;
 
 global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Exceptions;

@@ -1,4 +1,4 @@
-namespace Billing.TimeCafe.Domain.Repositories;
+namespace Billing.TimeCafe.Domain.Contracts;
 
 public interface IBalanceRepository
 {

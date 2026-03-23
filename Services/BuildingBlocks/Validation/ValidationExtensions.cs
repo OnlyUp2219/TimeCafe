@@ -117,4 +117,12 @@ public static class ValidationExtensions
         return ruleBuilder
             .MaximumLength(maxLength).WithMessage($"Поле автора не может превышать {maxLength} символов");
     }
+
+    public static IRuleBuilderOptions<T, Guid> ValidGuidId<T>(
+        this IRuleBuilder<T, Guid> ruleBuilder, string message)
+    {
+        return ruleBuilder
+            .NotEmpty().WithMessage(message)
+            .NotEqual(Guid.Empty).WithMessage(message);
+    }
 }
