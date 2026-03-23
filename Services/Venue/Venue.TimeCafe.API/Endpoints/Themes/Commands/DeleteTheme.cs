@@ -16,6 +16,8 @@ public class DeleteTheme : ICarterModule
         .WithName("DeleteTheme")
         .WithSummary("Удалить тему")
         .WithDescription("Удаляет тему оформления по идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

@@ -16,6 +16,8 @@ public class DeleteVisit : ICarterModule
         .WithName("DeleteVisit")
         .WithSummary("Удалить посещение")
         .WithDescription("Удаляет посещение по его идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

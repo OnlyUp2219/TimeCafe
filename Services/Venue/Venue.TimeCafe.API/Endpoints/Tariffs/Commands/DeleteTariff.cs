@@ -16,6 +16,8 @@ public class DeleteTariff : ICarterModule
         .WithName("DeleteTariff")
         .WithSummary("Удалить тариф")
         .WithDescription("Удаляет тариф по идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

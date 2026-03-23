@@ -16,6 +16,8 @@ public class DeleteProfile : ICarterModule
         .WithName("DeleteProfile")
         .WithSummary("Удалить профиль")
         .WithDescription("Удаляет профиль пользователя по UserId.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

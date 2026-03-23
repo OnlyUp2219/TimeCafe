@@ -15,6 +15,7 @@ public class GetAllTariffs : ICarterModule
         .WithName("GetAllTariffs")
         .WithSummary("Получить все тарифы")
         .WithDescription("Возвращает список всех тарифов.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

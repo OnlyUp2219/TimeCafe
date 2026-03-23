@@ -16,8 +16,8 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
     [Fact]
     public async Task Command_InitializeStripePayment_Should_CreatePaymentInStripe_WhenValidRequest()
     {
-        var userId = Defaults.UserId;
-        var amount = Defaults.DefaultAmount;
+        var userId = DefaultsGuid.UserId;
+        var amount = DefaultsGuid.DefaultAmount;
         var returnUrl = StripeTestData.Configuration.DefaultReturnUrl;
 
         InitializeStripePaymentResult result;
@@ -47,7 +47,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var action = async () => await sender.Send(new InitializeStripePaymentCommand(
-            Defaults.UserId,
+            DefaultsGuid.UserId,
             Defaults.BelowMinimumAmount,
             null,
             null));
@@ -58,7 +58,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
     [Fact]
     public async Task Command_InitializeStripePayment_Should_HandleMultiplePaymentsWithRealStripe()
     {
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
 
         InitializeStripePaymentResult result1;
         using (var scope = CreateScope())
@@ -66,7 +66,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result1 = await sender.Send(new InitializeStripePaymentCommand(
                 userId,
-                Defaults.SmallAmount,
+                DefaultsGuid.SmallAmount,
                 null,
                 "First payment"));
         }
@@ -93,8 +93,8 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
     [Fact]
     public async Task Command_InitializeStripePayment_Should_IncludePaymentMetadataInStripe()
     {
-        var userId = Defaults.UserId3;
-        var amount = Defaults.DefaultAmount;
+        var userId = DefaultsGuid.UserId3;
+        var amount = DefaultsGuid.DefaultAmount;
 
         InitializeStripePaymentResult result;
         using (var scope = CreateScope())

@@ -16,6 +16,8 @@ public class EndVisit : ICarterModule
         .WithName("EndVisit")
         .WithSummary("Завершить посещение")
         .WithDescription("Завершает активное посещение и рассчитывает стоимость.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

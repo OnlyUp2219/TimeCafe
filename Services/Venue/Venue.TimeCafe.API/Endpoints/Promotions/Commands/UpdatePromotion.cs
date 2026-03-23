@@ -1,6 +1,18 @@
 namespace Venue.TimeCafe.API.Endpoints.Promotions.Commands;
 
-public record UpdatePromotionRequest(string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive);
+public record UpdatePromotionRequest(
+    /// <example>Летняя акция</example>
+    string Name,
+    /// <example>Скидка 20% на все тарифы в летний период</example>
+    string Description,
+    /// <example>20.0</example>
+    decimal? DiscountPercent,
+    /// <example>2025-06-01T00:00:00+03:00</example>
+    DateTimeOffset ValidFrom,
+    /// <example>2025-08-31T23:59:59+03:00</example>
+    DateTimeOffset ValidTo,
+    /// <example>true</example>
+    bool IsActive);
 
 public class UpdatePromotion : ICarterModule
 {
@@ -19,6 +31,8 @@ public class UpdatePromotion : ICarterModule
         .WithName("UpdatePromotion")
         .WithSummary("Обновить акцию")
         .WithDescription("Обновляет существующую акцию с новыми данными.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

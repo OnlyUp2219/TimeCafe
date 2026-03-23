@@ -1,6 +1,14 @@
 namespace UserProfile.TimeCafe.API.Endpoints.Profiles;
 
-public record CreateProfileRequest(Guid UserId, string FirstName, string LastName, Gender Gender);
+public record CreateProfileRequest(
+    /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+    Guid UserId,
+    /// <example>Иван</example>
+    string FirstName,
+    /// <example>Иванов</example>
+    string LastName,
+    /// <example>Male</example>
+    Gender Gender);
 
 public class CreateProfile : ICarterModule
 {
@@ -18,6 +26,7 @@ public class CreateProfile : ICarterModule
         .WithName("CreateProfile")
         .WithSummary("Создать профиль")
         .WithDescription("Создаёт новый профиль пользователя.")
+        .Produces(201)
         .RequireAuthorization();
     }
 }

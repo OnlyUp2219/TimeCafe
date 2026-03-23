@@ -66,12 +66,10 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 
-    [Theory]
-    [InlineData("invalid-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsEmpty()
     {
-        var response = await Client.DeleteAsync($"/venue/themes/{invalidId}");
+        var response = await Client.DeleteAsync($"/venue/themes/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -82,7 +80,7 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return422_WhenThemeIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

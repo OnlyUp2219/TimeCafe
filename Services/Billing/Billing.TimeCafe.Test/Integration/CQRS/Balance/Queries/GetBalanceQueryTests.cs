@@ -16,12 +16,12 @@ public class GetBalanceQueryTests : IDisposable
     [Fact]
     public async Task Query_GetBalance_Should_CreateBalance_WhenNotExists()
     {
-        var userId = Defaults.UserId3;
+        var userId = DefaultsGuid.UserId3;
 
         using (var scope = CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var before = await db.Balances.FindAsync(Guid.Parse(userId));
+            var before = await db.Balances.FindAsync(userId);
             before.Should().BeNull();
         }
 
@@ -39,19 +39,19 @@ public class GetBalanceQueryTests : IDisposable
 
         using var scope2 = CreateScope();
         var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var created = await db2.Balances.FindAsync(Guid.Parse(userId));
+        var created = await db2.Balances.FindAsync(userId);
         created.Should().NotBeNull();
     }
 
     [Fact]
     public async Task Query_GetBalance_Should_ReturnExistingBalance_WhenExists()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         using (var scope = CreateScope())
         {
             var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = new BalanceModel(userId) { CurrentBalance = Defaults.UpdatedAmount, TotalDeposited = Defaults.UpdatedAmount };
+            var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.UpdatedAmount, TotalDeposited = DefaultsGuid.UpdatedAmount };
             await repo.CreateAsync(balance);
         }
 
@@ -64,8 +64,8 @@ public class GetBalanceQueryTests : IDisposable
 
         result.Success.Should().BeTrue();
         result.Balance.Should().NotBeNull();
-        result.Balance!.CurrentBalance.Should().Be(Defaults.UpdatedAmount);
-        result.Balance.TotalDeposited.Should().Be(Defaults.UpdatedAmount);
+        result.Balance!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
+        result.Balance.TotalDeposited.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class GetBalanceQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetBalanceQuery(InvalidData.EmptyUserId));
+        var action = async () => await sender.Send(new GetBalanceQuery(InvalidDataGuid.EmptyUserId));
         await action.Should().ThrowAsync<ValidationException>();
     }
 

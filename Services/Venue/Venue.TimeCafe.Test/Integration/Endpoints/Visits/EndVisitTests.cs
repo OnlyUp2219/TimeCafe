@@ -7,9 +7,8 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     {
         await ClearDatabaseAndCacheAsync();
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
-        var payload = new { visitId = visit.VisitId };
 
-        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
+        var response = await Client.PostAsync($"/venue/visits/{visit.VisitId}/end", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -30,9 +29,9 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     public async Task Endpoint_EndVisit_Should_Return404_WhenVisitNotFound()
     {
         await ClearDatabaseAndCacheAsync();
-        var payload = new { visitId = TestData.NonExistingIds.NonExistingVisitIdString };
+        var payload = new { };
 
-        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
+        var response = await Client.PostAsync($"/venue/visits/{TestData.NonExistingIds.NonExistingVisitIdString}/end", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -45,16 +44,12 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         }
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_EndVisit_Should_Return422_WhenVisitIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_EndVisit_Should_Return422_WhenVisitIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
-        var payload = new { visitId = invalidId };
 
-        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
+        var response = await Client.PostAsync($"/venue/visits/{Guid.Empty}/end", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -62,7 +57,7 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_EndVisit_Should_Return422_WhenVisitIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_EndVisit_Should_Return422_WhenVisitIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
@@ -72,9 +67,8 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
     {
         await ClearDatabaseAndCacheAsync();
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId, isActive: true);
-        var payload = new { visitId = visit.VisitId };
 
-        var response = await Client.PostAsJsonAsync("/venue/visits/end", payload);
+        var response = await Client.PostAsync($"/venue/visits/{visit.VisitId}/end", null);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {

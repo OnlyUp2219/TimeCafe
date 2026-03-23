@@ -6,7 +6,7 @@ public class AdjustBalanceCommandValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new AdjustBalanceCommandValidator();
-        var cmd = new AdjustBalanceCommand(InvalidData.EmptyUserId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Manual);
+        var cmd = new AdjustBalanceCommand(InvalidDataGuid.EmptyUserId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Manual);
 
         var result = validator.Validate(cmd);
 
@@ -18,8 +18,8 @@ public class AdjustBalanceCommandValidatorTests
     public void Validator_Validate_Should_Fail_WhenAmountNotPositive()
     {
         var validator = new AdjustBalanceCommandValidator();
-        var cmdZero = new AdjustBalanceCommand(Defaults.UserId, 0m, TransactionType.Deposit, TransactionSource.Manual);
-        var cmdNeg = new AdjustBalanceCommand(Defaults.UserId, -1m, TransactionType.Deposit, TransactionSource.Manual);
+        var cmdZero = new AdjustBalanceCommand(DefaultsGuid.UserId, 0m, TransactionType.Deposit, TransactionSource.Manual);
+        var cmdNeg = new AdjustBalanceCommand(DefaultsGuid.UserId, -1m, TransactionType.Deposit, TransactionSource.Manual);
 
         validator.Validate(cmdZero).IsValid.Should().BeFalse();
         validator.Validate(cmdNeg).IsValid.Should().BeFalse();
@@ -30,7 +30,7 @@ public class AdjustBalanceCommandValidatorTests
     {
         var validator = new AdjustBalanceCommandValidator();
         var longComment = new string('x', 501);
-        var cmd = new AdjustBalanceCommand(Defaults.UserId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Manual, Comment: longComment);
+        var cmd = new AdjustBalanceCommand(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Manual, Comment: longComment);
 
         var result = validator.Validate(cmd);
 
@@ -42,7 +42,7 @@ public class AdjustBalanceCommandValidatorTests
     public void Validator_Validate_Should_Pass_WhenValid()
     {
         var validator = new AdjustBalanceCommandValidator();
-        var cmd = new AdjustBalanceCommand(Defaults.UserId, Defaults.SmallAmount, TransactionType.Deposit, TransactionSource.Manual, Comment: "ok");
+        var cmd = new AdjustBalanceCommand(DefaultsGuid.UserId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Manual, Comment: "ok");
 
         var result = validator.Validate(cmd);
 

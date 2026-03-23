@@ -33,13 +33,10 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
     }
 
     [Fact]
-    public async Task Endpoint_DeleteAdditionalInfo_Should_Return404_WhenInvalidGuid()
+    public async Task Endpoint_DeleteAdditionalInfo_Should_Return422_WhenEmptyGuid()
     {
-        // Arrange 
-        var invalidGuid = TestData.InvalidIds.NotAGuid;
-
         // Act
-        var response = await Client.DeleteAsync($"/userprofile/infos/{invalidGuid}");
+        var response = await Client.DeleteAsync($"/userprofile/infos/{Guid.Empty}");
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);

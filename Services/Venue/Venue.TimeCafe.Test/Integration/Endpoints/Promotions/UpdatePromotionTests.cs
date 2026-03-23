@@ -9,7 +9,6 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
-            promotionId = promotion.PromotionId,
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
             discountPercent = promotion.DiscountPercent,
@@ -18,7 +17,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = promotion.IsActive
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/promotions/{promotion.PromotionId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -41,7 +40,6 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            promotionId = TestData.NonExistingIds.NonExistingPromotionId,
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
             discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
@@ -50,7 +48,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -70,7 +68,6 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
-            promotionId = promotion.PromotionId,
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
             discountPercent = promotion.DiscountPercent,
@@ -79,7 +76,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = promotion.IsActive
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/promotions/{promotion.PromotionId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -105,7 +102,6 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent);
         var payload = new
         {
-            promotionId = promotion.PromotionId,
             name = invalidName,
             description = TestData.DefaultValues.DefaultPromotionDescription,
             discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
@@ -114,7 +110,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/promotions/{promotion.PromotionId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -127,16 +123,12 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         }
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("not-a-guid")]
-    [InlineData("123-invalid")]
-    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
         var payload = new
         {
-            promotionId = invalidId,
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
             discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
@@ -145,7 +137,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
             isActive = true
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/promotions", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/promotions/{Guid.Empty}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -153,7 +145,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsInvalid({invalidId})] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_UpdatePromotion_Should_Return422_WhenPromotionIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

@@ -1,6 +1,12 @@
 namespace UserProfile.TimeCafe.API.Endpoints.AdditionalInfos;
 
-public record CreateAdditionalInfoRequest(Guid UserId, string InfoText, string? CreatedBy);
+public record CreateAdditionalInfoRequest(
+    /// <example>550e8400-e29b-41d4-a716-446655440000</example>
+    Guid UserId,
+    /// <example>Предпочитает место у окна</example>
+    string InfoText,
+    /// <example>admin</example>
+    string? CreatedBy);
 
 public class CreateAdditionalInfo : ICarterModule
 {
@@ -18,6 +24,7 @@ public class CreateAdditionalInfo : ICarterModule
         .WithName("CreateAdditionalInfo")
         .WithSummary("Создать запись доп. информации")
         .WithDescription("Создаёт новую запись дополнительной информации для пользователя.")
+        .Produces(201)
         .RequireAuthorization();
     }
 }

@@ -15,7 +15,8 @@ public class PhoneVerify : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new VerifyPhoneCommand(userId, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: true);
             var result = await sender.Send(command);
@@ -25,6 +26,7 @@ public class PhoneVerify : ICarterModule
         })
         .WithName("VerifySmsMock")
         .WithSummary("Mock: проверка SMS-кода для подтверждения телефона")
+        .Produces(200)
         .WithDescription("Тестовый endpoint: проверяет SMS-код для подтверждения телефона без реального взаимодействия с сервисом. Возвращает результат проверки, количество оставшихся попыток и необходимость капчи.");
 
         group.MapPost("verifySMS", async (
@@ -34,7 +36,8 @@ public class PhoneVerify : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new VerifyPhoneCommand(userId, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: false);
             var result = await sender.Send(command);
@@ -44,6 +47,7 @@ public class PhoneVerify : ICarterModule
         })
         .WithName("VerifySms")
         .WithSummary("Проверка SMS-кода для подтверждения телефона")
+        .Produces(200)
         .WithDescription("Проверяет введённый пользователем SMS-код для подтверждения номера телефона. Возвращает результат, количество оставшихся попыток и необходимость капчи.");
     }
 }

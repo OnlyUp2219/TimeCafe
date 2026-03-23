@@ -16,6 +16,8 @@ public class GetThemeById : ICarterModule
         .WithName("GetThemeById")
         .WithSummary("Получить тему по ID")
         .WithDescription("Возвращает тему оформления по её идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

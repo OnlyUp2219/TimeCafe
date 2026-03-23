@@ -1,6 +1,10 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
-public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public record ChangePasswordRequest(
+    /// <example>OldP@ss123</example>
+    string CurrentPassword,
+    /// <example>NewP@ss456</example>
+    string NewPassword);
 
 public sealed class ChangePassword : ICarterModule
 {
@@ -32,6 +36,7 @@ public sealed class ChangePassword : ICarterModule
         .RequireAuthorization()
         .WithName("ChangePassword")
         .WithSummary("Смена пароля текущего пользователя")
+        .Produces(200)
         .WithDescription("Позволяет авторизованному пользователю сменить свой пароль. Требует текущий и новый пароль. Возвращает сообщение об успехе и количество отозванных refresh-токенов.");
     }
 }

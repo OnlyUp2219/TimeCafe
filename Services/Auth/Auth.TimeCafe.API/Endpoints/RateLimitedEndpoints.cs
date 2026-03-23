@@ -16,6 +16,7 @@ public class RateLimitedEndpoints : ICarterModule
         .WithTags("RateLimit")
         .WithName("TestRateLimit")
         .WithSummary("Тестовый эндпоинт для проверки rate limiting")
+        .Produces(200)
         .WithDescription("Возвращает успешный ответ с текущим временем. Применяются лимиты OneRequestPerInterval и MaxRequestPerWindow");
 
         app.MapGet("/api/test-rate-limit2", (
@@ -36,6 +37,7 @@ public class RateLimitedEndpoints : ICarterModule
         .WithTags("RateLimit")
         .WithName("TestRateLimit2")
         .WithSummary("Тестовый эндпоинт для проверки rate limiting с заголовком окна")
+        .Produces(200)
         .WithDescription("Возвращает успешный ответ и добавляет заголовок X-Rate-Limit-Window с интервалом");
 
 
@@ -53,6 +55,7 @@ public class RateLimitedEndpoints : ICarterModule
         .WithTags("Authentication")
         .WithName("Test401")
         .WithSummary("Тестовый эндпоинт для проверки авторизации")
+        .Produces(200)
         .WithDescription("Возвращает информацию о текущем авторизованном пользователе или 401 Unauthorized");
     }
 

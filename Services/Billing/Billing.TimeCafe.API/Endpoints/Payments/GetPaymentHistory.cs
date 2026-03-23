@@ -9,7 +9,7 @@ public class GetPaymentHistory : ICarterModule
     {
         app.MapGet("/payments/history/{userId:guid}", async (
             [FromServices] ISender sender,
-            Guid userId,
+            [FromRoute] Guid userId,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20) =>
         {
@@ -31,7 +31,7 @@ public class GetPaymentHistory : ICarterModule
         .WithName("GetPaymentHistory")
         .WithSummary("История платежей пользователя")
         .WithDescription("Возвращает историю платежей с пагинацией (по 20 по умолчанию, макс 100).")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

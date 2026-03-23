@@ -1,6 +1,12 @@
 namespace Venue.TimeCafe.API.Endpoints.Themes.Commands;
 
-public record CreateThemeRequest(string Name, string? Emoji, string? Colors);
+public record CreateThemeRequest(
+    /// <example>Космос</example>
+    string Name,
+    /// <example>🚀</example>
+    string? Emoji,
+    /// <example>#1a1a2e,#16213e,#0f3460</example>
+    string? Colors);
 
 public class CreateTheme : ICarterModule
 {
@@ -18,6 +24,7 @@ public class CreateTheme : ICarterModule
         .WithName("CreateTheme")
         .WithSummary("Создать тему")
         .WithDescription("Создаёт новую тему оформления для таймкафе.")
+        .Produces(201)
         .RequireAuthorization();
     }
 }

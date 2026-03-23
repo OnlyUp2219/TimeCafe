@@ -18,6 +18,7 @@ public class GetVisitHistory : ICarterModule
         .WithName("GetVisitHistory")
         .WithSummary("Получить историю посещений пользователя")
         .WithDescription("Возвращает историю посещений пользователя с пагинацией.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

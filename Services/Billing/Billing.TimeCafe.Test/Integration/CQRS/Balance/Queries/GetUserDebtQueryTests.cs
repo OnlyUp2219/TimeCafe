@@ -16,13 +16,13 @@ public class GetUserDebtQueryTests : IDisposable
     [Fact]
     public async Task Query_GetUserDebt_Should_CreateBalance_WhenNotExists()
     {
-        var userId = Defaults.UserId3;
+        var userId = DefaultsGuid.UserId3;
 
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var before = await db.Balances.FindAsync(Guid.Parse(userId));
+        var before = await db.Balances.FindAsync(userId);
         before.Should().BeNull();
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
@@ -30,24 +30,24 @@ public class GetUserDebtQueryTests : IDisposable
         result.Success.Should().BeTrue();
         result.Debt.Should().Be(0m);
 
-        var created = await db.Balances.FindAsync(Guid.Parse(userId));
+        var created = await db.Balances.FindAsync(userId);
         created.Should().NotBeNull();
-        created!.UserId.Should().Be(Guid.Parse(userId));
+        created!.UserId.Should().Be(userId);
         created.Debt.Should().Be(0m);
     }
 
     [Fact]
     public async Task Query_GetUserDebt_Should_ReturnDebt_WhenDebtExists()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var balance = await repository.CreateAsync(new BalanceModel(userId));
-        balance.Deposit(Defaults.SmallAmount);
-        balance.Withdraw(Defaults.DefaultAmount);
+        balance.Deposit(DefaultsGuid.SmallAmount);
+        balance.Withdraw(DefaultsGuid.DefaultAmount);
         await repository.UpdateAsync(balance);
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
@@ -59,13 +59,13 @@ public class GetUserDebtQueryTests : IDisposable
     [Fact]
     public async Task Query_GetUserDebt_Should_ReturnZero_WhenNoDebt()
     {
-        var userId = Defaults.UserId2;
+        var userId = DefaultsGuid.UserId2;
 
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var balance = new BalanceModel(userId) { CurrentBalance = Defaults.DefaultAmount };
+        var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
         await repository.CreateAsync(balance);
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
@@ -80,7 +80,7 @@ public class GetUserDebtQueryTests : IDisposable
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetUserDebtQuery(InvalidData.EmptyUserId));
+        var action = async () => await sender.Send(new GetUserDebtQuery(InvalidDataGuid.EmptyUserId));
 
         await action.Should().ThrowAsync<ValidationException>();
     }

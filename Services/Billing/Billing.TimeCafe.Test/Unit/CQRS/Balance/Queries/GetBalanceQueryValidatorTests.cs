@@ -6,7 +6,7 @@ public class GetBalanceQueryValidatorTests
     public void Validator_Validate_Should_Fail_WhenUserIdEmpty()
     {
         var validator = new GetBalanceQueryValidator();
-        var query = new GetBalanceQuery(InvalidData.EmptyUserId);
+        var query = new GetBalanceQuery(InvalidDataGuid.EmptyUserId);
 
         var result = validator.Validate(query);
 
@@ -18,7 +18,7 @@ public class GetBalanceQueryValidatorTests
     public void Validator_Validate_Should_Pass_WhenUserIdValid()
     {
         var validator = new GetBalanceQueryValidator();
-        var query = new GetBalanceQuery(Defaults.UserId);
+        var query = new GetBalanceQuery(DefaultsGuid.UserId);
 
         var result = validator.Validate(query);
 

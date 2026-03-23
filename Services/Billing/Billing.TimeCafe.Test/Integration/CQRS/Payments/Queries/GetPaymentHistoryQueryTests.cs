@@ -5,7 +5,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_ReturnEmptyList_WhenNoPayments()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -23,11 +23,11 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_ReturnAllPayments_WhenExist()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.SmallAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Completed, null);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Failed, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId, DefaultsGuid.SmallAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Completed, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Failed, null);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -45,12 +45,12 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_OnlyReturnUserPayments()
     {
-        var userId1 = Defaults.UserId;
-        var userId2 = Defaults.UserId2;
+        var userId1 = DefaultsGuid.UserId;
+        var userId2 = DefaultsGuid.UserId2;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId1, Defaults.SmallAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId1, Defaults.MediumAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId2, Defaults.LargeAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId1, DefaultsGuid.SmallAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId1, Defaults.MediumAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId2, Defaults.LargeAmount, PaymentStatus.Pending, null);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -67,13 +67,13 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_PaginateCorrectly()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
         const int pageSize = 2;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.SmallAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId, DefaultsGuid.SmallAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Pending, null);
 
         GetPaymentHistoryResult page1;
         using (var scope = CreateScope())
@@ -101,8 +101,8 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_ReturnCorrectPaymentDetails()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
         const decimal amount = 555m;
         const PaymentStatus status = PaymentStatus.Completed;
         const string externalId = "pi_test_external_123";
@@ -127,23 +127,12 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     }
 
     [Fact]
-    public async Task Query_GetPaymentHistory_Should_ReturnError_WhenUserIdInvalid()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery("invalid-guid"));
-
-        await action.Should().ThrowAsync<ValidationException>();
-    }
-
-    [Fact]
     public async Task Query_GetPaymentHistory_Should_ReturnError_WhenUserIdEmpty()
     {
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(""));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Guid.Empty));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -154,7 +143,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 0, 20));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 0, 20));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -165,7 +154,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 1, 0));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 1, 0));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -176,7 +165,7 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
         using var scope = CreateScope();
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-        var action = async () => await sender.Send(new GetPaymentHistoryQuery(Defaults.UserId, 1, 101));
+        var action = async () => await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 1, 101));
 
         await action.Should().ThrowAsync<ValidationException>();
     }
@@ -184,12 +173,12 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_IncludeAllPaymentStatuses()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.SmallAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Completed, null);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Failed, null);
-        await CreatePaymentAsync(Defaults.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Cancelled, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId, DefaultsGuid.SmallAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Completed, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Failed, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Cancelled, null);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -209,10 +198,10 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_IncludeTimestamps()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
 
-        await CreatePaymentAsync(paymentId, userId, Defaults.SmallAmount, PaymentStatus.Completed, null);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.SmallAmount, PaymentStatus.Completed, null);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())
@@ -229,13 +218,13 @@ public class GetPaymentHistoryQueryTests : BasePaymentTest
     [Fact]
     public async Task Query_GetPaymentHistory_Should_HandleLargePageSize()
     {
-        var userId = Defaults.UserId;
+        var userId = DefaultsGuid.UserId;
 
-        await CreatePaymentAsync(Defaults.PaymentId, userId, Defaults.SmallAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Pending, null);
-        await CreatePaymentAsync(Defaults.PaymentId5, userId, Defaults.DefaultAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId, userId, DefaultsGuid.SmallAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId, Defaults.MediumAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, Defaults.LargeAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId4, userId, Defaults.ExtraLargeAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(DefaultsGuid.PaymentId5, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, null);
 
         GetPaymentHistoryResult result;
         using (var scope = CreateScope())

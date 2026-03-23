@@ -16,6 +16,8 @@ public class DeletePromotion : ICarterModule
         .WithName("DeletePromotion")
         .WithSummary("Удалить акцию")
         .WithDescription("Удаляет акцию по её идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

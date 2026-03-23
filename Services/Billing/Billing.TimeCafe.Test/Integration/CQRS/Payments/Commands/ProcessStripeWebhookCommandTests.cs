@@ -5,8 +5,8 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_CompletePayment_WhenCheckoutSessionCompletedEvent()
     {
-        var userId = Defaults.UserId3;
-        var paymentId = Defaults.PaymentId5;
+        var userId = DefaultsGuid.UserId3;
+        var paymentId = DefaultsGuid.PaymentId5;
         const string checkoutSessionId = "cs_test_checkout_session";
         const decimal amount = 250m;
 
@@ -36,10 +36,10 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_CompletePayment_WhenSuccessEvent()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
-        var amount = Defaults.DefaultAmount;
+        var amount = DefaultsGuid.DefaultAmount;
 
         await CreateBalanceAsync(userId);
         await CreatePaymentAsync(paymentId, userId, amount, PaymentStatus.Pending, externalPaymentId);
@@ -68,11 +68,11 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_FailPayment_WhenFailedEvent()
     {
-        var userId = Defaults.UserId2;
-        var paymentId = Defaults.PaymentId2;
+        var userId = DefaultsGuid.UserId2;
+        var paymentId = DefaultsGuid.PaymentId2;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
 
-        await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
 
         var webhook = CreateStripeFailedWebhook(externalPaymentId);
 
@@ -93,11 +93,11 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_CancelPayment_WhenCancelledEvent()
     {
-        var userId = Defaults.UserId3;
-        var paymentId = Defaults.PaymentId3;
+        var userId = DefaultsGuid.UserId3;
+        var paymentId = DefaultsGuid.PaymentId3;
         var externalPaymentId = StripeTestData.PaymentIntents.Secondary;
 
-        await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
 
         var webhook = CreateStripeCancelledWebhook(externalPaymentId);
 
@@ -117,18 +117,18 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_ReturnAlreadyProcessed_WhenPaymentAlreadyCompleted()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
 
         await CreatePaymentAsync(
             paymentId,
             userId,
-            Defaults.DefaultAmount,
+            DefaultsGuid.DefaultAmount,
             PaymentStatus.Completed,
             externalPaymentId);
 
-        var webhook = CreateStripeSuccessWebhook(externalPaymentId, (long)(Defaults.DefaultAmount * 100));
+        var webhook = CreateStripeSuccessWebhook(externalPaymentId, (long)(DefaultsGuid.DefaultAmount * 100));
 
         ProcessStripeWebhookResult result;
         using (var scope = CreateScope())
@@ -144,7 +144,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_ReturnError_WhenPaymentNotFound()
     {
-        var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.NonExistent, (long)(Defaults.DefaultAmount * 100));
+        var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.NonExistent, (long)(DefaultsGuid.DefaultAmount * 100));
 
         ProcessStripeWebhookResult result;
         using (var scope = CreateScope())
@@ -160,11 +160,11 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_IgnoreUnknownEventType()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
 
-        await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, externalPaymentId);
 
         var webhook = new StripeWebhookPayload
         {
@@ -174,7 +174,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
                 Object = new StripePaymentIntentObject
                 {
                     Id = externalPaymentId,
-                    Amount = (long)(Defaults.DefaultAmount * 100),
+                    Amount = (long)(DefaultsGuid.DefaultAmount * 100),
                     Status = StripeTestData.Statuses.Refunded,
                     Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 }
@@ -206,10 +206,10 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_HandleAmountMismatchWarning_ButStillProcess()
     {
-        var userId = Defaults.UserId2;
-        var paymentId = Defaults.PaymentId2;
+        var userId = DefaultsGuid.UserId2;
+        var paymentId = DefaultsGuid.PaymentId2;
         var externalPaymentId = StripeTestData.PaymentIntents.Default;
-        var paymentAmount = Defaults.DefaultAmount;
+        var paymentAmount = DefaultsGuid.DefaultAmount;
         const decimal stripeAmount = 600m;
 
         await CreateBalanceAsync(userId);
@@ -236,7 +236,7 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_SkipProcessingWhenNoWebhookSecret()
     {
-        var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.Default, (long)(Defaults.DefaultAmount * 100));
+        var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.Default, (long)(DefaultsGuid.DefaultAmount * 100));
 
         ProcessStripeWebhookResult result;
         using (var scope = CreateScope())
@@ -252,12 +252,12 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_LinkPaymentByMetadata_WhenExternalIdNotMatched()
     {
-        var userId = Defaults.UserId3;
-        var paymentId = Defaults.PaymentId4;
+        var userId = DefaultsGuid.UserId3;
+        var paymentId = DefaultsGuid.PaymentId4;
         var externalPaymentId = StripeTestData.PaymentIntents.NewExternal;
 
         await CreateBalanceAsync(userId);
-        await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, null);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, null);
 
         var webhook = new StripeWebhookPayload
         {
@@ -267,11 +267,11 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
                 Object = new StripePaymentIntentObject
                 {
                     Id = $"cs_test_{externalPaymentId}",
-                    AmountTotal = (long)(Defaults.DefaultAmount * 100),
+                    AmountTotal = (long)(DefaultsGuid.DefaultAmount * 100),
                     PaymentIntentId = externalPaymentId,
                     Status = "complete",
                     Created = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                    Metadata = new Dictionary<string, string> { { "paymentId", paymentId } }
+                    Metadata = new Dictionary<string, string> { { "paymentId", paymentId.ToString() } }
                 }
             }
         };
@@ -293,14 +293,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     [Fact]
     public async Task Command_ProcessStripeWebhook_Should_UpdateExternalPaymentId_OnSuccess()
     {
-        var userId = Defaults.UserId;
-        var paymentId = Defaults.PaymentId;
+        var userId = DefaultsGuid.UserId;
+        var paymentId = DefaultsGuid.PaymentId;
         var newExternalPaymentId = StripeTestData.PaymentIntents.External;
 
         await CreateBalanceAsync(userId);
-        await CreatePaymentAsync(paymentId, userId, Defaults.DefaultAmount, PaymentStatus.Pending, newExternalPaymentId);
+        await CreatePaymentAsync(paymentId, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Pending, newExternalPaymentId);
 
-        var webhook = CreateStripeSuccessWebhook(newExternalPaymentId, (long)(Defaults.DefaultAmount * 100));
+        var webhook = CreateStripeSuccessWebhook(newExternalPaymentId, (long)(DefaultsGuid.DefaultAmount * 100));
 
         ProcessStripeWebhookResult result;
         using (var scope = CreateScope())

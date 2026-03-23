@@ -7,7 +7,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.Parse(NewProfiles.NewUser1Id);
-        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
+        var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -30,7 +30,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
-        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
+        var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -49,7 +49,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var userId = Guid.Parse(NewProfiles.NewUser2Id);
-        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
+        var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
@@ -71,7 +71,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.Parse(NonExistingUsers.UserId1);
-        var command = new CreateProfileCommand(userId.ToString(), firstName ?? "", ExistingUsers.User1LastName, ExistingUsers.User1Gender);
+        var command = new CreateProfileCommand(userId, firstName ?? "", ExistingUsers.User1LastName, ExistingUsers.User1Gender);
         var validator = new CreateProfileCommandValidator();
 
         // Act
@@ -87,7 +87,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NonExistingUsers.UserId2);
         var command = new CreateProfileCommand(
-            userId.ToString(),
+            userId,
             new string('b', 101),
             new string('c', 101),
             Gender.Male);
@@ -106,7 +106,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.Parse(NewProfiles.NewUser1Id);
-        var command = new CreateProfileCommand(userId.ToString(), ExistingUsers.User1FirstName, ExistingUsers.User1LastName, Gender.Female);
+        var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, Gender.Female);
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act

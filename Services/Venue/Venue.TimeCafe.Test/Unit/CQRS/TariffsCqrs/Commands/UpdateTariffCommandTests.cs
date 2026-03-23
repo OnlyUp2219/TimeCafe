@@ -57,7 +57,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             IsActive = true
         };
         var command = new UpdateTariffCommand(
-            tariffId.ToString(),
+            tariffId,
             TestData.ExistingTariffs.Tariff2Name,
             "Updated",
             TestData.ExistingTariffs.Tariff2PricePerMinute,
@@ -80,7 +80,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     {
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
         var command = new UpdateTariffCommand(
-            tariffId.ToString(),
+            tariffId,
             "Nonexistent",
             "Desc",
             TestData.ExistingTariffs.Tariff1PricePerMinute,
@@ -109,7 +109,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             BillingType = BillingType.PerMinute
         };
         var command = new UpdateTariffCommand(
-            tariffId.ToString(),
+            tariffId,
             TestData.ExistingTariffs.Tariff1Name,
             "Desc",
             TestData.ExistingTariffs.Tariff1PricePerMinute,
@@ -134,7 +134,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     {
         var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new UpdateTariffCommand(
-            tariffId.ToString(),
+            tariffId,
             TestData.ExistingTariffs.Tariff1Name,
             "Desc",
             TestData.ExistingTariffs.Tariff1PricePerMinute,
@@ -154,12 +154,10 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", "Name", "Desc", 10, false, "Тариф не найден")]
-    [InlineData("not-a-guid", "Name", "Desc", 10, false, "Тариф не найден")]
     [InlineData("00000000-0000-0000-0000-000000000000", "Name", "Desc", 10, false, "Тариф не найден")]
-    public async Task Validator_Should_ValidateCorrectly_InvalidTariffId(string tariffId, string? name, string? description, decimal price, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly_InvalidTariffId(string tariffIdStr, string? name, string? description, decimal price, bool isValid, string? expectedError)
     {
-        var command = new UpdateTariffCommand(tariffId, name!, description!, price, BillingType.PerMinute, null, true);
+        var command = new UpdateTariffCommand(Guid.Parse(tariffIdStr), name!, description!, price, BillingType.PerMinute, null, true);
         var validator = new UpdateTariffCommandValidator();
 
         var result = await validator.ValidateAsync(command);
@@ -179,7 +177,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
     [InlineData("Name", "Desc", 10, true, null)]
     public async Task Validator_Should_ValidateCorrectly_FieldValidation(string? name, string? description, decimal price, bool isValid, string? expectedError)
     {
-        var command = new UpdateTariffCommand(Guid.NewGuid().ToString(), name!, description!, price, BillingType.PerMinute, null, true);
+        var command = new UpdateTariffCommand(Guid.NewGuid(), name!, description!, price, BillingType.PerMinute, null, true);
         var validator = new UpdateTariffCommandValidator();
 
         var result = await validator.ValidateAsync(command);
@@ -206,12 +204,12 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
             IsActive = true
         };
         var command = new UpdateTariffCommand(
-            tariffId.ToString(),
+            tariffId,
             TestData.DefaultValues.DefaultTariffName,
             "Desc",
             TestData.DefaultValues.DefaultTariffPrice,
             BillingType.PerMinute,
-            themeId.ToString(),
+            themeId,
             true);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariffDto);

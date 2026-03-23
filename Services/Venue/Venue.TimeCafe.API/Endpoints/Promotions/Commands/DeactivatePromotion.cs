@@ -16,6 +16,8 @@ public class DeactivatePromotion : ICarterModule
         .WithName("DeactivatePromotion")
         .WithSummary("Деактивировать акцию")
         .WithDescription("Деактивирует акцию по её идентификатору.")
+        .Produces(200)
+        .Produces(404)
         .RequireAuthorization();
     }
 }

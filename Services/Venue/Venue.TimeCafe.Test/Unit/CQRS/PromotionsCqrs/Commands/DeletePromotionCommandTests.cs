@@ -13,7 +13,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenPromotionDeleted()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
-        var command = new DeletePromotionCommand(promotionId.ToString());
+        var command = new DeletePromotionCommand(promotionId);
         var promotion = new Promotion(promotionId) { Name = TestData.DefaultValues.DefaultPromotionName, Description = TestData.DefaultValues.DefaultPromotionDescription, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
@@ -28,7 +28,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenPromotionDoesNotExist()
     {
-        var command = new DeletePromotionCommand(TestData.NonExistingIds.NonExistingPromotionIdString);
+        var command = new DeletePromotionCommand(TestData.NonExistingIds.NonExistingPromotionId);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(TestData.NonExistingIds.NonExistingPromotionId, It.IsAny<CancellationToken>())).ReturnsAsync((Promotion?)null);
 
@@ -43,7 +43,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
-        var command = new DeletePromotionCommand(promotionId.ToString());
+        var command = new DeletePromotionCommand(promotionId);
         var promotion = new Promotion(promotionId) { Name = TestData.ExistingPromotions.Promotion1Name, Description = TestData.ExistingPromotions.Promotion1Description, ValidFrom = TestData.DateTimeData.GetValidFromDate(), ValidTo = TestData.DateTimeData.GetValidToDate() };
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
@@ -60,7 +60,7 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
-        var command = new DeletePromotionCommand(promotionId.ToString());
+        var command = new DeletePromotionCommand(promotionId);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -74,13 +74,11 @@ public class DeletePromotionCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "Акция не найдена")]
-    [InlineData("not-a-guid", false, "Акция не найдена")]
     [InlineData("00000000-0000-0000-0000-000000000000", false, "Акция не найдена")]
     [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string promotionId, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly(string promotionIdStr, bool isValid, string? expectedError)
     {
-        var command = new DeletePromotionCommand(promotionId);
+        var command = new DeletePromotionCommand(Guid.Parse(promotionIdStr));
         var validator = new DeletePromotionCommandValidator();
 
         var result = await validator.ValidateAsync(command);

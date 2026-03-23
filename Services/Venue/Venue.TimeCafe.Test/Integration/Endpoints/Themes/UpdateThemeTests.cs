@@ -8,13 +8,12 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Оригинальная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId.ToString(),
             Name = "Обновленная тема",
             Emoji = "🎭",
             Colors = "{\"primary\":\"#00FF00\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{theme.ThemeId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -40,13 +39,12 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     {
         var dto = new
         {
-            ThemeId = TestData.NonExistingIds.NonExistingThemeId.ToString(),
             Name = "Несуществующая тема",
             Emoji = "🚫",
             Colors = "{}"
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{TestData.NonExistingIds.NonExistingThemeId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -68,13 +66,12 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Исходная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId.ToString(),
             Name = "Новое имя",
             Emoji = "🎨",
             Colors = "{\"primary\":\"#FF0000\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{theme.ThemeId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -100,13 +97,12 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Исходная тема");
         var dto = new
         {
-            ThemeId = theme.ThemeId.ToString(),
             Name = invalidName,
             Emoji = "🎨",
             Colors = (string?)null
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{theme.ThemeId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -128,13 +124,12 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var originalTheme = await SeedThemeAsync("Оригинальная тема");
         var dto = new
         {
-            ThemeId = originalTheme.ThemeId.ToString(),
             Name = "Только имя изменилось",
             Emoji = "🆕",
             Colors = "{\"new\":\"colors\"}"
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{originalTheme.ThemeId}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -151,21 +146,17 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("invalid-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsEmpty()
     {
         var dto = new
         {
-            ThemeId = invalidId,
             Name = "Какая-то тема",
             Emoji = "🎨",
             Colors = "{}"
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/themes", dto);
+        var response = await Client.PutAsJsonAsync($"/venue/themes/{Guid.Empty}", dto);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -176,7 +167,7 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsInvalid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_UpdateTheme_Should_Return422_WhenThemeIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

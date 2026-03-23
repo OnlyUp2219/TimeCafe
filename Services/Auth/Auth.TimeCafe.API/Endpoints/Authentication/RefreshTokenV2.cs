@@ -33,6 +33,7 @@ public class RefreshTokenV2 : ICarterModule
         .WithTags("Authentication")
         .WithName("RefreshTokenV2")
         .WithSummary("Обновление access токена через refresh cookie (v2)")
+        .Produces(200)
         .WithDescription("Читает refresh токен из httpOnly cookie, выполняет ротацию, возвращает новый access токен.");
     }
 }

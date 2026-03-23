@@ -17,7 +17,7 @@ public class GetUserDebt : ICarterModule
         .WithName("GetUserDebt")
         .WithSummary("Получить долг пользователя")
         .WithDescription("Возвращает сумму задолженности пользователя.")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

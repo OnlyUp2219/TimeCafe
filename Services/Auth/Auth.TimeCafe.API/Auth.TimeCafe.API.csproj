@@ -4,6 +4,8 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" />
@@ -32,14 +34,8 @@
 		<PackageReference Include="Serilog.Sinks.Debug" />
 		<PackageReference Include="Serilog.Sinks.Elasticsearch" />
 		
-		<PackageReference Include="Swashbuckle.AspNetCore" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Annotations" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Swagger" />
-		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
-
 		<PackageReference Include="Scalar.AspNetCore" />
 		<PackageReference Include="Scalar.AspNetCore.Microsoft" />
-		<PackageReference Include="Scalar.AspNetCore.Swashbuckle" />
 
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 
@@ -60,6 +56,10 @@
 		<ProjectReference Include="..\Auth.TimeCafe.Application\Auth.TimeCafe.Application.csproj" />
 		<ProjectReference Include="..\Auth.TimeCafe.Domain\Auth.TimeCafe.Domain.csproj" />
 		<ProjectReference Include="..\Auth.TimeCafe.Infrastructure\Auth.TimeCafe.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Compile Include="..\..\OpenApiTransformers.cs" Link="Extensions\OpenApiTransformers.cs" />
 	</ItemGroup>
 
 </Project>

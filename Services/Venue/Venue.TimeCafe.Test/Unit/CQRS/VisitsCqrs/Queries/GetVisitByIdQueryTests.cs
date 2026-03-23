@@ -13,7 +13,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenVisitFound()
     {
         var visitId = Guid.NewGuid();
-        var query = new GetVisitByIdQuery(visitId.ToString());
+        var query = new GetVisitByIdQuery(visitId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = visitId,
@@ -36,7 +36,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenVisitDoesNotExist()
     {
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
-        var query = new GetVisitByIdQuery(visitId.ToString());
+        var query = new GetVisitByIdQuery(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
@@ -51,7 +51,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var visitId = Guid.NewGuid();
-        var query = new GetVisitByIdQuery(visitId.ToString());
+        var query = new GetVisitByIdQuery(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -65,13 +65,11 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("not-a-guid", false)]
     [InlineData("00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string visitId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string visitIdStr, bool isValid)
     {
-        var query = new GetVisitByIdQuery(visitId);
+        var query = new GetVisitByIdQuery(Guid.Parse(visitIdStr));
         var validator = new GetVisitByIdQueryValidator();
 
         var result = await validator.ValidateAsync(query);

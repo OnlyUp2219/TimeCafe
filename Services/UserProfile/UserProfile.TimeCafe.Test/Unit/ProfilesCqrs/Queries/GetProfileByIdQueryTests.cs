@@ -10,7 +10,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         var profile = await SeedProfileAsync(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName);
         profile.PhotoUrl = $"profiles/{userId}/photo";
         await Context.SaveChangesAsync();
-        var query = new GetProfileByIdQuery(userId.ToString());
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -31,7 +31,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var query = new GetProfileByIdQuery(userId.ToString());
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -51,7 +51,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var userId = Guid.NewGuid();
-        var query = new GetProfileByIdQuery(userId.ToString());
+        var query = new GetProfileByIdQuery(userId);
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
@@ -70,7 +70,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_FailValidation_WhenUserIdIsEmpty()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(InvalidIds.EmptyString);
+        var query = new GetProfileByIdQuery(Guid.Empty);
         var validator = new GetProfileByIdQueryValidator();
 
         // Act
@@ -84,7 +84,7 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
     public async Task Validator_Should_PassValidation_WhenUserIdIsValid()
     {
         // Arrange
-        var query = new GetProfileByIdQuery(ExistingUsers.User1Id);
+        var query = new GetProfileByIdQuery(Guid.Parse(ExistingUsers.User1Id));
         var validator = new GetProfileByIdQueryValidator();
 
         // Act

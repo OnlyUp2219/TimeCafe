@@ -11,7 +11,6 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var updatedName = TestData.NewTariffs.NewTariff1Name + " - updated";
         var payload = new
         {
-            tariffId = tariff.TariffId,
             name = updatedName,
             description = tariff.Description,
             pricePerMinute = tariff.PricePerMinute,
@@ -21,7 +20,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/tariffs/{tariff.TariffId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -45,7 +44,6 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var theme = await SeedThemeAsync("Тема");
         var payload = new
         {
-            tariffId = TestData.NonExistingIds.NonExistingTariffIdString,
             name = "Несуществующий",
             description = "Описание",
             pricePerMinute = 10m,
@@ -55,7 +53,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -76,7 +74,6 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var payload = new
         {
-            tariffId = tariff.TariffId,
             name = TestData.NewTariffs.NewTariff1Name + " - updated",
             description = tariff.Description,
             pricePerMinute = tariff.PricePerMinute,
@@ -85,7 +82,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             isActive = tariff.IsActive,
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/tariffs/{tariff.TariffId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -112,7 +109,6 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var payload = new
         {
-            tariffId = tariff.TariffId,
             name = invalidName,
             description = "Описание",
             pricePerMinute = 10m,
@@ -122,7 +118,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/tariffs/{tariff.TariffId}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -135,17 +131,13 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 
-    [Theory]
-    //[InlineData("")]
-    [InlineData("not-a-guid")]
-    [InlineData("00000000-0000-0000-0000-000000000000")]
-    public async Task Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsInvalid(string invalidId)
+    [Fact]
+    public async Task Endpoint_UpdateTariff_Should_Return422_WhenTariffIdIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
         var theme = await SeedThemeAsync("Тема");
         var payload = new
         {
-            tariffId = invalidId,
             name = TestData.DefaultValues.DefaultTariffName,
             description = TestData.DefaultValues.DefaultTariffName,
             pricePerMinute = 10m,
@@ -155,7 +147,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             lastModified = DateTimeOffset.UtcNow
         };
 
-        var response = await Client.PutAsJsonAsync("/venue/tariffs", payload);
+        var response = await Client.PutAsJsonAsync($"/venue/tariffs/{Guid.Empty}", payload);
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
@@ -163,7 +155,7 @@ public class UpdateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
         catch (Exception)
         {
-            Console.WriteLine($"Response: {jsonString} ({invalidId})");
+            Console.WriteLine($"Response: {jsonString}");
             throw;
         }
     }

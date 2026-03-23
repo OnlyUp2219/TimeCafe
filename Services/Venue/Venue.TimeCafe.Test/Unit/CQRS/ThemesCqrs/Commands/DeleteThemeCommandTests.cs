@@ -12,7 +12,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnSuccess_WhenThemeDeleted()
     {
-        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id);
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
@@ -26,7 +26,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnNotFound_WhenThemeDoesNotExist()
     {
-        var command = new DeleteThemeCommand(TestData.NonExistingIds.NonExistingThemeId.ToString());
+        var command = new DeleteThemeCommand(TestData.NonExistingIds.NonExistingThemeId);
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.NonExistingIds.NonExistingThemeId), It.IsAny<CancellationToken>())).ReturnsAsync((Theme?)null);
 
@@ -40,7 +40,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ReturnFailed_WhenRepositoryReturnsFalse()
     {
-        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id);
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme1Name };
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
@@ -56,7 +56,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     [Fact]
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
-        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id.ToString());
+        var command = new DeleteThemeCommand(TestData.ExistingThemes.Theme1Id);
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -70,13 +70,11 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false, "Тема не найдена")]
-    [InlineData("invalid-guid", false, "Тема не найдена")]
     [InlineData("00000000-0000-0000-0000-000000000000", false, "Тема не найдена")]
     [InlineData("a1111111-1111-1111-1111-111111111111", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string themeId, bool isValid, string? expectedError)
+    public async Task Validator_Should_ValidateCorrectly(string themeIdStr, bool isValid, string? expectedError)
     {
-        var command = new DeleteThemeCommand(themeId);
+        var command = new DeleteThemeCommand(Guid.Parse(themeIdStr));
         var validator = new DeleteThemeCommandValidator();
 
         var result = await validator.ValidateAsync(command);

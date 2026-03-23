@@ -13,7 +13,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenHistoryFound()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new GetVisitHistoryQuery(userId.ToString(), 1, 10);
+        var query = new GetVisitHistoryQuery(userId, 1, 10);
         var visits = new List<VisitWithTariffDto>
         {
             new() { VisitId = Guid.NewGuid(), UserId = userId, TariffId = Guid.NewGuid(), Status = VisitStatus.Completed },
@@ -33,7 +33,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenNoHistory()
     {
         var userId = TestData.NonExistingIds.NonExistingUserId;
-        var query = new GetVisitHistoryQuery(userId.ToString(), 1, 10);
+        var query = new GetVisitHistoryQuery(userId, 1, 10);
         var visits = new List<VisitWithTariffDto>();
 
         VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>())).ReturnsAsync(visits);
@@ -49,7 +49,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new GetVisitHistoryQuery(userId.ToString(), 1, 10);
+        var query = new GetVisitHistoryQuery(userId, 1, 10);
 
         VisitRepositoryMock.Setup(r => r.GetVisitHistoryByUserAsync(userId, 1, 10, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -63,16 +63,15 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", 1, 10, false)]
-    [InlineData("not-a-guid", 1, 10, false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", 1, 10, false)]
     [InlineData("11111111-1111-1111-1111-111111111111", 0, 10, false)]
     [InlineData("11111111-1111-1111-1111-111111111111", 1, 0, false)]
     [InlineData("11111111-1111-1111-1111-111111111111", 1, 101, false)]
     [InlineData("11111111-1111-1111-1111-111111111111", 1, 10, true)]
     [InlineData("11111111-1111-1111-1111-111111111111", 1, 100, true)]
-    public async Task Validator_Should_ValidateCorrectly(string? userId, int pageNumber, int pageSize, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string userIdStr, int pageNumber, int pageSize, bool isValid)
     {
-        var query = new GetVisitHistoryQuery(userId!, pageNumber, pageSize);
+        var query = new GetVisitHistoryQuery(Guid.Parse(userIdStr), pageNumber, pageSize);
         var validator = new GetVisitHistoryQueryValidator();
 
         var result = await validator.ValidateAsync(query);

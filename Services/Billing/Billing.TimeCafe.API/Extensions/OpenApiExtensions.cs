@@ -1,36 +1,36 @@
+using BuildingBlocks.OpenApi;
+
 namespace Billing.TimeCafe.API.Extensions;
 
 public static class OpenApiExtensions
 {
     public static IServiceCollection AddOpenApiConfiguration(this IServiceCollection services)
     {
-        services.AddSwaggerGen(c =>
+        services.AddOpenApi("v1", options =>
         {
-            var bearerScheme = new OpenApiSecurityScheme
+            options.AddDocumentTransformer((document, _, _) =>
             {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
-                In = ParameterLocation.Header,
-                Description = "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
-            };
+                document.Info = new() { Title = "TimeCafe Billing API", Version = "v1" };
+                return Task.CompletedTask;
+            });
 
-            c.SwaggerDoc("v1", new() { Title = "TimeCafe Billing API", Version = "v1" });
-
-            c.AddSecurityDefinition("Bearer", bearerScheme);
-
+            options.AddBearerSecurityScheme();
+            options.AddStandardResponseCodes();
         });
 
         return services;
     }
 
-    public static WebApplication UseSwaggerDevelopment(this WebApplication app)
+    public static WebApplication UseOpenApiDevelopment(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseScalarConfiguration();
+            app.MapOpenApi();
+            app.MapScalarApiReference(options => options
+                .WithTitle("TimeCafe Billing API")
+                .WithTheme(ScalarTheme.DeepSpace)
+                .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+                .WithOpenApiRoutePattern("/openapi/{documentName}.json"));
         }
 
         return app;

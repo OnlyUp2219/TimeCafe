@@ -18,7 +18,7 @@ public class StripeWebhook : ICarterModule
         .WithName("StripeWebhook")
         .WithSummary("Webhook от Stripe")
         .WithDescription("Обрабатывает события платежей от Stripe")
-        .WithOpenApi()
+        .Produces(200)
         .AllowAnonymous();
     }
 }

@@ -30,7 +30,6 @@ builder.Services.AddAuthorization();
 
 // Swagger & Carter
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiConfiguration();
 builder.Services.AddCarter();
 
@@ -45,7 +44,7 @@ app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSwaggerDevelopment();
+app.UseOpenApiDevelopment();
 
 var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();

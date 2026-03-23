@@ -17,6 +17,7 @@ public class GetTariffsPage : ICarterModule
         .WithName("GetTariffsPage")
         .WithSummary("Получить страницу тарифов")
         .WithDescription("Возвращает страницу тарифов с пагинацией.")
+        .Produces(200)
         .RequireAuthorization();
     }
 }

@@ -13,8 +13,8 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         MapperMock.Setup(m => m.Map(It.IsAny<UpdateVisitCommand>(), It.IsAny<VisitWithTariffDto>()))
             .Callback((UpdateVisitCommand cmd, VisitWithTariffDto dto) =>
             {
-                dto.UserId = Guid.Parse(cmd.UserId);
-                dto.TariffId = Guid.Parse(cmd.TariffId);
+                dto.UserId = cmd.UserId;
+                dto.TariffId = cmd.TariffId;
                 dto.EntryTime = cmd.EntryTime;
                 dto.ExitTime = cmd.ExitTime;
                 dto.CalculatedCost = cmd.CalculatedCost;
@@ -53,9 +53,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         var entryTime = DateTimeOffset.UtcNow;
 
         var command = new UpdateVisitCommand(
-            visitId.ToString(),
-            userId.ToString(),
-            tariffId.ToString(),
+            visitId,
+            userId,
+            tariffId,
             entryTime,
             null,
             null,
@@ -97,9 +97,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         var tariffId = TestData.DefaultValues.DefaultTariffId;
 
         var command = new UpdateVisitCommand(
-            visitId.ToString(),
-            userId.ToString(),
-            tariffId.ToString(),
+            visitId,
+            userId,
+            tariffId,
             DateTimeOffset.UtcNow,
             null,
             null,
@@ -123,9 +123,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         var entryTime = DateTimeOffset.UtcNow;
 
         var command = new UpdateVisitCommand(
-            visitId.ToString(),
-            userId.ToString(),
-            tariffId.ToString(),
+            visitId,
+            userId,
+            tariffId,
             entryTime,
             null,
             null,
@@ -158,9 +158,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
 
         var command = new UpdateVisitCommand(
-            visitId.ToString(),
-            userId.ToString(),
-            tariffId.ToString(),
+            visitId,
+            userId,
+            tariffId,
             DateTimeOffset.UtcNow,
             null,
             null,
@@ -195,9 +195,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
         };
 
         var command = new UpdateVisitCommand(
-            visitId.ToString(),
-            userId.ToString(),
-            tariffId.ToString(),
+            visitId,
+            userId,
+            tariffId,
             entryTime,
             null,
             null,
@@ -214,17 +214,16 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", "", "22222222-2222-2222-2222-222222222222", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "", false)]
-    [InlineData("not-a-guid", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", "11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "00000000-0000-0000-0000-000000000000", "22222222-2222-2222-2222-222222222222", false)]
+    [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", "33333333-3333-3333-3333-333333333333", true)]
-    public async Task Validator_Should_ValidateCorrectly(string visitId, string userId, string tariffId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string visitIdStr, string userIdStr, string tariffIdStr, bool isValid)
     {
         var command = new UpdateVisitCommand(
-            visitId,
-            userId,
-            tariffId,
+            Guid.Parse(visitIdStr),
+            Guid.Parse(userIdStr),
+            Guid.Parse(tariffIdStr),
             DateTimeOffset.UtcNow,
             null,
             null,

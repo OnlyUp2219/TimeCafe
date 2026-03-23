@@ -27,7 +27,7 @@ public class GetBalance : ICarterModule
         .WithName("GetBalance")
         .WithSummary("Получить баланс пользователя")
         .WithDescription("Возвращает текущий баланс, всего пополнено, всего потрачено и долг пользователя.")
-        .WithOpenApi()
+        .Produces(200)
         .RequireAuthorization();
     }
 }

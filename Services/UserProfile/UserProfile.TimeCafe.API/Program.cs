@@ -44,8 +44,7 @@ builder.Services.AddS3(builder.Configuration);
 builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerationService>();
 
 // Swagger & Carter
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerConfiguration();
+builder.Services.AddOpenApiConfiguration();
 builder.Services.AddCarter();
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter()));
@@ -61,8 +60,7 @@ app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Swagger (Development only)
-app.UseSwaggerDevelopment();
+app.UseOpenApiDevelopment();
 
 // Endpoints
 var userProfileGroup = app.MapGroup("/userprofile");

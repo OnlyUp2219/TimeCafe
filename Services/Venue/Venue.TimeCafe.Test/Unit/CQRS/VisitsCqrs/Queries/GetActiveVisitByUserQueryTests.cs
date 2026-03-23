@@ -13,7 +13,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnSuccess_WhenActiveVisitFound()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new GetActiveVisitByUserQuery(userId.ToString());
+        var query = new GetActiveVisitByUserQuery(userId);
         var visitDto = new VisitWithTariffDto
         {
             VisitId = Guid.NewGuid(),
@@ -36,7 +36,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ReturnNotFound_WhenNoActiveVisit()
     {
         var userId = TestData.NonExistingIds.NonExistingUserId;
-        var query = new GetActiveVisitByUserQuery(userId.ToString());
+        var query = new GetActiveVisitByUserQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
@@ -51,7 +51,7 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
-        var query = new GetActiveVisitByUserQuery(userId.ToString());
+        var query = new GetActiveVisitByUserQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.GetActiveVisitByUserAsync(userId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
@@ -65,12 +65,11 @@ public class GetActiveVisitByUserQueryTests : BaseCqrsHandlerTest
     }
 
     [Theory]
-    [InlineData("", false)]
-    [InlineData("not-a-guid", false)]
+    [InlineData("00000000-0000-0000-0000-000000000000", false)]
     [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string? userId, bool isValid)
+    public async Task Validator_Should_ValidateCorrectly(string userIdStr, bool isValid)
     {
-        var query = new GetActiveVisitByUserQuery(userId!);
+        var query = new GetActiveVisitByUserQuery(Guid.Parse(userIdStr));
         var validator = new GetActiveVisitByUserQueryValidator();
 
         var result = await validator.ValidateAsync(query);
