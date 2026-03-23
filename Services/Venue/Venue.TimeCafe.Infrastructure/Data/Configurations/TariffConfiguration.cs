@@ -44,5 +44,9 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
 
         builder.HasIndex(t => t.IsActive);
         builder.HasIndex(t => t.BillingType);
+        builder.HasIndex(t => t.ThemeId);
+        builder.HasIndex(t => t.CreatedAt);
+        builder.HasIndex(t => new { t.IsActive, t.Name });
+        builder.HasIndex(t => new { t.BillingType, t.IsActive, t.PricePerMinute });
     }
 }

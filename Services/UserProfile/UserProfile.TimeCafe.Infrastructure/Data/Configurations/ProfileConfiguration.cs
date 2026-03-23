@@ -38,5 +38,7 @@ public class ProfileConfiguration : IEntityTypeConfiguration<Profile>
 
         builder.Property(e => e.BanReason)
             .HasMaxLength(500);
+
+        builder.HasIndex(e => e.CreatedAt);
     }
 }
