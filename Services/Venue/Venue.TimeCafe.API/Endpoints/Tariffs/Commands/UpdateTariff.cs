@@ -1,22 +1,25 @@
 namespace Venue.TimeCafe.API.Endpoints.Tariffs.Commands;
 
+public record UpdateTariffRequest(string Name, string? Description, decimal PricePerMinute, int BillingType, Guid? ThemeId, bool IsActive);
+
 public class UpdateTariff : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/tariffs", async (
+        app.MapPut("/tariffs/{tariffId:guid}", async (
             [FromServices] ISender sender,
-            [FromBody] UpdateTariffDto dto) =>
+            Guid tariffId,
+            [FromBody] UpdateTariffRequest request) =>
         {
             var command = new UpdateTariffCommand
             (
-                TariffId: dto.TariffId,
-                Name: dto.Name,
-                Description: dto.Description!,
-                PricePerMinute: dto.PricePerMinute,
-                BillingType: (BillingType)dto.BillingType,
-                ThemeId: dto.ThemeId,
-                IsActive: dto.IsActive
+                TariffId: tariffId,
+                Name: request.Name,
+                Description: request.Description!,
+                PricePerMinute: request.PricePerMinute,
+                BillingType: (BillingType)request.BillingType,
+                ThemeId: request.ThemeId,
+                IsActive: request.IsActive
             );
 
             var result = await sender.Send(command);

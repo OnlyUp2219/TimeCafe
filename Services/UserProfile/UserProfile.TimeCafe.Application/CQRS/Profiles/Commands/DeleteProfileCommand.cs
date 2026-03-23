@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record DeleteProfileCommand(string UserId) : IRequest<DeleteProfileResult>;
+public record DeleteProfileCommand(Guid UserId) : IRequest<DeleteProfileResult>;
 
 public record DeleteProfileResult(
     bool Success,
@@ -23,7 +23,7 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
 {
     public DeleteProfileCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
 
     }
 }
@@ -36,13 +36,11 @@ public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : I
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var existing = await _userRepositories.GetProfileByIdAsync(userId, cancellationToken);
+            var existing = await _userRepositories.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (existing == null)
                 return DeleteProfileResult.ProfileNotFound();
 
-            await _userRepositories.DeleteProfileAsync(userId, cancellationToken);
+            await _userRepositories.DeleteProfileAsync(request.UserId, cancellationToken);
             return DeleteProfileResult.DeleteSuccess();
         }
         catch (Exception ex)

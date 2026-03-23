@@ -1,5 +1,7 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
+public record PhoneVerificationRequest(string PhoneNumber, string Code, string? CaptchaToken);
+
 public class PhoneGenerate : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -15,7 +17,8 @@ public class PhoneGenerate : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: true);
             var result = await sender.Send(command);
@@ -35,7 +38,8 @@ public class PhoneGenerate : ICarterModule
         ) =>
         {
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: false);
             var result = await sender.Send(command);

@@ -1,7 +1,7 @@
 
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record CreateEmptyCommand(string UserId) : IRequest<CreateEmptyResult>;
+public record CreateEmptyCommand(Guid UserId) : IRequest<CreateEmptyResult>;
 
 public record CreateEmptyResult(
     bool Success,
@@ -25,7 +25,7 @@ public class CreateEmptyCommandValidator : AbstractValidator<CreateEmptyCommand>
     public CreateEmptyCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .ValidEntityId("Такого пользователя не существует");
+            .ValidGuidEntityId("Такого пользователя не существует");
     }
 }
 
@@ -37,13 +37,11 @@ public class CreateEmptyCommandHandler(IUserRepositories repositories) : IReques
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var existing = await _repositories.GetProfileByIdAsync(userId, cancellationToken);
+            var existing = await _repositories.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (existing != null)
                 return CreateEmptyResult.ProfileAlreadyExists();
 
-            await _repositories.CreateEmptyAsync(userId, cancellationToken);
+            await _repositories.CreateEmptyAsync(request.UserId, cancellationToken);
             return CreateEmptyResult.CreateSuccess();
         }
         catch (Exception ex)

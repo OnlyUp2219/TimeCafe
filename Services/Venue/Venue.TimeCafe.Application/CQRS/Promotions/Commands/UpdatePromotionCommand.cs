@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record UpdatePromotionCommand(string PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive) : IRequest<UpdatePromotionResult>;
+public record UpdatePromotionCommand(Guid PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive) : IRequest<UpdatePromotionResult>;
 
 public record UpdatePromotionResult(
     bool Success,
@@ -24,7 +24,7 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
 {
     public UpdatePromotionCommandValidator()
     {
-        RuleFor(x => x.PromotionId).ValidEntityId("Акция не найдена");
+        RuleFor(x => x.PromotionId).ValidGuidEntityId("Акция не найдена");
 
         RuleFor(x => x.Name).ValidName("Название акции", 200);
 
@@ -44,9 +44,7 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IR
     {
         try
         {
-            var promotionId = Guid.Parse(request.PromotionId);
-
-            var existing = await _repository.GetByIdAsync(promotionId);
+            var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
                 return UpdatePromotionResult.PromotionNotFound();
 

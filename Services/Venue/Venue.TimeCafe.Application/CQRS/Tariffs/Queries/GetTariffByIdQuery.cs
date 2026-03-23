@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
-public record GetTariffByIdQuery(string TariffId) : IRequest<GetTariffByIdResult>;
+public record GetTariffByIdQuery(Guid TariffId) : IRequest<GetTariffByIdResult>;
 
 public record GetTariffByIdResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetTariffByIdQueryValidator : AbstractValidator<GetTariffByIdQuery>
 {
     public GetTariffByIdQueryValidator()
     {
-        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
     }
 }
 
@@ -36,9 +36,7 @@ public class GetTariffByIdQueryHandler(ITariffRepository repository) : IRequestH
     {
         try
         {
-            var tariffId = Guid.Parse(request.TariffId);
-
-            var tariff = await _repository.GetByIdAsync(tariffId);
+            var tariff = await _repository.GetByIdAsync(request.TariffId);
 
             if (tariff == null)
                 return GetTariffByIdResult.TariffNotFound();

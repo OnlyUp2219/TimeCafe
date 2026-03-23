@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetVisitHistoryQuery(string UserId, int PageNumber, int PageSize) : IRequest<GetVisitHistoryResult>;
+public record GetVisitHistoryQuery(Guid UserId, int PageNumber, int PageSize) : IRequest<GetVisitHistoryResult>;
 
 public record GetVisitHistoryResult(
     bool Success,
@@ -21,7 +21,7 @@ public class GetVisitHistoryQueryValidator : AbstractValidator<GetVisitHistoryQu
 {
     public GetVisitHistoryQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
         RuleFor(x => x.PageNumber).ValidPageNumber();
 
@@ -37,9 +37,7 @@ public class GetVisitHistoryQueryHandler(IVisitRepository repository) : IRequest
     {
         try
         {
-            Guid userId = Guid.Parse(request.UserId);
-
-            var visits = await _repository.GetVisitHistoryByUserAsync(userId, request.PageNumber, request.PageSize);
+            var visits = await _repository.GetVisitHistoryByUserAsync(request.UserId, request.PageNumber, request.PageSize);
             return GetVisitHistoryResult.GetSuccess(visits);
         }
         catch (Exception ex)

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record HasActiveVisitQuery(string UserId) : IRequest<HasActiveVisitResult>;
+public record HasActiveVisitQuery(Guid UserId) : IRequest<HasActiveVisitResult>;
 
 public record HasActiveVisitResult(
     bool Success,
@@ -21,9 +21,7 @@ public class HasActiveVisitQueryValidator : AbstractValidator<HasActiveVisitQuer
 {
     public HasActiveVisitQueryValidator()
     {
-        RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("ID пользователя обязателен")
-            .MaximumLength(450).WithMessage("ID пользователя не может превышать 450 символов");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
     }
 }
 
@@ -35,9 +33,7 @@ public class HasActiveVisitQueryHandler(IVisitRepository repository) : IRequestH
     {
         try
         {
-            Guid userId = Guid.Parse(request.UserId);
-
-            var hasActiveVisit = await _repository.HasActiveVisitAsync(userId);
+            var hasActiveVisit = await _repository.HasActiveVisitAsync(request.UserId);
             return HasActiveVisitResult.CheckSuccess(hasActiveVisit);
         }
         catch (Exception ex)

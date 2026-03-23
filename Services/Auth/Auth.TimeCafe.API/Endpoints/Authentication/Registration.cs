@@ -1,14 +1,16 @@
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
+public record RegisterRequest(string Username, string Email, string Password);
+
 public class Registration : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/registerWithUsername", async (
             [FromServices] ISender sender,
-            [FromBody] RegisterDto dto) =>
+            [FromBody] RegisterRequest request) =>
         {
-            var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: true);
+            var command = new RegisterUserCommand(request.Username, request.Email, request.Password, SendEmail: true);
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
@@ -20,9 +22,9 @@ public class Registration : ICarterModule
 
         app.MapPost("/registerWithUsername-mock", async (
             [FromServices] ISender sender,
-            [FromBody] RegisterDto dto) =>
+            [FromBody] RegisterRequest request) =>
         {
-            var command = new RegisterUserCommand(dto.Username, dto.Email, dto.Password, SendEmail: false);
+            var command = new RegisterUserCommand(request.Username, request.Email, request.Password, SendEmail: false);
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, callbackUrl = r.CallbackUrl }));

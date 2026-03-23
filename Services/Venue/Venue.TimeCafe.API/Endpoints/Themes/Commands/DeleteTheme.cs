@@ -4,11 +4,11 @@ public class DeleteTheme : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/themes/{themeId}", async (
+        app.MapDelete("/themes/{themeId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] DeleteThemeDto dto) =>
+            Guid themeId) =>
         {
-            var command = new DeleteThemeCommand(dto.ThemeId);
+            var command = new DeleteThemeCommand(themeId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

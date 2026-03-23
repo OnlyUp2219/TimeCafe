@@ -4,11 +4,11 @@ public class DeleteProfile : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/profiles/{userId}", async (
+        app.MapDelete("/profiles/{userId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] DeleteProfileDto dto) =>
+            Guid userId) =>
         {
-            var command = new DeleteProfileCommand(dto.UserId);
+            var command = new DeleteProfileCommand(userId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

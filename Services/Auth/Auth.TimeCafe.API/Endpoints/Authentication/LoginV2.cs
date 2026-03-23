@@ -1,5 +1,7 @@
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
+public record LoginRequest(string Email, string Password);
+
 public class LoginV2 : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -8,9 +10,9 @@ public class LoginV2 : ICarterModule
             HttpContext context,
             [FromServices] ISender sender,
             [FromServices] IConfiguration configuration,
-            [FromBody] LoginDto dto) =>
+            [FromBody] LoginRequest request) =>
         {
-            var command = new LoginUserCommand(dto.Email, dto.Password);
+            var command = new LoginUserCommand(request.Email, request.Password);
             var result = await sender.Send(command);
 
             return result.ToHttpResultV2(onSuccess: r =>
@@ -18,7 +20,8 @@ public class LoginV2 : ICarterModule
                 if (!r.EmailConfirmed)
                     return Results.Ok(new { emailConfirmed = r.EmailConfirmed });
                 var refreshDaysStr = configuration.GetSection("Jwt")["RefreshTokenExpirationDays"] ?? "30";
-                if (!int.TryParse(refreshDaysStr, out var refreshDays)) refreshDays = 30;
+                if (!int.TryParse(refreshDaysStr, out var refreshDays))
+                    refreshDays = 30;
                 context.Response.Cookies.Append("refresh_token", r.TokensDto!.RefreshToken, new CookieOptions
                 {
                     HttpOnly = true,

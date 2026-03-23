@@ -4,11 +4,11 @@ public class DeactivateTariff : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/tariffs/{tariffId}/deactivate", async (
+        app.MapPost("/tariffs/{tariffId:guid}/deactivate", async (
             [FromServices] ISender sender,
-            [AsParameters] DeactivateTariffDto dto) =>
+            Guid tariffId) =>
         {
-            var command = new DeactivateTariffCommand(dto.TariffId);
+            var command = new DeactivateTariffCommand(tariffId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

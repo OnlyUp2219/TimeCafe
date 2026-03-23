@@ -2,7 +2,7 @@ using UserProfile.TimeCafe.Application.Helpers;
 
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfileByIdQuery(string UserId) : IRequest<GetProfileByIdResult>;
+public record GetProfileByIdQuery(Guid UserId) : IRequest<GetProfileByIdResult>;
 
 public record GetProfileByIdResult(
     bool Success,
@@ -26,7 +26,7 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
 {
     public GetProfileByIdQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
     }
 }
 
@@ -38,8 +38,7 @@ public class GetProfileByIdQueryHandler(IUserRepositories repository) : IRequest
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-            var profile = await _repository.GetProfileByIdAsync(userId, cancellationToken);
+            var profile = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
 
             if (profile == null)
                 return GetProfileByIdResult.ProfileNotFound();

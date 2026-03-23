@@ -4,11 +4,11 @@ public class GetVisitById : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGet("/visits/{VisitId}", async (
+        app.MapGet("/visits/{visitId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] GetVisitByIdDto visitId) =>
+            Guid visitId) =>
         {
-            var query = new GetVisitByIdQuery(visitId.VisitId);
+            var query = new GetVisitByIdQuery(visitId);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visit = r.Visit }));
         })

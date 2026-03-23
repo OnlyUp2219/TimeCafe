@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetVisitByIdQuery(string VisitId) : IRequest<GetVisitByIdResult>;
+public record GetVisitByIdQuery(Guid VisitId) : IRequest<GetVisitByIdResult>;
 
 public record GetVisitByIdResult(
     bool Success,
@@ -24,7 +24,7 @@ public class GetVisitByIdQueryValidator : AbstractValidator<GetVisitByIdQuery>
 {
     public GetVisitByIdQueryValidator()
     {
-        RuleFor(x => x.VisitId).ValidEntityId("Посещение не найдено");
+        RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
     }
 }
 
@@ -36,9 +36,7 @@ public class GetVisitByIdQueryHandler(IVisitRepository repository) : IRequestHan
     {
         try
         {
-            var visitId = Guid.Parse(request.VisitId);
-
-            var visit = await _repository.GetByIdAsync(visitId);
+            var visit = await _repository.GetByIdAsync(request.VisitId);
 
             if (visit == null)
                 return GetVisitByIdResult.VisitNotFound();

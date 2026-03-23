@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record DeleteVisitCommand(string VisitId) : IRequest<DeleteVisitResult>;
+public record DeleteVisitCommand(Guid VisitId) : IRequest<DeleteVisitResult>;
 
 public record DeleteVisitResult(
     bool Success,
@@ -23,7 +23,7 @@ public class DeleteVisitCommandValidator : AbstractValidator<DeleteVisitCommand>
 {
     public DeleteVisitCommandValidator()
     {
-        RuleFor(x => x.VisitId).ValidEntityId("Посещение не найдено");
+        RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
     }
 }
 
@@ -35,13 +35,11 @@ public class DeleteVisitCommandHandler(IVisitRepository repository) : IRequestHa
     {
         try
         {
-            var visitId = Guid.Parse(request.VisitId);
-
-            var existing = await _repository.GetByIdAsync(visitId);
+            var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
                 return DeleteVisitResult.VisitNotFound();
 
-            var result = await _repository.DeleteAsync(visitId);
+            var result = await _repository.DeleteAsync(request.VisitId);
 
             if (!result)
                 return DeleteVisitResult.DeleteFailed();

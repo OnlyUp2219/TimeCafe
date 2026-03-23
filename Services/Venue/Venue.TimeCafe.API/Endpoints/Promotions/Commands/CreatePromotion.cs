@@ -1,14 +1,16 @@
 namespace Venue.TimeCafe.API.Endpoints.Promotions.Commands;
 
+public record CreatePromotionRequest(string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive);
+
 public class CreatePromotion : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapPost("/promotions", async (
             [FromServices] ISender sender,
-            [FromBody] CreatePromotionDto dto) =>
+            [FromBody] CreatePromotionRequest request) =>
         {
-            var command = new CreatePromotionCommand(dto.Name, dto.Description, dto.DiscountPercent, dto.ValidFrom, dto.ValidTo, dto.IsActive);
+            var command = new CreatePromotionCommand(request.Name, request.Description, request.DiscountPercent, request.ValidFrom, request.ValidTo, request.IsActive);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message, promotion = r.Promotion }, statusCode: 201));
         })

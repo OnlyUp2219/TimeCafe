@@ -1,22 +1,31 @@
 namespace UserProfile.TimeCafe.API.Endpoints.Profiles;
 
+public record UpdateProfileRequest(
+    string FirstName,
+    string LastName,
+    string? MiddleName,
+    string? PhotoUrl,
+    DateOnly? BirthDate,
+    Gender Gender);
+
 public class UpdateProfile : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPut("/profiles", async (
+        app.MapPut("/profiles/{userId:guid}", async (
             [FromServices] ISender sender,
-            [FromBody] UpdateProfileDto dto) =>
+            Guid userId,
+            [FromBody] UpdateProfileRequest request) =>
         {
             var profile = new Profile
             {
-                UserId = dto.UserId,
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                MiddleName = dto.MiddleName,
-                PhotoUrl = dto.PhotoUrl,
-                BirthDate = dto.BirthDate,
-                Gender = dto.Gender,
+                UserId = userId,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                MiddleName = request.MiddleName,
+                PhotoUrl = request.PhotoUrl,
+                BirthDate = request.BirthDate,
+                Gender = request.Gender,
                 ProfileStatus = ProfileStatus.Pending
             };
             var command = new UpdateProfileCommand(profile);

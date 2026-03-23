@@ -12,7 +12,6 @@
 		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
-		<PackageReference Include="Swashbuckle.AspNetCore.Filters" />
 		<PackageReference Include="System.Text.Json" />
 	</ItemGroup>
 

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record DeactivateTariffCommand(string TariffId) : IRequest<DeactivateTariffResult>;
+public record DeactivateTariffCommand(Guid TariffId) : IRequest<DeactivateTariffResult>;
 
 public record DeactivateTariffResult(
     bool Success,
@@ -23,7 +23,7 @@ public class DeactivateTariffCommandValidator : AbstractValidator<DeactivateTari
 {
     public DeactivateTariffCommandValidator()
     {
-        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
     }
 }
 
@@ -35,13 +35,11 @@ public class DeactivateTariffCommandHandler(ITariffRepository repository) : IReq
     {
         try
         {
-            var tariffId = Guid.Parse(request.TariffId);
-
-            var existing = await _repository.GetByIdAsync(tariffId);
+            var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
                 return DeactivateTariffResult.TariffNotFound();
 
-            var result = await _repository.DeactivateAsync(tariffId);
+            var result = await _repository.DeactivateAsync(request.TariffId);
 
             if (!result)
                 return DeactivateTariffResult.DeactivateFailed();

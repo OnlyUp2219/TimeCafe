@@ -1,8 +1,8 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
 public record CreateVisitCommand(
-    string UserId,
-    string TariffId,
+    Guid UserId,
+    Guid TariffId,
     int? PlannedMinutes = null,
     bool RequirePositiveBalance = true,
     bool RequireEnoughForPlanned = false) : IRequest<CreateVisitResult>;
@@ -32,9 +32,9 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 {
     public CreateVisitCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
-        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
 
         RuleFor(x => x.PlannedMinutes).ValidPlannedMinutes()
             .When(x => x.PlannedMinutes.HasValue);
@@ -54,17 +54,14 @@ public class CreateVisitCommandHandler(
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-            var tariffId = Guid.Parse(request.TariffId);
-
-            var tariff = await _tariffRepository.GetByIdAsync(tariffId);
+            var tariff = await _tariffRepository.GetByIdAsync(request.TariffId);
             if (tariff == null)
                 return CreateVisitResult.TariffNotFound();
 
             if (request.RequirePositiveBalance || request.RequireEnoughForPlanned)
             {
                 var balanceCheck = await _visitBalancePolicyService.CheckBeforeStartAsync(
-                    userId,
+                    request.UserId,
                     tariff,
                     request.PlannedMinutes,
                     request.RequirePositiveBalance,
@@ -80,8 +77,8 @@ public class CreateVisitCommandHandler(
 
             var visit = new Visit
             {
-                UserId = userId,
-                TariffId = tariffId,
+                UserId = request.UserId,
+                TariffId = request.TariffId,
                 EntryTime = DateTimeOffset.UtcNow,
                 Status = VisitStatus.Active
             };

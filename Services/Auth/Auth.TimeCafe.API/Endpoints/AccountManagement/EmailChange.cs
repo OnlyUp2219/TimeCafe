@@ -1,9 +1,11 @@
-using Auth.TimeCafe.API.DTOs;
 using Auth.TimeCafe.Application.CQRS.Account.Commands;
 
 using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+
+public record ChangeEmailRequest(string NewEmail);
+public record ConfirmChangeEmailRequest(string UserId, string NewEmail, string Token);
 
 public class EmailChange : ICarterModule
 {
@@ -17,7 +19,8 @@ public class EmailChange : ICarterModule
             [FromServices] ISender sender) =>
         {
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: true);
             var result = await sender.Send(command);
@@ -37,7 +40,8 @@ public class EmailChange : ICarterModule
             [FromServices] ISender sender) =>
         {
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: false);
             var result = await sender.Send(command);

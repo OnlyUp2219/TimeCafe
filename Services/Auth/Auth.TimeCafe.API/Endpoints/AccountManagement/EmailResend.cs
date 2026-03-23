@@ -1,5 +1,7 @@
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
+public record ResendConfirmationRequest(string Email);
+
 public class EmailResend : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)

@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record UpdateVisitCommand(string VisitId, string UserId, string TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : IRequest<UpdateVisitResult>;
+public record UpdateVisitCommand(Guid VisitId, Guid UserId, Guid TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : IRequest<UpdateVisitResult>;
 
 public record UpdateVisitResult(
     bool Success,
@@ -27,11 +27,11 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
 {
     public UpdateVisitCommandValidator()
     {
-        RuleFor(x => x.VisitId).ValidEntityId("Посещение не найдено");
+        RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
 
-        RuleFor(x => x.TariffId).ValidEntityId("Тариф не найден");
+        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
 
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
 
         RuleFor(x => x.EntryTime).ValidEntryTime();
 
@@ -54,17 +54,14 @@ public class UpdateVisitCommandHandler(IVisitRepository repository, ITariffRepos
     {
         try
         {
-            var visitId = Guid.Parse(request.VisitId);
-
-            var existing = await _repository.GetByIdAsync(visitId);
+            var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
                 return UpdateVisitResult.VisitNotFound();
 
             var visit = _mapper.Map<Visit>(existing);
             _mapper.Map(request, visit);
 
-            var tariffId = Guid.Parse(request.TariffId);
-            var tariff = await _tariffRepository.GetByIdAsync(tariffId);
+            var tariff = await _tariffRepository.GetByIdAsync(request.TariffId);
             if (tariff == null)
                 return UpdateVisitResult.TariffNotFound();
 

@@ -1,4 +1,3 @@
-using Auth.TimeCafe.API.DTOs;
 using Auth.TimeCafe.Domain.Models;
 
 using Microsoft.AspNetCore.Identity;
@@ -6,6 +5,14 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+
+public record CurrentUserResponse(
+    Guid UserId,
+    string Email,
+    bool EmailConfirmed,
+    string? PhoneNumber,
+    bool PhoneNumberConfirmed
+);
 
 public sealed class CurrentUser : ICarterModule
 {
@@ -19,7 +26,8 @@ public sealed class CurrentUser : ICarterModule
             [FromServices] UserManager<ApplicationUser> userManager) =>
         {
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userId == null) return Results.Unauthorized();
+            if (userId == null)
+                return Results.Unauthorized();
 
             var user = await userManager.FindByIdAsync(userId);
             if (user == null)

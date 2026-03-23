@@ -4,11 +4,11 @@ public class DeleteTariff : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapDelete("/tariffs/{tariffId}", async (
+        app.MapDelete("/tariffs/{tariffId:guid}", async (
             [FromServices] ISender sender,
-            [AsParameters] DeleteTariffDto dto) =>
+            Guid tariffId) =>
         {
-            var command = new DeleteTariffCommand(dto.TariffId);
+            var command = new DeleteTariffCommand(tariffId);
             var result = await sender.Send(command);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
         })

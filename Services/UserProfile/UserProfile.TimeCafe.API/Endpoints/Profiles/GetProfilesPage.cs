@@ -6,9 +6,10 @@ public class GetProfilesPage : ICarterModule
     {
         app.MapGet("/profiles/page", async (
             [FromServices] ISender sender,
-            [AsParameters] GetProfilesPageDto dto) =>
+            [FromQuery] int pageNumber = 1,
+            [FromQuery] int pageSize = 10) =>
         {
-            var query = new GetProfilesPageQuery(dto.PageNumber, dto.PageSize);
+            var query = new GetProfilesPageQuery(pageNumber, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
             {

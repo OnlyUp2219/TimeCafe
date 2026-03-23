@@ -1,6 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 
-public record GetProfilePhotoQuery(string UserId) : IRequest<GetProfilePhotoResult>;
+public record GetProfilePhotoQuery(Guid UserId) : IRequest<GetProfilePhotoResult>;
 
 public record GetProfilePhotoResult(bool Success,
     string? Code = null,
@@ -23,7 +23,7 @@ public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQu
 {
     public GetProfilePhotoQueryValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Такого пользователя не существует");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
     }
 }
 
@@ -34,9 +34,7 @@ public class GetProfilePhotoQueryHandler(IProfilePhotoStorage storage) : IReques
     {
         try
         {
-            var userId = Guid.Parse(request.UserId);
-
-            var data = await _storage.GetAsync(userId, cancellationToken);
+            var data = await _storage.GetAsync(request.UserId, cancellationToken);
             if (data is null)
                 return GetProfilePhotoResult.NotFound();
 

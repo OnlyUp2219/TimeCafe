@@ -5,7 +5,7 @@ public record CreateTariffCommand(
     string? Description,
     decimal PricePerMinute,
     BillingType BillingType,
-    string? ThemeId,
+    Guid? ThemeId,
     bool IsActive = true) : IRequest<CreateTariffResult>;
 
 public record CreateTariffResult(
@@ -39,7 +39,7 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
         RuleFor(x => x.BillingType)
             .IsInEnum().WithMessage("Неверный тип биллинга");
 
-        RuleFor(x => x.ThemeId).ValidOptionalEntityId("Неверный идентификатор темы");
+        RuleFor(x => x.ThemeId).ValidOptionalGuidEntityId("Неверный идентификатор темы");
     }
 }
 
@@ -52,11 +52,9 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
     {
         try
         {
-            Guid? themeId = null;
-            if (!string.IsNullOrWhiteSpace(request.ThemeId))
+            if (request.ThemeId.HasValue)
             {
-                themeId = Guid.Parse(request.ThemeId);
-                var themeExists = await _themeRepository.GetByIdAsync(themeId.Value);
+                var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
                 if (themeExists == null)
                     return CreateTariffResult.ThemeNotFound();
             }
@@ -67,7 +65,7 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
                 Description = request.Description,
                 PricePerMinute = request.PricePerMinute,
                 BillingType = request.BillingType,
-                ThemeId = themeId,
+                ThemeId = request.ThemeId,
                 IsActive = request.IsActive,
             };
 

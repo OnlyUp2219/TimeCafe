@@ -18,20 +18,10 @@ public static class SwaggerExtensions
 
             c.SwaggerDoc("v1", new() { Title = "TimeCafe Auth API", Version = "v1" });
             c.EnableAnnotations();
-            c.ExampleFilters();
 
             c.AddSecurityDefinition("Bearer", bearerScheme);
 
         });
-        services.AddSwaggerExamples();
-        services.AddSwaggerExamplesFromAssemblyOf<RegisterDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<LoginDtoExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ChangePasswordRequestExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ConfirmEmailRequestExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ConfirmChangeEmailRequestExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ChangeEmailRequestExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ResendConfirmationRequestExample>();
-        services.AddSwaggerExamplesFromAssemblyOf<ResetPasswordEmailRequestExample>();
 
         return services;
     }
