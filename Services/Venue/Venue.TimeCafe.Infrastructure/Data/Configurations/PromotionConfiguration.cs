@@ -26,6 +26,9 @@ public class PromotionConfiguration : IEntityTypeConfiguration<Promotion>
             .IsRequired();
 
         builder.HasIndex(p => p.IsActive);
+        builder.HasIndex(p => p.CreatedAt);
         builder.HasIndex(p => new { p.ValidFrom, p.ValidTo });
+        builder.HasIndex(p => new { p.IsActive, p.CreatedAt });
+        builder.HasIndex(p => new { p.IsActive, p.ValidFrom, p.ValidTo, p.DiscountPercent });
     }
 }

@@ -55,6 +55,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasIndex(p => p.ExternalPaymentId);
         builder.HasIndex(p => p.Status);
         builder.HasIndex(p => p.CreatedAt);
+        builder.HasIndex(p => new { p.UserId, p.CreatedAt });
 
         builder.HasOne<Balance>()
             .WithMany()

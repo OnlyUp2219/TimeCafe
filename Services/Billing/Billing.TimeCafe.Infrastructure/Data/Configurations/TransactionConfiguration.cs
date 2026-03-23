@@ -54,6 +54,8 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
             .HasDatabaseName("IX_Transactions_Source_SourceId");
         builder.HasIndex(t => t.CreatedAt);
         builder.HasIndex(t => t.Type);
+        builder.HasIndex(t => new { t.UserId, t.CreatedAt });
+        builder.HasIndex(t => new { t.Source, t.SourceId, t.CreatedAt });
 
         builder.HasOne<Balance>()
             .WithMany()

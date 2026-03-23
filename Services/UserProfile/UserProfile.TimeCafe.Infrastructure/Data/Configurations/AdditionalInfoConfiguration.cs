@@ -25,5 +25,7 @@ public class AdditionalInfoConfiguration : IEntityTypeConfiguration<AdditionalIn
             .WithMany()
             .HasForeignKey(ai => ai.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(e => new { e.UserId, e.CreatedAt });
     }
 }

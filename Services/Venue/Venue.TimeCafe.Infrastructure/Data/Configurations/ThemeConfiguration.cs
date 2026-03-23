@@ -22,5 +22,7 @@ public class ThemeConfiguration : IEntityTypeConfiguration<Theme>
             .WithOne()
             .HasForeignKey(tar => tar.ThemeId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(t => t.Name);
     }
 }
