@@ -76,10 +76,13 @@ public class DeactivateTariffTests(IntegrationApiFactory factory) : BaseEndpoint
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
             var tariffJson = json;
-            if (json.TryGetProperty("tariff", out var t)) tariffJson = t;
+            if (json.TryGetProperty("tariff", out var t))
+                tariffJson = t;
             bool isActive = true;
-            if (tariffJson.TryGetProperty("isActive", out var a)) isActive = a.GetBoolean();
-            else if (tariffJson.TryGetProperty("tariffIsActive", out var ai)) isActive = ai.GetBoolean();
+            if (tariffJson.TryGetProperty("isActive", out var a))
+                isActive = a.GetBoolean();
+            else if (tariffJson.TryGetProperty("tariffIsActive", out var ai))
+                isActive = ai.GetBoolean();
             isActive.Should().BeFalse();
         }
         catch (Exception)
