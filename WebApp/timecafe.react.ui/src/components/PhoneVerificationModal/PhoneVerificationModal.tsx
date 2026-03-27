@@ -1,7 +1,6 @@
 import {type FC, useCallback, useEffect, useRef, useState} from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
-    Body1,
     Button,
     Caption1,
     Dialog,
@@ -10,12 +9,10 @@ import {
     DialogContent,
     DialogSurface,
     DialogTitle,
-    Field,
-    Input,
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {authApi, type PhoneCodeRequest} from "@api/auth/authApi";
+import {type PhoneCodeRequest, useSavePhoneNumberMutation, useVerifyPhoneConfirmationMutation, type SendPhoneResponse} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {handleVerificationError} from "@shared/auth/phoneVerification";
 import {
@@ -26,7 +23,10 @@ import {
 import {validatePhoneNumber} from "@utility/validate";
 import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest.ts";
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
-import {PhoneInput} from "@components/FormFields";
+import {httpClient} from "@api/httpClient";
+import {withRateLimit} from "@utility/rateLimitHelper";
+import {PhoneInputStep} from "./PhoneInputStep";
+import {CodeVerificationStep} from "./CodeVerificationStep";
 
 
 interface PhoneVerificationModalProps {
@@ -79,10 +79,15 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const recaptchaRef = useRef<ReCAPTCHA>(null);
     const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
-    const {countdown, isBlocked, sendRequest} = useRateLimitedRequest(
+    const USE_MOCK_SMS = import.meta.env.VITE_USE_MOCK_SMS === "true";
+    const [savePhoneMutation] = useSavePhoneNumberMutation();
+    const [verifyPhoneMutation] = useVerifyPhoneConfirmationMutation();
+
+    const {countdown, isBlocked, sendRequest} = useRateLimitedRequest<SendPhoneResponse>(
         'sms-verification',
         async () => {
-            return await authApi.sendPhoneConfirmation({phoneNumber: phoneNumberRef.current, code: ""});
+            const endpoint = USE_MOCK_SMS ? "/auth/twilio/generateSMS-mock" : "/auth/twilio/generateSMS";
+            return withRateLimit(() => httpClient.post<SendPhoneResponse>(endpoint, {phoneNumber: phoneNumberRef.current, code: ""}));
         }
     );
 
@@ -162,7 +167,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         phoneNumberRef.current = normalizedPhone;
 
         try {
-            await authApi.savePhoneNumber({phoneNumber: normalizedPhone});
+            await savePhoneMutation({phoneNumber: normalizedPhone}).unwrap();
             onPhoneNumberSaved?.(normalizedPhone);
         } catch (err: unknown) {
             setError(getUserMessageFromUnknown(err) || "Ошибка при сохранении номера телефона.");
@@ -247,7 +252,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                 captchaToken: captchaToken || undefined,
             };
 
-            await authApi.verifyPhoneConfirmation(data);
+            await verifyPhoneMutation(data).unwrap();
 
             resetVerificationState();
             setMockGeneratedCode(null);
@@ -315,79 +320,39 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                     </DialogTitle>
                     <DialogContent>
                         {step === "input" ? (
-                            <>
-                                <Body1 block>
-                                    Введите номер телефона, на который будет отправлен код подтверждения
-                                </Body1>
-                                <PhoneInput
-                                    label="Номер телефона"
-                                    required
-                                    value={phoneNumber}
-                                    onChange={(value) => {
-                                        setPhoneNumber(value);
-                                        setValidationError("");
-                                        setError(null);
-                                    }}
-                                    placeholder="+7 (999) 123-45-67"
-                                    disabled={loading}
-                                    validateOnBlur
-                                    externalError={validationError || error || undefined}
-                                />
-                            </>
+                            <PhoneInputStep
+                                phoneNumber={phoneNumber}
+                                onPhoneChange={(value) => {
+                                    setPhoneNumber(value);
+                                    setValidationError("");
+                                    setError(null);
+                                }}
+                                loading={loading}
+                                externalError={validationError || error || undefined}
+                            />
                         ) : (
-                            <>
-                                <Body1 block>
-                                    Код отправлен на номер <strong>{phoneNumber}</strong>
-                                </Body1>
-                                {mockGeneratedCode && (
-                                    <Caption1 block>
-                                        Mock-режим: код подтверждения — <strong>{mockGeneratedCode}</strong>
-                                    </Caption1>
-                                )}
-                                <Field
-                                    label="Код подтверждения"
-                                    required
-                                    validationMessage={error}
-                                    validationState={error ? "error" : "none"}
-                                    hint={
-                                        remainingAttempts !== null && remainingAttempts > 0
-                                            ? `Введите 6-значный код (осталось попыток: ${remainingAttempts})`
-                                            : "Введите 6-значный код"
-                                    }
-                                >
-                                    <Input
-                                        type="text"
-                                        value={verificationCode}
-                                        onChange={(e) => {
-                                            const val = e.target.value.replace(/\D/g, "").slice(0, 6);
-                                            setVerificationCode(val);
-                                            setError(null);
-                                        }}
-                                        placeholder="000000"
-                                        maxLength={6}
-                                        disabled={loading || attemptsExhausted}
-                                        autoFocus
-                                    />
-                                </Field>
-
-                                {RECAPTCHA_SITE_KEY && requiresCaptcha && (
-                                    <div>
-                                        <ReCAPTCHA
-                                            key={captchaKey}
-                                            ref={recaptchaRef}
-                                            sitekey={RECAPTCHA_SITE_KEY}
-                                            onChange={(token) => setCaptchaToken(token)}
-                                            onExpired={() => setCaptchaToken(null)}
-                                            onErrored={() => {
-                                                setCaptchaToken(null);
-                                                setError("Ошибка загрузки капчи. Попробуйте обновить страницу.");
-                                            }}
-                                        />
-                                    </div>
-                                )}
-
-
-                            </>
+                            <CodeVerificationStep
+                                phoneNumber={phoneNumber}
+                                verificationCode={verificationCode}
+                                onCodeChange={(val) => {
+                                    setVerificationCode(val);
+                                    setError(null);
+                                }}
+                                error={error}
+                                loading={loading}
+                                attemptsExhausted={attemptsExhausted}
+                                remainingAttempts={remainingAttempts}
+                                mockGeneratedCode={mockGeneratedCode}
+                                requiresCaptcha={requiresCaptcha}
+                                captchaKey={captchaKey}
+                                recaptchaRef={recaptchaRef}
+                                recaptchaSiteKey={RECAPTCHA_SITE_KEY}
+                                onCaptchaChange={(token) => setCaptchaToken(token)}
+                                onCaptchaError={() => {
+                                    setCaptchaToken(null);
+                                    setError("Ошибка загрузки капчи. Попробуйте обновить страницу.");
+                                }}
+                            />
                         )}
                     </DialogContent>
 

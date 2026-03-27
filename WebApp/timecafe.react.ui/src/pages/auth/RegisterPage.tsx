@@ -4,8 +4,8 @@ import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {useRegisterMutation} from "@store/api/authApi";
 import {useAppDispatch} from "@store/hooks";
 import {setEmail, setEmailConfirmed} from "@store/authSlice";
 import {normalizeUnknownError} from "@api/errors/normalize";
@@ -18,6 +18,7 @@ export const RegisterPage = () => {
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useAppDispatch();
     const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
+    const [registerUser] = useRegisterMutation();
 
     const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
@@ -41,7 +42,7 @@ export const RegisterPage = () => {
 
         setIsSubmitting(true);
         try {
-            const r = await authApi.registerWithUsername({username: email, email, password});
+            const r = await registerUser({username: email, email, password}).unwrap();
             dispatch(setEmail(email));
             dispatch(setEmailConfirmed(false));
             navigate("/email-pending", {replace: true, state: {mockLink: r.callbackUrl}});

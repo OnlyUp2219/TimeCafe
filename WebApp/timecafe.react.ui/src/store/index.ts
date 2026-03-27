@@ -4,9 +4,7 @@ import uiSlice from "@store/uiSlice";
 import storage from "redux-persist/lib/storage";
 import authSlice from "@store/authSlice";
 import {clearTokens} from "@store/authSlice";
-import profileSlice from "@store/profileSlice";
 import visitSlice from "@store/visitSlice";
-import billingSlice from "@store/billingSlice";
 import {authApi} from "@store/api/authApi";
 import {profileApi} from "@store/api/profileApi";
 import {billingApi} from "@store/api/billingApi";
@@ -15,9 +13,7 @@ import {venueApi} from "@store/api/venueApi";
 const appReducer = combineReducers({
     ui: uiSlice,
     auth: authSlice,
-    profile: profileSlice,
     visit: visitSlice,
-    billing: billingSlice,
     [authApi.reducerPath]: authApi.reducer,
     [profileApi.reducerPath]: profileApi.reducer,
     [billingApi.reducerPath]: billingApi.reducer,

@@ -3,76 +3,66 @@ import {
     Badge,
     Body2,
     Button,
-    Caption1,
     Divider,
     LargeTitle,
-    Subtitle2Stronger,
     Tag,
     Text,
-    Tooltip,
-    Title3,
 } from "@fluentui/react-components";
-import {
-    ArrowTrendingLines20Regular,
-    Clock20Regular,
-    Money20Regular,
-    PersonRegular,
-    Sparkle20Regular,
-} from "@fluentui/react-icons";
+import {Sparkle20Regular} from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
-import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
+import {useAppSelector} from "@store/hooks";
 import vortex from "@assets/vvvortex.svg";
 import repeat from "@assets/rrrepeat (2).svg";
 import surf from "@assets/sssurf.svg";
-import {formatMoneyByN} from "@utility/formatMoney";
-import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {calcVisitEstimate} from "@utility/visitEstimate";
-import {loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
-import {loadBillingOverview, loadBillingTransactions} from "@store/billingSlice";
-import {TransactionType} from "@app-types/billing";
-import {formatRub} from "@utility/formatRub";
+import {VisitStatus} from "@app-types/visit";
+import {TransactionType, type BillingTransaction} from "@app-types/billing";
+import {useGetActiveVisitByUserQuery, useHasActiveVisitQuery} from "@store/api/venueApi";
+import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery} from "@store/api/billingApi";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import {BalanceCard} from "./BalanceCard";
+import {VisitCard} from "./VisitCard";
+import {WeekSpentCard} from "./WeekSpentCard";
+import {ProfileCard} from "./ProfileCard";
+import {QuickActionsCard} from "./QuickActionsCard";
 
 export const HomePage = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
 
     const authEmail = useAppSelector((state) => state.auth.email);
     const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const userId = useAppSelector((state) => state.auth.userId);
     const emailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
     const phoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
-    const profile = useAppSelector((state) => state.profile.data);
-    const visitStatus = useAppSelector((state) => state.visit.status);
-    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
-    const balanceRub = useAppSelector((state) => state.billing.balanceRub);
-    const debtRub = useAppSelector((state) => state.billing.debtRub);
-    const transactions = useAppSelector((state) => state.billing.transactions);
-    const loadingBilling = useAppSelector((state) => state.billing.loading);
+    const {data: profile} = useGetProfileByUserIdQuery(userId!, {skip: !userId});
+
+    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId!, {skip: !userId || !hasActive});
+    const {data: balance, isLoading: loadingBilling} = useGetBalanceQuery(userId!, {skip: !userId});
+    const {data: debtRub = 0} = useGetDebtQuery(userId!, {skip: !userId});
+    const {data: txData} = useGetTransactionHistoryQuery(
+        {userId: userId!, page: 1, pageSize: 100},
+        {skip: !userId},
+    );
+
+    const balanceRub = balance?.currentBalance ?? 0;
+    const transactions: BillingTransaction[] = txData?.transactions ?? [];
+
+    const isActiveVisit = hasActive && activeVisitData?.status === VisitStatus.Active;
+    const startedAtMs = activeVisitData ? Date.parse(activeVisitData.entryTime) : 0;
 
     const [now, setNow] = useState(() => Date.now());
 
     useEffect(() => {
-        if (!userId) return;
-        void dispatch(loadActiveVisitByUser({userId}));
-    }, [dispatch, userId]);
-
-    useEffect(() => {
-        if (!userId) return;
-        void dispatch(loadBillingOverview({userId}));
-        void dispatch(loadBillingTransactions({userId, page: 1, pageSize: 100, append: false}));
-    }, [dispatch, userId]);
-
-    useEffect(() => {
-        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return;
+        if (!isActiveVisit) return;
         const id = window.setInterval(() => setNow(Date.now()), 1000);
         return () => window.clearInterval(id);
-    }, [activeVisit, visitStatus]);
+    }, [isActiveVisit]);
 
     const activeElapsedSeconds = useMemo(() => {
-        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return 0;
-        return Math.max(0, Math.floor((now - activeVisit.startedAtMs) / 1000));
-    }, [activeVisit, now, visitStatus]);
+        if (!isActiveVisit || !startedAtMs) return 0;
+        return Math.max(0, Math.floor((now - startedAtMs) / 1000));
+    }, [isActiveVisit, startedAtMs, now]);
 
     const activeElapsedMinutes = useMemo(
         () => Math.max(1, Math.ceil(activeElapsedSeconds / 60)),
@@ -80,13 +70,13 @@ export const HomePage = () => {
     );
 
     const activeEstimate = useMemo(() => {
-        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return null;
+        if (!isActiveVisit || !activeVisitData) return null;
         return calcVisitEstimate(
             activeElapsedMinutes,
-            activeVisit.tariff.billingType,
-            activeVisit.tariff.pricePerMinute
+            activeVisitData.tariffBillingType,
+            activeVisitData.tariffPricePerMinute
         );
-    }, [activeElapsedMinutes, activeVisit, visitStatus]);
+    }, [activeElapsedMinutes, activeVisitData, isActiveVisit]);
 
     const displayName = useMemo(() => {
         const firstName = profile?.firstName?.trim();
@@ -101,7 +91,7 @@ export const HomePage = () => {
         fromDate.setHours(0, 0, 0, 0);
         fromDate.setDate(fromDate.getDate() - 6);
 
-        return transactions.reduce((acc, transaction) => {
+        return transactions.reduce((acc: number, transaction: BillingTransaction) => {
             const created = new Date(transaction.createdAt);
             if (Number.isNaN(created.getTime()) || created < fromDate) {
                 return acc;
@@ -204,199 +194,40 @@ export const HomePage = () => {
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        <HoverTiltCard className="flex flex-col justify-between">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <div className="flex items-center gap-2">
-                                        <Money20Regular/>
-                                        <Subtitle2Stronger>Баланс</Subtitle2Stronger>
-                                    </div>
-                                    {loadingBilling && <Badge appearance="tint">Загрузка</Badge>}
-                                </div>
-                                <Divider className="divider grow-0"/>
-                            </div>
+                        <BalanceCard
+                            balanceRub={balanceRub}
+                            debtRub={debtRub}
+                            loading={loadingBilling}
+                            onNavigate={() => navigate("/billing")}
+                        />
 
-                            <div className="flex items-end justify-between gap-3 flex-wrap">
-                                <div className="flex flex-col gap-1">
-                                    <Title3>{formatRub(balanceRub, 0)}</Title3>
-                                    <Caption1>
-                                        {debtRub > 0
-                                            ? `Есть задолженность: ${formatRub(debtRub, 0)}`
-                                            : "Доступно для оплаты визитов"}
-                                    </Caption1>
-                                </div>
-                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
-                                    Открыть биллинг
-                                </Button>
-                            </div>
-                        </HoverTiltCard>
+                        <VisitCard
+                            isActive={!!isActiveVisit}
+                            elapsedSeconds={activeElapsedSeconds}
+                            estimateTotal={activeEstimate?.total ?? null}
+                            visitInfo={isActiveVisit && activeVisitData ? "Визит идёт" : "Нет активного визита"}
+                            onNavigateVisit={() => navigate(isActiveVisit ? "/visit/active" : "/visit/start")}
+                            onNavigateBilling={() => navigate("/billing")}
+                        />
 
-                        <HoverTiltCard className="flex flex-col justify-between">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <div className="flex items-center gap-2">
-                                        <Clock20Regular/>
-                                        <Subtitle2Stronger>Визит</Subtitle2Stronger>
-                                    </div>
-                                    <Tag size="small" appearance={visitStatus === VisitUiStatus.Active ? "brand" : "outline"}>
-                                        {visitStatus === VisitUiStatus.Active ? "Активен" : "Нет визита"}
-                                    </Tag>
-                                </div>
-                                <Divider className="divider grow-0"/>
-                            </div>
-
-                            <div className="flex flex-row justify-between gap-4 flex-wrap">
-                                <div className="flex flex-col gap-1">
-                                    <Caption1>Длительность</Caption1>
-                                    <Title3>
-                                        {visitStatus === VisitUiStatus.Active && activeVisit
-                                            ? formatDurationSeconds(activeElapsedSeconds)
-                                            : "—:—"}
-                                    </Title3>
-                                </div>
-                                <div className="flex flex-col gap-1 text-right">
-                                    <Caption1>Оценка</Caption1>
-                                    <Title3>
-                                        {visitStatus === VisitUiStatus.Active && activeEstimate
-                                            ? formatMoneyByN(activeEstimate.total)
-                                            : "— ₽"}
-                                    </Title3>
-                                </div>
-                            </div>
-
-                            <Caption1>
-                                {visitStatus === VisitUiStatus.Active && activeVisit
-                                    ? "Визит идёт"
-                                    : "Нет активного визита"}
-                            </Caption1>
-
-                            <div className="flex flex-col gap-2 lg:flex-row">
-                                <Tooltip
-                                    content={visitStatus === VisitUiStatus.Active ? "Перейти к активному визиту" : "Начать визит"}
-                                    relationship="label"
-                                >
-                                    <Button
-                                        appearance="primary"
-                                        data-testid="home-visit-action"
-                                        onClick={() =>
-                                            navigate(visitStatus === VisitUiStatus.Active ? "/visit/active" : "/visit/start")
-                                        }
-                                    >
-                                        <Text truncate wrap={false}>
-                                            {visitStatus === VisitUiStatus.Active ? "Открыть" : "Начать"}
-                                        </Text>
-                                    </Button>
-                                </Tooltip>
-
-                                <Tooltip content="Открыть биллинг" relationship="label">
-                                    <span>
-                                        <Button appearance="secondary" onClick={() => navigate("/billing")}>
-                                            <Text truncate wrap={false}>История операций</Text>
-                                        </Button>
-                                    </span>
-                                </Tooltip>
-                            </div>
-                        </HoverTiltCard>
-
-                        <HoverTiltCard className="flex flex-col justify-between">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <div className="flex items-center gap-2">
-                                        <ArrowTrendingLines20Regular/>
-                                        <Subtitle2Stronger>Неделя</Subtitle2Stronger>
-                                    </div>
-                                </div>
-                                <Divider className="divider grow-0"/>
-                            </div>
-
-                            <div className="flex flex-col gap-1">
-                                <Title3>{formatRub(weekSpentRub, 0)}</Title3>
-                                <Caption1>Расходы за последние 7 дней</Caption1>
-                            </div>
-                            <div className="mt-4">
-                                <Button appearance="secondary" className="w-full" onClick={() => navigate("/billing")}>
-                                    Перейти в биллинг
-                                </Button>
-                            </div>
-                        </HoverTiltCard>
+                        <WeekSpentCard
+                            spent={weekSpentRub}
+                            onNavigate={() => navigate("/billing")}
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                        <HoverTiltCard className="flex flex-col justify-between lg:col-span-7">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-2 flex-wrap justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <PersonRegular/>
-                                        <Subtitle2Stronger>Профиль</Subtitle2Stronger>
-                                    </div>
-                                    <Tag appearance={profile ? "brand" : "outline"}>
-                                        {profile ? "Заполнен" : "Не заполнен"}
-                                    </Tag>
-                                </div>
-                                <Divider className="divider grow-0"/>
-                            </div>
+                        <ProfileCard
+                            profile={profile}
+                            email={profileEmail}
+                            phone={profilePhone}
+                            onNavigate={() => navigate("/personal-data")}
+                        />
 
-                            {profile ? (
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    <div className="flex flex-col gap-1 min-w-0">
-                                        <Caption1>ФИО</Caption1>
-                                        <Title3>{`${profile.lastName} ${profile.firstName}${profile.middleName ? ` ${profile.middleName}` : ""}`}</Title3>
-                                    </div>
-                                    <div className="flex flex-col gap-1 sm:text-right min-w-0">
-                                        <Caption1>Контакты</Caption1>
-                                        <Body2>{profileEmail}</Body2>
-                                        <Caption1>
-                                            {profilePhone}
-                                        </Caption1>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-2">
-                                    <Body2>
-                                        Заполните профиль, чтобы продолжить пользовательский сценарий.
-                                    </Body2>
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:flex-nowrap sm:min-w-0">
-                                        <Button appearance="primary" onClick={() => navigate("/personal-data")}>
-                                            <Text truncate wrap={false}>
-                                                Заполнить профиль
-                                            </Text>
-                                        </Button>
-                                        <Button appearance="secondary" onClick={() => navigate("/home")}>
-                                            Обновить
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </HoverTiltCard>
-
-                        <HoverTiltCard className="flex flex-col justify-between lg:col-span-5">
-                            <div className="flex flex-col gap-4">
-                                <div className="flex items-center gap-2 flex-wrap justify-between">
-                                    <Subtitle2Stronger>Быстрые действия</Subtitle2Stronger>
-                                    <Tag appearance="outline">Shortcuts</Tag>
-                                </div>
-                                <Divider className="divider grow-0"/>
-                            </div>
-
-                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                <Button appearance="primary" onClick={() => navigate("/personal-data")}>
-                                    <Text truncate wrap={false}>
-                                        Профиль
-                                    </Text>
-                                </Button>
-                                <Button appearance="secondary" onClick={() => navigate("/personal-data")}>
-                                    Безопасность
-                                </Button>
-                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
-                                    <Text truncate wrap={false}>
-                                        Баланс
-                                    </Text>
-                                </Button>
-                                <Button appearance="secondary" onClick={() => navigate("/billing")}>
-                                    Операции
-                                </Button>
-                            </div>
-                        </HoverTiltCard>
+                        <QuickActionsCard
+                            onNavigateProfile={() => navigate("/personal-data")}
+                            onNavigateBilling={() => navigate("/billing")}
+                        />
                     </div>
                 </div>
             </div>

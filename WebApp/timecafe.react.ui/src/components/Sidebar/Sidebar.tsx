@@ -11,9 +11,10 @@ import {
 import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
-import {VisitUiStatus} from "@store/visitSlice";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {type FC, useCallback, useEffect, useState} from "react";
+import {useHasActiveVisitQuery} from "@store/api/venueApi";
+import {selectUserId} from "@store/authSlice";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -22,7 +23,8 @@ export const Sidebar: FC = () => {
 
     const dispatch = useAppDispatch();
     const isOpen = useAppSelector((state) => state.ui.isSideBarOpen);
-    const visitStatus = useAppSelector((state) => state.visit.status);
+    const userId = useAppSelector(selectUserId);
+    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
     const location = useLocation();
 
     useEffect(() => {
@@ -37,7 +39,7 @@ export const Sidebar: FC = () => {
                 dispatch(setSelectedNav("1"));
             }
         }
-    }, [location, visitStatus]);
+    }, [location, hasActive]);
 
 
     const handleOpenChange = (open: boolean) => {
@@ -73,7 +75,7 @@ export const Sidebar: FC = () => {
     };
     const navigate = useNavigate();
 
-    const visitNav = visitStatus === VisitUiStatus.Active
+    const visitNav = hasActive
         ? {id: "3", label: "Активный визит", path: "/visit/active"}
         : {id: "3", label: "Начать визит", path: "/visit/start"};
 

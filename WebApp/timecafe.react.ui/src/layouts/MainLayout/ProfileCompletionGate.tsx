@@ -3,22 +3,14 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {
-    Body1,
     Button,
-    Caption1,
     Dialog,
     DialogActions,
     DialogBody,
     DialogContent,
     DialogSurface,
     DialogTitle,
-    Field,
-    Input,
-    Radio,
-    RadioGroup,
-    Spinner,
 } from "@fluentui/react-components";
-import {fetchProfileByUserId, resetProfile, updateProfile} from "@store/profileSlice";
 import {isNameCompleted} from "@utility/profileCompletion";
 import {getJwtInfo} from "@shared/auth/jwt";
 import {
@@ -29,7 +21,6 @@ import {
     setRole,
     setUserId
 } from "@store/authSlice";
-import {DateInput, PhoneInput} from "@components/FormFields";
 import {Gender} from "@app-types/profile";
 import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
 import {
@@ -40,12 +31,16 @@ import {
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {validatePhoneNumber} from "@utility/validate";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {authApi} from "@api/auth/authApi";
+import {useLazyGetCurrentUserQuery} from "@store/api/authApi";
+import {useGetProfileByUserIdQuery, useUpdateProfileMutation} from "@store/api/profileApi";
 import {normalizeDate} from "@utility/normalizeDate";
+import {GateStatusContent} from "./GateStatusContent";
+import {ProfileGateForm} from "./ProfileGateForm";
 
 export const ProfileCompletionGate: FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [getCurrentUser] = useLazyGetCurrentUserQuery();
 
     const handleLogout = () => {
         dispatch(clearTokens() as never);
@@ -55,11 +50,6 @@ export const ProfileCompletionGate: FC = () => {
     const accessToken = useAppSelector((state) => state.auth.accessToken);
     const userId = useAppSelector((state) => state.auth.userId);
 
-    const profile = useAppSelector((state) => state.profile.data);
-    const profileLoading = useAppSelector((state) => state.profile.loading);
-    const profileSaving = useAppSelector((state) => state.profile.saving);
-    const profileError = useAppSelector((state) => state.profile.error);
-    const profileLoadedUserId = useAppSelector((state) => state.profile.loadedUserId);
     const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
 
@@ -67,8 +57,6 @@ export const ProfileCompletionGate: FC = () => {
         PHONE_VERIFICATION_SESSION_KEY,
         isPhoneVerificationSessionV1
     );
-
-    const requestedProfileUserIdRef = useRef<string | null>(null);
 
     const derivedAuthInfo = useMemo(() => {
         if (!accessToken) return null;
@@ -91,48 +79,20 @@ export const ProfileCompletionGate: FC = () => {
         if (derivedAuthInfo?.email) dispatch(setEmail(derivedAuthInfo.email) as never);
     }, [accessToken, derivedAuthInfo, dispatch, userId]);
 
+    const {
+        data: profile,
+        isLoading: profileLoading,
+        error: profileQueryError,
+        isFetching: profileFetching,
+        refetch: refetchProfile,
+    } = useGetProfileByUserIdQuery(effectiveUserId, {skip: !effectiveUserId});
 
-    useEffect(() => {
-        if (!accessToken) {
-            requestedProfileUserIdRef.current = null;
-            void dispatch(resetProfile() as never);
-            return;
-        }
-
-        if (!effectiveUserId) {
-            requestedProfileUserIdRef.current = null;
-            return;
-        }
-
-        if (profile && !profileLoadedUserId) {
-            requestedProfileUserIdRef.current = null;
-            void dispatch(resetProfile() as never);
-            return;
-        }
-
-        if (profileLoadedUserId && profileLoadedUserId !== effectiveUserId) {
-            requestedProfileUserIdRef.current = null;
-            void dispatch(resetProfile() as never);
-        }
-
-        if (requestedProfileUserIdRef.current !== effectiveUserId) {
-            requestedProfileUserIdRef.current = null;
-        }
-    }, [accessToken, dispatch, effectiveUserId, profile, profileLoadedUserId]);
-
-    useEffect(() => {
-        if (!effectiveUserId) return;
-        if (profileLoading) return;
-        if (profileError) return;
-        if (requestedProfileUserIdRef.current === effectiveUserId) return;
-
-        requestedProfileUserIdRef.current = effectiveUserId;
-        void dispatch(fetchProfileByUserId({userId: effectiveUserId}) as never);
-    }, [dispatch, effectiveUserId, profileError, profileLoading]);
+    const profileError = profileQueryError ? getUserMessageFromUnknown(profileQueryError) : null;
+    const [updateProfileMutation, {isLoading: profileSaving}] = useUpdateProfileMutation();
 
     const [loadingTimedOut, setLoadingTimedOut] = useState(false);
     useEffect(() => {
-        if (!profileLoading) {
+        if (!profileFetching) {
             setLoadingTimedOut(false);
             return;
         }
@@ -142,7 +102,7 @@ export const ProfileCompletionGate: FC = () => {
         const timeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed : 15000;
         const timer = window.setTimeout(() => setLoadingTimedOut(true), timeoutMs + 1500);
         return () => window.clearTimeout(timer);
-    }, [profileLoading]);
+    }, [profileFetching]);
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -167,26 +127,19 @@ export const ProfileCompletionGate: FC = () => {
         setShowPhoneModal(true);
     }, [accessToken, loadPhoneSession, showPhoneModal]);
 
-    const isProfileForCurrentUser = useMemo(() => {
-        if (!profile) return false;
-        if (!effectiveUserId) return false;
-        return profileLoadedUserId === effectiveUserId;
-    }, [effectiveUserId, profile, profileLoadedUserId]);
-
     const gateDecisionReady = useMemo(() => {
         if (!accessToken) return false;
         if (!effectiveUserId) return true;
         if (profileLoading) return false;
         if (profileError && !profile) return true;
-        return isProfileForCurrentUser;
-    }, [accessToken, effectiveUserId, isProfileForCurrentUser, profile, profileError, profileLoading]);
+        return !!profile;
+    }, [accessToken, effectiveUserId, profile, profileError, profileLoading]);
 
     const mustCompleteProfile = useMemo(() => {
         if (!accessToken) return false;
         if (!gateDecisionReady) return false;
         if (!effectiveUserId) return true;
         if (profileError && !profile) return true;
-        if (!isProfileForCurrentUser) return false;
         if (!profile) return false;
         if (!isNameCompleted(profile)) return true;
 
@@ -194,7 +147,7 @@ export const ProfileCompletionGate: FC = () => {
         return !!(trimmedPhone && phoneSendError);
 
 
-    }, [accessToken, effectiveUserId, gateDecisionReady, isProfileForCurrentUser, phoneDraft, phoneSendError, profile, profileError]);
+    }, [accessToken, effectiveUserId, gateDecisionReady, phoneDraft, phoneSendError, profile, profileError]);
 
     const toDateOnlyStringOrUndefined = (value: Date | undefined): string | undefined => {
         if (!value) return undefined;
@@ -234,133 +187,45 @@ export const ProfileCompletionGate: FC = () => {
 
     const retryLoadProfile = useCallback(() => {
         setLoadingTimedOut(false);
-        requestedProfileUserIdRef.current = null;
-        void dispatch(resetProfile() as never);
-        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
-    }, [dispatch, effectiveUserId]);
+        refetchProfile();
+    }, [refetchProfile]);
 
     const renderDialogContent = () => {
-        if (!effectiveUserId) {
+        if (!effectiveUserId || loadingTimedOut || profileLoading || (!profile && profileError) || !profile) {
             return (
-                <div className="flex flex-col gap-3">
-                    <Body1>Не удалось определить пользователя из сессии.</Body1>
-                    <Caption1>Попробуйте перезайти в систему.</Caption1>
-
-                    <Button appearance="primary" onClick={handleLogout}>
-                        На страницу входа
-                    </Button>
-                </div>
-            );
-        }
-
-        if (loadingTimedOut) {
-            return (
-                <div className="flex flex-col gap-3">
-                    <Body1>Загрузка профиля заняла слишком много времени.</Body1>
-                    <Caption1>Проверьте доступность API и повторите попытку.</Caption1>
-
-                    <Button appearance="primary" onClick={retryLoadProfile}>
-                        Повторить
-                    </Button>
-                </div>
-            );
-        }
-
-        if (profileLoading) {
-            return (
-                <div className="flex items-center gap-3">
-                    <Spinner size="small"/>
-                    <Body1>Загружаем профиль…</Body1>
-                </div>
-            );
-        }
-
-        if (!profile && profileError) {
-            return (
-                <div className="flex flex-col gap-3">
-                    <Body1>Не удалось загрузить профиль. Повторите попытку позже.</Body1>
-                    <Caption1>{profileError}</Caption1>
-
-                    <Button appearance="primary" onClick={retryLoadProfile}>
-                        Повторить
-                    </Button>
-                </div>
-            );
-        }
-
-        if (!profile) {
-            return (
-                <div className="flex items-center gap-3">
-                    <Spinner size="small"/>
-                    <Body1>Подготавливаем профиль…</Body1>
-                </div>
+                <GateStatusContent
+                    effectiveUserId={effectiveUserId}
+                    profileLoading={profileLoading}
+                    profileError={profileError}
+                    loadingTimedOut={loadingTimedOut}
+                    hasProfile={!!profile}
+                    onLogout={handleLogout}
+                    onRetry={retryLoadProfile}
+                />
             );
         }
 
         return (
-            <div className="flex flex-col gap-3">
-                <Body1>
-                    Это обязательный шаг. Для сохранения нужны обязательные поля (имя и фамилия), остальные данные
-                    желательно заполнить сейчас.
-                </Body1>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Фамилия" required>
-                        <Input data-testid="profile-gate-last-name" value={lastName} onChange={(_, d) => setLastName(d.value)}/>
-                    </Field>
-                    <Field label="Имя" required>
-                        <Input data-testid="profile-gate-first-name" value={firstName} onChange={(_, d) => setFirstName(d.value)}/>
-                    </Field>
-                    <Field label="Отчество">
-                        <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)}/>
-                    </Field>
-
-                    <DateInput
-                        value={birthDate}
-                        onChange={setBirthDate}
-                        disabled={profileSaving || profileLoading}
-                        label="Дата рождения"
-                        required={false}
-                        maxDate={new Date()}
-                    />
-                </div>
-
-                <Field label="Пол">
-                    <RadioGroup
-                        value={String(genderId)}
-                        disabled={profileSaving || profileLoading}
-                        onChange={(_, data) => {
-                            const next = Number.parseInt(data.value, 10);
-                            setGenderId(next === 1 || next === 2 ? (next as 1 | 2) : 0);
-                        }}
-                    >
-                        <Radio value="0" label="Не указан"/>
-                        <Radio value="1" label="Мужчина"/>
-                        <Radio value="2" label="Женщина"/>
-                    </RadioGroup>
-                </Field>
-
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <Field label="Email">
-                        <Input value={(profile.email ?? derivedAuthInfo?.email ?? "").trim()} disabled/>
-                    </Field>
-
-                    <PhoneInput
-                        value={phoneDraft}
-                        onChange={(value) => {
-                            setPhoneDraft(value);
-                            setSaveError(null);
-                        }}
-                        disabled={profileSaving || profileLoading}
-                        label="Телефон"
-                        required={false}
-                        validateOnBlur
-                        onValidationChange={(err) => setPhoneSendError(err ? err : null)}
-                    />
-                </div>
-
-                {saveError ? <Caption1 className="text-red-600">{saveError}</Caption1> : null}
-            </div>
+            <ProfileGateForm
+                profile={profile}
+                firstName={firstName}
+                lastName={lastName}
+                middleName={middleName}
+                birthDate={birthDate}
+                genderId={genderId}
+                phoneDraft={phoneDraft}
+                email={(profile.email ?? derivedAuthInfo?.email ?? "").trim()}
+                saveError={saveError}
+                disabled={profileSaving || profileLoading}
+                onFirstNameChange={setFirstName}
+                onLastNameChange={setLastName}
+                onMiddleNameChange={setMiddleName}
+                onBirthDateChange={setBirthDate}
+                onGenderChange={setGenderId}
+                onPhoneChange={setPhoneDraft}
+                onPhoneValidationChange={(err) => setPhoneSendError(err)}
+                onSaveErrorClear={() => setSaveError(null)}
+            />
         );
     };
 
@@ -388,18 +253,15 @@ export const ProfileCompletionGate: FC = () => {
                                     setSaveError(null);
 
                                     try {
-                                        await dispatch(
-                                            updateProfile({
-                                                firstName: firstName.trim(),
-                                                lastName: lastName.trim(),
-                                                middleName: middleName.trim() || undefined,
-                                                birthDate: toDateOnlyStringOrUndefined(birthDate),
-                                                gender: genderId,
-                                            })
-                                        ).unwrap();
-
-                                        requestedProfileUserIdRef.current = null;
-                                        void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}));
+                                        await updateProfileMutation({
+                                            userId: effectiveUserId,
+                                            firstName: firstName.trim(),
+                                            lastName: lastName.trim(),
+                                            middleName: middleName.trim() || null,
+                                            photoUrl: profile?.photoUrl ?? null,
+                                            birthDate: toDateOnlyStringOrUndefined(birthDate) ?? null,
+                                            gender: genderId,
+                                        }).unwrap();
 
                                         const nextPhone = phoneDraft.trim();
                                         const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
@@ -451,15 +313,13 @@ export const ProfileCompletionGate: FC = () => {
                     setPhoneDraft(verifiedPhone);
                     phoneVerifiedRecentlyRef.current = {phone: verifiedPhone, at: Date.now()};
                     try {
-                        const currentUser = await authApi.getCurrentUser();
+                        const currentUser = await getCurrentUser().unwrap();
                         dispatch(setPhoneNumber(currentUser.phoneNumber ?? "") as never);
                         dispatch(setPhoneNumberConfirmed(currentUser.phoneNumberConfirmed) as never);
                     } catch {
                         void 0;
                     }
-                    requestedProfileUserIdRef.current = null;
-                    void dispatch(resetProfile() as never);
-                    void dispatch(fetchProfileByUserId({userId: String(effectiveUserId)}) as never);
+                    refetchProfile();
                 }}
             />
         </>

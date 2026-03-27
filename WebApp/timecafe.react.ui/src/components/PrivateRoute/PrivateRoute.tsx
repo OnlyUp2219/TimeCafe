@@ -2,7 +2,7 @@ import {Navigate} from "react-router-dom";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {authApi} from "@api/auth/authApi";
+import {tryRefreshAccessToken} from "@shared/auth/refreshToken";
 import {
     clearTokens,
     setAccessToken,
@@ -36,7 +36,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
                 setAllowed(true);
             } else {
                 try {
-                    const token = await authApi.tryRefreshAccessToken();
+                    const token = await tryRefreshAccessToken();
                     if (!token) {
                         dispatch(clearTokens());
                         setAllowed(false);

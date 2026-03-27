@@ -20,7 +20,7 @@ import {configureHttpClient} from "@api/httpClient";
 import {store} from "@store";
 import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "@store/authSlice";
 import {getJwtInfo} from "@shared/auth/jwt";
-import {authApi} from "@api/auth/authApi";
+import {tryRefreshAccessToken} from "@shared/auth/refreshToken";
 import {ExternalCallback} from "@pages/auth/ExternalCallback";
 import {EmailPendingPage} from "@pages/auth/EmailPendingPage";
 import {ConfirmEmailPage} from "@pages/auth/ConfirmEmailPage";
@@ -47,7 +47,7 @@ const AppRoutes = () => {
         configureHttpClient({
             getAccessToken: () => store.getState().auth.accessToken || null,
             setAccessToken: setToken,
-            refreshAccessToken: authApi.tryRefreshAccessToken,
+            refreshAccessToken: tryRefreshAccessToken,
             handlers: {
                 onUnauthorized: () => {
                     setToken(null);

@@ -16,7 +16,7 @@ import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {EmailInput} from "@components/FormFields";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {authApi} from "@api/auth/authApi";
+import {useForgotPasswordLinkMutation} from "@store/api/authApi";
 import {MockCallbackLink} from "@components/MockCallbackLink/MockCallbackLink";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
@@ -24,6 +24,7 @@ import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
+    const [forgotPassword] = useForgotPasswordLinkMutation();
 
     const [email, setEmail] = useState("");
     const [errors, setErrors] = useState({email: ""});
@@ -41,22 +42,17 @@ export const ResetPasswordPage = () => {
 
         setIsSubmitting(true);
         try {
-            const res = await authApi.forgotPasswordLink({email});
-
-            if (res.status === 429) {
-                const retryAfter = res.headers.retryAfter;
-                const msg = retryAfter
-                    ? `Слишком часто. Повторите через ${retryAfter} сек.`
-                    : "Слишком часто. Попробуйте позже.";
-                showToast(msg, "error");
-                return;
-            }
-
-            setCallbackUrl(res.data?.callbackUrl);
+            const res = await forgotPassword({email}).unwrap();
+            setCallbackUrl(res?.callbackUrl ?? undefined);
             setSentEmail(email);
             setOpenDialog(true);
         } catch (err: unknown) {
-            showToast(getUserMessageFromUnknown(err), "error");
+            const status = (err && typeof err === "object" && "status" in err) ? (err as { status?: number }).status : undefined;
+            if (status === 429) {
+                showToast("Слишком часто. Попробуйте позже.", "error");
+            } else {
+                showToast(getUserMessageFromUnknown(err), "error");
+            }
         } finally {
             setIsSubmitting(false);
         }

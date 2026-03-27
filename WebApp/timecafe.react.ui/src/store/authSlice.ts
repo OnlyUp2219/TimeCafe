@@ -45,9 +45,6 @@ const authSlice = createSlice({
         setPhoneNumberConfirmed: (state, action) => {
             state.phoneNumberConfirmed = action.payload;
         },
-        clearAccessToken: (state) => {
-            state.accessToken = "";
-        },
         clearTokens: (state) => {
             state.accessToken = "";
             state.userId = "";
@@ -68,7 +65,9 @@ export const {
     setEmailConfirmed,
     setPhoneNumber,
     setPhoneNumberConfirmed,
-    clearAccessToken,
     clearTokens
 } = authSlice.actions;
+
+export const selectUserId = (state: { auth: AuthState }) => state.auth.userId;
+
 export default authSlice.reducer;

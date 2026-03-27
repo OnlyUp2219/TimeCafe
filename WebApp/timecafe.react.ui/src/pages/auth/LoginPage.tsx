@@ -5,8 +5,8 @@ import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput} from "@components/FormFields";
 import {useAppDispatch} from "@store/hooks";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {useLoginJwtV2Mutation} from "@store/api/authApi";
 import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
 import {getJwtInfo} from "@shared/auth/jwt";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
@@ -18,6 +18,7 @@ export const LoginPage = () => {
     const dispatch = useAppDispatch();
     const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
 
+    const [loginJwt] = useLoginJwtV2Mutation();
     const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
     const [errors, setErrors] = useState({email: "", password: ""});
@@ -31,7 +32,7 @@ export const LoginPage = () => {
 
         setIsSubmitting(true);
         try {
-            const r = await authApi.loginJwtV2({email, password});
+            const r = await loginJwt({email, password}).unwrap();
             if (r.emailConfirmed === false) {
                 dispatch(setEmail(email));
                 dispatch(setEmailConfirmed(false));

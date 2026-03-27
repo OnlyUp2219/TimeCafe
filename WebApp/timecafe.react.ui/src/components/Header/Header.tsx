@@ -2,14 +2,15 @@ import {Hamburger, Button, Avatar, Tag} from "@fluentui/react-components";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useEffect, useMemo, useState, type FC} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
-import {authApi} from "@api/auth/authApi";
 import {clearTokens} from "@store/authSlice";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
-import {loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
+import {VisitStatus} from "@app-types/visit";
 import {Clock20Regular} from "@fluentui/react-icons";
-import {fetchProfileByUserId} from "@store/profileSlice";
 import {ProfileApi} from "@api/profile/profileApi";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import {useHasActiveVisitQuery, useGetActiveVisitByUserQuery} from "@store/api/venueApi";
+import {useLogoutMutation} from "@store/api/authApi";
 
 interface HeaderProps {
     onMenuToggle?: () => void;
@@ -24,38 +25,29 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     const location = useLocation();
     const userId = useAppSelector((state) => state.auth.userId);
     const authEmail = useAppSelector((state) => state.auth.email);
-    const profile = useAppSelector((state) => state.profile.data);
-    const profileLoadedUserId = useAppSelector((state) => state.profile.loadedUserId);
-    const profileLoading = useAppSelector((state) => state.profile.loading);
-    const visitStatus = useAppSelector((state) => state.visit.status);
-    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
+
+    const {data: profile} = useGetProfileByUserIdQuery(userId!, {skip: !userId});
+    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId!, {skip: !userId || !hasActive});
+    const [logoutMutation] = useLogoutMutation();
+
+    const isActiveVisit = hasActive && activeVisitData?.status === VisitStatus.Active;
+    const startedAtMs = activeVisitData ? Date.parse(activeVisitData.entryTime) : 0;
 
     const [nowMs, setNowMs] = useState(() => Date.now());
     const [avatarPhotoUrl, setAvatarPhotoUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!userId) return;
-        void dispatch(loadActiveVisitByUser({userId}));
-    }, [dispatch, userId]);
-
-    useEffect(() => {
-        if (!userId) return;
-        if (profileLoading) return;
-        if (profile && profileLoadedUserId === userId) return;
-        void dispatch(fetchProfileByUserId({userId}));
-    }, [dispatch, profile, profileLoadedUserId, profileLoading, userId]);
-
-    useEffect(() => {
-        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return;
+        if (!isActiveVisit) return;
         const timerId = window.setInterval(() => setNowMs(Date.now()), 1000);
         return () => window.clearInterval(timerId);
-    }, [visitStatus, activeVisit]);
+    }, [isActiveVisit]);
 
     const activeVisitDuration = useMemo(() => {
-        if (visitStatus !== VisitUiStatus.Active || !activeVisit) return null;
-        const elapsedSeconds = Math.max(0, Math.floor((nowMs - activeVisit.startedAtMs) / 1000));
+        if (!isActiveVisit || !startedAtMs) return null;
+        const elapsedSeconds = Math.max(0, Math.floor((nowMs - startedAtMs) / 1000));
         return formatDurationSeconds(elapsedSeconds);
-    }, [activeVisit, nowMs, visitStatus]);
+    }, [isActiveVisit, startedAtMs, nowMs]);
 
     useEffect(() => {
         let isActive = true;
@@ -103,12 +95,12 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     }, [profile?.photoUrl]);
 
     const handleServerLogout = async () => {
-        if (visitStatus === VisitUiStatus.Active) {
+        if (isActiveVisit) {
             showToast("Сначала завершите активный визит", "warning", "Выход недоступен");
             navigate("/visit/active");
             return;
         }
-        await authApi.logout();
+        await logoutMutation();
         dispatch(clearTokens());
         navigate("/login", { replace: true });
     };
@@ -128,7 +120,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
                     />
                 )}
                     <h1 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">TimeCafe</h1>
-                    {!isPublic && visitStatus === VisitUiStatus.Active && activeVisitDuration && (
+                    {!isPublic && isActiveVisit && activeVisitDuration && (
                         <div className="hidden items-center gap-2 sm:flex">
                             <Tag appearance="brand" icon={<Clock20Regular />}>
                                 {activeVisitDuration}
