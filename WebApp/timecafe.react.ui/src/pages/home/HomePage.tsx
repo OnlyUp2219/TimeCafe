@@ -3,7 +3,6 @@ import {
     Badge,
     Body2,
     Button,
-    Divider,
     LargeTitle,
     Tag,
     Text,
@@ -46,7 +45,7 @@ export const HomePage = () => {
     );
 
     const balanceRub = balance?.currentBalance ?? 0;
-    const transactions: BillingTransaction[] = txData?.transactions ?? [];
+    const transactions: BillingTransaction[] = useMemo(() => txData?.transactions ?? [], [txData?.transactions]);
 
     const isActiveVisit = hasActive && activeVisitData?.status === VisitStatus.Active;
     const startedAtMs = activeVisitData ? Date.parse(activeVisitData.entryTime) : 0;

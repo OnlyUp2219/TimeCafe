@@ -50,7 +50,7 @@ export const BillingPage = () => {
     const [initCheckout, {isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout}] = useInitializeStripeCheckoutMutation();
 
     const balanceRub = balance?.currentBalance ?? 0;
-    const transactions: BillingTransaction[] = txData?.transactions ?? [];
+    const transactions: BillingTransaction[] = useMemo(() => txData?.transactions ?? [], [txData?.transactions]);
     const pagination = txData?.pagination ?? {currentPage: 1, pageSize, totalCount: 0, totalPages: 0};
     const checkoutError = checkoutRtkError ? "Не удалось инициализировать пополнение" : null;
 

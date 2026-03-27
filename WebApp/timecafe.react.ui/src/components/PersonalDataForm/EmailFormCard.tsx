@@ -80,7 +80,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, classNam
                 onClose={() => setShowEmailModal(false)}
                 currentEmail={effectiveEmail}
                 currentEmailConfirmed={effectiveConfirmed === true}
-                onSuccess={async (_verifiedEmail) => {
+                onSuccess={async () => {
                     try {
                         await handleEmailVerified();
                     } finally {

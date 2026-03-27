@@ -77,8 +77,6 @@ export const configureHttpClient = (config: HttpClientConfig) => {
         if (token) {
             if (!req.headers) {
                 req.headers = new AxiosHeaders();
-            } else if (!(true)) {
-                req.headers = new AxiosHeaders(req.headers as unknown as Record<string, AxiosHeaderValue>);
             }
 
             req.headers.set("Authorization", `Bearer ${token}`);
