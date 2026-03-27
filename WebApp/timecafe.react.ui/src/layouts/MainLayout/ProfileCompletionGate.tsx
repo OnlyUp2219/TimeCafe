@@ -1,7 +1,6 @@
 import type {FC} from "react";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import type {AppDispatch, RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {
     Body1,
@@ -45,7 +44,7 @@ import {authApi} from "@api/auth/authApi";
 import {normalizeDate} from "@utility/normalizeDate";
 
 export const ProfileCompletionGate: FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -53,16 +52,16 @@ export const ProfileCompletionGate: FC = () => {
         navigate("/login", {replace: true});
     };
 
-    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
-    const userId = useSelector((state: RootState) => state.auth.userId);
+    const accessToken = useAppSelector((state) => state.auth.accessToken);
+    const userId = useAppSelector((state) => state.auth.userId);
 
-    const profile = useSelector((state: RootState) => state.profile.data);
-    const profileLoading = useSelector((state: RootState) => state.profile.loading);
-    const profileSaving = useSelector((state: RootState) => state.profile.saving);
-    const profileError = useSelector((state: RootState) => state.profile.error);
-    const profileLoadedUserId = useSelector((state: RootState) => state.profile.loadedUserId);
-    const authPhoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
-    const authPhoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
+    const profile = useAppSelector((state) => state.profile.data);
+    const profileLoading = useAppSelector((state) => state.profile.loading);
+    const profileSaving = useAppSelector((state) => state.profile.saving);
+    const profileError = useAppSelector((state) => state.profile.error);
+    const profileLoadedUserId = useAppSelector((state) => state.profile.loadedUserId);
+    const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
+    const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
 
     const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
         PHONE_VERIFICATION_SESSION_KEY,

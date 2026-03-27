@@ -7,7 +7,8 @@ import {
     ProgressBar,
     Body2,
     Link,
-    useId, ToastTrigger,
+    useId,
+    ToastTrigger,
 } from "@fluentui/react-components";
 import * as React from "react";
 import "./ToastProgress.css"
@@ -62,13 +63,11 @@ export const useProgressToast = () => {
         intent: ToastIntent = "info",
         title?: string,
         timeout = 5000,
-        limit?: number) => {
+        toastLimit?: number) => {
 
         const toastId = `toast-${Date.now()}`;
         const dismiss = () => dismissToast(toastId);
-        setLimit(limit ?? 3);
-        console.log(`Статус - ${intent}, стиль - ${getToastColors(intent)}`);
-        console.log(`Сообщение - ${message}`);
+        setLimit(toastLimit ?? 3);
 
         dispatchToast(
             <Toast className={getToastColors(intent)}>

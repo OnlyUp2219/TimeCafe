@@ -3,7 +3,7 @@ import React, {useState, useEffect, useCallback} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
-import {authFormContainerClassName} from "@layouts/authLayout";
+import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {authApi} from "@api/auth/authApi";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";

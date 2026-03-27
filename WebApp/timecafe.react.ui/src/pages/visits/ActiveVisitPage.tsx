@@ -33,9 +33,8 @@ import {
     ArrowClockwise20Regular,
 } from "@fluentui/react-icons";
 import {useEffect, useMemo, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
-import type {AppDispatch, RootState} from "@store";
 import {clearVisitError, endVisitOnServer, loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
 import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
 import {formatMoneyByN} from "@utility/formatMoney";
@@ -98,15 +97,15 @@ const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePer
 };
 
 export const ActiveVisitPage = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    const visitStatus = useSelector((state: RootState) => state.visit.status);
-    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
-    const loadingActiveVisit = useSelector((state: RootState) => state.visit.loadingActiveVisit);
-    const endingVisit = useSelector((state: RootState) => state.visit.endingVisit);
-    const visitError = useSelector((state: RootState) => state.visit.error);
+    const userId = useAppSelector((state) => state.auth.userId);
+    const visitStatus = useAppSelector((state) => state.visit.status);
+    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
+    const loadingActiveVisit = useAppSelector((state) => state.visit.loadingActiveVisit);
+    const endingVisit = useAppSelector((state) => state.visit.endingVisit);
+    const visitError = useAppSelector((state) => state.visit.error);
 
     const [now, setNow] = useState(() => Date.now());
     const [confirmOpen, setConfirmOpen] = useState(false);

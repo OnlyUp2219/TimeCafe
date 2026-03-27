@@ -1,8 +1,7 @@
 import {Badge, Subtitle1, Field, Input, MessageBar} from '@fluentui/react-components';
 import {useState} from 'react';
 import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
-import {useSelector} from 'react-redux';
-import type {RootState} from '@store';
+import {useAppSelector} from "@store/hooks";
 import {authApi} from "@api/auth/authApi";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {useRateLimitedRequest} from '@hooks/useRateLimitedRequest';
@@ -18,7 +17,7 @@ interface EmailPendingCardProps {
 
 export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps) {
     const {showToast, ToasterElement} = useProgressToast();
-    const email = useSelector((s: RootState) => s.auth.email);
+    const email = useAppSelector((s) => s.auth.email);
     const USE_MOCK_EMAIL = import.meta.env.VITE_USE_MOCK_EMAIL === 'true';
     const [internalMockLink, setInternalMockLink] = useState<string | undefined>(mockLink);
 

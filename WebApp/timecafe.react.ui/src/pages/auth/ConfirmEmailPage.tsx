@@ -1,10 +1,10 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {Spinner, Subtitle1} from "@fluentui/react-components";
-import {useDispatch} from "react-redux";
+import {useAppDispatch} from "@store/hooks";
 import {authApi} from "@api/auth/authApi";
 import {setEmail, setEmailConfirmed} from "@store/authSlice";
-import {authFormContainerClassName} from "@layouts/authLayout";
+import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 
 type ViewState =
@@ -13,7 +13,7 @@ type ViewState =
     | {status: "error"; message: string};
 
 export const ConfirmEmailPage = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 

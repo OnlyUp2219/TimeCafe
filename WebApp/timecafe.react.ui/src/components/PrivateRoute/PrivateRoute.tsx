@@ -1,8 +1,7 @@
 import {Navigate} from "react-router-dom";
 import {type JSX, useEffect, useState} from "react";
 import {Spinner} from "@fluentui/react-components";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {authApi} from "@api/auth/authApi";
 import {
     clearTokens,
@@ -21,17 +20,19 @@ interface PrivateRouteProps {
 export const PrivateRoute = ({children}: PrivateRouteProps) => {
     const [loading, setLoading] = useState(true);
     const [allowed, setAllowed] = useState(false);
-    const dispatch = useDispatch();
-    const accessToken = useSelector((state: RootState) => state.auth.accessToken);
+    const dispatch = useAppDispatch();
+    const accessToken = useAppSelector((state) => state.auth.accessToken);
 
     useEffect(() => {
+        const hydrateQuietly = async () => {
+            try {
+                await hydrateAuthFromCurrentUser(dispatch);
+            } catch { /* гидратация необязательна — профиль загрузится позже */ }
+        };
+
         const checkAuth = async () => {
             if (accessToken) {
-                try {
-                    await hydrateAuthFromCurrentUser(dispatch);
-                } catch {
-                    void 0;
-                }
+                await hydrateQuietly();
                 setAllowed(true);
             } else {
                 try {
@@ -45,11 +46,7 @@ export const PrivateRoute = ({children}: PrivateRouteProps) => {
                         if (info.userId) dispatch(setUserId(info.userId));
                         if (info.role) dispatch(setRole(info.role));
                         if (info.email) dispatch(setEmail(info.email));
-                        try {
-                            await hydrateAuthFromCurrentUser(dispatch);
-                        } catch {
-                            void 0;
-                        }
+                        await hydrateQuietly();
                         setAllowed(true);
                     }
                 } catch {

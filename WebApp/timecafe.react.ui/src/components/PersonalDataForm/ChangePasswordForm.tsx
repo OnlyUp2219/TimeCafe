@@ -10,8 +10,7 @@ import {
     Title2
 } from "@fluentui/react-components";
 import {LockClosedRegular} from "@fluentui/react-icons";
-import {useDispatch} from "react-redux";
-import type {AppDispatch} from "@store";
+import {useAppDispatch} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "@store/authSlice.ts";
 import {ConfirmPasswordInput, PasswordInput} from "@components/FormFields";
@@ -49,7 +48,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
     const [submitted, setSubmitted] = useState(false);
     const [errors, setErrors] = useState({currentPassword: "", newPassword: "", confirmPassword: ""});
 
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
     const validateCurrentPassword = useCallback((pwd: string) => (pwd.trim() ? "" : "Введите текущий пароль."), []);

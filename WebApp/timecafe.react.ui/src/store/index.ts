@@ -7,6 +7,10 @@ import {clearTokens} from "@store/authSlice";
 import profileSlice from "@store/profileSlice";
 import visitSlice from "@store/visitSlice";
 import billingSlice from "@store/billingSlice";
+import {authApi} from "@store/api/authApi";
+import {profileApi} from "@store/api/profileApi";
+import {billingApi} from "@store/api/billingApi";
+import {venueApi} from "@store/api/venueApi";
 
 const appReducer = combineReducers({
     ui: uiSlice,
@@ -14,6 +18,10 @@ const appReducer = combineReducers({
     profile: profileSlice,
     visit: visitSlice,
     billing: billingSlice,
+    [authApi.reducerPath]: authApi.reducer,
+    [profileApi.reducerPath]: profileApi.reducer,
+    [billingApi.reducerPath]: billingApi.reducer,
+    [venueApi.reducerPath]: venueApi.reducer,
 });
 
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: { type: string }) => {
@@ -27,7 +35,13 @@ const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: {
 const persistConfigure = {
     key: "root-v4",
     storage,
-    blacklist: ["auth"],
+    blacklist: [
+        "auth",
+        authApi.reducerPath,
+        profileApi.reducerPath,
+        billingApi.reducerPath,
+        venueApi.reducerPath,
+    ],
 };
 
 const persistedReducer = persistReducer(persistConfigure, rootReducer);
@@ -46,7 +60,12 @@ export const store = configureStore({
                     "persist/PURGE",
                 ],
             },
-        }),
+        }).concat(
+            authApi.middleware,
+            profileApi.middleware,
+            billingApi.middleware,
+            venueApi.middleware,
+        ),
 });
 
 

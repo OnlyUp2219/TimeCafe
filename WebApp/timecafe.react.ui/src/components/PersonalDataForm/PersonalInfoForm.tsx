@@ -20,8 +20,7 @@ import {CheckmarkFilled, Delete20Regular, DismissFilled, Edit20Regular, type Flu
 import type {Gender, Profile} from "@app-types/profile";
 import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
 import {DateInput, EmailInput, PhoneInput} from "@components/FormFields";
-import {useDispatch, useSelector} from "react-redux";
-import type {AppDispatch, RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
@@ -56,9 +55,9 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                                                 readOnly = false,
                                                                 className,
                                                             }) => {
-    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
-    const authPhoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
-    const dispatch = useDispatch<AppDispatch>();
+    const authEmailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
+    const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
+    const dispatch = useAppDispatch();
     const maxBirthDate = useMemo(() => new Date(), []);
     const [email, setEmail] = useState(profile.email);
     const [phone, setPhone] = useState(profile.phoneNumber || "");

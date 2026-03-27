@@ -20,8 +20,7 @@ import {
     Sparkle20Regular,
 } from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
-import {useDispatch, useSelector} from "react-redux";
-import type {AppDispatch, RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import vortex from "@assets/vvvortex.svg";
 import repeat from "@assets/rrrepeat (2).svg";
@@ -36,20 +35,20 @@ import {formatRub} from "@utility/formatRub";
 
 export const HomePage = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const authEmail = useSelector((state: RootState) => state.auth.email);
-    const authPhoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    const emailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
-    const phoneConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
-    const profile = useSelector((state: RootState) => state.profile.data);
-    const visitStatus = useSelector((state: RootState) => state.visit.status);
-    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
-    const balanceRub = useSelector((state: RootState) => state.billing.balanceRub);
-    const debtRub = useSelector((state: RootState) => state.billing.debtRub);
-    const transactions = useSelector((state: RootState) => state.billing.transactions);
-    const loadingBilling = useSelector((state: RootState) => state.billing.loading);
+    const authEmail = useAppSelector((state) => state.auth.email);
+    const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
+    const userId = useAppSelector((state) => state.auth.userId);
+    const emailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
+    const phoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
+    const profile = useAppSelector((state) => state.profile.data);
+    const visitStatus = useAppSelector((state) => state.visit.status);
+    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
+    const balanceRub = useAppSelector((state) => state.billing.balanceRub);
+    const debtRub = useAppSelector((state) => state.billing.debtRub);
+    const transactions = useAppSelector((state) => state.billing.transactions);
+    const loadingBilling = useAppSelector((state) => state.billing.loading);
 
     const [now, setNow] = useState(() => Date.now());
 

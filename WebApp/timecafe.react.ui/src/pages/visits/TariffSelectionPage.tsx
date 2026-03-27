@@ -12,9 +12,8 @@ import {
     Tooltip,
 } from "@fluentui/react-components";
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
-import type {AppDispatch, RootState} from "@store";
 import {
     clearVisitError,
     loadActiveTariffs,
@@ -65,16 +64,16 @@ const calculate = (minutes: number, pricePerMinute: number, billingType: Billing
 
 
 export const TariffSelectionPage = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    const selectedTariffId = useSelector((state: RootState) => state.visit.selectedTariffId);
-    const visitStatus = useSelector((state: RootState) => state.visit.status);
-    const tariffs = useSelector((state: RootState) => state.visit.tariffs);
-    const loadingTariffs = useSelector((state: RootState) => state.visit.loadingTariffs);
-    const startingVisit = useSelector((state: RootState) => state.visit.startingVisit);
-    const visitError = useSelector((state: RootState) => state.visit.error);
+    const userId = useAppSelector((state) => state.auth.userId);
+    const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
+    const visitStatus = useAppSelector((state) => state.visit.status);
+    const tariffs = useAppSelector((state) => state.visit.tariffs);
+    const loadingTariffs = useAppSelector((state) => state.visit.loadingTariffs);
+    const startingVisit = useAppSelector((state) => state.visit.startingVisit);
+    const visitError = useAppSelector((state) => state.visit.error);
 
     const tariffsList = useMemo<Tariff[]>(() => Array.isArray(tariffs) ? tariffs : [], [tariffs]);
 

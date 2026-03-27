@@ -1,9 +1,7 @@
 import {Body2, Divider, Title2} from "@fluentui/react-components";
 
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-
-import type {AppDispatch, RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import type {Tariff} from "@app-types/tariff";
 import {TransactionType, type BillingActivityPoint} from "@app-types/billing";
 import {
@@ -38,22 +36,22 @@ import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
 import {SupportCard} from "@components/Billing/SupportCard";
 
 export const BillingPage = () => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    const balanceRub = useSelector((state: RootState) => state.billing.balanceRub);
-    const debtRub = useSelector((state: RootState) => state.billing.debtRub);
-    const billingError = useSelector((state: RootState) => state.billing.error);
-    const checkoutError = useSelector((state: RootState) => state.billing.checkoutError);
-    const checkoutUrl = useSelector((state: RootState) => state.billing.checkoutUrl);
-    const loadingOverview = useSelector((state: RootState) => state.billing.loading);
-    const loadingTransactions = useSelector((state: RootState) => state.billing.loadingTransactions);
-    const initializingCheckout = useSelector((state: RootState) => state.billing.initializingCheckout);
-    const transactions = useSelector((state: RootState) => state.billing.transactions);
-    const pagination = useSelector((state: RootState) => state.billing.pagination);
-    const tariffs = useSelector((state: RootState) => state.visit.tariffs);
-    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
-    const selectedTariffId = useSelector((state: RootState) => state.visit.selectedTariffId);
+    const userId = useAppSelector((state) => state.auth.userId);
+    const balanceRub = useAppSelector((state) => state.billing.balanceRub);
+    const debtRub = useAppSelector((state) => state.billing.debtRub);
+    const billingError = useAppSelector((state) => state.billing.error);
+    const checkoutError = useAppSelector((state) => state.billing.checkoutError);
+    const checkoutUrl = useAppSelector((state) => state.billing.checkoutUrl);
+    const loadingOverview = useAppSelector((state) => state.billing.loading);
+    const loadingTransactions = useAppSelector((state) => state.billing.loadingTransactions);
+    const initializingCheckout = useAppSelector((state) => state.billing.initializingCheckout);
+    const transactions = useAppSelector((state) => state.billing.transactions);
+    const pagination = useAppSelector((state) => state.billing.pagination);
+    const tariffs = useAppSelector((state) => state.visit.tariffs);
+    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
+    const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
     const [draftAmountText, setDraftAmountText] = useState("");
 

@@ -25,8 +25,7 @@ import {
     type PhoneVerificationSessionV1,
 } from "@shared/auth/phoneVerificationSession";
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {authApi} from "@api/auth/authApi";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
@@ -39,9 +38,9 @@ export interface PhoneFormCardProps {
 }
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, className}) => {
-    const dispatch = useDispatch();
-    const phoneNumber = useSelector((state: RootState) => state.auth.phoneNumber);
-    const phoneNumberConfirmed = useSelector((state: RootState) => state.auth.phoneNumberConfirmed);
+    const dispatch = useAppDispatch();
+    const phoneNumber = useAppSelector((state) => state.auth.phoneNumber);
+    const phoneNumberConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
     const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
         PHONE_VERIFICATION_SESSION_KEY,
         isPhoneVerificationSessionV1

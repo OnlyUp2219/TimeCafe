@@ -3,10 +3,10 @@ import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
-import {authFormContainerClassName} from "@layouts/authLayout";
+import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {useDispatch} from "react-redux";
+import {useAppDispatch} from "@store/hooks";
 import {setEmail, setEmailConfirmed} from "@store/authSlice";
 import {normalizeUnknownError} from "@api/errors/normalize";
 import {isApiError} from "@api/errors/types";
@@ -16,7 +16,7 @@ import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
 export const RegisterPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
 
     const [email, setEmailValue] = useState("");

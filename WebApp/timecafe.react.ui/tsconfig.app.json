@@ -21,8 +21,7 @@
       "@assets/*": ["assets/*"],
       "@app-types/*": ["types/*"],
       "@layouts/*": ["layouts/*"],
-      "@api/*": ["shared/api/*"],
-      "@legacy/*": ["legacy/*"]
+      "@api/*": ["shared/api/*"]
     },
 
     /* Bundler mode */

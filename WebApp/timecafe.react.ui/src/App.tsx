@@ -12,8 +12,8 @@ import {HomePage} from '@pages/home/HomePage';
 import {PersonalDataPage} from "@pages/profile/PersonalDataPage";
 import {TariffSelectionPage} from "@pages/visits/TariffSelectionPage";
 import {ActiveVisitPage} from "@pages/visits/ActiveVisitPage";
-import {AuthLayout} from '@layouts/AuthLayout/AuthLayuot';
-import {MainLayout} from '@layouts/MainLayout/MainLayuot';
+import {AuthLayout} from '@layouts/AuthLayout/AuthLayout';
+import {MainLayout} from '@layouts/MainLayout/MainLayout';
 import {BillingPage} from '@pages/billing/BillingPage.tsx'
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {configureHttpClient} from "@api/httpClient";

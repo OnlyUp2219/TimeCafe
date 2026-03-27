@@ -2,8 +2,7 @@ import {createElement, useState, type FC} from "react";
 import {Badge, Body1Strong, Body2, Button, Card, Tag, Title2, Tooltip} from "@fluentui/react-components";
 import {Edit20Filled, MailRegular} from "@fluentui/react-icons";
 import {EmailVerificationModal} from "@components/EmailVerificationModal/EmailVerificationModal";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
 
@@ -13,9 +12,9 @@ export interface EmailFormCardProps {
 }
 
 export const EmailFormCard: FC<EmailFormCardProps> = ({loading = false, className}) => {
-    const dispatch = useDispatch();
-    const authEmail = useSelector((state: RootState) => state.auth.email);
-    const authEmailConfirmed = useSelector((state: RootState) => state.auth.emailConfirmed);
+    const dispatch = useAppDispatch();
+    const authEmail = useAppSelector((state) => state.auth.email);
+    const authEmailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
     const [showEmailModal, setShowEmailModal] = useState(false);
 
     const effectiveEmail = (authEmail ?? "").trim();
