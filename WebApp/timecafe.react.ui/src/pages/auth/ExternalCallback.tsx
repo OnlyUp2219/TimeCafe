@@ -1,4 +1,4 @@
-import {useDispatch} from "react-redux";
+import {useAppDispatch} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice.ts";
 import {Spinner} from "@fluentui/react-components";
@@ -6,7 +6,7 @@ import React, {useEffect} from "react";
 import {getJwtInfo} from "@shared/auth/jwt";
 
 export const ExternalCallback = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const redirectedRef = React.useRef(false);
 

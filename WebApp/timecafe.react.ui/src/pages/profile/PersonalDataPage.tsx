@@ -11,9 +11,8 @@ import {
     Title2,
 } from "@fluentui/react-components";
 import {useCallback, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
-import type {AppDispatch, RootState} from "@store";
 import {ChangePasswordForm} from "@components/PersonalDataForm/ChangePasswordForm";
 import type {Profile} from "@app-types/profile";
 import {setProfileForUser, updateProfile} from "@store/profileSlice";
@@ -36,10 +35,10 @@ import "./PersonalData.css";
 
 export const PersonalDataPage = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch<AppDispatch>();
-    const profile = useSelector((state: RootState) => state.profile.data);
-    const saving = useSelector((state: RootState) => state.profile.saving);
-    const userId = useSelector((state: RootState) => state.auth.userId);
+    const dispatch = useAppDispatch();
+    const profile = useAppSelector((state) => state.profile.data);
+    const saving = useAppSelector((state) => state.profile.saving);
+    const userId = useAppSelector((state) => state.auth.userId);
 
     const {showToast, ToasterElement} = useProgressToast();
 

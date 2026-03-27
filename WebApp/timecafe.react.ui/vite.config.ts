@@ -18,7 +18,6 @@ export default defineConfig({
             '@app-types': fileURLToPath(new URL('./src/types', import.meta.url)),
             '@layouts': fileURLToPath(new URL('./src/layouts', import.meta.url)),
             '@api': fileURLToPath(new URL('./src/shared/api', import.meta.url)),
-            '@legacy': fileURLToPath(new URL('./src/legacy', import.meta.url)),
         },
     },
     build: {

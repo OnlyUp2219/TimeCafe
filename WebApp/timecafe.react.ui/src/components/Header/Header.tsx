@@ -1,10 +1,9 @@
 import {Hamburger, Button, Avatar, Tag} from "@fluentui/react-components";
-import {useDispatch, useSelector} from "react-redux";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useEffect, useMemo, useState, type FC} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {authApi} from "@api/auth/authApi";
 import {clearTokens} from "@store/authSlice";
-import type {AppDispatch, RootState} from "@store";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {loadActiveVisitByUser, VisitUiStatus} from "@store/visitSlice";
 import {Clock20Regular} from "@fluentui/react-icons";
@@ -19,17 +18,17 @@ interface HeaderProps {
 }
 // TODO : Refactor - move upload avatar logic to separate hook and reuse in profile page 
 export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = "app"}) => {
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const {showToast} = useProgressToast();
     const location = useLocation();
-    const userId = useSelector((state: RootState) => state.auth.userId);
-    const authEmail = useSelector((state: RootState) => state.auth.email);
-    const profile = useSelector((state: RootState) => state.profile.data);
-    const profileLoadedUserId = useSelector((state: RootState) => state.profile.loadedUserId);
-    const profileLoading = useSelector((state: RootState) => state.profile.loading);
-    const visitStatus = useSelector((state: RootState) => state.visit.status);
-    const activeVisit = useSelector((state: RootState) => state.visit.activeVisit);
+    const userId = useAppSelector((state) => state.auth.userId);
+    const authEmail = useAppSelector((state) => state.auth.email);
+    const profile = useAppSelector((state) => state.profile.data);
+    const profileLoadedUserId = useAppSelector((state) => state.profile.loadedUserId);
+    const profileLoading = useAppSelector((state) => state.profile.loading);
+    const visitStatus = useAppSelector((state) => state.visit.status);
+    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
 
     const [nowMs, setNowMs] = useState(() => Date.now());
     const [avatarPhotoUrl, setAvatarPhotoUrl] = useState<string | null>(null);

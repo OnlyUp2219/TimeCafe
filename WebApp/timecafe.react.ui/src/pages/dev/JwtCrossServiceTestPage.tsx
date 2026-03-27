@@ -1,6 +1,5 @@
 import {useMemo, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {authApi} from "@api/auth/authApi";
 import {normalizeUnknownError} from "@api/errors/normalize";
 import {httpClient} from "@api/httpClient";
@@ -12,10 +11,10 @@ import {EmailInput, PasswordInput} from "@components/FormFields";
 const nowIso = () => new Date().toISOString();
 
 export const JwtCrossServiceTestPage = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const currentToken = useSelector((s: RootState) => s.auth.accessToken);
-    const currentUserId = useSelector((s: RootState) => s.auth.userId);
+    const currentToken = useAppSelector((s) => s.auth.accessToken);
+    const currentUserId = useAppSelector((s) => s.auth.userId);
 
     const [email, setEmailState] = useState("");
     const [password, setPasswordState] = useState("");

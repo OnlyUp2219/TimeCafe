@@ -12,8 +12,7 @@ import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
 import {VisitUiStatus} from "@store/visitSlice";
-import {useDispatch, useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {type FC, useCallback, useEffect, useState} from "react";
 
 type DrawerType = Required<NavDrawerProps>["type"];
@@ -21,9 +20,9 @@ type DrawerType = Required<NavDrawerProps>["type"];
 
 export const Sidebar: FC = () => {
 
-    const dispatch = useDispatch();
-    const isOpen = useSelector((state: RootState) => state.ui.isSideBarOpen);
-    const visitStatus = useSelector((state: RootState) => state.visit.status);
+    const dispatch = useAppDispatch();
+    const isOpen = useAppSelector((state) => state.ui.isSideBarOpen);
+    const visitStatus = useAppSelector((state) => state.visit.status);
     const location = useLocation();
 
     useEffect(() => {
@@ -64,7 +63,7 @@ export const Sidebar: FC = () => {
 
     const restoreFocusSourceAttributes = useRestoreFocusSource();
 
-    const selectedValue = useSelector((state: RootState) => state.ui.selectedNav);
+    const selectedValue = useAppSelector((state) => state.ui.selectedNav);
 
     const handleItemSelect = (_: unknown, data: OnNavItemSelectData) => {
         const value = data.value as string;

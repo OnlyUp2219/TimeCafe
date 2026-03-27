@@ -1,11 +1,10 @@
 import {useMemo} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
-import {useSelector} from "react-redux";
-import type {RootState} from "@store";
+import {useAppSelector} from "@store/hooks";
 import {EmailPendingCard} from "@components/EmailPendingCard/EmailPendingCard";
 import {Body2, Title3} from "@fluentui/react-components";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
-import {authFormContainerClassName} from "@layouts/authLayout";
+import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 
 type LocationState = {
     mockLink?: string;
@@ -14,7 +13,7 @@ type LocationState = {
 export const EmailPendingPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const email = useSelector((s: RootState) => s.auth.email);
+    const email = useAppSelector((s) => s.auth.email);
 
     const mockLink = useMemo(() => {
         const state = location.state as LocationState;
