@@ -14,7 +14,7 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {authApi} from "@api/auth/authApi";
+import {useRequestEmailChangeMutation, useConfirmEmailChangeMutation} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {validateEmail} from "@utility/validate";
 
@@ -42,6 +42,9 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
     const [validationError, setValidationError] = useState<string>("");
     const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
     const [sentEmail, setSentEmail] = useState<string>("");
+
+    const [requestEmailChange] = useRequestEmailChangeMutation();
+    const [confirmEmailChange] = useConfirmEmailChangeMutation();
 
     useEffect(() => {
         if (!isOpen) return;
@@ -81,18 +84,17 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
 
         setLoading(true);
         try {
-            const response = await authApi.requestEmailChange({newEmail: email.trim()});
-            if (response.status === 429) {
-                const retryAfter = response.headers.retryAfter ?? 60;
-                setError(`Слишком много запросов. Подождите ${retryAfter} секунд.`);
-                return;
-            }
-
-            setCallbackUrl(response.data?.callbackUrl ?? null);
+            const response = await requestEmailChange({newEmail: email.trim()}).unwrap();
+            setCallbackUrl(response?.callbackUrl ?? null);
             setSentEmail(email.trim());
             setStep("sent");
         } catch (err: unknown) {
-            setError(getUserMessageFromUnknown(err) || "Ошибка при отправке письма. Попробуйте позже.");
+            const status = (err && typeof err === "object" && "status" in err) ? (err as { status?: number }).status : undefined;
+            if (status === 429) {
+                setError("Слишком много запросов. Подождите и попробуйте позже.");
+            } else {
+                setError(getUserMessageFromUnknown(err) || "Ошибка при отправке письма. Попробуйте позже.");
+            }
         } finally {
             setLoading(false);
         }
@@ -135,11 +137,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                     return;
                 }
 
-                const r = await authApi.confirmEmailChange(userId, newEmail, token);
-                if (r.error) {
-                    setError(r.error);
-                    return;
-                }
+                await confirmEmailChange({userId, newEmail, token}).unwrap();
 
                 onSuccess(email.trim());
                 onClose();

@@ -4,8 +4,8 @@ import {useNavigate, useLocation} from "react-router-dom";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
 import {PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {authApi} from "@api/auth/authApi";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {useResetPasswordMutation} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 
 export const ConfirmResetPage = () => {
@@ -21,6 +21,7 @@ export const ConfirmResetPage = () => {
     const [errors, setErrors] = useState({newPassword: "", confirmPassword: ""});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [resetPasswordMutation] = useResetPasswordMutation();
 
     useEffect(() => {
         if (!email || !resetCode) {
@@ -39,7 +40,7 @@ export const ConfirmResetPage = () => {
 
         setIsSubmitting(true);
         try {
-            await authApi.resetPassword({email, resetCode, newPassword});
+            await resetPasswordMutation({email, resetCode, newPassword}).unwrap();
             showToast("Пароль успешно изменен", "success");
             navigate("/login");
         } catch (err: unknown) {

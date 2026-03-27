@@ -14,8 +14,7 @@ import {useCallback, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {ChangePasswordForm} from "@components/PersonalDataForm/ChangePasswordForm";
-import type {Profile} from "@app-types/profile";
-import {setProfileForUser, updateProfile} from "@store/profileSlice";
+import {Gender, type Profile} from "@app-types/profile";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {PersonalDataMainForm} from "@components/PersonalDataForm/PersonalDataMainForm";
 import {PhoneFormCard} from "@components/PersonalDataForm/PhoneFormCard";
@@ -23,10 +22,16 @@ import {EmailFormCard} from "@components/PersonalDataForm/EmailFormCard";
 import {LogoutCard} from "@components/PersonalDataForm/LogoutCard";
 import {LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
 import {DismissRegular} from "@fluentui/react-icons";
-import {authApi} from "@api/auth/authApi";
 import {clearTokens} from "@store/authSlice";
-import {ProfileApi} from "@api/profile/profileApi";
+import {useLogoutMutation} from "@store/api/authApi";
+import {
+    useGetProfileByUserIdQuery,
+    useUpdateProfileMutation,
+    useUploadProfilePhotoMutation,
+    useDeleteProfilePhotoMutation,
+} from "@store/api/profileApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {normalizeBirthDateForApi} from "@utility/normalizeDate";
 import blob3Url from "@assets/ssshape_blob3.svg";
 import blob4Url from "@assets/ssshape_blob4.svg";
 import squiggly1Url from "@assets/sssquiggl_1.svg";
@@ -36,11 +41,14 @@ import "./PersonalData.css";
 export const PersonalDataPage = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const profile = useAppSelector((state) => state.profile.data);
-    const saving = useAppSelector((state) => state.profile.saving);
     const userId = useAppSelector((state) => state.auth.userId);
+    const {data: profile} = useGetProfileByUserIdQuery(userId, {skip: !userId});
 
     const {showToast, ToasterElement} = useProgressToast();
+    const [logoutMutation] = useLogoutMutation();
+    const [updateProfileMutation, {isLoading: saving}] = useUpdateProfileMutation();
+    const [uploadPhoto] = useUploadProfilePhotoMutation();
+    const [deletePhoto] = useDeleteProfilePhotoMutation();
 
     const [lastSaveError, setLastSaveError] = useState<string | null>(null);
     const [photoMessage, setPhotoMessage] = useState<string | null>(null);
@@ -48,21 +56,29 @@ export const PersonalDataPage = () => {
 
     const savePatch = useCallback(
         async (patch: Partial<Profile>, successMessage: string): Promise<boolean> => {
-            const action = await dispatch(updateProfile(patch));
-            if (updateProfile.fulfilled.match(action)) {
+            if (!profile || !userId) return false;
+            const merged = {...profile, ...patch};
+            try {
+                await updateProfileMutation({
+                    userId,
+                    firstName: merged.firstName ?? "",
+                    lastName: merged.lastName ?? "",
+                    middleName: merged.middleName ?? null,
+                    photoUrl: merged.photoUrl ?? null,
+                    birthDate: normalizeBirthDateForApi(merged.birthDate),
+                    gender: merged.gender ?? Gender.NotSpecified,
+                }).unwrap();
                 showToast(successMessage, "success", "Готово");
                 setLastSaveError(null);
                 return true;
+            } catch (err) {
+                const message = getUserMessageFromUnknown(err) || "Не удалось сохранить профиль.";
+                showToast(message, "error", "Ошибка");
+                setLastSaveError(message);
+                return false;
             }
-
-            const message =
-                (updateProfile.rejected.match(action) && (action.payload as string | undefined)) ||
-                "Не удалось сохранить профиль.";
-            showToast(message, "error", "Ошибка");
-            setLastSaveError(message);
-            return false;
         },
-        [dispatch, showToast]
+        [profile, userId, updateProfileMutation, showToast]
     );
 
     const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
@@ -72,17 +88,16 @@ export const PersonalDataPage = () => {
     const [photoBusy, setPhotoBusy] = useState(false);
 
     const handleLogout = useCallback(async () => {
-        await authApi.logout();
+        await logoutMutation();
         dispatch(clearTokens());
         navigate("/login", {replace: true});
-    }, [dispatch, navigate]);
+    }, [dispatch, logoutMutation, navigate]);
 
     const handlePhotoUpload = useCallback(async (file: File) => {
         if (!profile) return false;
         setPhotoBusy(true);
         try {
-            const result = await ProfileApi.uploadProfilePhoto(userId, file);
-            dispatch(setProfileForUser({profile: {...profile, photoUrl: result.url}, userId}));
+            await uploadPhoto({userId, file}).unwrap();
             setPhotoMessage("Фото профиля обновлено.");
             setPhotoMessageIntent("success");
             return true;
@@ -93,14 +108,13 @@ export const PersonalDataPage = () => {
         } finally {
             setPhotoBusy(false);
         }
-    }, [dispatch, profile, userId]);
+    }, [profile, uploadPhoto, userId]);
 
     const handlePhotoDelete = useCallback(async () => {
         if (!profile) return false;
         setPhotoBusy(true);
         try {
-            await ProfileApi.deleteProfilePhoto(userId);
-            dispatch(setProfileForUser({profile: {...profile, photoUrl: undefined}, userId}));
+            await deletePhoto(userId).unwrap();
             setPhotoMessage("Фото профиля удалено.");
             setPhotoMessageIntent("success");
             return true;
@@ -111,7 +125,7 @@ export const PersonalDataPage = () => {
         } finally {
             setPhotoBusy(false);
         }
-    }, [dispatch, profile, userId]);
+    }, [deletePhoto, userId]);
 
     const content = !profile ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">

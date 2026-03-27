@@ -2,7 +2,8 @@ import {Badge, Subtitle1, Field, Input, MessageBar} from '@fluentui/react-compon
 import {useState} from 'react';
 import {Mail24Regular, MailCheckmark24Regular, Person24Regular} from '@fluentui/react-icons';
 import {useAppSelector} from "@store/hooks";
-import {authApi} from "@api/auth/authApi";
+import {httpClient} from "@api/httpClient";
+import {withRateLimit} from "@utility/rateLimitHelper";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {useRateLimitedRequest} from '@hooks/useRateLimitedRequest';
 import {MockCallbackLink} from "@components/MockCallbackLink/MockCallbackLink";
@@ -26,9 +27,9 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
 
     const [errors, setErrors] = useState<{ resend?: string; general?: string }>({});
 
-    const resend = useRateLimitedRequest(`email_resend_${email}`, async () => {
-        const r = await authApi.resendConfirmation(email);
-        return {data: r.data, headers: r.headers, status: r.status};
+    const resend = useRateLimitedRequest<{ message?: string; callbackUrl?: string }>(`email_resend_${email}`, async () => {
+        const endpoint = USE_MOCK_EMAIL ? "/auth/email/resend-mock" : "/auth/email/resend";
+        return withRateLimit(() => httpClient.post<{ message?: string; callbackUrl?: string }>(endpoint, {email}));
     });
 
     const handleResend = async () => {

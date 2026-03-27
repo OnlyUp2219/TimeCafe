@@ -1,6 +1,6 @@
 import {useMemo, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {authApi} from "@api/auth/authApi";
+import {useLoginJwtV2Mutation} from "@store/api/authApi";
 import {normalizeUnknownError} from "@api/errors/normalize";
 import {httpClient} from "@api/httpClient";
 import {getJwtInfo} from "@shared/auth/jwt";
@@ -12,6 +12,7 @@ const nowIso = () => new Date().toISOString();
 
 export const JwtCrossServiceTestPage = () => {
     const dispatch = useAppDispatch();
+    const [loginJwt] = useLoginJwtV2Mutation();
 
     const currentToken = useAppSelector((s) => s.auth.accessToken);
     const currentUserId = useAppSelector((s) => s.auth.userId);
@@ -31,7 +32,7 @@ export const JwtCrossServiceTestPage = () => {
     const handleLogin = async () => {
         append(`[${nowIso()}] LOGIN: start (${email})`);
         try {
-            const res = await authApi.loginJwtV2({email, password});
+            const res = await loginJwt({email, password}).unwrap();
 
             const token = res.accessToken;
             dispatch(setAccessToken(token));

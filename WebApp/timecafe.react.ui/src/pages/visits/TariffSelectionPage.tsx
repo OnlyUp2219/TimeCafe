@@ -3,10 +3,6 @@ import {
     Button,
     Card,
     Divider,
-    MessageBar,
-    MessageBarActions,
-    MessageBarBody,
-    MessageBarTitle,
     Text,
     Title2,
     Tooltip,
@@ -15,17 +11,11 @@ import {useCallback, useEffect, useMemo, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {
-    clearVisitError,
-    loadActiveTariffs,
-    loadActiveVisitByUser,
     setSelectedTariffId,
-    startVisitOnServer,
-    VisitUiStatus
 } from "@store/visitSlice";
 import {BillingType as BillingTypeEnum, type BillingType, type Tariff} from "@app-types/tariff";
 import {clamp} from "@utility/clamp";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
-import {DismissRegular} from "@fluentui/react-icons";
 
 import repeatTriangleUrl from "@assets/rrrepeat_triangle.svg";
 import vortexUrl from "@assets/vvvortex.svg";
@@ -35,6 +25,7 @@ import "./visits.css";
 import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard.tsx";
 import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection.tsx";
 import {VisitParamsCard} from "@components/Tariff/VisitParamsCard.tsx";
+import {useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation} from "@store/api/venueApi";
 
 const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
@@ -69,13 +60,24 @@ export const TariffSelectionPage = () => {
     const {showToast, ToasterElement} = useProgressToast();
     const userId = useAppSelector((state) => state.auth.userId);
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
-    const visitStatus = useAppSelector((state) => state.visit.status);
-    const tariffs = useAppSelector((state) => state.visit.tariffs);
-    const loadingTariffs = useAppSelector((state) => state.visit.loadingTariffs);
-    const startingVisit = useAppSelector((state) => state.visit.startingVisit);
-    const visitError = useAppSelector((state) => state.visit.error);
 
-    const tariffsList = useMemo<Tariff[]>(() => Array.isArray(tariffs) ? tariffs : [], [tariffs]);
+    const {data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs} = useGetActiveTariffsQuery();
+    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const [createVisit, {isLoading: startingVisit}] = useCreateVisitMutation();
+
+    const tariffsList = useMemo<Tariff[]>(() => {
+        if (!tariffsData) return [];
+        return tariffsData.map((t) => ({
+            tariffId: t.tariffId,
+            name: t.name,
+            description: t.description ?? "",
+            billingType: t.billingType,
+            pricePerMinute: t.pricePerMinute,
+            isActive: t.isActive,
+            themeName: t.themeName,
+            themeEmoji: t.themeEmoji ?? null,
+        }));
+    }, [tariffsData]);
 
     const visibleTariffs = useMemo(
         () => tariffsList.filter((tariff): tariff is Tariff => tariff !== null && tariff.isActive),
@@ -122,51 +124,38 @@ export const TariffSelectionPage = () => {
     }, [initialActiveIndex]);
 
     useEffect(() => {
-        void dispatch(loadActiveTariffs());
-    }, [dispatch]);
-
-    useEffect(() => {
-        if (!userId) return;
-        void dispatch(loadActiveVisitByUser({userId}));
-    }, [dispatch, userId]);
-
-    useEffect(() => {
         if (!selectedTariffId && visibleTariffs.length > 0) {
             dispatch(setSelectedTariffId(visibleTariffs[0].tariffId));
         }
     }, [dispatch, selectedTariffId, visibleTariffs]);
 
     useEffect(() => {
-        if (visitStatus === VisitUiStatus.Active) {
+        if (hasActive) {
             navigate("/visit/active", {replace: true});
         }
-    }, [navigate, visitStatus]);
+    }, [navigate, hasActive]);
 
     const presets = useMemo(() => [30, 60, 90, 120, 180, 240], []);
 
     const onStartVisit = useCallback(async () => {
-        if (!selectedTariff) return;
-        const action = await dispatch(startVisitOnServer({
-            tariffId: selectedTariff.tariffId,
-            plannedMinutes: durationMinutes,
-            userId,
-        }));
-
-        if (startVisitOnServer.rejected.match(action)) {
-            showToast(action.payload ?? "Не удалось начать визит", "error", "Ошибка");
-            return;
+        if (!selectedTariff || !userId) return;
+        try {
+            await createVisit({
+                tariffId: selectedTariff.tariffId,
+                plannedMinutes: durationMinutes,
+                userId,
+                requirePositiveBalance: true,
+                requireEnoughForPlanned: true,
+            }).unwrap();
+            navigate("/visit/active");
+        } catch {
+            showToast("Не удалось начать визит", "error", "Ошибка");
         }
-
-        navigate("/visit/active");
-    }, [dispatch, durationMinutes, navigate, selectedTariff, showToast, userId]);
+    }, [createVisit, durationMinutes, navigate, selectedTariff, showToast, userId]);
 
     const onRetryLoad = useCallback(async () => {
-        dispatch(clearVisitError());
-        await dispatch(loadActiveTariffs());
-        if (userId) {
-            await dispatch(loadActiveVisitByUser({userId}));
-        }
-    }, [dispatch, userId]);
+        await refetchTariffs();
+    }, [refetchTariffs]);
 
     const showEmptyTariffs = !loadingTariffs && visibleTariffs.length === 0;
 
@@ -207,25 +196,6 @@ export const TariffSelectionPage = () => {
             <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
                 <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-start-page">
                     <div className="flex flex-col gap-4">
-                        {visitError && (
-                            <MessageBar intent="error" data-testid="visit-start-error">
-                                <MessageBarBody>
-                                    <MessageBarTitle>Ошибка загрузки</MessageBarTitle>
-                                    {visitError}
-                                </MessageBarBody>
-                                <MessageBarActions
-                                    containerAction={
-                                        <Button
-                                            appearance="transparent"
-                                            aria-label="Закрыть"
-                                            icon={<DismissRegular className="size-5"/>}
-                                            onClick={() => dispatch(clearVisitError())}
-                                        />
-                                    }
-                                />
-                            </MessageBar>
-                        )}
-
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div className="min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap">

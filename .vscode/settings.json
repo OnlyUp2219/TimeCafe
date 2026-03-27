@@ -10,6 +10,7 @@
     "projectKey": "OnlyUp2219_TimeCafe"
   },
   "chat.tools.terminal.autoApprove": {
-    "Test-Path": true
+    "Test-Path": true,
+    "Set-Content": true
   }
 }

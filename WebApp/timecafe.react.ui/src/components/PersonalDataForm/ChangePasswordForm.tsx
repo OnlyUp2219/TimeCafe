@@ -14,8 +14,8 @@ import {useAppDispatch} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {clearTokens} from "@store/authSlice.ts";
 import {ConfirmPasswordInput, PasswordInput} from "@components/FormFields";
-import {authApi} from "@api/auth/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {useChangePasswordMutation} from "@store/api/authApi";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;
@@ -50,6 +50,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
 
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [changePasswordMutation] = useChangePasswordMutation();
 
     const validateCurrentPassword = useCallback((pwd: string) => (pwd.trim() ? "" : "Введите текущий пароль."), []);
     const handleCurrentPasswordValidation = useCallback((err: string) => {
@@ -82,7 +83,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         setLoading(true);
 
         try {
-            await authApi.changePassword({currentPassword, newPassword});
+            await changePasswordMutation({currentPassword, newPassword}).unwrap();
 
             setSuccess(true);
             onSuccess?.();

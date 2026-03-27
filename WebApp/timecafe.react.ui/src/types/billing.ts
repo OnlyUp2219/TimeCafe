@@ -50,12 +50,6 @@ export type BillingActivityPoint = {
     withdrawalsRub: number;
 };
 
-export type BillingFilters = {
-    period: "week" | "month" | "all";
-    onlyCredits?: boolean;
-    onlyDebits?: boolean;
-};
-
 export type BillingPagination = {
     currentPage: number;
     pageSize: number;

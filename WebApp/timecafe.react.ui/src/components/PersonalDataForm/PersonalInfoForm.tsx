@@ -22,7 +22,7 @@ import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVe
 import {DateInput, EmailInput, PhoneInput} from "@components/FormFields";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
-import {authApi} from "@api/auth/authApi";
+import {useClearPhoneNumberMutation} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {normalizeDate} from "@utility/normalizeDate";
 
@@ -58,6 +58,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
     const authEmailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
     const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
     const dispatch = useAppDispatch();
+    const [clearPhoneMutation] = useClearPhoneNumberMutation();
     const maxBirthDate = useMemo(() => new Date(), []);
     const [email, setEmail] = useState(profile.email);
     const [phone, setPhone] = useState(profile.phoneNumber || "");
@@ -104,7 +105,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
         setPhoneError(null);
         setClearing(true);
         try {
-            await authApi.clearPhoneNumber();
+            await clearPhoneMutation().unwrap();
             setPhone("");
             dispatch(setPhoneNumber(""));
             dispatch(setPhoneNumberConfirmed(false));

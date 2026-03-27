@@ -26,7 +26,7 @@ import {
 } from "@shared/auth/phoneVerificationSession";
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {authApi} from "@api/auth/authApi";
+import {useClearPhoneNumberMutation} from "@store/api/authApi";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
@@ -39,6 +39,7 @@ export interface PhoneFormCardProps {
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, className}) => {
     const dispatch = useAppDispatch();
+    const [clearPhoneMutation] = useClearPhoneNumberMutation();
     const phoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const phoneNumberConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
     const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
@@ -75,7 +76,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
         setPhoneError(null);
         setClearing(true);
         try {
-            await authApi.clearPhoneNumber();
+            await clearPhoneMutation().unwrap();
             dispatch(setPhoneNumber(""));
             dispatch(setPhoneNumberConfirmed(false));
             setShowClearDialog(false);

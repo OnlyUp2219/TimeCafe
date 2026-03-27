@@ -1,25 +1,19 @@
-import {Body2, Divider, Title2} from "@fluentui/react-components";
-
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useAppDispatch, useAppSelector} from "@store/hooks";
-import type {Tariff} from "@app-types/tariff";
-import {TransactionType, type BillingActivityPoint} from "@app-types/billing";
 import {
-    clearBillingError,
-    clearCheckoutUrl,
-    initializeBillingCheckout,
-    loadBillingOverview,
-    loadBillingTransactions,
-} from "@store/billingSlice";
-import {loadActiveTariffs} from "@store/visitSlice";
-import {
+    Body2,
     Button,
+    Divider,
     MessageBar,
     MessageBarActions,
     MessageBarBody,
     MessageBarTitle,
+    Title2,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
+
+import {useCallback, useMemo, useState} from "react";
+import {useAppSelector} from "@store/hooks";
+import type {Tariff} from "@app-types/tariff";
+import {TransactionType, type BillingActivityPoint, type BillingTransaction} from "@app-types/billing";
 
 import "./billing.css";
 
@@ -34,60 +28,70 @@ import {TransactionsSection} from "@components/Billing/TransactionsSection";
 import {RestTimeCard} from "@components/Billing/RestTimeCard";
 import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
 import {SupportCard} from "@components/Billing/SupportCard";
+import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation} from "@store/api/billingApi";
+import {useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery} from "@store/api/venueApi";
 
 export const BillingPage = () => {
-    const dispatch = useAppDispatch();
-
     const userId = useAppSelector((state) => state.auth.userId);
-    const balanceRub = useAppSelector((state) => state.billing.balanceRub);
-    const debtRub = useAppSelector((state) => state.billing.debtRub);
-    const billingError = useAppSelector((state) => state.billing.error);
-    const checkoutError = useAppSelector((state) => state.billing.checkoutError);
-    const checkoutUrl = useAppSelector((state) => state.billing.checkoutUrl);
-    const loadingOverview = useAppSelector((state) => state.billing.loading);
-    const loadingTransactions = useAppSelector((state) => state.billing.loadingTransactions);
-    const initializingCheckout = useAppSelector((state) => state.billing.initializingCheckout);
-    const transactions = useAppSelector((state) => state.billing.transactions);
-    const pagination = useAppSelector((state) => state.billing.pagination);
-    const tariffs = useAppSelector((state) => state.visit.tariffs);
-    const activeVisit = useAppSelector((state) => state.visit.activeVisit);
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
+
+    const pageSize = 20;
+    const [page, setPage] = useState(1);
+
+    const {data: balance, isLoading: loadingOverview} = useGetBalanceQuery(userId!, {skip: !userId});
+    const {data: debtRub = 0} = useGetDebtQuery(userId!, {skip: !userId});
+    const {data: txData, isLoading: loadingTransactions} = useGetTransactionHistoryQuery(
+        {userId: userId!, page, pageSize},
+        {skip: !userId},
+    );
+    const {data: tariffsData} = useGetActiveTariffsQuery();
+    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId!, {skip: !userId || !hasActive});
+    const [initCheckout, {isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout}] = useInitializeStripeCheckoutMutation();
+
+    const balanceRub = balance?.currentBalance ?? 0;
+    const transactions: BillingTransaction[] = txData?.transactions ?? [];
+    const pagination = txData?.pagination ?? {currentPage: 1, pageSize, totalCount: 0, totalPages: 0};
+    const checkoutError = checkoutRtkError ? "Не удалось инициализировать пополнение" : null;
+
+    const tariffs: Tariff[] = useMemo(() => {
+        if (!tariffsData) return [];
+        return tariffsData.map((t) => ({
+            tariffId: t.tariffId,
+            name: t.name,
+            description: t.description ?? "",
+            billingType: t.billingType,
+            pricePerMinute: t.pricePerMinute,
+            isActive: t.isActive,
+            themeName: t.themeName,
+            themeEmoji: t.themeEmoji ?? null,
+        }));
+    }, [tariffsData]);
 
     const [draftAmountText, setDraftAmountText] = useState("");
 
     const effectiveTariff: Tariff | null = useMemo(() => {
-        if (activeVisit?.tariff?.isActive) {
-            return activeVisit.tariff;
+        if (activeVisitData) {
+            return {
+                tariffId: activeVisitData.tariffId,
+                name: activeVisitData.tariffName,
+                description: activeVisitData.tariffDescription ?? "",
+                billingType: activeVisitData.tariffBillingType,
+                pricePerMinute: activeVisitData.tariffPricePerMinute,
+                isActive: true,
+            };
         }
 
-        const activeTariffs = tariffs.filter((t) => t.isActive);
+        const activeTariffs = tariffs.filter((t: Tariff) => t.isActive);
         if (activeTariffs.length === 0) return null;
 
         if (selectedTariffId) {
-            const match = activeTariffs.find((t) => t.tariffId === selectedTariffId);
+            const match = activeTariffs.find((t: Tariff) => t.tariffId === selectedTariffId);
             if (match) return match;
         }
 
         return activeTariffs[0] ?? null;
-    }, [activeVisit, tariffs, selectedTariffId]);
-
-    useEffect(() => {
-        if (!userId) return;
-
-        void dispatch(loadBillingOverview({userId}));
-        void dispatch(loadBillingTransactions({userId, page: 1, pageSize: pagination.pageSize, append: false}));
-    }, [dispatch, pagination.pageSize, userId]);
-
-    useEffect(() => {
-        if (tariffs.length > 0) return;
-        void dispatch(loadActiveTariffs());
-    }, [dispatch, tariffs.length]);
-
-    useEffect(() => {
-        if (!checkoutUrl) return;
-        window.location.assign(checkoutUrl);
-        dispatch(clearCheckoutUrl());
-    }, [checkoutUrl, dispatch]);
+    }, [activeVisitData, tariffs, selectedTariffId]);
 
     const availableForVisitsRub = Math.max(0, balanceRub - Math.max(0, debtRub));
 
@@ -98,9 +102,27 @@ export const BillingPage = () => {
     };
 
     const openCheckout = useCallback(async (amountRub: number, description?: string) => {
-        const action = await dispatch(initializeBillingCheckout({amountRub, userId, description}));
-        return initializeBillingCheckout.fulfilled.match(action);
-    }, [dispatch, userId]);
+        if (!userId) return false;
+        const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+        const successUrl = baseUrl ? `${baseUrl}/billing?payment=success` : undefined;
+        const cancelUrl = baseUrl ? `${baseUrl}/billing?payment=cancel` : undefined;
+
+        try {
+            const result = await initCheckout({
+                userId,
+                amount: Math.floor(amountRub),
+                successUrl,
+                cancelUrl,
+                description,
+            }).unwrap();
+            if (result.checkoutUrl) {
+                window.location.assign(result.checkoutUrl);
+            }
+            return true;
+        } catch {
+            return false;
+        }
+    }, [initCheckout, userId]);
 
     const onSubmitTopUp = useCallback(async () => {
         const value = Number(draftAmountText);
@@ -125,15 +147,8 @@ export const BillingPage = () => {
     const onLoadMoreTransactions = useCallback(() => {
         if (!userId) return;
         if (pagination.currentPage >= pagination.totalPages) return;
-
-        const nextPage = pagination.currentPage + 1;
-        void dispatch(loadBillingTransactions({
-            userId,
-            page: nextPage,
-            pageSize: pagination.pageSize,
-            append: true,
-        }));
-    }, [dispatch, pagination.currentPage, pagination.pageSize, pagination.totalPages, userId]);
+        setPage(pagination.currentPage + 1);
+    }, [pagination.currentPage, pagination.totalPages, userId]);
 
     const canLoadMoreTransactions = pagination.currentPage < pagination.totalPages;
 
@@ -250,11 +265,11 @@ export const BillingPage = () => {
 
             <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
                 <div className="flex flex-col gap-4">
-                    {(billingError || checkoutError) && (
+                    {checkoutError && (
                         <MessageBar intent="error">
                             <MessageBarBody>
                                 <MessageBarTitle>Ошибка биллинга:</MessageBarTitle>
-                                {checkoutError ?? billingError}
+                                {checkoutError}
                             </MessageBarBody>
                             <MessageBarActions
                                 containerAction={
@@ -262,7 +277,7 @@ export const BillingPage = () => {
                                         appearance="transparent"
                                         aria-label="Закрыть"
                                         icon={<DismissRegular className="size-5"/>}
-                                        onClick={() => dispatch(clearBillingError())}
+                                        onClick={() => resetCheckout()}
                                     />
                                 }
                             />
