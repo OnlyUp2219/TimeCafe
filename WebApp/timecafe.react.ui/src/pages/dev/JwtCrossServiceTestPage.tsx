@@ -120,7 +120,7 @@ export const JwtCrossServiceTestPage = () => {
                             try {
                                 await navigator.clipboard.writeText(currentToken);
                                 append(`[${nowIso()}] COPY: token copied (len=${currentToken.length})`);
-                            } catch (err) {
+                            } catch {
                                 append(`[${nowIso()}] COPY: failed to copy`);
                             }
                         }}>

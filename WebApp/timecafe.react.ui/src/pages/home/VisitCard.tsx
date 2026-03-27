@@ -1,6 +1,5 @@
 import type {FC} from "react";
 import {
-    Body2,
     Button,
     Caption1,
     Divider,

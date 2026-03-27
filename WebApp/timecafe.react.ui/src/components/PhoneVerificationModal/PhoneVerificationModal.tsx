@@ -196,7 +196,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         } finally {
             setLoading(false);
         }
-    }, [currentPhoneNumber, currentPhoneNumberConfirmed, isBlocked, normalizePhone, onPhoneNumberSaved, phoneNumber, resetErrors, resetVerificationState, sendRequest]);
+    }, [currentPhoneNumber, currentPhoneNumberConfirmed, isBlocked, normalizePhone, onPhoneNumberSaved, phoneNumber, resetErrors, resetVerificationState, savePhoneMutation, sendRequest]);
 
     useEffect(() => {
         if (!isOpen) return;

@@ -12,7 +12,7 @@ import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {type FC, useCallback, useEffect, useState} from "react";
+import {type FC, useCallback, useEffect, useMemo, useState} from "react";
 import {useHasActiveVisitQuery} from "@store/api/venueApi";
 import {selectUserId} from "@store/authSlice";
 
@@ -27,6 +27,19 @@ export const Sidebar: FC = () => {
     const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
     const location = useLocation();
 
+    const navItems = useMemo(() => {
+        const visitNav = hasActive
+            ? {id: "3", label: "Активный визит", path: "/visit/active"}
+            : {id: "3", label: "Начать визит", path: "/visit/start"};
+
+        return [
+            {id: "1", label: "Главная", path: "/home"},
+            {id: "2", label: "Персональные данные", path: "/personal-data"},
+            visitNav,
+            {id: "6", label: "Баланс и транзакции", path: "/billing"},
+        ];
+    }, [hasActive]);
+
     useEffect(() => {
         const navIdFromState = location.state?.navId;
         if (navIdFromState) {
@@ -39,7 +52,7 @@ export const Sidebar: FC = () => {
                 dispatch(setSelectedNav("1"));
             }
         }
-    }, [location, hasActive]);
+    }, [location, hasActive, dispatch, navItems]);
 
 
     const handleOpenChange = (open: boolean) => {

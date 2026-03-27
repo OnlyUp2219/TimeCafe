@@ -91,7 +91,7 @@ export const TariffSelectionPage = () => {
 
     const initialActiveIndex = useMemo(() => {
         const idx = visibleTariffs.findIndex((t) => t.tariffId === selectedTariffId);
-        return idx >= 0 ? idx : 0;
+        return Math.max(idx, 0);
     }, [visibleTariffs, selectedTariffId]);
 
     const [activeIndex, setActiveIndex] = useState<number>(initialActiveIndex);

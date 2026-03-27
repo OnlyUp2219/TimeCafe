@@ -1,4 +1,4 @@
-import {useEffect, useId, useRef, useState} from "react";
+import {useCallback, useEffect, useId, useRef, useState} from "react";
 import {Avatar, Button, Card, Spinner, Text, Title2} from "@fluentui/react-components";
 import {Delete24Regular, ImageAdd24Regular} from "@fluentui/react-icons";
 import {ProfileApi} from "@api/profile/profileApi";
@@ -43,32 +43,32 @@ export function ProfilePhotoCard({
         onPhotoUrlChangeRef.current = onPhotoUrlChange;
     }, [onPhotoUrlChange]);
 
-    const revokeObjectUrl = () => {
+    const revokeObjectUrl = useCallback(() => {
         if (objectUrlRef.current) {
             URL.revokeObjectURL(objectUrlRef.current);
             objectUrlRef.current = null;
         }
-    };
+    }, []);
 
-    const setPhotoFromBlob = (blob: Blob) => {
+    const setPhotoFromBlob = useCallback((blob: Blob) => {
         revokeObjectUrl();
         const url = URL.createObjectURL(blob);
         objectUrlRef.current = url;
         setPhotoUrl(url);
         onPhotoUrlChangeRef.current?.(url);
-    };
+    }, [revokeObjectUrl]);
 
-    const clearPhoto = () => {
+    const clearPhoto = useCallback(() => {
         revokeObjectUrl();
         setPhotoUrl(null);
         onPhotoUrlChangeRef.current?.(null);
-    };
+    }, [revokeObjectUrl]);
 
     useEffect(() => {
         return () => {
             revokeObjectUrl();
         };
-    }, []);
+    }, [revokeObjectUrl]);
 
     useEffect(() => {
         revokeObjectUrl();
@@ -103,7 +103,7 @@ export function ProfilePhotoCard({
         return () => {
             isActive = false;
         };
-    }, [initialPhotoUrl]);
+    }, [initialPhotoUrl, clearPhoto, setPhotoFromBlob, revokeObjectUrl]);
 
     const body = variant === "view" ? (
         <div className="flex items-center gap-4">

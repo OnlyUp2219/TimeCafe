@@ -125,7 +125,7 @@ export const PersonalDataPage = () => {
         } finally {
             setPhotoBusy(false);
         }
-    }, [deletePhoto, userId]);
+    }, [deletePhoto, profile, userId]);
 
     const content = !profile ? (
         <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
