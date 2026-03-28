@@ -1,4 +1,4 @@
-namespace Venue.TimeCafe.API.Extensions;
+namespace BuildingBlocks.Extensions;
 
 public static class RedisExtensions
 {
@@ -12,13 +12,13 @@ public static class RedisExtensions
             ?? throw new InvalidOperationException("Redis:ConnectionString is not configured.");
 
         services.AddStackExchangeRedisCache(options => options.Configuration = connectionString);
-
-        services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ => StackExchange.Redis.ConnectionMultiplexer.Connect(connectionString));
+        services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ =>
+            StackExchange.Redis.ConnectionMultiplexer.Connect(connectionString));
 
 #pragma warning disable EXTEXP0018
         services.AddHybridCache(options =>
         {
-            options.DefaultEntryOptions = new HybridCacheEntryOptions
+            options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
             {
                 Expiration = TimeSpan.FromMinutes(30),
                 LocalCacheExpiration = TimeSpan.FromMinutes(5)

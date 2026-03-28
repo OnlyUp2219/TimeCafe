@@ -25,7 +25,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
-		<PackageReference Include="Microsoft.Extensions.Identity.Core" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
 		
 		<PackageReference Include="Serilog.AspNetCore" />
