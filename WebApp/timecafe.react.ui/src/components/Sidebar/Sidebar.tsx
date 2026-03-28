@@ -7,8 +7,8 @@ import {
     Tooltip,
     useRestoreFocusSource,
     type NavDrawerProps,
+    type OnNavItemSelectData,
 } from "@fluentui/react-components";
-import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
@@ -24,7 +24,7 @@ export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
     const isOpen = useAppSelector((state) => state.ui.isSideBarOpen);
     const userId = useAppSelector(selectUserId);
-    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
     const location = useLocation();
 
     const navItems = useMemo(() => {
@@ -68,7 +68,7 @@ export const Sidebar: FC = () => {
     );
 
     useEffect(() => {
-        const match = window.matchMedia("(max-width: 828px)");
+        const match = globalThis.matchMedia("(max-width: 828px)");
         if (match.matches) {
             setType("overlay");
         }
@@ -81,24 +81,12 @@ export const Sidebar: FC = () => {
     const selectedValue = useAppSelector((state) => state.ui.selectedNav);
 
     const handleItemSelect = (_: unknown, data: OnNavItemSelectData) => {
-        const value = data.value as string;
+        const value = String(data.value);
         dispatch(setSelectedNav(value));
 
 
     };
     const navigate = useNavigate();
-
-    const visitNav = hasActive
-        ? {id: "3", label: "Активный визит", path: "/visit/active"}
-        : {id: "3", label: "Начать визит", path: "/visit/start"};
-
-    const navItems = [
-        {id: "1", label: "Главная", path: "/home"},
-        {id: "2", label: "Персональные данные", path: "/personal-data"},
-        visitNav,
-        {id: "6", label: "Баланс и транзакции", path: "/billing"},
-    ];
-
 
     return (
         <aside className="app-sidebar">

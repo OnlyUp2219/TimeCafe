@@ -25,13 +25,13 @@ export function useRateLimitedRequest<T = unknown>(
     const [remaining, setRemaining] = useState<number>(0);
     const [blockUntil, setBlockUntil] = useState<number>(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
-        return saved ? parseInt(saved, 10) : 0;
+        return saved ? Number.parseInt(saved, 10) : 0;
     });
     const [countdown, setCountdown] = useState<number>(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (!saved) return 0;
-        const remaining = Math.ceil((parseInt(saved, 10) - Date.now()) / 1000);
-        return remaining > 0 ? remaining : 0;
+        const remaining = Math.ceil((Number.parseInt(saved, 10) - Date.now()) / 1000);
+        return Math.max(remaining, 0);
     });
     const [isLoading, setIsLoading] = useState(false);
 

@@ -40,15 +40,15 @@ export const BillingPage = () => {
     const pageSize = 20;
     const [page, setPage] = useState(1);
 
-    const {data: balance, isLoading: loadingOverview} = useGetBalanceQuery(userId!, {skip: !userId});
-    const {data: debtRub = 0} = useGetDebtQuery(userId!, {skip: !userId});
+    const {data: balance, isLoading: loadingOverview} = useGetBalanceQuery(userId ?? "", {skip: !userId});
+    const {data: debtRub = 0} = useGetDebtQuery(userId ?? "", {skip: !userId});
     const {data: txData, isLoading: loadingTransactions} = useGetTransactionHistoryQuery(
-        {userId: userId!, page, pageSize},
+        {userId: userId ?? "", page, pageSize},
         {skip: !userId},
     );
     const {data: tariffsData} = useGetActiveTariffsQuery();
-    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
-    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId!, {skip: !userId || !hasActive});
+    const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
+    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId ?? "", {skip: !userId || !hasActive});
     const [initCheckout, {isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout}] = useInitializeStripeCheckoutMutation();
 
     const balanceRub = balance?.currentBalance ?? 0;
@@ -105,7 +105,7 @@ export const BillingPage = () => {
 
     const openCheckout = useCallback(async (amountRub: number, description?: string) => {
         if (!userId) return false;
-        const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
+        const baseUrl = typeof globalThis.window !== "undefined" ? globalThis.location.origin : "";
         const successUrl = baseUrl ? `${baseUrl}/billing?payment=success` : undefined;
         const cancelUrl = baseUrl ? `${baseUrl}/billing?payment=cancel` : undefined;
 
@@ -118,7 +118,7 @@ export const BillingPage = () => {
                 description,
             }).unwrap();
             if (result.checkoutUrl) {
-                window.location.assign(result.checkoutUrl);
+                globalThis.location.assign(result.checkoutUrl);
             }
             return true;
         } catch {

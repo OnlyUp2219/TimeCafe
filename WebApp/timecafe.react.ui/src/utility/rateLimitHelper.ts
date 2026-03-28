@@ -12,36 +12,32 @@ export interface RateLimitedResponse<T> {
     status: number;
 }
 
+const parseHeader = (headers: Record<string, string>, key: string): number | undefined => {
+    const value = headers[key];
+    return value ? Number.parseInt(value, 10) : undefined;
+};
+
 export async function withRateLimit<T>(
     request: () => Promise<AxiosResponse<T>>
 ): Promise<RateLimitedResponse<T>> {
     try {
         const res = await request();
         const headers = res.headers || {};
-        const windowSeconds = headers['x-rate-limit-window']
-            ? parseInt(headers['x-rate-limit-window'], 10)
-            : undefined;
-        const remaining = headers['x-rate-limit-remaining']
-            ? parseInt(headers['x-rate-limit-remaining'], 10)
-            : undefined;
-        const retryAfter = headers['retry-after']
-            ? parseInt(headers['retry-after'], 10)
-            : undefined;
 
         return {
             data: res.data,
-            headers: {windowSeconds, remaining, retryAfter},
+            headers: {
+                windowSeconds: parseHeader(headers, "x-rate-limit-window"),
+                remaining: parseHeader(headers, "x-rate-limit-remaining"),
+                retryAfter: parseHeader(headers, "retry-after"),
+            },
             status: res.status
         };
     } catch (error: unknown) {
         if (axios.isAxiosError(error) && error.response) {
             const headers = error.response.headers || {};
-            const retryAfter = headers['retry-after']
-                ? parseInt(headers['retry-after'], 10)
-                : undefined;
-            const remaining = headers['x-rate-limit-remaining']
-                ? parseInt(headers['x-rate-limit-remaining'], 10)
-                : undefined;
+            const retryAfter = parseHeader(headers, "retry-after");
+            const remaining = parseHeader(headers, "x-rate-limit-remaining");
 
             if (error.response.status === 429) {
                 return {

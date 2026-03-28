@@ -62,7 +62,7 @@ export const TariffSelectionPage = () => {
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
     const {data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs} = useGetActiveTariffsQuery();
-    const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
+    const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
     const [createVisit, {isLoading: startingVisit}] = useCreateVisitMutation();
 
     const tariffsList = useMemo<Tariff[]>(() => {
@@ -80,7 +80,7 @@ export const TariffSelectionPage = () => {
     }, [tariffsData]);
 
     const visibleTariffs = useMemo(
-        () => tariffsList.filter((tariff): tariff is Tariff => tariff !== null && tariff.isActive),
+        () => tariffsList.filter((tariff): tariff is Tariff => tariff?.isActive),
         [tariffsList]
     );
 

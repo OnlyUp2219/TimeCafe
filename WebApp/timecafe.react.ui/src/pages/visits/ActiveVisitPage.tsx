@@ -3,6 +3,7 @@ import {
     Divider,
     Tag,
     Title2,
+    Title3,
     LargeTitle,
     Title1,
     Subtitle2Stronger,
@@ -85,7 +86,7 @@ export const ActiveVisitPage = () => {
     const {showToast, ToasterElement} = useProgressToast();
     const userId = useAppSelector((state) => state.auth.userId);
 
-    const {data: activeVisit, isLoading: loadingActiveVisit, error: visitError} = useGetActiveVisitByUserQuery(userId!, {skip: !userId});
+    const {data: activeVisit, isLoading: loadingActiveVisit, error: visitError} = useGetActiveVisitByUserQuery(userId ?? "", {skip: !userId});
     const [endVisit, {isLoading: endingVisit}] = useEndVisitMutation();
 
     const startedAtMs = activeVisit ? Date.parse(activeVisit.entryTime) : 0;
@@ -102,8 +103,8 @@ export const ActiveVisitPage = () => {
     }, [activeVisit, loadingActiveVisit, navigate, visitError]);
 
     useEffect(() => {
-        const id = window.setInterval(() => setNow(Date.now()), 1000);
-        return () => window.clearInterval(id);
+        const id = globalThis.setInterval(() => setNow(Date.now()), 1000);
+        return () => globalThis.clearInterval(id);
     }, []);
 
     const elapsedSeconds = useMemo(() => {

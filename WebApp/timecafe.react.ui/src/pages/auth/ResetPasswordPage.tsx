@@ -7,9 +7,9 @@ import {
     DialogBody,
     DialogSurface,
     DialogTitle,
-    DialogActions
+    DialogActions,
+    Spinner,
 } from "@fluentui/react-components";
-import {Spinner} from "@fluentui/react-components";
 import {MailCheckmark20Filled} from "@fluentui/react-icons";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";

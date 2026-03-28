@@ -20,8 +20,7 @@ import {PersonalDataMainForm} from "@components/PersonalDataForm/PersonalDataMai
 import {PhoneFormCard} from "@components/PersonalDataForm/PhoneFormCard";
 import {EmailFormCard} from "@components/PersonalDataForm/EmailFormCard";
 import {LogoutCard} from "@components/PersonalDataForm/LogoutCard";
-import {LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
-import {DismissRegular} from "@fluentui/react-icons";
+import {DismissRegular, LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
 import {clearTokens} from "@store/authSlice";
 import {useLogoutMutation} from "@store/api/authApi";
 import {
@@ -83,7 +82,6 @@ export const PersonalDataPage = () => {
 
     const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
 
-    const [, setPhotoUrl] = useState<string | null | undefined>(undefined);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [photoBusy, setPhotoBusy] = useState(false);
 
@@ -127,16 +125,8 @@ export const PersonalDataPage = () => {
         }
     }, [deletePhoto, profile, userId]);
 
-    const content = !profile ? (
-        <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-            <Title2>Персональные данные</Title2>
-            <div>
-                Профиль не загружен. Перейдите на главную и попробуйте снова.
-            </div>
-
-        </div>
-    ) : (
-        <div className="mx-auto  w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10 ">
+    const content = profile ? (
+        <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
 
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -195,7 +185,7 @@ export const PersonalDataPage = () => {
                     <PersonalDataMainForm
                             profile={profile}
                             loading={saving}
-                            onPhotoUrlChange={(url) => setPhotoUrl(url)}
+                            onPhotoUrlChange={() => {}}
                             onPhotoUpload={handlePhotoUpload}
                             onPhotoDelete={handlePhotoDelete}
                             photoBusy={photoBusy}
@@ -226,7 +216,7 @@ export const PersonalDataPage = () => {
                                     разных сервисов.
                                 </Body2>
                                 <div
-                                    className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center sm:justify-end " : "w-full"}>
+                                    className={showPasswordForm ? "w-full" : "flex flex-col sm:flex-row sm:items-center sm:justify-end "}>
                                     {showPasswordForm ? (
                                         <ChangePasswordForm
                                             wrapInCard={false}
@@ -251,6 +241,13 @@ export const PersonalDataPage = () => {
 
                 </div>
 
+            </div>
+        </div>
+    ) : (
+        <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+            <Title2>Персональные данные</Title2>
+            <div>
+                Профиль не загружен. Перейдите на главную и попробуйте снова.
             </div>
         </div>
     );

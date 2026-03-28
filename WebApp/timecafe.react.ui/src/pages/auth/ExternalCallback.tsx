@@ -13,7 +13,7 @@ export const ExternalCallback = () => {
     useEffect(() => {
         if (redirectedRef.current) return;
 
-        const hash = window.location.hash;
+        const hash = globalThis.location.hash;
         if (hash) {
             const params = new URLSearchParams(hash.substring(1));
             const access_token = params.get("access_token");
@@ -29,7 +29,7 @@ export const ExternalCallback = () => {
 
                 const confirmed = email_confirmed === "true" || email_confirmed === "1";
                 dispatch(setEmailConfirmed(confirmed));
-                window.history.replaceState(null, "", window.location.pathname + window.location.search);
+                globalThis.history.replaceState(null, "", globalThis.location.pathname + globalThis.location.search);
                 redirectedRef.current = true;
                 navigate("/home", {replace: true});
             }

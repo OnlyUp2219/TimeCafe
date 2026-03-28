@@ -51,7 +51,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                                                             autoSendCodeOnOpen = false,
                                                                         }) => {
     const normalizePhone = useCallback((value: string): string => {
-        const digits = value.replace(/\D/g, "");
+        const digits = value.replaceAll(/\D/g, "");
         return digits ? `+${digits}` : value;
     }, []);
 
@@ -388,8 +388,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                         isBlocked
                                     }
                                 >
-                                    {loading ? <Spinner
-                                        size="tiny"/> : countdown > 0 ? `Получить код (${formatCountdown(countdown)})` : "Получить код"}
+                                    {loading
+                                        ? <Spinner size="tiny"/>
+                                        : countdown > 0
+                                            ? `Получить код (${formatCountdown(countdown)})`
+                                            : "Получить код"}
                                 </Button>
                             </>
                         ) : (

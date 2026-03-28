@@ -21,9 +21,7 @@ export const VisitParamsCard = ({
                 </div>
                 <Divider/>
 
-                {!selectedTariff ? (
-                    <Body2 block>Сначала выберите тариф в карусели.</Body2>
-                ) : (
+                {selectedTariff ? (
                     <div className="flex flex-col gap-4">
                         <Field
                             label="Примерное время пребывания"
@@ -60,6 +58,8 @@ export const VisitParamsCard = ({
                             <Tag appearance="outline">{formatDurationMinutes(durationMinutes)}</Tag>
                         </div>
                     </div>
+                ) : (
+                    <Body2 block>Сначала выберите тариф в карусели.</Body2>
                 )}
             </div>
         </Card>
