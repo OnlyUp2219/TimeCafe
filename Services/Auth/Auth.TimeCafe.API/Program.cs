@@ -9,7 +9,7 @@ builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
 // DbContext
-builder.Services.AddDatabase(builder.Configuration);
+builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // Identity
 builder.Services.AddIdentityConfiguration();
@@ -32,7 +32,7 @@ builder.Services.AddAuthCqrs();
 
 builder.Services.AddControllers();
 
-builder.Services.AddOpenApiConfiguration();
+builder.Services.AddOpenApiConfiguration("TimeCafe Auth API");
 
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
@@ -66,7 +66,7 @@ app.UseForwardedHeaders();
 
 await app.ApplyMigrationsAsync();
 
-app.UseOpenApiDevelopment();
+app.UseOpenApiDevelopment("TimeCafe Auth API");
 
 app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);

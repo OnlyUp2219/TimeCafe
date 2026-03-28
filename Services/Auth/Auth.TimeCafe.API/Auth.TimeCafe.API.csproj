@@ -57,8 +57,4 @@
 		<ProjectReference Include="..\Auth.TimeCafe.Infrastructure\Auth.TimeCafe.Infrastructure.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Compile Include="..\..\OpenApiTransformers.cs" Link="Extensions\OpenApiTransformers.cs" />
-	</ItemGroup>
-
 </Project>

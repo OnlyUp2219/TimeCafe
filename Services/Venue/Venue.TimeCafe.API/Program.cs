@@ -33,7 +33,7 @@ builder.Services.AddHttpClient("BillingApi", (_, client) =>
 .AddHttpMessageHandler<AuthorizationDelegatingHandler>();
 
 // DbContext
-builder.Services.AddVenueDatabase(builder.Configuration);
+builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // AutoMapper
 builder.Services.AddVenueAutoMapper();
@@ -46,14 +46,14 @@ builder.Services.AddVenueCqrs();
 
 // Swagger & Carter
 builder.Services.AddControllers();
-builder.Services.AddOpenApiConfiguration();
+builder.Services.AddOpenApiConfiguration("TimeCafe Venue API");
 builder.Services.AddCarter();
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ApplicationDbContext>();
 await app.SeedFrontendDataAsync();
 
 app.UseCors(corsPolicyName);
@@ -61,7 +61,7 @@ app.UseCors(corsPolicyName);
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseOpenApiDevelopment();
+app.UseOpenApiDevelopment("TimeCafe Venue API");
 
 var venueGroup = app.MapGroup("/venue");
 venueGroup.MapCarter();

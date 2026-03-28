@@ -24,7 +24,7 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment
 builder.Services.AddRedis(builder.Configuration);
 
 // DbContext
-builder.Services.AddUserProfileDatabase(builder.Configuration);
+builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // Repositories
 builder.Services.AddUserProfilePersistence();
@@ -44,7 +44,7 @@ builder.Services.AddS3(builder.Configuration);
 builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerationService>();
 
 // Swagger & Carter
-builder.Services.AddOpenApiConfiguration();
+builder.Services.AddOpenApiConfiguration("TimeCafe UserProfile API");
 builder.Services.AddCarter();
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter()));
@@ -53,14 +53,14 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ApplicationDbContext>();
 
 app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseOpenApiDevelopment();
+app.UseOpenApiDevelopment("TimeCafe UserProfile API");
 
 // Endpoints
 var userProfileGroup = app.MapGroup("/userprofile");

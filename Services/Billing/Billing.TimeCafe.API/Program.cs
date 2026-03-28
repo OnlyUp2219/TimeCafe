@@ -16,7 +16,7 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment
 builder.Services.AddRedis(builder.Configuration);
 
 // DbContext
-builder.Services.AddBillingDatabase(builder.Configuration);
+builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // Infrastructure (repositories)
 builder.Services.AddBillingInfrastructure(builder.Configuration);
@@ -30,21 +30,21 @@ builder.Services.AddAuthorization();
 
 // Swagger & Carter
 builder.Services.AddControllers();
-builder.Services.AddOpenApiConfiguration();
+builder.Services.AddOpenApiConfiguration("TimeCafe Billing API");
 builder.Services.AddCarter();
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-await app.ApplyMigrationsAsync();
+await app.ApplyMigrationsAsync<ApplicationDbContext>();
 
 app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseOpenApiDevelopment();
+app.UseOpenApiDevelopment("TimeCafe Billing API");
 
 var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();
