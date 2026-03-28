@@ -1,4 +1,4 @@
-import type {Tariff} from "@app-types/tariff.ts";
+import type {Tariff} from "@app-types/tariff";
 
 export type TariffCarouselSectionProps = {
     visibleTariffs: Tariff[];

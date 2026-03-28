@@ -1,7 +1,7 @@
-import { Input, Field } from '@fluentui/react-components';
-import {useEffect, useMemo, useRef} from 'react';
-import { validateEmail as defaultValidateEmail } from '@utility/validate';
-import type { ReactNode } from 'react';
+import {Input, Field} from "@fluentui/react-components";
+import {useEffect, useMemo, useRef} from "react";
+import {validateEmail as defaultValidateEmail} from "@utility/validate";
+import type {ReactNode} from "react";
 
 interface EmailInputProps {
     value: string;

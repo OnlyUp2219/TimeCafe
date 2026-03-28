@@ -21,7 +21,7 @@ import {
     type PhoneVerificationSessionV1,
 } from "@shared/auth/phoneVerificationSession";
 import {validatePhoneNumber} from "@utility/validate";
-import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest.ts";
+import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest";
 import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {httpClient} from "@api/httpClient";
 import {withRateLimit} from "@utility/rateLimitHelper";

@@ -29,6 +29,8 @@ import {RestTimeCard} from "@components/Billing/RestTimeCard";
 import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
 import {SupportCard} from "@components/Billing/SupportCard";
 import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation} from "@store/api/billingApi";
+
+const TELEGRAM_SUPPORT_URL = "https://t.me/OnlyUp_S";
 import {useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery} from "@store/api/venueApi";
 
 export const BillingPage = () => {
@@ -227,7 +229,7 @@ export const BillingPage = () => {
     }, [transactions]);
 
     const handleCallAdmin = useCallback(() => {
-        window.open("https://t.me/OnlyUp_S", "_blank");
+        window.open(TELEGRAM_SUPPORT_URL, "_blank");
     }, []);
 
     return (
@@ -343,10 +345,8 @@ export const BillingPage = () => {
                         />
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="flex h-full items-center rounded-xl border border-dashed px-4 py-3">
-                                <Body2 block>TODO: loyalty блок скрыт до появления backend-контракта программы лояльности.</Body2>
-                            </div>
-                            <SupportCard telegramUrl="https://t.me/OnlyUp_S" onCallAdmin={handleCallAdmin} />
+                            {/* TODO: loyalty блок — скрыт до появления backend-контракта */}
+                            <SupportCard telegramUrl={TELEGRAM_SUPPORT_URL} onCallAdmin={handleCallAdmin} />
                         </div>
                     </div>
                 </div>

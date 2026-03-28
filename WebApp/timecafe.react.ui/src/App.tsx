@@ -3,18 +3,18 @@ import {BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 
 import "./App.css";
-import {LoginPage} from '@pages/auth/LoginPage';
-import {RegisterPage} from '@pages/auth/RegisterPage';
-import {ResetPasswordPage} from '@pages/auth/ResetPasswordPage';
-import {ConfirmResetPage} from '@pages/auth/ConfirmResetPage';
-import {LandingPage} from '@pages/public/LandingPage';
-import {HomePage} from '@pages/home/HomePage';
+import {LoginPage} from "@pages/auth/LoginPage";
+import {RegisterPage} from "@pages/auth/RegisterPage";
+import {ResetPasswordPage} from "@pages/auth/ResetPasswordPage";
+import {ConfirmResetPage} from "@pages/auth/ConfirmResetPage";
+import {LandingPage} from "@pages/public/LandingPage";
+import {HomePage} from "@pages/home/HomePage";
 import {PersonalDataPage} from "@pages/profile/PersonalDataPage";
 import {TariffSelectionPage} from "@pages/visits/TariffSelectionPage";
 import {ActiveVisitPage} from "@pages/visits/ActiveVisitPage";
-import {AuthLayout} from '@layouts/AuthLayout/AuthLayout';
-import {MainLayout} from '@layouts/MainLayout/MainLayout';
-import {BillingPage} from '@pages/billing/BillingPage.tsx'
+import {AuthLayout} from "@layouts/AuthLayout/AuthLayout";
+import {MainLayout} from "@layouts/MainLayout/MainLayout";
+import {BillingPage} from "@pages/billing/BillingPage";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {configureHttpClient} from "@api/httpClient";
 import {store} from "@store";

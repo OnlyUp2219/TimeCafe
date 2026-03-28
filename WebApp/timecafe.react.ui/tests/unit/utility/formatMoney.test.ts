@@ -9,17 +9,23 @@ describe("formatMoneyByN", () => {
     });
 
     it("uses Intl formatter when available", () => {
-        Intl.NumberFormat = vi.fn(() => ({
-            format: () => "12,30 ₽",
-        })) as unknown as typeof Intl.NumberFormat;
+        class MockNumberFormat {
+            format() {
+                return "12,30 ₽";
+            }
+        }
+        Intl.NumberFormat = MockNumberFormat as unknown as typeof Intl.NumberFormat;
 
         expect(formatMoneyByN(12.3)).toBe("12,30 ₽");
     });
 
     it("falls back to fixed format on Intl errors", () => {
-        Intl.NumberFormat = vi.fn(() => {
-            throw new Error("Intl not available");
-        }) as unknown as typeof Intl.NumberFormat;
+        class ThrowingNumberFormat {
+            constructor() {
+                throw new Error("Intl not available");
+            }
+        }
+        Intl.NumberFormat = ThrowingNumberFormat as unknown as typeof Intl.NumberFormat;
 
         expect(formatMoneyByN(12.345, 1)).toBe("12.3 ₽");
     });

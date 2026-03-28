@@ -8,12 +8,12 @@ import {
     DialogSurface,
     DialogTitle,
     DialogActions
-} from '@fluentui/react-components';
-import {Spinner} from '@fluentui/react-components';
-import {MailCheckmark20Filled} from '@fluentui/react-icons';
+} from "@fluentui/react-components";
+import {Spinner} from "@fluentui/react-components";
+import {MailCheckmark20Filled} from "@fluentui/react-icons";
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {EmailInput} from "@components/FormFields";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {useForgotPasswordLinkMutation} from "@store/api/authApi";

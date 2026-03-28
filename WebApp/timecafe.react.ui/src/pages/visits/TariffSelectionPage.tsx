@@ -22,9 +22,9 @@ import vortexUrl from "@assets/vvvortex.svg";
 import blob2Url from "@assets/ssshape_blob2.svg";
 import blob4Url from "@assets/ssshape_blob4.svg";
 import "./visits.css";
-import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard.tsx";
-import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection.tsx";
-import {VisitParamsCard} from "@components/Tariff/VisitParamsCard.tsx";
+import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard";
+import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection";
+import {VisitParamsCard} from "@components/Tariff/VisitParamsCard";
 import {useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation} from "@store/api/venueApi";
 
 const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {

@@ -1,5 +1,5 @@
-import type {BillingType} from "@app-types/tariff.ts";
-import type {VisitStatus} from "@app-types/visit.ts";
+import type {BillingType} from "@app-types/tariff";
+import type {VisitStatus} from "@app-types/visit";
 
 export type VisitWithTariff =
     {

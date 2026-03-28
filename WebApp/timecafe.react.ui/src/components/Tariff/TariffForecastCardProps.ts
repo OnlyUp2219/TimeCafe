@@ -1,5 +1,5 @@
-import type {Tariff} from "@app-types/tariff.ts";
-import type {CalcResult} from "@components/Tariff/TariffForecastCard.tsx";
+import type {Tariff} from "@app-types/tariff";
+import type {CalcResult} from "@components/Tariff/TariffForecastCard";
 
 export type TariffForecastCardProps = {
     selectedTariff: Tariff | null;

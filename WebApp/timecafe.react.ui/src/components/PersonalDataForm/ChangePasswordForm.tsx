@@ -12,7 +12,7 @@ import {
 import {LockClosedRegular} from "@fluentui/react-icons";
 import {useAppDispatch} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
-import {clearTokens} from "@store/authSlice.ts";
+import {clearTokens} from "@store/authSlice";
 import {ConfirmPasswordInput, PasswordInput} from "@components/FormFields";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {useChangePasswordMutation} from "@store/api/authApi";

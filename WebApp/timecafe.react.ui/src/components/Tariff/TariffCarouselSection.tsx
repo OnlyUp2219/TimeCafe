@@ -1,4 +1,4 @@
-import type {TariffCarouselSectionProps} from "@components/Tariff/TariffCarouselSectionProps.ts";
+import type {TariffCarouselSectionProps} from "@components/Tariff/TariffCarouselSectionProps";
 import {
     Body2,
     Card,
@@ -12,7 +12,7 @@ import {
     Divider,
     Title3
 } from "@fluentui/react-components";
-import {TariffCard} from "@components/TariffCard/TariffCard.tsx";
+import {TariffCard} from "@components/TariffCard/TariffCard";
 
 export const TariffCarouselSection = ({
                                           visibleTariffs,

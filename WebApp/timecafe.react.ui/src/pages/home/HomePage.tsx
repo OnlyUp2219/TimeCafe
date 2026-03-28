@@ -139,7 +139,7 @@ export const HomePage = () => {
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[16vw] right-0 -scale-x-100 w-[100vw] max-w-none select-none"
-                    style={{opacity: 0.30}}
+                    style={{opacity: 0.3}}
                     draggable={false}
                 />
             </div>

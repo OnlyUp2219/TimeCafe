@@ -1,7 +1,7 @@
 import {Body2, Caption1, Card, Divider, Title2, Title3} from "@fluentui/react-components";
-import {formatMoneyByN} from "@utility/formatMoney.ts";
-import type {TariffForecastCardProps} from "@components/Tariff/TariffForecastCardProps.ts";
-import {BillingType as BillingTypeEnum} from "@app-types/tariff.ts";
+import {formatMoneyByN} from "@utility/formatMoney";
+import type {TariffForecastCardProps} from "@components/Tariff/TariffForecastCardProps";
+import {BillingType as BillingTypeEnum} from "@app-types/tariff";
 
 export type CalcResult = {
     total: number;

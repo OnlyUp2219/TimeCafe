@@ -1,4 +1,4 @@
-import type {BillingType} from "@app-types/tariff.ts";
+import type {BillingType} from "@app-types/tariff";
 
 export interface TariffWithTheme {
     tariffId: string;

@@ -1,8 +1,8 @@
-import type {VisitParamsCardProps} from "@components/Tariff/VisitParamsCardProps.ts";
+import type {VisitParamsCardProps} from "@components/Tariff/VisitParamsCardProps";
 import {Body2, Button, Card, Divider, Field, Input, Tag, Title3} from "@fluentui/react-components";
-import {clamp} from "@utility/clamp.ts";
-import {formatDurationMinutes} from "@utility/formatDurationMinutes.ts";
-import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff.ts";
+import {clamp} from "@utility/clamp";
+import {formatDurationMinutes} from "@utility/formatDurationMinutes";
+import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
 
 const getBillingLabel = (billingType: BillingType) =>
     billingType === BillingTypeEnum.PerMinute ? "Оплата за минуты" : "Округление до часа";

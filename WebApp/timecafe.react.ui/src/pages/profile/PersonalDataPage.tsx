@@ -192,8 +192,7 @@ export const PersonalDataPage = () => {
                 )}
 
                 <div className="flex flex-col gap-4">
-                    <>
-                        <PersonalDataMainForm
+                    <PersonalDataMainForm
                             profile={profile}
                             loading={saving}
                             onPhotoUrlChange={(url) => setPhotoUrl(url)}
@@ -228,12 +227,7 @@ export const PersonalDataPage = () => {
                                 </Body2>
                                 <div
                                     className={!showPasswordForm ? "flex flex-col sm:flex-row sm:items-center sm:justify-end " : "w-full"}>
-                                    {!showPasswordForm ? (
-                                        <Button appearance="primary" icon={<PasswordFilled className="size-5"/>}
-                                                onClick={() => setShowPasswordForm(true)}>
-                                            Сменить пароль
-                                        </Button>
-                                    ) : (
+                                    {showPasswordForm ? (
                                         <ChangePasswordForm
                                             wrapInCard={false}
                                             showTitle={false}
@@ -242,6 +236,11 @@ export const PersonalDataPage = () => {
                                             showCancelButton
                                             onCancel={() => setShowPasswordForm(false)}
                                         />
+                                    ) : (
+                                        <Button appearance="primary" icon={<PasswordFilled className="size-5"/>}
+                                                onClick={() => setShowPasswordForm(true)}>
+                                            Сменить пароль
+                                        </Button>
                                     )}
                                 </div>
                             </Card>
@@ -249,7 +248,6 @@ export const PersonalDataPage = () => {
                             <LogoutCard className="h-full border-2 border-dashed sm:col-span-2 lg:col-span-1"
                                         onLogout={handleLogout}/>
                         </div>
-                    </>
 
                 </div>
 

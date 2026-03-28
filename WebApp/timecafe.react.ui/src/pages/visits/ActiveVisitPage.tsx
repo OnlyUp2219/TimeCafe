@@ -32,8 +32,6 @@ import {VisitEndDialog} from "./VisitEndDialog";
 import {VisitDetailsCard} from "./VisitDetailsCard";
 import {VisitAtmosphereCard} from "./VisitAtmosphereCard";
 
-const clampMin = (value: number, min: number) => Math.max(min, value);
-
 const pad2 = (value: number) => value.toString().padStart(2, "0");
 
 const formatTimeHHmm = (hhmm: string, fallback: Date) => {
@@ -43,7 +41,7 @@ const formatTimeHHmm = (hhmm: string, fallback: Date) => {
 
 
 const formatDuration = (totalSeconds: number) => {
-    const safeSeconds = clampMin(Math.floor(totalSeconds), 0);
+    const safeSeconds = Math.max(0, Math.floor(totalSeconds));
     const hours = Math.floor(safeSeconds / 3600);
     const minutes = Math.floor((safeSeconds % 3600) / 60);
     const seconds = safeSeconds % 60;
@@ -60,7 +58,7 @@ type Estimate = {
 };
 
 const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePerMinute: number): Estimate => {
-    const minutes = clampMin(Math.floor(elapsedMinutes), 1);
+    const minutes = Math.max(1, Math.floor(elapsedMinutes));
 
     const safePricePerMinute = Math.max(0, pricePerMinute);
 
@@ -73,7 +71,7 @@ const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePer
     }
 
     const pricePerHour = safePricePerMinute * 60;
-    const hours = clampMin(Math.ceil(minutes / 60), 1);
+    const hours = Math.max(1, Math.ceil(minutes / 60));
 
     return {
         total: hours * pricePerHour,

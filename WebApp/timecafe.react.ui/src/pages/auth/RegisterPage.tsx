@@ -1,7 +1,7 @@
-import {Link, Body2, Caption1, Title3, Divider, Spinner} from '@fluentui/react-components';
+import {Link, Body2, Caption1, Title3, Divider, Spinner} from "@fluentui/react-components";
 import React, {useState, useCallback} from "react";
 import {useNavigate} from "react-router-dom";
-import {useProgressToast} from "@components/ToastProgress/ToastProgress.tsx";
+import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {EmailInput, PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";

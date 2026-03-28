@@ -10,7 +10,7 @@ import {
 } from "@fluentui/react-components";
 import type {OnNavItemSelectData} from "@fluentui/react-components";
 import {useLocation, useNavigate} from "react-router-dom";
-import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice.ts";
+import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {type FC, useCallback, useEffect, useMemo, useState} from "react";
 import {useHasActiveVisitQuery} from "@store/api/venueApi";
