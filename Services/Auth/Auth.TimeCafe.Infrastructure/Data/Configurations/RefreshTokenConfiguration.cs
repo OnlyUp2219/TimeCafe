@@ -4,6 +4,13 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {
     public void Configure(EntityTypeBuilder<RefreshToken> builder)
     {
+        builder.Property(x => x.Token)
+            .IsRequired()
+            .HasMaxLength(2048);
+
+        builder.Property(x => x.ReplacedByToken)
+            .HasMaxLength(2048);
+
         builder.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.UserId)

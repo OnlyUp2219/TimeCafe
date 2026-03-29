@@ -37,5 +37,8 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.HasIndex(v => v.EntryTime);
         builder.HasIndex(v => new { v.Status, v.EntryTime });
         builder.HasIndex(v => new { v.UserId, v.EntryTime });
+        builder.HasIndex(v => v.UserId)
+            .HasFilter("\"Status\" = 1")
+            .IsUnique();
     }
 }
