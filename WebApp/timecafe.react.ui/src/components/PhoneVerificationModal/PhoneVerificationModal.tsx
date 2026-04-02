@@ -12,17 +12,11 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
-import {type PhoneCodeRequest, useSavePhoneNumberMutation, useVerifyPhoneConfirmationMutation, type SendPhoneResponse} from "@store/api/authApi";
+import {type PhoneCodeRequest, useSavePhoneNumberMutation, useVerifyPhoneConfirmationMutation, type SendPhoneResponse, useLazyGetPhoneVerificationStatusQuery} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {handleVerificationError} from "@shared/auth/phoneVerification";
-import {
-    isPhoneVerificationSessionV1,
-    PHONE_VERIFICATION_SESSION_KEY,
-    type PhoneVerificationSessionV1,
-} from "@shared/auth/phoneVerificationSession";
 import {validatePhoneNumber} from "@utility/validate";
 import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest";
-import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {httpClient} from "@api/httpClient";
 import {withRateLimit} from "@utility/rateLimitHelper";
 import {PhoneInputStep} from "./PhoneInputStep";
@@ -55,10 +49,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         return digits ? `+${digits}` : value;
     }, []);
 
-    const {load: loadPhoneSession, save: savePhoneSession, clear: clearPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
-        PHONE_VERIFICATION_SESSION_KEY,
-        isPhoneVerificationSessionV1
-    );
+    const [fetchVerificationStatus] = useLazyGetPhoneVerificationStatusQuery();
 
     const [step, setStep] = useState<Step>("input");
     const [phoneNumber, setPhoneNumber] = useState(currentPhoneNumber);
@@ -117,31 +108,37 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
 
         autoSendOnceRef.current = false;
 
-        const session = loadPhoneSession();
-        if (session?.open && session.phoneNumber.trim()) {
-            setPhoneNumber(session.phoneNumber);
-            resetVerificationState();
-            resetErrors();
-            setStep(session.step);
-            setMockGeneratedCode(session.mockToken ?? null);
-            setAutoSendRequested(false);
-            return;
-        }
-
-        setPhoneNumber(currentPhoneNumber);
         resetVerificationState();
         resetErrors();
-        setStep("input");
         setMockGeneratedCode(null);
-        setAutoSendRequested(autoSendCodeOnOpen && Boolean(currentPhoneNumber.trim()));
-    }, [autoSendCodeOnOpen, currentPhoneNumber, isOpen, loadPhoneSession, resetErrors, resetVerificationState]);
+
+        fetchVerificationStatus()
+            .unwrap()
+            .then((status) => {
+                if (status.phoneNumber) {
+                    setPhoneNumber(status.phoneNumber);
+                }
+                if (status.hasPendingVerification && status.phoneNumber) {
+                    setStep("verify");
+                    setAutoSendRequested(false);
+                } else {
+                    setPhoneNumber(status.phoneNumber || currentPhoneNumber);
+                    setStep("input");
+                    setAutoSendRequested(autoSendCodeOnOpen && Boolean((status.phoneNumber || currentPhoneNumber).trim()));
+                }
+            })
+            .catch(() => {
+                setPhoneNumber(currentPhoneNumber);
+                setStep("input");
+                setAutoSendRequested(autoSendCodeOnOpen && Boolean(currentPhoneNumber.trim()));
+            });
+    }, [autoSendCodeOnOpen, currentPhoneNumber, fetchVerificationStatus, isOpen, resetErrors, resetVerificationState]);
 
     useEffect(() => {
         phoneNumberRef.current = phoneNumber;
     }, [phoneNumber]);
 
     const handleClose = () => {
-        clearPhoneSession();
         onClose();
     };
 
@@ -215,20 +212,6 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         setAutoSendRequested(false);
         void handleSendCode();
     }, [autoSendRequested, handleSendCode, isOpen, step]);
-
-    useEffect(() => {
-        if (!isOpen) return;
-        if (!phoneNumber.trim()) {
-            clearPhoneSession();
-            return;
-        }
-        savePhoneSession({
-            open: true,
-            step,
-            phoneNumber,
-            mockToken: mockGeneratedCode,
-        });
-    }, [clearPhoneSession, isOpen, mockGeneratedCode, phoneNumber, savePhoneSession, step]);
 
     const handleVerifyCode = async () => {
         resetErrors();

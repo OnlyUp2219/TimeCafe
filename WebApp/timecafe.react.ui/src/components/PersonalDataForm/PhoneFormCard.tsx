@@ -1,4 +1,4 @@
-import {createElement, useEffect, useState, type FC} from "react";
+import {createElement, useState, type FC} from "react";
 import {
     Badge,
     Body1,
@@ -19,12 +19,6 @@ import {
 } from "@fluentui/react-components";
 import {Delete20Regular, Edit20Filled, PhoneRegular} from "@fluentui/react-icons";
 import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
-import {
-    isPhoneVerificationSessionV1,
-    PHONE_VERIFICATION_SESSION_KEY,
-    type PhoneVerificationSessionV1,
-} from "@shared/auth/phoneVerificationSession";
-import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useClearPhoneNumberMutation} from "@store/api/authApi";
 import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
@@ -42,10 +36,6 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const [clearPhoneMutation] = useClearPhoneNumberMutation();
     const phoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const phoneNumberConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
-    const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
-        PHONE_VERIFICATION_SESSION_KEY,
-        isPhoneVerificationSessionV1
-    );
 
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -56,13 +46,6 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const hasPhone = Boolean(phone.trim());
     const confirmedForUi: boolean | null = hasPhone ? phoneNumberConfirmed : null;
     const actionLabel = !hasPhone ? "Заполнить" : phoneNumberConfirmed ? "Изменить" : "Подтвердить";
-
-    useEffect(() => {
-        const session = loadPhoneSession();
-        if (session?.open) {
-            setShowPhoneModal(true);
-        }
-    }, [loadPhoneSession]);
 
     const handlePhoneVerified = async () => {
         try {

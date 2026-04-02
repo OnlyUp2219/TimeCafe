@@ -32,6 +32,24 @@ public class SmsVerificationAttemptTracker(IMemoryCache cache) : ISmsVerificatio
         _cache.Remove(key);
     }
 
+    public void RecordCodeSent(string userId, string phoneNumber)
+    {
+        var key = $"sms_code_sent:{userId}:{phoneNumber}";
+        _cache.Set(key, true, TimeSpan.FromMinutes(AttemptWindowMinutes));
+    }
+
+    public bool HasPendingVerification(string userId, string phoneNumber)
+    {
+        var key = $"sms_code_sent:{userId}:{phoneNumber}";
+        return _cache.TryGetValue(key, out bool _);
+    }
+
+    public void ClearPendingVerification(string userId, string phoneNumber)
+    {
+        var key = $"sms_code_sent:{userId}:{phoneNumber}";
+        _cache.Remove(key);
+    }
+
     private int GetCurrentAttempts(string userId, string phoneNumber)
     {
         var key = GetCacheKey(userId, phoneNumber);

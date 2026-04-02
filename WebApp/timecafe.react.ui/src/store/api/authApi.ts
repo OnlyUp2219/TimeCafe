@@ -44,6 +44,12 @@ export interface PhoneCodeRequest {
     captchaToken?: string;
 }
 
+export interface PhoneVerificationStatusResponse {
+    phoneNumber: string | null;
+    phoneNumberConfirmed: boolean;
+    hasPendingVerification: boolean;
+}
+
 export interface VerifyPhoneResponse {
     message: string;
     remainingAttempts?: number;
@@ -106,6 +112,10 @@ export const authApi = createApi({
 
         getCurrentUser: builder.query<CurrentUserResponse, void>({
             query: () => "/auth/account/me",
+        }),
+
+        getPhoneVerificationStatus: builder.query<PhoneVerificationStatusResponse, void>({
+            query: () => "/auth/account/phone-verification-status",
         }),
 
         forgotPasswordLink: builder.mutation<{ message?: string; callbackUrl?: string }, ResetPasswordEmailRequest>({
@@ -206,6 +216,7 @@ export const {
     useLogoutMutation,
     useGetCurrentUserQuery,
     useLazyGetCurrentUserQuery,
+    useLazyGetPhoneVerificationStatusQuery,
     useForgotPasswordLinkMutation,
     useResetPasswordMutation,
     useChangePasswordMutation,

@@ -65,6 +65,7 @@ ISmsVerificationAttemptTracker attemptTracker
         if (request.Mock)
         {
             _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
+            _attemptTracker.RecordCodeSent(request.UserId, request.PhoneNumber);
             return GeneratePhoneVerificationResult.MockCallback(request.PhoneNumber, token);
         }
 
@@ -78,6 +79,7 @@ ISmsVerificationAttemptTracker attemptTracker
         if (sendResult != null)
         {
             _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
+            _attemptTracker.RecordCodeSent(request.UserId, request.PhoneNumber);
             return GeneratePhoneVerificationResult.Sent(request.PhoneNumber);
         }
 

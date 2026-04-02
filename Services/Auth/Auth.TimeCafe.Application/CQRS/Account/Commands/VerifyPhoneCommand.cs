@@ -82,6 +82,7 @@ public class VerifyPhoneCommandHandler(
         if (identityResult.Succeeded)
         {
             _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
+            _attemptTracker.ClearPendingVerification(request.UserId, request.PhoneNumber);
             var attempts = _attemptTracker.GetRemainingAttempts(request.UserId, request.PhoneNumber);
 
             return VerifyPhoneResult.SuccessResult(request.PhoneNumber, attempts, false, request.Mock);

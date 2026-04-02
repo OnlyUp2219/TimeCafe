@@ -23,12 +23,6 @@ import {
 } from "@store/authSlice";
 import {Gender} from "@app-types/profile";
 import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
-import {
-    isPhoneVerificationSessionV1,
-    PHONE_VERIFICATION_SESSION_KEY,
-    type PhoneVerificationSessionV1,
-} from "@shared/auth/phoneVerificationSession";
-import {useLocalStorageJson} from "@hooks/useLocalStorageJson";
 import {validatePhoneNumber} from "@utility/validate";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {useLazyGetCurrentUserQuery} from "@store/api/authApi";
@@ -52,11 +46,6 @@ export const ProfileCompletionGate: FC = () => {
 
     const authPhoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
-
-    const {load: loadPhoneSession} = useLocalStorageJson<PhoneVerificationSessionV1>(
-        PHONE_VERIFICATION_SESSION_KEY,
-        isPhoneVerificationSessionV1
-    );
 
     const derivedAuthInfo = useMemo(() => {
         if (!accessToken) return null;
@@ -115,17 +104,6 @@ export const ProfileCompletionGate: FC = () => {
     const [phoneSendError, setPhoneSendError] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
     const phoneVerifiedRecentlyRef = useRef<{ phone: string; at: number } | null>(null);
-
-    useEffect(() => {
-        if (!accessToken) return;
-        const session = loadPhoneSession();
-        if (!session?.open) return;
-        if (showPhoneModal) return;
-        const nextPhone = session.phoneNumber.trim();
-        if (nextPhone) setPhoneDraft((prev) => (prev.trim() ? prev : nextPhone));
-        setPhoneAutoSend(false);
-        setShowPhoneModal(true);
-    }, [accessToken, loadPhoneSession, showPhoneModal]);
 
     const gateDecisionReady = useMemo(() => {
         if (!accessToken) return false;
