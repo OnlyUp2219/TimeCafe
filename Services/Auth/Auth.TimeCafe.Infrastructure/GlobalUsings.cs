@@ -1,9 +1,7 @@
 global using Auth.TimeCafe.Application.Contracts;
 global using Auth.TimeCafe.Application.DTOs;
-global using Auth.TimeCafe.Application.Permissions;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
-global using Auth.TimeCafe.Domain.Enums;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 

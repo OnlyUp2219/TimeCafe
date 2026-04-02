@@ -2,7 +2,6 @@ global using Auth.TimeCafe.Application.Contracts;
 global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
-global using Auth.TimeCafe.Domain.Enums;
 
 global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Events;

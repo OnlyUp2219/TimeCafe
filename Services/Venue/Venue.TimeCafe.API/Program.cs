@@ -9,9 +9,7 @@ builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
 // CORS
-var corsPolicyName = builder.Configuration["CORS:PolicyName"]
-    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
-builder.Services.AddCorsConfiguration(corsPolicyName);
+var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 
 builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
@@ -49,6 +47,9 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApiConfiguration("TimeCafe Venue API");
 builder.Services.AddCarter();
 
+// HealthChecks
+builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -67,8 +68,9 @@ var venueGroup = app.MapGroup("/venue");
 venueGroup.MapCarter();
 venueGroup.MapControllers();
 
-app.MapGet("/health", () => Results.Ok("OK"))
-    .AllowAnonymous();
+app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+
+app.UseHealthChecks();
 
 await app.RunAsync();
 

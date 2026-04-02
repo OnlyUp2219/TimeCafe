@@ -19,9 +19,9 @@ public class FunctionsController : ControllerBase
     }
 
     [HttpGet("client-edit-function")]
-    [HasPermission(Permission.ClientEdit)]
+    [Authorize]
     public IActionResult ClientEditFunction()
     {
-        return Ok("Эта функция доступна только с разрешением ClientEdit!");
+        return Ok("Эта функция доступна авторизованным пользователям!");
     }
 }

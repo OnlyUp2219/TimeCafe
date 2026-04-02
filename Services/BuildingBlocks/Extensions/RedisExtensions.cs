@@ -16,13 +16,10 @@ public static class RedisExtensions
             StackExchange.Redis.ConnectionMultiplexer.Connect(connectionString));
 
 #pragma warning disable EXTEXP0018
-        services.AddHybridCache(options =>
+        services.AddHybridCache(options => options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
         {
-            options.DefaultEntryOptions = new Microsoft.Extensions.Caching.Hybrid.HybridCacheEntryOptions
-            {
-                Expiration = TimeSpan.FromMinutes(30),
-                LocalCacheExpiration = TimeSpan.FromMinutes(5)
-            };
+            Expiration = TimeSpan.FromMinutes(30),
+            LocalCacheExpiration = TimeSpan.FromMinutes(5)
         });
 #pragma warning restore EXTEXP0018
 

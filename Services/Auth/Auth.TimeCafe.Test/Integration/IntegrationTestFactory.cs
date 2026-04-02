@@ -30,7 +30,6 @@ public class IntegrationTestFactory
         serviceCollection.AddSingleton<IConfiguration>(inMemoryConfig);
 
         serviceCollection.AddScoped<IUserRoleService, UserRoleService>();
-        serviceCollection.AddScoped<IPermissionService, PermissionService>();
         serviceCollection.AddScoped<IJwtService, JwtService>();
 
         Services = serviceCollection.BuildServiceProvider();

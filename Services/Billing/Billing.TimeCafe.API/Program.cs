@@ -1,13 +1,15 @@
 var builder = WebApplication.CreateBuilder(args);
 
+var sharedSettingsPath = Path.GetFullPath(
+    Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "appsettings.shared.json"));
+builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
+
 // Serilog
 builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
 // CORS
-var corsPolicyName = builder.Configuration["CORS:PolicyName"]
-    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
-builder.Services.AddCorsConfiguration(corsPolicyName);
+var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
@@ -26,12 +28,14 @@ builder.Services.AddBillingCqrs();
 
 // Authentication & Authorization
 builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
-builder.Services.AddAuthorization();
 
 // Swagger & Carter
 builder.Services.AddControllers();
 builder.Services.AddOpenApiConfiguration("TimeCafe Billing API");
 builder.Services.AddCarter();
+
+// HealthChecks
+builder.Services.AddHealthChecksConfiguration(builder.Configuration);
 
 var app = builder.Build();
 
@@ -50,8 +54,9 @@ var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();
 billingGroup.MapControllers();
 
-app.MapGet("/health", () => Results.Ok("OK"))
-    .AllowAnonymous();
+app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+
+app.UseHealthChecks();
 
 await app.RunAsync();
 

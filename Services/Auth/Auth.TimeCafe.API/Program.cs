@@ -16,10 +16,9 @@ builder.Services.AddIdentityConfiguration();
 
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
-builder.Services.AddAuthorization();
-
-// Permission system registration
-builder.Services.AddPermissionAuthorization();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("DefaultUser", policy => policy.RequireAuthenticatedUser())
+    .AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
 
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);
@@ -37,10 +36,11 @@ builder.Services.AddOpenApiConfiguration("TimeCafe Auth API");
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
 
+// HealthChecks
+builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+
 // CORS
-var corsPolicyName = builder.Configuration["CORS:PolicyName"]
-    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
-builder.Services.AddCorsConfiguration(corsPolicyName);
+var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 
 // Carter
 builder.Services.AddCarter();
@@ -81,8 +81,9 @@ var authGroup = app.MapGroup("/auth");
 authGroup.MapCarter();
 authGroup.MapControllers();
 
-app.MapGet("/health", () => Results.Ok("OK"))
-    .AllowAnonymous();
+app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+
+app.UseHealthChecks();
 
 authGroup.MapGet("/test-publish", async (IPublishEndpoint pub) =>
 {

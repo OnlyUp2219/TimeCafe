@@ -2,30 +2,21 @@ namespace BuildingBlocks.Extensions;
 
 public static class CorsExtensions
 {
-    public static IServiceCollection AddCorsConfiguration(this IServiceCollection services, string? corsPolicyName)
+    public static string AddCorsConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        if (string.IsNullOrWhiteSpace(corsPolicyName))
-            throw new InvalidOperationException("CORS:PolicyName is not configured.");
+        var policyName = configuration["CORS:PolicyName"]
+            ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
 
-        services.AddCors(options => options.AddPolicy(corsPolicyName, p =>
-                p.AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials()
-                .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
-                .WithOrigins(
-                    "http://127.0.0.1:9301", "http://localhost:9301",
-                    "http://127.0.0.1:4173", "http://localhost:4173",
-                    "http://127.0.0.1:5173", "http://localhost:5173",
-                    "https://127.0.0.1:9301", "https://localhost:9301",
-                    "https://127.0.0.1:4173", "https://localhost:4173",
-                    "https://127.0.0.1:5173", "https://localhost:5173",
-                    "http://127.0.0.1:8001", "http://localhost:8001", "http://auth-api:8001",
-                    "http://127.0.0.1:8002", "http://localhost:8002", "http://userprofile-api:8002",
-                    "http://127.0.0.1:8003", "http://localhost:8003", "http://venue-api:8003",
-                    "http://127.0.0.1:8004", "http://localhost:8004", "http://billing-api:8004",
-                    "http://main-api:8004"
-                )));
+        var origins = configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
+            ?? throw new InvalidOperationException("CORS:AllowedOrigins is not configured.");
 
-        return services;
+        services.AddCors(options => options.AddPolicy(policyName, p =>
+            p.AllowAnyHeader()
+             .AllowAnyMethod()
+             .AllowCredentials()
+             .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
+             .WithOrigins(origins)));
+
+        return policyName;
     }
 }

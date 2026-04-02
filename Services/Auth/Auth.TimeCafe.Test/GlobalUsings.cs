@@ -1,9 +1,7 @@
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
-global using Auth.TimeCafe.Domain.Enums;
 global using Auth.TimeCafe.Infrastructure.Data;
-global using Auth.TimeCafe.Infrastructure.Permissions;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Test.Integration.Endpoints;
 global using Auth.TimeCafe.Test.Integration.Helpers;

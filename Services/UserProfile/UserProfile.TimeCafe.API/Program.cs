@@ -11,9 +11,7 @@ builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
 // CORS
-var corsPolicyName = builder.Configuration["CORS:PolicyName"]
-    ?? throw new InvalidOperationException("CORS:PolicyName is not configured.");
-builder.Services.AddCorsConfiguration(corsPolicyName);
+var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 
 builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
 
@@ -32,11 +30,6 @@ builder.Services.AddUserProfilePersistence();
 // CQRS (MediatR + Pipeline Behaviors)
 builder.Services.AddUserProfileCqrs();
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddPermissionAuthorizationDev();
-}
-
 // S3 storage (photos)
 builder.Services.AddS3(builder.Configuration);
 
@@ -46,6 +39,9 @@ builder.Services.AddHttpClient<IPhotoModerationService, SightenginePhotoModerati
 // Swagger & Carter
 builder.Services.AddOpenApiConfiguration("TimeCafe UserProfile API");
 builder.Services.AddCarter();
+
+// HealthChecks
+builder.Services.AddHealthChecksConfiguration(builder.Configuration);
 
 builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(new FlexibleDateOnlyJsonConverter()));
 
@@ -66,8 +62,9 @@ app.UseOpenApiDevelopment("TimeCafe UserProfile API");
 var userProfileGroup = app.MapGroup("/userprofile");
 userProfileGroup.MapCarter();
 
-app.MapGet("/health", () => Results.Ok("OK"))
-    .AllowAnonymous();
+app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+
+app.UseHealthChecks();
 
 
 await app.RunAsync();

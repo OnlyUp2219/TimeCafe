@@ -1,12 +1,10 @@
-using BuildingBlocks.Authorization;
-
 var builder = WebApplication.CreateBuilder(args);
 
 var sharedSettingsPath = Path.GetFullPath(
     Path.Combine(builder.Environment.ContentRootPath, "..", "appsettings.shared.json"));
 builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
 
-builder.Services.AddSpaCorsConfiguration();
+var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 
 builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
@@ -15,20 +13,13 @@ builder.Services.AddYarpProxy(builder.Configuration);
 builder.Services.AddScalarConfiguration();
 
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
-
-if (builder.Environment.IsDevelopment() || builder.Environment.IsEnvironment("Docker"))
-{
-    builder.Services.AddPermissionAuthorizationDev();
-}
-else
-{
-    // TODO : Register real IPermissionService here
-}
+builder.Services.AddAuthorization();
+builder.Services.AddHealthChecks();
 
 
 var app = builder.Build();
 
-app.UseSpaCorsConfiguration();
+app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -37,57 +28,60 @@ app.MapReverseProxy();
 
 app.UseScalarConfiguration();
 
-app.MapGet("/", () => "Hello World!");
-app.MapGet("/health", () => Results.Ok("OK"));
+app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapHealthChecks("/health").AllowAnonymous();
 
-app.MapPost("/dev/admin-token", (HttpContext httpContext, IConfiguration configuration) =>
+if (app.Environment.IsDevelopment())
 {
-    var jwtSection = configuration.GetSection("Jwt");
-    var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-    var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
-    var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
-
-    const string userId = "00000000-0000-0000-0000-000000000001";
-    var now = DateTime.UtcNow;
-    var expires = now.AddHours(12);
-
-    var claims = new List<Claim>
+    app.MapPost("/dev/admin-token", (HttpContext httpContext, IConfiguration configuration) =>
     {
-        new(ClaimTypes.NameIdentifier, userId),
-        new("sub", userId),
-        new(ClaimTypes.Role, "admin")
-    };
+        var jwtSection = configuration.GetSection("Jwt");
+        var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
+        var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
+        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
 
-    var token = new JwtSecurityToken(
-        issuer: issuer,
-        audience: audience,
-        claims: claims,
-        notBefore: now,
-        expires: expires,
-        signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256));
+        const string userId = "00000000-0000-0000-0000-000000000001";
+        var now = DateTime.UtcNow;
+        var expires = now.AddHours(12);
 
-    var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-    httpContext.Response.Cookies.Append(
-        "Access-Token",
-        jwt,
-        new CookieOptions
+        var claims = new List<Claim>
         {
-            HttpOnly = true,
-            Secure = httpContext.Request.IsHttps,
-            SameSite = SameSiteMode.Lax,
-            Path = "/",
-            Expires = expires
-        });
+            new(ClaimTypes.NameIdentifier, userId),
+            new("sub", userId),
+            new(ClaimTypes.Role, "admin")
+        };
 
-    return Results.Ok(new
-    {
-        token = jwt,
-        userId,
-        role = "admin",
-        expiresAtUtc = expires
-    });
-}).AllowAnonymous();
+        var token = new JwtSecurityToken(
+            issuer: issuer,
+            audience: audience,
+            claims: claims,
+            notBefore: now,
+            expires: expires,
+            signingCredentials: new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)), SecurityAlgorithms.HmacSha256));
+
+        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+        httpContext.Response.Cookies.Append(
+            "Access-Token",
+            jwt,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = httpContext.Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Path = "/",
+                Expires = expires
+            });
+
+        return Results.Ok(new
+        {
+            token = jwt,
+            userId,
+            role = "admin",
+            expiresAtUtc = expires
+        });
+    }).AllowAnonymous();
+}
 
 await app.RunAsync();
 
