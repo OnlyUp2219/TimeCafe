@@ -12,6 +12,7 @@ import {normalizeUnknownError} from "@api/errors/normalize";
 import {isApiError} from "@api/errors/types";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
+import {AuthHero} from "@components/AuthHero/AuthHero";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -104,11 +105,10 @@ export const RegisterPage = () => {
              sm:grid-cols-2 sm:justify-stretch sm:items-stretch ">
             {ToasterElement}
 
-            {/* Hero Section - Left Side (Desktop Only) */}
-            <div id="Left Side"
-                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
-            </div>
+            <AuthHero
+                title="Ваше уютное место уже ждёт"
+                subtitle="Создайте аккаунт и откройте для себя мир комфорта и уюта."
+            />
 
             {/* Register Form */}
             <div id="Form"
@@ -128,6 +128,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.email}
                         autoComplete="off"
+                        size="large"
                     />
 
                     <PasswordInput
@@ -139,6 +140,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.password}
                         autoComplete="new-password"
+                        size="large"
                     />
 
                     <ConfirmPasswordInput
@@ -150,6 +152,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.confirmPassword}
                         autoComplete="new-password"
+                        size="large"
                     />
 
                     <TooltipButton
@@ -157,6 +160,7 @@ export const RegisterPage = () => {
                         type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
+                        size="large"
                         icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Зарегистрироваться"
                         label="Зарегистрироваться"

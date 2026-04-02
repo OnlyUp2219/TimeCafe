@@ -5,6 +5,7 @@ import {EmailPendingCard} from "@components/EmailPendingCard/EmailPendingCard";
 import {Body2, Title3} from "@fluentui/react-components";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
+import {AuthHero} from "@components/AuthHero/AuthHero";
 
 type LocationState = {
     mockLink?: string;
@@ -25,9 +26,10 @@ export const EmailPendingPage = () => {
             <div
                 className="!grid grid-cols-1 items-center justify-center
              sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
-                <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                    <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-                </div>
+                <AuthHero
+                    title="Подтвердите почту"
+                    subtitle="Остался один шаг — проверьте вашу почту."
+                />
 
                 <div id="Form" className={authFormContainerClassName}>
                     <div className="flex flex-col w-full max-w-md gap-[12px]">
@@ -60,9 +62,10 @@ export const EmailPendingPage = () => {
         <div
             className="!grid grid-cols-1 items-center justify-center
              sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
-            <div id="Left Side" className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none" />
-            </div>
+            <AuthHero
+                title="Подтвердите почту"
+                subtitle="Остался один шаг — проверьте вашу почту."
+            />
 
             <div id="Form" className={authFormContainerClassName}>
                 <div className="flex flex-col w-full max-w-md gap-[12px]">

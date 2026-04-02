@@ -14,6 +14,7 @@ interface ConfirmPasswordInputProps {
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
     externalError?: string;
+    size?: "small" | "medium" | "large";
 }
 
 export const ConfirmPasswordInput = ({
@@ -28,6 +29,7 @@ export const ConfirmPasswordInput = ({
     onValidationChange,
     shouldValidate = true,
     externalError,
+    size,
 }: ConfirmPasswordInputProps) => {
     const errorMsg = useMemo(
         () => (shouldValidate ? validate(value, passwordValue) : ""),
@@ -49,6 +51,7 @@ export const ConfirmPasswordInput = ({
         <Field
             label={label}
             required
+            size={size}
             validationState={displayError ? "error" : undefined}
             validationMessage={displayError || undefined}
         >
@@ -59,6 +62,7 @@ export const ConfirmPasswordInput = ({
                 placeholder={placeholder}
                 autoComplete={autoComplete}
                 disabled={disabled}
+                size={size}
                 className="w-full"
             />
         </Field>

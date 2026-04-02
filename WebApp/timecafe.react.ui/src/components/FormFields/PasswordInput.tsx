@@ -15,6 +15,7 @@ interface PasswordInputProps {
     onValidationChange?: (error: string) => void;
     shouldValidate?: boolean;
     externalError?: string;
+    size?: "small" | "medium" | "large";
 }
 
 const PASSWORD_REQUIREMENTS = [
@@ -35,6 +36,7 @@ export const PasswordInput = ({
                                   onValidationChange,
                                   shouldValidate = true,
                                   externalError,
+                                  size,
                               }: PasswordInputProps) => {
     const metRequirements = PASSWORD_REQUIREMENTS.map(req => req.rule(value));
 
@@ -60,6 +62,7 @@ export const PasswordInput = ({
             <Field
                 label={label}
                 required
+                size={size}
                 validationState={showFieldError ? "error" : undefined}
                 validationMessage={showFieldError ? displayError : undefined}
             >
@@ -70,6 +73,7 @@ export const PasswordInput = ({
                     placeholder={placeholder}
                     autoComplete={autoComplete}
                     disabled={disabled}
+                    size={size}
                     className="w-full"
                 />
             </Field>

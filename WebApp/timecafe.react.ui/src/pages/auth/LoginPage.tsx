@@ -11,6 +11,7 @@ import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUs
 import {getJwtInfo} from "@shared/auth/jwt";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
+import {AuthHero} from "@components/AuthHero/AuthHero";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
@@ -85,6 +86,7 @@ export const LoginPage = () => {
                         disabled={isSubmitting}
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}
+                        size="large"
                     />
 
                     <PasswordInput
@@ -93,6 +95,7 @@ export const LoginPage = () => {
                         disabled={isSubmitting}
                         onValidationChange={handlePasswordValidationChange}
                         shouldValidate={false}
+                        size="large"
                     />
 
                     <div className="flex items-center justify-between">
@@ -110,6 +113,7 @@ export const LoginPage = () => {
                         data-testid="login-submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
+                        size="large"
                         icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Войти"
                         label="Войти"
@@ -152,11 +156,10 @@ export const LoginPage = () => {
                 </form>
             </div>
 
-            {/* Hero Section - Right Side (Desktop Only) */}
-            <div id="Right Side"
-                 className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-right bg-cover bg-no-repeat">
-                <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
-            </div>
+            <AuthHero
+                title="Рады вас видеть!"
+                subtitle="Ваше уютное место уже ждёт — войдите и продолжите с того, на чём остановились."
+            />
         </div>
     );
 };

@@ -14,6 +14,7 @@ interface EmailInputProps {
     shouldValidate?: boolean;
     trailingElement?: ReactNode;
     externalError?: string;
+    size?: "small" | "medium" | "large";
 }
 
 export const EmailInput = ({
@@ -27,6 +28,7 @@ export const EmailInput = ({
     shouldValidate = true,
     trailingElement,
     externalError,
+    size,
 }: EmailInputProps) => {
     const errorMsg = useMemo(() => validate(value), [validate, value]);
 
@@ -45,6 +47,7 @@ export const EmailInput = ({
         <Field
             label="Email"
             required
+            size={size}
             validationState={shouldValidate && displayError ? "error" : undefined}
             validationMessage={shouldValidate ? displayError : undefined}
         >
@@ -56,6 +59,7 @@ export const EmailInput = ({
                     placeholder={placeholder}
                     autoComplete={autoComplete}
                     disabled={disabled}
+                    size={size}
                     className="w-full"
                 />
                 {trailingElement}

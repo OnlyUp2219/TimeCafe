@@ -27,6 +27,34 @@
   flex-wrap: wrap;
 }
 
+.auth-hero {
+  background: linear-gradient(135deg, #0078d4, #50e6ff);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.auth-hero__circle {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+}
+
+.auth-hero__circle--large {
+  width: 500px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.1);
+  top: -100px;
+  right: -100px;
+}
+
+.auth-hero__circle--small {
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.08);
+  bottom: -60px;
+  left: -60px;
+}
+
 .auth_card {
   display: flex;
   justify-content: center;

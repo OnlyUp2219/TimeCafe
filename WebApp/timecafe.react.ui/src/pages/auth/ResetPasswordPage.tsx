@@ -20,6 +20,7 @@ import {useForgotPasswordLinkMutation} from "@store/api/authApi";
 import {MockCallbackLink} from "@components/MockCallbackLink/MockCallbackLink";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {AuthHero} from "@components/AuthHero/AuthHero";
 
 export const ResetPasswordPage = () => {
     const navigate = useNavigate();
@@ -128,11 +129,10 @@ export const ResetPasswordPage = () => {
             <div className="!grid grid-cols-1 items-center justify-center
                  sm:grid-cols-2 sm:justify-stretch sm:items-stretch">
 
-                {/* Hero Section - Left Side (Desktop Only) */}
-                <div id="Left Side"
-                     className="relative hidden sm:block bg-[url(/src/assets/abstract_bg.svg)] bg-left bg-cover bg-no-repeat">
-                    <div className="absolute inset-0 bg-black/40 pointer-events-none"/>
-                </div>
+                <AuthHero
+                    title="Восстановление доступа"
+                    subtitle="Мы поможем вам вернуться в ваш аккаунт."
+                />
 
                 {/* Reset Form */}
                 <div id="Form"
@@ -151,6 +151,7 @@ export const ResetPasswordPage = () => {
                                 disabled={isSubmitting || openDialog}
                                 onValidationChange={(error) => setErrors({email: error})}
                                 shouldValidate={submitted}
+                                size="large"
                             />
 
                             <div className="grid grid-cols-1 gap-[12px] mt-4 sm:grid-cols-2">
