@@ -157,25 +157,9 @@ export const authApi = createApi({
             }),
         }),
 
-        sendPhoneConfirmation: builder.mutation<SendPhoneResponse, PhoneCodeRequest>({
-            query: (data) => ({
-                url: `/auth/${USE_MOCK_SMS ? "twilio/generateSMS-mock" : "twilio/generateSMS"}`,
-                method: "POST",
-                body: data,
-            }),
-        }),
-
         verifyPhoneConfirmation: builder.mutation<VerifyPhoneResponse, PhoneCodeRequest>({
             query: (data) => ({
                 url: `/auth/${USE_MOCK_SMS ? "twilio/verifySMS-mock" : "twilio/verifySMS"}`,
-                method: "POST",
-                body: data,
-            }),
-        }),
-
-        resendConfirmation: builder.mutation<{ message?: string; callbackUrl?: string }, { email: string }>({
-            query: (data) => ({
-                url: `/auth/${USE_MOCK_EMAIL ? "email/resend-mock" : "email/resend"}`,
                 method: "POST",
                 body: data,
             }),
@@ -222,9 +206,7 @@ export const {
     useChangePasswordMutation,
     useSavePhoneNumberMutation,
     useClearPhoneNumberMutation,
-    useSendPhoneConfirmationMutation,
     useVerifyPhoneConfirmationMutation,
-    useResendConfirmationMutation,
     useConfirmEmailMutation,
     useRequestEmailChangeMutation,
     useConfirmEmailChangeMutation,
