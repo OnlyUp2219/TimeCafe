@@ -4,7 +4,11 @@ public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        if (environment.IsEnvironment("Testing"))
+        var hasLicense =
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MT_LICENSE")) ||
+            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MT_LICENSE_PATH"));
+
+        if (!hasLicense || environment.IsEnvironment("Testing"))
         {
             services.AddMassTransit(x => x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context)));
 
@@ -14,8 +18,7 @@ public static class MassTransitExtensions
         var rabbitMqSection = configuration.GetSection("RabbitMQ");
         if (!rabbitMqSection.Exists())
             throw new InvalidOperationException("RabbitMQ configuration section is missing.");
-
-        var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
+        _ = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
         services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
             {

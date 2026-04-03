@@ -46,8 +46,9 @@ public class RateLimitedEndpoints : ICarterModule
         [FromServices] UserManager<ApplicationUser> userManager,
         ClaimsPrincipal user) =>
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId == null) return Results.Unauthorized();
+            var userId = user.FindFirst("sub")?.Value;
+            if (userId == null)
+                return Results.Unauthorized();
             var u = await userManager.FindByIdAsync(userId);
             return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
         })

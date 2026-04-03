@@ -1,0 +1,59 @@
+@baseUrl = http://127.0.0.1:8001
+@json = application/json
+@clientEmail = rbac.client@example.com
+@clientPassword = P@ssw0rd123
+@clientUserId = paste-user-id-from-callbackUrl
+@clientConfirmToken = paste-token-from-callbackUrl
+
+### @name loginAdmin
+POST {{baseUrl}}/auth/login-jwt
+Content-Type: {{json}}
+
+{
+  "email": "klimAdmin@gmail.com",
+  "password": "Admin@12345"
+}
+
+### Admin -> protected-test
+GET {{baseUrl}}/auth/protected-test
+Authorization: Bearer {{loginAdmin.response.body.$.accessToken}}
+
+### Admin -> me
+GET {{baseUrl}}/auth/account/me
+Authorization: Bearer {{loginAdmin.response.body.$.accessToken}}
+
+### @name registerClient
+POST {{baseUrl}}/auth/registerWithUsername-mock
+Content-Type: {{json}}
+
+{
+  "username": "rbac.client",
+  "email": "{{clientEmail}}",
+  "password": "{{clientPassword}}"
+}
+
+### Confirm client email
+POST {{baseUrl}}/auth/email/confirm
+Content-Type: {{json}}
+
+{
+  "userId": "{{clientUserId}}",
+  "token": "{{clientConfirmToken}}"
+}
+
+### @name loginClient
+POST {{baseUrl}}/auth/login-jwt
+Content-Type: {{json}}
+
+{
+  "email": "{{clientEmail}}",
+  "password": "{{clientPassword}}"
+}
+
+### Client -> protected-test
+GET {{baseUrl}}/auth/protected-test
+Authorization: Bearer {{loginClient.response.body.$.accessToken}}
+
+### Client -> me
+GET {{baseUrl}}/auth/account/me
+Authorization: Bearer {{loginClient.response.body.$.accessToken}}

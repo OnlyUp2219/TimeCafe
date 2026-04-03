@@ -26,7 +26,7 @@ public class EmailChange : ICarterModule
             ClaimsPrincipal principal,
             [FromServices] ISender sender) =>
         {
-            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = principal.FindFirstValue("sub");
             if (userId == null)
                 return Results.Unauthorized();
 
@@ -48,7 +48,7 @@ public class EmailChange : ICarterModule
             ClaimsPrincipal principal,
             [FromServices] ISender sender) =>
         {
-            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = principal.FindFirstValue("sub");
             if (userId == null)
                 return Results.Unauthorized();
 

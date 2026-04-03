@@ -2,6 +2,7 @@ global using System.Reflection;
 global using System.Security.Claims;
 global using System.Text;
 global using Auth.TimeCafe.Application.Contracts;
+global using Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
 global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;

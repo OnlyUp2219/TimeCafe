@@ -1,28 +1,30 @@
+global using System.Security.Claims;
+global using System.Text;
+global using System.Threading.RateLimiting;
 global using Auth.TimeCafe.API.Extensions;
 global using Auth.TimeCafe.API.Middleware;
 global using Auth.TimeCafe.API.Services;
 global using Auth.TimeCafe.Application;
 global using Auth.TimeCafe.Application.Contracts;
-global using Auth.TimeCafe.Application.DependencyInjection;
 global using Auth.TimeCafe.Application.CQRS.Account.Commands;
+global using Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
+global using Auth.TimeCafe.Application.CQRS.Account.Commands.Password;
+global using Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
+global using Auth.TimeCafe.Application.DependencyInjection;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Infrastructure.Services.Email;
 global using Auth.TimeCafe.Infrastructure.Services.Phone;
-
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
-
+global using BuildingBlocks.Permissions;
 global using Carter;
-
 global using MassTransit;
-
 global using MediatR;
-
 global using Microsoft.AspNetCore.Authentication;
 global using Microsoft.AspNetCore.Authentication.JwtBearer;
 global using Microsoft.AspNetCore.Authorization;
@@ -32,11 +34,5 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.IdentityModel.Tokens;
-
 global using Scalar.AspNetCore;
-
 global using Serilog;
-
-global using System.Security.Claims;
-global using System.Text;
-global using System.Threading.RateLimiting;

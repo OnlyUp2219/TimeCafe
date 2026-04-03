@@ -4,8 +4,8 @@ public static class AuthenticationExtensions
 {
     public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IUserRoleService, UserRoleService>();
         services.AddScoped<IJwtService, JwtService>();
+        services.AddAuthorizationBuilder();
 
         var jwtSection = configuration.GetSection("Jwt");
         if (!jwtSection.Exists())
@@ -27,27 +27,27 @@ public static class AuthenticationExtensions
             {
                 options.RequireHttpsMetadata = true;
                 options.SaveToken = true;
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
+                    NameClaimType = "sub",
                     ValidIssuer = issuer,
                     ValidAudience = audience,
                     IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
                     ClockSkew = TimeSpan.FromMinutes(1)
                 };
 #if DEBUG
+                options.Events = new JwtBearerEvents
                 {
-                    options.Events = new JwtBearerEvents
+                    OnMessageReceived = context =>
                     {
-                        OnMessageReceived = context =>
-                        {
-                            context.Token = context.Request.Cookies["Access-Token"];
-                            return Task.CompletedTask;
-                        }
-                    };
-                }
+                        context.Token = context.Request.Cookies["Access-Token"];
+                        return Task.CompletedTask;
+                    }
+                };
 #endif
 
             })

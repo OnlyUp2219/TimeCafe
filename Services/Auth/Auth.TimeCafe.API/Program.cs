@@ -22,9 +22,6 @@ builder.Services.AddIdentityConfiguration();
 
 // Authentication: JWT + external providers
 builder.Services.AddAuthenticationConfiguration(builder.Configuration);
-builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("DefaultUser", policy => policy.RequireAuthenticatedUser())
-    .AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
 
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);
@@ -54,13 +51,13 @@ builder.Services.AddCarter();
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
 
-builder.Services.Configure<Microsoft.AspNetCore.Builder.ForwardedHeadersOptions>(options =>
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
     options.ForwardedHeaders =
         Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
         Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto |
         Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedHost;
-    options.KnownNetworks.Clear();
+    options.KnownIPNetworks.Clear();
     options.KnownProxies.Clear();
 });
 
@@ -71,6 +68,12 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseForwardedHeaders();
 
 await app.ApplyMigrationsAsync();
+await app.SeedRolesAndPermissions();
+
+if (app.Environment.IsDevelopment())
+{
+    await app.SeedDevelopmentUsersAsync();
+}
 
 app.UseOpenApiDevelopment("TimeCafe Auth API");
 

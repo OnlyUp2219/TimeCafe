@@ -12,7 +12,7 @@ public static class SeedData
 
         var adminEmail = admin["Email"] ?? "";
         var adminPassword = admin["Password"] ?? "";
-        var adminRole = admin["Role"] ?? "";
+        const string adminRole = Roles.Admin;
 
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
             throw new InvalidOperationException("Seed:Admin credentials missing in configuration.");
@@ -40,7 +40,12 @@ public static class SeedData
     public static async Task SeedLoadTestUserAsync(IServiceProvider serviceProvider)
     {
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+        const string clientRole = Roles.Client;
+
+        if (!await roleManager.RoleExistsAsync(clientRole))
+            await roleManager.CreateAsync(new IdentityRole<Guid>(clientRole));
 
         var load = configuration.GetSection("Seed:LoadUser");
         var email = load["Email"] ?? "load.user@example.com";
@@ -57,6 +62,8 @@ public static class SeedData
             EmailConfirmed = true
         };
 
-        await userManager.CreateAsync(user, password);
+        var createResult = await userManager.CreateAsync(user, password);
+        if (createResult.Succeeded)
+            await userManager.AddToRoleAsync(user, clientRole);
     }
 }

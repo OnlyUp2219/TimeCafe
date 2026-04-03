@@ -29,7 +29,6 @@ public class IntegrationTestFactory
             .Build();
         serviceCollection.AddSingleton<IConfiguration>(inMemoryConfig);
 
-        serviceCollection.AddScoped<IUserRoleService, UserRoleService>();
         serviceCollection.AddScoped<IJwtService, JwtService>();
 
         Services = serviceCollection.BuildServiceProvider();

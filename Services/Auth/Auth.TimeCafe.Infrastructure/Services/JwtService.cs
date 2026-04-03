@@ -1,10 +1,9 @@
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-public class JwtService(IConfiguration configuration, ApplicationDbContext context, IUserRoleService userRoleService) : IJwtService
+public class JwtService(IConfiguration configuration, ApplicationDbContext context) : IJwtService
 {
     private readonly IConfiguration _configuration = configuration;
     private readonly ApplicationDbContext _context = context;
-    private readonly IUserRoleService _userRoleService = userRoleService;
 
     public async Task<AuthResponse> GenerateTokens(ApplicationUser user)
     {
@@ -13,16 +12,30 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         var expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
         var refreshDays = int.Parse(jwtSection["RefreshTokenExpirationDays"]!);
 
-        var roles = await _userRoleService.GetUserRolesAsync(user);
-        var userRole = roles.FirstOrDefault() ?? "client";
+        var roles = await _context.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
+            .ToListAsync();
 
-        var claims = new List<Claim>
-        {
+        var permissions = await _context.Roles
+            .Where(r => roles.Contains(r.Name))
+            .Join(_context.RoleClaims,
+                r => r.Id,
+                rc => rc.RoleId,
+                (r, rc) => rc)
+            .Where(rc => rc.ClaimType == CustomClaimTypes.Permissions)
+            .Select(rc => rc.ClaimValue)
+            .Distinct()
+            .ToListAsync();
+
+        List<Claim> claims =
+        [
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, userRole)
-        };
+            ..roles.Select(r => new Claim(ClaimTypes.Role, r!)),
+            ..permissions.Select(p => new Claim(CustomClaimTypes.Permissions, p!))
+        ];
 
         var token = new JwtSecurityToken(
             issuer: jwtSection["Issuer"],
@@ -48,7 +61,7 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         return new AuthResponse(
             AccessToken: new JwtSecurityTokenHandler().WriteToken(token),
             RefreshToken: refreshToken,
-            Role: userRole,
+            Role: roles!,
             ExpiresIn: (int)(expires - DateTimeOffset.UtcNow).TotalSeconds
         );
     }

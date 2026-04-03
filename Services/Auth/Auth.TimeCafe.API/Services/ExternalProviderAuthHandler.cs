@@ -2,8 +2,6 @@ namespace Auth.TimeCafe.API.Services;
 
 internal static class ExternalProviderAuthHandler
 {
-    private const string ClientRole = "client";
-
     public static async Task<IResult> HandleCallbackAsync(
         string provider,
         string returnUrl,
@@ -48,7 +46,7 @@ internal static class ExternalProviderAuthHandler
             if (!createResult.Succeeded)
                 return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
 
-            await userManager.AddToRoleAsync(user, ClientRole);
+            await userManager.AddToRoleAsync(user, Roles.Client);
         }
         else if (!user.EmailConfirmed)
         {

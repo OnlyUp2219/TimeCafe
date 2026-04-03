@@ -1,4 +1,3 @@
-
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record RegisterUserCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<RegisterUserResult>;
@@ -43,19 +42,29 @@ public class RegisterUserCommandHandler(
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
 
+    // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
+
         var user = new ApplicationUser
         {
             UserName = request.Username,
             Email = request.Email,
-            EmailConfirmed = false
+            EmailConfirmed = false,
         };
 
         var createResult = await _userManager.CreateAsync(user, request.Password);
         if (!createResult.Succeeded)
         {
             List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
+            return RegisterUserResult.Error(errs);
+        }
+
+        var addToRoleResult = await _userManager.AddToRoleAsync(user, Roles.Client);
+        if (!addToRoleResult.Succeeded)
+        {
+            await _userManager.DeleteAsync(user);
+            List<ErrorItem> errs = [.. addToRoleResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
             return RegisterUserResult.Error(errs);
         }
 

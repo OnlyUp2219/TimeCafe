@@ -6,6 +6,12 @@
 	<Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="CQRS\Common\**" />
+    <EmbeddedResource Remove="CQRS\Common\**" />
+    <None Remove="CQRS\Common\**" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" />
 		<PackageReference Include="MassTransit" />
@@ -17,10 +23,6 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
 	  <ProjectReference Include="..\Auth.TimeCafe.Domain\Auth.TimeCafe.Domain.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="CQRS\Common\" />
 	</ItemGroup>
 
 </Project>

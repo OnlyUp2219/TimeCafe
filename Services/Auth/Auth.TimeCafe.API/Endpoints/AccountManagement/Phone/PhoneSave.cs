@@ -17,7 +17,7 @@ public class PhoneSave : ICarterModule
             [FromBody] SavePhoneRequest model
         ) =>
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = user.FindFirst("sub")?.Value;
             if (userId == null)
                 return Results.Unauthorized();
 

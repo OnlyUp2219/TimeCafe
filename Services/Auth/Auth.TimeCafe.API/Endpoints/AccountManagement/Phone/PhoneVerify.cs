@@ -14,7 +14,7 @@ public class PhoneVerify : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = user.FindFirst("sub")?.Value;
             if (userId == null)
                 return Results.Unauthorized();
 
@@ -35,7 +35,7 @@ public class PhoneVerify : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = user.FindFirst("sub")?.Value;
             if (userId == null)
                 return Results.Unauthorized();
 

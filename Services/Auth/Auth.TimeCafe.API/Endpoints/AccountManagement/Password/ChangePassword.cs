@@ -20,7 +20,7 @@ public sealed class ChangePassword : ICarterModule
         [FromServices] ISender sender
         ) =>
         {
-            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = principal.FindFirstValue("sub");
             if (userId == null)
                 return Results.BadRequest(new { errors = new[] { new { code = "UserNotFound", description = "Пользователь не найден" } } });
 

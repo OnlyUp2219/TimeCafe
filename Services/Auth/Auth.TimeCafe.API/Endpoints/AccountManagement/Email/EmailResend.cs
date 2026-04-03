@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
-
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Email;
 
 public record ResendConfirmationRequest(

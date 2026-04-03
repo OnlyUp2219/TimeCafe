@@ -57,10 +57,6 @@ public static class AuthenticationExtensions
 
              });
 
-        services.AddAuthorizationBuilder()
-            .AddPolicy("DefaultUser", policy => policy.RequireAuthenticatedUser())
-            .AddPolicy("AdminOnly", policy => policy.RequireRole("admin"));
-
         return services;
     }
 }

@@ -12,7 +12,7 @@ public sealed class PhoneVerificationStatus : ICarterModule
                 ClaimsPrincipal principal,
                 [FromServices] ISender sender) =>
             {
-                var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = principal.FindFirstValue("sub");
                 if (userId == null)
                     return Results.Unauthorized();
 
