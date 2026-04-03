@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Password;
 
 public record ResetPasswordCommand(string Email, string ResetCode, string NewPassword) : IRequest<ResetPasswordResult>;
 

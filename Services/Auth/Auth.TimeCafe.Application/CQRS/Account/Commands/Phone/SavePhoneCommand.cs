@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
 public record SavePhoneCommand(string UserId, string PhoneNumber) : IRequest<SavePhoneResult>;
 

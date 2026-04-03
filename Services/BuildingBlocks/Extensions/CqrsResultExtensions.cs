@@ -1,11 +1,12 @@
 namespace BuildingBlocks.Extensions;
 
-public static class CqrsResultExtensionsV2
+public static class CqrsResultExtensions
 {
-    public static IResult ToHttpResultV2<T>(this T result, Func<T, IResult> onSuccess, object? extra = null)
-    where T : ICqrsResultV2
+    public static IResult ToHttpResult<T>(this T result, Func<T, IResult> onSuccess, object? extra = null)
+    where T : ICqrsResult
     {
-        if (result.Success) return onSuccess(result);
+        if (result.Success)
+            return onSuccess(result);
 
         var status = result.StatusCode ?? MapCodeToStatus(result.Code);
         var basePayload = new Dictionary<string, object?>

@@ -1,8 +1,3 @@
-using BuildingBlocks.OpenApi;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
-using Scalar.AspNetCore;
-
 namespace BuildingBlocks.Extensions;
 
 public static class OpenApiExtensions

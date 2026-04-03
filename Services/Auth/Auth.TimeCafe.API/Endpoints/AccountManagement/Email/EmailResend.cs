@@ -1,4 +1,6 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+using Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
+
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Email;
 
 public record ResendConfirmationRequest(
     /// <example>user@example.com</example>
@@ -14,7 +16,7 @@ public class EmailResend : ICarterModule
             [FromBody] ResendConfirmationRequest request,
             [FromServices] ISender sender) =>
         {
-            var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
+            var command = new ResendEmailConfirmationCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
@@ -31,7 +33,7 @@ public class EmailResend : ICarterModule
             [FromBody] ResendConfirmationRequest request,
             [FromServices] ISender sender) =>
         {
-            var command = new ResendConfirmationCommand(request.Email, SendEmail: false);
+            var command = new ResendEmailConfirmationCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));

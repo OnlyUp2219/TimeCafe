@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
 public record VerifyPhoneCommand(string UserId, string PhoneNumber, string Code, string? CaptchaToken, bool Mock = false) : IRequest<VerifyPhoneResult>;
 

@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
 
 public record RequestEmailChangeCommand(string UserId, string NewEmail, bool SendEmail = true) : IRequest<RequestEmailChangeResult>;
 

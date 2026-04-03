@@ -1,10 +1,7 @@
-namespace BuildingBlocks.Authorization;
+namespace BuildingBlocks.Extensions;
 
 public static class JwtAuthenticationExtensions
 {
-    public const string DefaultUserPolicy = "DefaultUser";
-    public const string AdminOnlyPolicy = "AdminOnly";
-
     public static IServiceCollection AddJwtAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         var jwtSection = configuration.GetSection("Jwt");
@@ -55,10 +52,6 @@ public static class JwtAuthenticationExtensions
                 };
 #endif
             });
-
-        services.AddAuthorizationBuilder()
-            .AddPolicy(DefaultUserPolicy, policy => policy.RequireAuthenticatedUser())
-            .AddPolicy(AdminOnlyPolicy, policy => policy.RequireRole("admin"));
 
         return services;
     }

@@ -1,6 +1,6 @@
 namespace BuildingBlocks.Extensions;
 
-public interface ICqrsResultV2
+public interface ICqrsResult
 {
     bool Success { get; }
     int? StatusCode { get; }

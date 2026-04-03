@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Password;
 
 public record ChangePasswordCommand(string UserId, string CurrentPassword, string NewPassword) : IRequest<ChangePasswordResult>;
 

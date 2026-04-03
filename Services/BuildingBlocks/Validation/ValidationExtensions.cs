@@ -16,7 +16,7 @@ public static class ValidationExtensions
         this IRuleBuilder<T, string?> ruleBuilder, string message)
     {
         return ruleBuilder
-            .Must(x => string.IsNullOrWhiteSpace(x) || (Guid.TryParse(x, out var guid) && guid != Guid.Empty))
+            .Must(x => string.IsNullOrWhiteSpace(x) || Guid.TryParse(x, out var guid) && guid != Guid.Empty)
             .WithMessage(message);
     }
 

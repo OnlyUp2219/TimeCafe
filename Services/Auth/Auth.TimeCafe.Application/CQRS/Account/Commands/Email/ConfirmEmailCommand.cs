@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
 
 public record ConfirmEmailCommand(string UserId, string Token) : IRequest<ConfirmEmailResult>;
 

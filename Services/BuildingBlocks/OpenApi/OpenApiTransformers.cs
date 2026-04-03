@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi;
-
 namespace BuildingBlocks.OpenApi;
 
 public static class OpenApiTransformers

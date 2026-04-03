@@ -3,7 +3,7 @@ using Auth.TimeCafe.Application.CQRS.Sender.Commands;
 using Microsoft.Extensions.Configuration;
 
 
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
 public record GeneratePhoneVerificationCommand(string UserId, string PhoneNumber, bool Mock = false) : IRequest<GeneratePhoneVerificationResult>;
 

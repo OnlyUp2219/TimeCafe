@@ -2,7 +2,7 @@ namespace BuildingBlocks.Exceptions;
 
 public class CqrsResultException : Exception
 {
-    public ICqrsResultV2? Result { get; }
+    public ICqrsResult? Result { get; }
 
     public CqrsResultException()
     {
@@ -16,7 +16,7 @@ public class CqrsResultException : Exception
     {
     }
 
-    public CqrsResultException(ICqrsResultV2 result) : base(
+    public CqrsResultException(ICqrsResult result) : base(
         $"Name:{result.Code} " +
         $"Message:{result.Message} " +
         $"Errors:{string.Join("; ", (result.Errors ?? []).Select(e => $"{e.Code}: {e.Description}"))}")
@@ -24,7 +24,7 @@ public class CqrsResultException : Exception
         Result = result;
     }
 
-    public CqrsResultException(ICqrsResultV2 result, Exception exception) : base(
+    public CqrsResultException(ICqrsResult result, Exception exception) : base(
         $"Name:{result.Code} " +
         $"Message:{result.Message} " +
         $"Errors:{string.Join("; ", (result.Errors ?? []).Select(e => $"{e.Code}: {e.Description}"))}",

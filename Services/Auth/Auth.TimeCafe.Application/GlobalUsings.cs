@@ -1,28 +1,24 @@
+global using System.Reflection;
+global using System.Security.Claims;
+global using System.Text;
 global using Auth.TimeCafe.Application.Contracts;
 global using Auth.TimeCafe.Application.DTOs;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
-
 global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Extensions;
+global using BuildingBlocks.Permissions;
 global using BuildingBlocks.Validation;
-
 global using FluentValidation;
-
 global using MassTransit;
-
 global using MediatR;
-
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.WebUtilities;
+global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Hosting;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
-
-global using System.Reflection;
-global using System.Security.Claims;
-global using System.Text;

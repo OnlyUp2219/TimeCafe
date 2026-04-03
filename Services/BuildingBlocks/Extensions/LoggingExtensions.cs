@@ -1,5 +1,3 @@
-using Serilog;
-
 namespace BuildingBlocks.Extensions;
 
 public static class LoggingExtensions

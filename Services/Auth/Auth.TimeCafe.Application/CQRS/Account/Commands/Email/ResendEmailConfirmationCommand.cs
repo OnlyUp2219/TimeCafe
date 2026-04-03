@@ -1,33 +1,33 @@
-namespace Auth.TimeCafe.Application.CQRS.Account.Commands;
+namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
 
-public record ResendConfirmationCommand(string Email, bool SendEmail = true) : IRequest<ResendConfirmationResult>;
+public record ResendEmailConfirmationCommand(string Email, bool SendEmail = true) : IRequest<ResendEmailConfirmationResult>;
 
-public record ResendConfirmationResult(bool Success,
+public record ResendEmailConfirmationResult(bool Success,
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     string? CallbackUrl = null) : ICqrsResult
 {
-    public static ResendConfirmationResult UserNotFound() =>
+    public static ResendEmailConfirmationResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
 
-    public static ResendConfirmationResult EmailAlreadyConfirmed() =>
+    public static ResendEmailConfirmationResult EmailAlreadyConfirmed() =>
         new(false, Code: "EmailAlreadyConfirmed", Message: "Email уже подтвержден", StatusCode: 400);
 
-    public static ResendConfirmationResult Sent() =>
+    public static ResendEmailConfirmationResult Sent() =>
     new(true, Message: "Ссылка для сброса пароля отправлена");
 
-    public static ResendConfirmationResult MockCallback(string callbackUrl) =>
+    public static ResendEmailConfirmationResult MockCallback(string callbackUrl) =>
     new(true, Message: "CallbackUrl сгенерирован", CallbackUrl: callbackUrl);
 
-    public static ResendConfirmationResult SendFailed() =>
+    public static ResendEmailConfirmationResult SendFailed() =>
         new(false, Code: "SendFailed", Message: "Ошибка при отправке письма", StatusCode: 500);
 }
 
-public class ResendConfirmationCommandValidator : AbstractValidator<ResendConfirmationCommand>
+public class ResendEmailConfirmationCommandValidator : AbstractValidator<ResendEmailConfirmationCommand>
 {
-    public ResendConfirmationCommandValidator()
+    public ResendEmailConfirmationCommandValidator()
     {
         RuleFor(x => x.Email).ValidEmail();
     }
@@ -38,7 +38,7 @@ public class ResendConfirmationCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
     IOptions<PostmarkOptions> postmarkOptions,
-    ILogger<ResendConfirmationCommandHandler> logger) : IRequestHandler<ResendConfirmationCommand, ResendConfirmationResult>
+    ILogger<ResendConfirmationCommandHandler> logger) : IRequestHandler<ResendEmailConfirmationCommand, ResendEmailConfirmationResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
@@ -46,13 +46,13 @@ public class ResendConfirmationCommandHandler(
     private readonly ILogger<ResendConfirmationCommandHandler> _logger = logger;
 
 
-    public async Task<ResendConfirmationResult> Handle(ResendConfirmationCommand request, CancellationToken cancellationToken)
+    public async Task<ResendEmailConfirmationResult> Handle(ResendEmailConfirmationCommand request, CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            return ResendConfirmationResult.UserNotFound();
+            return ResendEmailConfirmationResult.UserNotFound();
         if (user.EmailConfirmed)
-            return ResendConfirmationResult.EmailAlreadyConfirmed();
+            return ResendEmailConfirmationResult.EmailAlreadyConfirmed();
 
         var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
@@ -63,15 +63,15 @@ public class ResendConfirmationCommandHandler(
             try
             {
                 await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
-                return ResendConfirmationResult.Sent();
+                return ResendEmailConfirmationResult.Sent();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка при отправке письма на {Email}", request.Email);
-                return ResendConfirmationResult.SendFailed();
+                return ResendEmailConfirmationResult.SendFailed();
             }
         }
 
-        return ResendConfirmationResult.MockCallback(callbackUrl);
+        return ResendEmailConfirmationResult.MockCallback(callbackUrl);
     }
 }
