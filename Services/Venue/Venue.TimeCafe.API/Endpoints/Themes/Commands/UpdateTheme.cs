@@ -19,7 +19,7 @@ public class UpdateTheme : ICarterModule
         {
             var command = new UpdateThemeCommand(themeId, request.Name, request.Emoji, request.Colors);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, theme = r.Theme }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, theme = r.Theme }));
         })
         .WithTags("Themes")
         .WithName("UpdateTheme")

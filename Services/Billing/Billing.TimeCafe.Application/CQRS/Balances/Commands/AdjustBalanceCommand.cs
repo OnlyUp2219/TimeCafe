@@ -15,7 +15,7 @@ public record AdjustBalanceResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     Balance? Balance = null,
-    Transaction? Transaction = null) : ICqrsResultV2
+    Transaction? Transaction = null) : ICqrsResult
 {
     public static AdjustBalanceResult BalanceNotFound() =>
         new(false, Code: "BalanceNotFound", Message: "Баланс не найден", StatusCode: 404);

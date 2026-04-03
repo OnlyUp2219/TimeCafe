@@ -8,7 +8,7 @@ public record UpdateTariffResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Tariff? Tariff = null) : ICqrsResultV2
+    Tariff? Tariff = null) : ICqrsResult
 {
     public static UpdateTariffResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);

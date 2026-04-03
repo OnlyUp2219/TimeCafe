@@ -25,7 +25,7 @@ public class UpdatePromotion : ICarterModule
         {
             var command = new UpdatePromotionCommand(promotionId, request.Name, request.Description, request.DiscountPercent, request.ValidFrom, request.ValidTo, request.IsActive);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, promotion = r.Promotion }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, promotion = r.Promotion }));
         })
         .WithTags("Promotions")
         .WithName("UpdatePromotion")

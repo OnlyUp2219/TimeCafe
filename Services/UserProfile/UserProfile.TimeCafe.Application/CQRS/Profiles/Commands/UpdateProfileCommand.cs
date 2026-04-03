@@ -10,7 +10,7 @@ public record UpdateProfileResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Profile? Profile = null) : ICqrsResultV2
+    Profile? Profile = null) : ICqrsResult
 {
     public static UpdateProfileResult ProfileNotFound() =>
         new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);

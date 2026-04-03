@@ -8,7 +8,7 @@ public record LoginUserResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     bool EmailConfirmed = false,
-    TokensDto? TokensDto = null) : ICqrsResultV2
+    TokensDto? TokensDto = null) : ICqrsResult
 {
     public static LoginUserResult InvalidCredentials() =>
         new(false, Code: "InvalidCredentials", Message: "Неверный email или пароль", StatusCode: 400);

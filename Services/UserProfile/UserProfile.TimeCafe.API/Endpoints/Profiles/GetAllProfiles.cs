@@ -9,7 +9,7 @@ public class GetAllProfiles : ICarterModule
         {
             var query = new GetAllProfilesQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.Profiles));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(r.Profiles));
         })
         .WithTags("Profiles")
         .WithName("GetAllProfiles")

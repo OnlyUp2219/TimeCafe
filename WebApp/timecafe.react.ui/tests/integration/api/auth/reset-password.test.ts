@@ -26,7 +26,7 @@ describe("/auth/resetPassword", () => {
             expect(resetRes.status).toBeLessThan(300);
         }
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email, password: newPassword});
+        const loginRes = await client.post("/auth/login-jwt", {email, password: newPassword});
         expect(loginRes.status).toBe(200);
     });
 

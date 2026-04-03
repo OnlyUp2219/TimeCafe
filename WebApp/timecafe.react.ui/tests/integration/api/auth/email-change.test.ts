@@ -32,7 +32,7 @@ describe("/auth/email/change", () => {
             expect(confirmRes.status).toBeLessThan(300);
         }
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email: newEmail, password});
+        const loginRes = await client.post("/auth/login-jwt", {email: newEmail, password});
         expect(loginRes.status).toBe(200);
     });
 

@@ -11,7 +11,7 @@ public record GetPhoneVerificationStatusResult(
     string? PhoneNumber = null,
     bool PhoneNumberConfirmed = false,
     bool HasPendingVerification = false
-) : ICqrsResultV2
+) : ICqrsResult
 {
     public static GetPhoneVerificationStatusResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

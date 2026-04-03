@@ -18,7 +18,7 @@ public class CreateAdditionalInfo : ICarterModule
         {
             var command = new CreateAdditionalInfoCommand(request.UserId, request.InfoText, request.CreatedBy);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message, info = r.AdditionalInfo }, statusCode: r.StatusCode ?? 201));
+            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, info = r.AdditionalInfo }, statusCode: r.StatusCode ?? 201));
         })
         .WithTags("AdditionalInfos")
         .WithName("CreateAdditionalInfo")

@@ -8,7 +8,7 @@ public record GetActiveVisitByUserResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    VisitWithTariffDto? Visit = null) : ICqrsResultV2
+    VisitWithTariffDto? Visit = null) : ICqrsResult
 {
     public static GetActiveVisitByUserResult VisitNotFound() =>
         new(false, Code: "ActiveVisitNotFound", Message: "Активное посещение не найдено", StatusCode: 404);

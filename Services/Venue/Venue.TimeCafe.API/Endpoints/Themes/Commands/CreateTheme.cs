@@ -18,7 +18,7 @@ public class CreateTheme : ICarterModule
         {
             var command = new CreateThemeCommand(request.Name, request.Emoji, request.Colors);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message, theme = r.Theme }, statusCode: 201));
+            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, theme = r.Theme }, statusCode: 201));
         })
         .WithTags("Themes")
         .WithName("CreateTheme")

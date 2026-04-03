@@ -15,7 +15,7 @@ public record InitializeStripeCheckoutResult(
     List<ErrorItem>? Errors = null,
     Guid? PaymentId = null,
     string? SessionId = null,
-    string? CheckoutUrl = null) : ICqrsResultV2
+    string? CheckoutUrl = null) : ICqrsResult
 {
     public static InitializeStripeCheckoutResult ConfigurationMissing() =>
         new(false, Code: "StripeConfigurationMissing", Message: "Платежный провайдер не настроен", StatusCode: 500);

@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Phone;
 
 public class PhoneVerify : ICarterModule
 {
@@ -22,7 +22,7 @@ public class PhoneVerify : ICarterModule
             var result = await sender.Send(command);
 
             var extra = new { phoneNumber = result.PhoneNumber, remainingAttempts = result.RemainingAttempts, requiresCaptcha = result.RequiresCaptcha };
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
         })
         .WithName("VerifySmsMock")
         .WithSummary("Mock: проверка SMS-кода для подтверждения телефона")
@@ -43,7 +43,7 @@ public class PhoneVerify : ICarterModule
             var result = await sender.Send(command);
 
             var extra = new { phoneNumber = result.PhoneNumber, remainingAttempts = result.RemainingAttempts, requiresCaptcha = result.RequiresCaptcha };
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
         })
         .WithName("VerifySms")
         .WithSummary("Проверка SMS-кода для подтверждения телефона")

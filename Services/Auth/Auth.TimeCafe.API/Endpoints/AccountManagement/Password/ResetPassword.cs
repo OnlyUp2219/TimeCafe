@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Password;
 
 public record ResetPasswordRequest(
     /// <example>user@example.com</example>
@@ -24,7 +24,7 @@ public class ResetPassword : ICarterModule
             var command = new ResetPasswordCommand(request.Email, request.ResetCode, request.NewPassword);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: _ => Results.Ok(new { message = result.Message }));
+            return result.ToHttpResult(onSuccess: _ => Results.Ok(new { message = result.Message }));
         })
         .WithName("ResetPassword")
         .WithSummary("Сброс пароля по коду из письма")
@@ -38,7 +38,7 @@ public class ResetPassword : ICarterModule
             var command = new ForgotPasswordCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
+            return result.ToHttpResult(onSuccess: r =>
             {
                 if (r.CallbackUrl != null)
                     return Results.Ok(new { callbackUrl = r.CallbackUrl });
@@ -59,7 +59,7 @@ public class ResetPassword : ICarterModule
             var command = new ForgotPasswordCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")

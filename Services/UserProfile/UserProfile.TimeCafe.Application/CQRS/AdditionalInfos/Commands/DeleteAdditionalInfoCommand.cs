@@ -7,7 +7,7 @@ public record DeleteAdditionalInfoResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static DeleteAdditionalInfoResult InfoNotFound() =>
         new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);

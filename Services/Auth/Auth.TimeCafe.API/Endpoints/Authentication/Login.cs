@@ -6,11 +6,11 @@ public record LoginRequest(
     /// <example>P@ssw0rd123</example>
     string Password);
 
-public class LoginV2 : ICarterModule
+public class Login : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/login-jwt-v2", async (
+        app.MapPost("/login-jwt", async (
             HttpContext context,
             [FromServices] ISender sender,
             [FromServices] IConfiguration configuration,
@@ -19,7 +19,7 @@ public class LoginV2 : ICarterModule
             var command = new LoginUserCommand(request.Email, request.Password);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r =>
+            return result.ToHttpResult(onSuccess: r =>
             {
                 if (!r.EmailConfirmed)
                     return Results.Ok(new { emailConfirmed = r.EmailConfirmed });
@@ -42,8 +42,8 @@ public class LoginV2 : ICarterModule
             });
         })
         .WithTags("Authentication")
-        .WithName("LoginV2")
-        .WithSummary("Аутентификация пользователя через JWT (v2)")
+        .WithName("Login")
+        .WithSummary("Аутентификация пользователя через JWT ")
         .Produces(200)
         .WithDescription("Возвращает только access токен в JSON и устанавливает refresh токен в httpOnly cookie.");
     }

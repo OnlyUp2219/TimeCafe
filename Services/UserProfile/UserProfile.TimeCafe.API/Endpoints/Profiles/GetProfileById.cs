@@ -10,7 +10,7 @@ public class GetProfileById : ICarterModule
         {
             var query = new GetProfileByIdQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.Profile));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(r.Profile));
         })
         .WithTags("Profiles")
         .WithName("GetProfileById")

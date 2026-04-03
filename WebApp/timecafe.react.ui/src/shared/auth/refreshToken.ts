@@ -5,7 +5,7 @@ let refreshAccessTokenInFlight: Promise<string | null> | null = null;
 export const tryRefreshAccessToken = async (): Promise<string | null> => {
     refreshAccessTokenInFlight ??= (async () => {
         try {
-            const res = await rawHttpClient.post<{ accessToken: string }>("/auth/refresh-jwt-v2", {}, {
+            const res = await rawHttpClient.post<{ accessToken: string }>("/auth/refresh-jwt", {}, {
                 _manualRefresh: true,
             });
             const token = res.data?.accessToken;

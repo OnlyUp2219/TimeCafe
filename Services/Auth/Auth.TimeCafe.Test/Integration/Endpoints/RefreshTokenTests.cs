@@ -7,8 +7,8 @@ public class RefreshTokenTests : BaseEndpointTest
         SeedUserAsync("refresh_user_valid@example.com", "P@ssw0rd!", true).GetAwaiter().GetResult();
     }
 
-    private const string LoginEndpoint = "/auth/login-jwt-v2";
-    private const string RefreshEndpoint = "/auth/refresh-jwt-v2";
+    private const string LoginEndpoint = "/auth/login-jwt";
+    private const string RefreshEndpoint = "/auth/refresh-jwt";
 
     private static string ExtractCookieValue(IEnumerable<string> setCookies, string name)
     {

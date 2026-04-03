@@ -10,7 +10,7 @@ public class EndVisit : ICarterModule
         {
             var command = new EndVisitCommand(visitId);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, visit = r.Visit, calculatedCost = r.CalculatedCost }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, visit = r.Visit, calculatedCost = r.CalculatedCost }));
         })
         .WithTags("Visits")
         .WithName("EndVisit")

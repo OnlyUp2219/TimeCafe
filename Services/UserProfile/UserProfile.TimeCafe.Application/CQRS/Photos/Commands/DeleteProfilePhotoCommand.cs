@@ -2,7 +2,7 @@ namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
 public record DeleteProfilePhotoCommand(Guid UserId) : IRequest<DeleteProfilePhotoResult>;
 
-public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResultV2
+public record DeleteProfilePhotoResult(bool Success, string? Code = null, string? Message = null, int? StatusCode = null, List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static DeleteProfilePhotoResult PhotoNotFound() =>
         new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);

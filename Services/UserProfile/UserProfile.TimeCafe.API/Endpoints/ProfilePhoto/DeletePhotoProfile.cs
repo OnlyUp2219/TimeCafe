@@ -11,7 +11,7 @@ public class DeletePhotoProfile : ICarterModule
         {
             var cmd = new DeleteProfilePhotoCommand(userId);
             var result = await sender.Send(cmd, ct);
-            return result.ToHttpResultV2(_ => Results.NoContent());
+            return result.ToHttpResult(_ => Results.NoContent());
         })
         .WithTags("ProfilePhoto")
         .WithName("DeleteProfilePhoto")

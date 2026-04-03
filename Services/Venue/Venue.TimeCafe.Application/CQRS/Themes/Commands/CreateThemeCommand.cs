@@ -8,7 +8,7 @@ public record CreateThemeResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Theme? Theme = null) : ICqrsResultV2
+    Theme? Theme = null) : ICqrsResult
 {
     public static CreateThemeResult CreateFailed() =>
         new(false, Code: "CreateThemeFailed", Message: "Не удалось создать тему", StatusCode: 500);

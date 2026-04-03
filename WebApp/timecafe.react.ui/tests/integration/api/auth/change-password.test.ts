@@ -44,7 +44,7 @@ describe("/auth/account/change-password", () => {
         expect(res.status).toBeGreaterThanOrEqual(200);
         expect(res.status).toBeLessThan(300);
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email, password: nextPassword});
+        const loginRes = await client.post("/auth/login-jwt", {email, password: nextPassword});
         expect(loginRes.status).toBe(200);
     });
 });

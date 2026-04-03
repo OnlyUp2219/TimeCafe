@@ -4,8 +4,8 @@ namespace Auth.TimeCafe.Test.Integration.Endpoints;
 public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     private const string Endpoint = "/auth/account/change-password";
-    private const string LoginEndpoint = "/auth/login-jwt-v2";
-    private const string RefreshEndpoint = "/auth/refresh-jwt-v2";
+    private const string LoginEndpoint = "/auth/login-jwt";
+    private const string RefreshEndpoint = "/auth/refresh-jwt";
 
     private static string ExtractCookieValue(IEnumerable<string> setCookies, string name)
     {

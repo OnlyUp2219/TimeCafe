@@ -8,7 +8,7 @@ public record CreateBalanceResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Balance? Balance = null) : ICqrsResultV2
+    Balance? Balance = null) : ICqrsResult
 {
     public static CreateBalanceResult AlreadyExists() =>
         new(false, Code: "BalanceAlreadyExists", Message: "Баланс уже существует", StatusCode: 409);

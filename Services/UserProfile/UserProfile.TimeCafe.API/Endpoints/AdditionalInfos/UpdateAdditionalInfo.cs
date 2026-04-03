@@ -19,7 +19,7 @@ public class UpdateAdditionalInfo : ICarterModule
         {
             var command = new UpdateAdditionalInfoCommand(infoId, request.UserId, request.InfoText, request.CreatedBy);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, info = r.AdditionalInfo }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, info = r.AdditionalInfo }));
         })
         .WithTags("AdditionalInfos")
         .WithName("UpdateAdditionalInfo")

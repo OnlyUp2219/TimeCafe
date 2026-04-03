@@ -84,13 +84,13 @@ export const registerAndConfirm = async (client: ReturnType<typeof getAxiosClien
 };
 
 export const loginAndGetAccessToken = async (client: ReturnType<typeof getAxiosClientWithRateLimitKey>, email: string, password: string) => {
-    const loginRes = await client.post("/auth/login-jwt-v2", {email, password});
+    const loginRes = await client.post("/auth/login-jwt", {email, password});
     const token = loginRes.data?.accessToken as string | undefined;
     return {loginRes, token: token ?? ""};
 };
 
 export const loginAndGetRefreshToken = async (client: ReturnType<typeof getAxiosClientWithRateLimitKey>, email: string, password: string) => {
-    const loginRes = await client.post("/auth/login-jwt-v2", {email, password});
+    const loginRes = await client.post("/auth/login-jwt", {email, password});
     const refreshToken = extractRefreshTokenFromSetCookie(loginRes.headers?.["set-cookie"]);
     return {loginRes, refreshToken};
 };

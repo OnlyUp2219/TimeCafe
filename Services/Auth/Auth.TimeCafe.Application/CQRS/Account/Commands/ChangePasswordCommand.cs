@@ -8,7 +8,7 @@ public record ChangePasswordResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    int? RefreshTokensRevoked = null) : ICqrsResultV2
+    int? RefreshTokensRevoked = null) : ICqrsResult
 {
     public static ChangePasswordResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

@@ -10,7 +10,7 @@ public class GetActiveVisitByUser : ICarterModule
         {
             var query = new GetActiveVisitByUserQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visit = r.Visit }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visit = r.Visit }));
         })
         .WithTags("Visits")
         .WithName("GetActiveVisitByUser")

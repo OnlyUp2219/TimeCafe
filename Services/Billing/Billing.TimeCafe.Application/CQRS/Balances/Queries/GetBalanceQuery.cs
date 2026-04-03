@@ -8,7 +8,7 @@ public record GetBalanceResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Balance? Balance = null) : ICqrsResultV2
+    Balance? Balance = null) : ICqrsResult
 {
     public static GetBalanceResult BalanceNotFound() =>
         new(false, Code: "BalanceNotFound", Message: "Баланс не найден", StatusCode: 404);

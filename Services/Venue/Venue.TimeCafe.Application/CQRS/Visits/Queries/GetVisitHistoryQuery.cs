@@ -8,7 +8,7 @@ public record GetVisitHistoryResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResultV2
+    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResult
 {
     public static GetVisitHistoryResult GetFailed() =>
         new(false, Code: "GetVisitHistoryFailed", Message: "Не удалось получить историю посещений", StatusCode: 500);

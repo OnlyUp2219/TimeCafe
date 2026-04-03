@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Phone;
 
 public class PhoneClear : ICarterModule
 {
@@ -19,7 +19,7 @@ public class PhoneClear : ICarterModule
             var command = new ClearPhoneCommand(userId);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireAuthorization()
         .WithName("ClearPhone")

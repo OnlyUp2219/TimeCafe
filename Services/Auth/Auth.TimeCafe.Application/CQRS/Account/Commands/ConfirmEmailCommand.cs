@@ -7,7 +7,7 @@ public record ConfirmEmailResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static ConfirmEmailResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

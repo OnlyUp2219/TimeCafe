@@ -10,7 +10,7 @@ public class GetPromotionById : ICarterModule
         {
             var query = new GetPromotionByIdQuery(promotionId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { promotion = r.Promotion }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotion = r.Promotion }));
         })
         .WithTags("Promotions")
         .WithName("GetPromotionById")

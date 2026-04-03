@@ -9,7 +9,7 @@ public record SavePhoneResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     string? PhoneNumber = null
-) : ICqrsResultV2
+) : ICqrsResult
 {
     public static SavePhoneResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

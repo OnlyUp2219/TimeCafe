@@ -15,7 +15,7 @@ public record GeneratePhoneVerificationResult(
     List<ErrorItem>? Errors = null,
     string? CallbackUrl = null,
     string? PhoneNumber = null,
-    string? Token = null) : ICqrsResultV2
+    string? Token = null) : ICqrsResult
 {
     public static GeneratePhoneVerificationResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

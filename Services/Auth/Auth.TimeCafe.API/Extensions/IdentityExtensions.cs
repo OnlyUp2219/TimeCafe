@@ -1,3 +1,5 @@
+using Auth.TimeCafe.Infrastructure.Services.Validators;
+
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class IdentityExtensions

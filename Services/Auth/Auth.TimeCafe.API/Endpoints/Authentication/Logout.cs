@@ -20,7 +20,7 @@ public class Logout : ICarterModule
 
             AppendExpiredCookie(context, cookieName);
 
-            return result.ToHttpResultV2(r =>
+            return result.ToHttpResult(r =>
                 Results.Ok(new { message = r.Message ?? "Выход выполнен", revoked = r.Revoked }));
         })
             .WithTags("Authentication")

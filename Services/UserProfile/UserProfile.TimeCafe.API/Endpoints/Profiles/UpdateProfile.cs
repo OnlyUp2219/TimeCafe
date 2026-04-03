@@ -36,7 +36,7 @@ public class UpdateProfile : ICarterModule
             };
             var command = new UpdateProfileCommand(profile);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, profile = r.Profile }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, profile = r.Profile }));
         })
         .WithTags("Profiles")
         .WithName("UpdateProfile")

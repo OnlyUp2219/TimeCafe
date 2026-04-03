@@ -10,7 +10,7 @@ public class GetTariffsByBillingType : ICarterModule
         {
             var query = new GetTariffsByBillingTypeQuery(billingType);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
         })
         .WithTags("Tariffs")
         .WithName("GetTariffsByBillingType")

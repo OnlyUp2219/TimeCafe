@@ -10,7 +10,7 @@ public class GetBalance : ICarterModule
         {
             var query = new GetBalanceQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new
             {
                 // TODO : Add Mapping
                 balance = new

@@ -26,7 +26,7 @@ public class UpdateVisit : ICarterModule
         {
             var command = new UpdateVisitCommand(visitId, request.UserId, request.TariffId, request.EntryTime, request.ExitTime, request.CalculatedCost, request.Status);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r =>
+            return result.ToHttpResult(onSuccess: r =>
                 Results.Ok(new { message = r.Message, visit = r.Visit }));
         })
         .WithTags("Visits")

@@ -8,7 +8,7 @@ public record GetActivePromotionsResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Promotion>? Promotions = null) : ICqrsResultV2
+    IEnumerable<Promotion>? Promotions = null) : ICqrsResult
 {
     public static GetActivePromotionsResult GetFailed() =>
         new(false, Code: "GetActivePromotionsFailed", Message: "Не удалось получить активные акции", StatusCode: 500);

@@ -12,7 +12,7 @@ public class GetTransactionHistory : ICarterModule
         {
             var query = new GetTransactionHistoryQuery(userId, page, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new
             {
                 transactions = r.Transactions,
                 pagination = new

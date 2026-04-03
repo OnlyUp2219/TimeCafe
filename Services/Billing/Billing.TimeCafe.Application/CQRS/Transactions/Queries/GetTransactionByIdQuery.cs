@@ -8,7 +8,7 @@ public record GetTransactionByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    TransactionDetailDto? Transaction = null) : ICqrsResultV2
+    TransactionDetailDto? Transaction = null) : ICqrsResult
 {
     public static GetTransactionByIdResult TransactionNotFound() =>
         new(false, Code: "TransactionNotFound", Message: "Транзакция не найдена", StatusCode: 404);

@@ -8,7 +8,7 @@ public record GetProfilePhotoResult(bool Success,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     Stream? Stream = null,
-    string? ContentType = null) : ICqrsResultV2
+    string? ContentType = null) : ICqrsResult
 {
     public static GetProfilePhotoResult NotFound() =>
         new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);

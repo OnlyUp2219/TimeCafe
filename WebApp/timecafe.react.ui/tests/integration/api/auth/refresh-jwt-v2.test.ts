@@ -1,10 +1,10 @@
 import {describe, it, expect} from "vitest";
 import {createPassword, createTestClient, createTestEmail, loginAndGetRefreshToken, registerAndConfirm, buildRefreshCookieHeader} from "@tests/integration/api/helpers";
 
-describe("/auth/refresh-jwt-v2", () => {
+describe("/auth/refresh-jwt", () => {
     it("returns 401 when cookie missing", async () => {
         const {client} = createTestClient();
-        const res = await client.post("/auth/refresh-jwt-v2", null);
+        const res = await client.post("/auth/refresh-jwt", null);
         expect(res.status).toBe(401);
     });
 
@@ -18,7 +18,7 @@ describe("/auth/refresh-jwt-v2", () => {
         expect(refreshToken).toBeTruthy();
 
         const refreshRes = await client.post(
-            "/auth/refresh-jwt-v2",
+            "/auth/refresh-jwt",
             null,
             {headers: {Cookie: buildRefreshCookieHeader(refreshToken)}}
         );

@@ -9,7 +9,7 @@ public record GetTariffsPageResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     IEnumerable<TariffWithThemeDto>? Tariffs = null,
-    int TotalCount = 0) : ICqrsResultV2
+    int TotalCount = 0) : ICqrsResult
 {
     public static GetTariffsPageResult GetFailed() =>
         new(false, Code: "GetTariffsPageFailed", Message: "Не удалось получить страницу тарифов", StatusCode: 500);

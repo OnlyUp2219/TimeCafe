@@ -8,7 +8,7 @@ public record UpdateVisitResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResultV2
+    Visit? Visit = null) : ICqrsResult
 {
     public static UpdateVisitResult VisitNotFound() =>
         new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);

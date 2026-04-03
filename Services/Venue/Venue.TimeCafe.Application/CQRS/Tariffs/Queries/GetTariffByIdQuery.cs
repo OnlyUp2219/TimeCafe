@@ -8,7 +8,7 @@ public record GetTariffByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    TariffWithThemeDto? Tariff = null) : ICqrsResultV2
+    TariffWithThemeDto? Tariff = null) : ICqrsResult
 {
     public static GetTariffByIdResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);

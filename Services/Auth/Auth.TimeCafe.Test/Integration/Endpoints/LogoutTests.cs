@@ -12,7 +12,7 @@ public class LogoutTests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
-        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt", loginDto);
         var loginBody = await loginResp.Content.ReadAsStringAsync();
 
         // Act
@@ -69,7 +69,7 @@ public class LogoutTests : BaseEndpointTest
     {
         // Arrange
         var loginDto = new { Email = "confirmed@example.com", Password = "password123" };
-        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt-v2", loginDto);
+        var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt", loginDto);
         loginResp.StatusCode.Should().Be(HttpStatusCode.OK);
         var refreshToken = ExtractCookieValue(loginResp, "refresh_token");
         var logoutRequest = new HttpRequestMessage(HttpMethod.Post, "/auth/logout");

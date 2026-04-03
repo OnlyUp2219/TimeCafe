@@ -8,7 +8,7 @@ public record ForgotPasswordResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    string? CallbackUrl = null) : ICqrsResultV2
+    string? CallbackUrl = null) : ICqrsResult
 {
     public static ForgotPasswordResult SuccessSilent() =>
        new(true, Message: "Если пользователь существует, письмо отправлено");

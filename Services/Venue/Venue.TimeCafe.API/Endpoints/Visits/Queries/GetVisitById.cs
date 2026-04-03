@@ -10,7 +10,7 @@ public class GetVisitById : ICarterModule
         {
             var query = new GetVisitByIdQuery(visitId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visit = r.Visit }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visit = r.Visit }));
         })
         .WithTags("Visits")
         .WithName("GetVisitById")

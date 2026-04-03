@@ -8,7 +8,7 @@ public record GetPromotionByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Promotion? Promotion = null) : ICqrsResultV2
+    Promotion? Promotion = null) : ICqrsResult
 {
     public static GetPromotionByIdResult PromotionNotFound() =>
         new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);

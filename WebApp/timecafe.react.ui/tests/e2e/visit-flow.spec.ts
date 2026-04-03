@@ -47,7 +47,7 @@ const registerAndConfirmUser = async (request: APIRequestContext, email: string,
 
 const waitUntilLoginReady = async (request: APIRequestContext, email: string, password: string) => {
     for (let attempt = 0; attempt < 10; attempt += 1) {
-        const loginResponse = await request.post(`${apiBaseUrl}/auth/login-jwt-v2`, {
+        const loginResponse = await request.post(`${apiBaseUrl}/auth/login-jwt`, {
             headers: {
                 "Content-Type": "application/json",
                 "X-Test-RateLimit-Key": createRateLimitKey(),

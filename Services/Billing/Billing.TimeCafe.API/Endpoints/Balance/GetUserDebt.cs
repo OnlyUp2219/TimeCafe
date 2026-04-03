@@ -11,7 +11,7 @@ public class GetUserDebt : ICarterModule
         {
             var query = new GetUserDebtQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { debt = r.Debt }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { debt = r.Debt }));
         })
         .WithTags("Balance")
         .WithName("GetUserDebt")

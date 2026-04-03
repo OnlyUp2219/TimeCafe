@@ -10,7 +10,7 @@ public class GetThemeById : ICarterModule
         {
             var query = new GetThemeByIdQuery(themeId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { theme = r.Theme }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { theme = r.Theme }));
         })
         .WithTags("Themes")
         .WithName("GetThemeById")

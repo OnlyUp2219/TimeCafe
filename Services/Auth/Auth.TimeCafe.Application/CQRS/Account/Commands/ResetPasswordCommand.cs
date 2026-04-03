@@ -7,7 +7,7 @@ public record ResetPasswordResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static ResetPasswordResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Некорректная ссылка для сброса пароля", StatusCode: 400);

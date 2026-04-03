@@ -8,7 +8,7 @@ public record GetAdditionalInfosByUserIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<AdditionalInfo>? AdditionalInfos = null) : ICqrsResultV2
+    IEnumerable<AdditionalInfo>? AdditionalInfos = null) : ICqrsResult
 {
     public static GetAdditionalInfosByUserIdResult GetFailed() =>
         new(false, Code: "GetAdditionalInfosFailed", Message: "Не удалось получить дополнительную информацию", StatusCode: 500);

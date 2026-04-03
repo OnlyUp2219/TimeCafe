@@ -42,8 +42,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     ports:
-      - "5672:5672"   # AMQP
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672" 
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
@@ -54,7 +54,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ELK Stack for logging and monitoring
   kibana:
     image: docker.elastic.co/kibana/kibana:9.2.3
     container_name: timecafe-kibana

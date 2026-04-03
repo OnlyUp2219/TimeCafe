@@ -89,7 +89,7 @@ export const authApi = createApi({
     endpoints: (builder) => ({
         loginJwtV2: builder.mutation<LoginJwtV2Response, LoginRequest>({
             query: (data) => ({
-                url: "/auth/login-jwt-v2",
+                url: "/auth/login-jwt",
                 method: "POST",
                 body: data,
             }),

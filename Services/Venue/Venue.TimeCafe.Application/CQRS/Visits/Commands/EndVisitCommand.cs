@@ -9,7 +9,7 @@ public record EndVisitResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     Visit? Visit = null,
-    decimal? CalculatedCost = null) : ICqrsResultV2
+    decimal? CalculatedCost = null) : ICqrsResult
 {
     public static EndVisitResult VisitNotFound() =>
         new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);

@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Password;
 
 public record ChangePasswordRequest(
     /// <example>OldP@ss123</example>
@@ -28,7 +28,7 @@ public sealed class ChangePassword : ICarterModule
 
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(
+            return result.ToHttpResult(
                 onSuccess: r => Results.Ok(new { message = r.Message, refreshTokensRevoked = r.RefreshTokensRevoked })
             );
 

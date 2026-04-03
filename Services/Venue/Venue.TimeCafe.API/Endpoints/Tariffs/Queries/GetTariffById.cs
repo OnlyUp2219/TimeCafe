@@ -10,7 +10,7 @@ public class GetTariffById : ICarterModule
         {
             var query = new GetTariffByIdQuery(tariffId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariff = r.Tariff }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { tariff = r.Tariff }));
         })
         .WithTags("Tariffs")
         .WithName("GetTariffById")

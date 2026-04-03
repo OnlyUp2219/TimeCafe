@@ -7,7 +7,7 @@ public record DeleteThemeResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static DeleteThemeResult ThemeNotFound() =>
         new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);

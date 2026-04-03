@@ -8,7 +8,7 @@ public record GetAllThemesResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Theme>? Themes = null) : ICqrsResultV2
+    IEnumerable<Theme>? Themes = null) : ICqrsResult
 {
     public static GetAllThemesResult GetFailed() =>
         new(false, Code: "GetThemesFailed", Message: "Не удалось получить темы", StatusCode: 500);

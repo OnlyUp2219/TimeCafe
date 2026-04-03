@@ -8,7 +8,7 @@ public record GetTotalPagesResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    int? TotalCount = null) : ICqrsResultV2
+    int? TotalCount = null) : ICqrsResult
 {
     public static GetTotalPagesResult GetFailed() =>
         new(false, Code: "GetTotalPagesFailed", Message: "Не удалось получить общее количество", StatusCode: 500);

@@ -8,7 +8,7 @@ public record UpdateAdditionalInfoResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    AdditionalInfo? AdditionalInfo = null) : ICqrsResultV2
+    AdditionalInfo? AdditionalInfo = null) : ICqrsResult
 {
     public static UpdateAdditionalInfoResult InfoNotFound() =>
         new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);

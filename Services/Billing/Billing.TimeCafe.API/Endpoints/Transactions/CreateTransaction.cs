@@ -32,7 +32,7 @@ public class CreateTransaction : ICarterModule
 
             var result = await sender.Send(command);
             // TODO : Add Mapping
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new
             {
                 balance = new
                 {

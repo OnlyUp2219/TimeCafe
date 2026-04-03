@@ -9,7 +9,7 @@ public class GetActiveTariffs : ICarterModule
         {
             var query = new GetActiveTariffsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
         })
         .WithTags("Tariffs")
         .WithName("GetActiveTariffs")

@@ -11,7 +11,7 @@ public record VerifyPhoneResult(
             string? PhoneNumber = null,
             int? RemainingAttempts = null,
             bool? RequiresCaptcha = null
-        ) : ICqrsResultV2
+        ) : ICqrsResult
 {
     public static VerifyPhoneResult UserNotFound(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401,

@@ -9,7 +9,7 @@ public record ProcessStripeWebhookResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static ProcessStripeWebhookResult Unauthorized() =>
         new(false, Code: "Unauthorized", Message: "Некорректная авторизация вебхука", StatusCode: 401);

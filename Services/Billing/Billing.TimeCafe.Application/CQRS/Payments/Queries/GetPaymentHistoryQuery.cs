@@ -13,7 +13,7 @@ public record GetPaymentHistoryResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static GetPaymentHistoryResult InvalidUserId() =>
         new(false, Code: "InvalidUserId", Message: "Некорректный ID пользователя", StatusCode: 400);

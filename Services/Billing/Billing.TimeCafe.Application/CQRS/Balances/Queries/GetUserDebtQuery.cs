@@ -8,7 +8,7 @@ public record GetUserDebtResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    decimal? Debt = null) : ICqrsResultV2
+    decimal? Debt = null) : ICqrsResult
 {
     public static GetUserDebtResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 404);

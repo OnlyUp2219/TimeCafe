@@ -10,7 +10,7 @@ public class DeleteTheme : ICarterModule
         {
             var command = new DeleteThemeCommand(themeId);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .WithTags("Themes")
         .WithName("DeleteTheme")

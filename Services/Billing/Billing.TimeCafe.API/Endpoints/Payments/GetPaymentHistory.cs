@@ -15,7 +15,7 @@ public class GetPaymentHistory : ICarterModule
         {
             var query = new GetPaymentHistoryQuery(userId, page, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new
             {
                 payments = r.Payments,
                 pagination = new

@@ -13,7 +13,7 @@ public class CreatePhotoProfile : ICarterModule
             var stream = file.OpenReadStream();
             var cmd = new UploadProfilePhotoCommand(userId, stream, file.ContentType, file.FileName, file.Length);
             var result = await sender.Send(cmd, ct);
-            return result.ToHttpResultV2(r =>
+            return result.ToHttpResult(r =>
                 Results.Created($"/S3/image/{userId}", new { r.Key, r.Url, r.Size, r.ContentType }));
         })
         .Accepts<IFormFile>("multipart/form-data")

@@ -8,7 +8,7 @@ public record HasActiveVisitResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    bool HasActiveVisit = false) : ICqrsResultV2
+    bool HasActiveVisit = false) : ICqrsResult
 {
     public static HasActiveVisitResult CheckFailed() =>
         new(false, Code: "CheckActiveVisitFailed", Message: "Не удалось проверить активное посещение", StatusCode: 500);

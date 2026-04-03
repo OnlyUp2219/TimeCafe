@@ -1,7 +1,7 @@
 import {describe, it, expect} from "vitest";
 import {createPassword, createTestClient, createTestEmail, registerAndConfirm, registerUser} from "@tests/integration/api/helpers";
 
-describe("/auth/login-jwt-v2", () => {
+describe("/auth/login-jwt", () => {
     it("returns emailConfirmed false when email not confirmed", async () => {
         const {client} = createTestClient();
         const email = createTestEmail();
@@ -11,7 +11,7 @@ describe("/auth/login-jwt-v2", () => {
         expect(registerRes.status).toBeGreaterThanOrEqual(200);
         expect(registerRes.status).toBeLessThan(300);
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email, password});
+        const loginRes = await client.post("/auth/login-jwt", {email, password});
         expect(loginRes.status).toBe(200);
         expect(loginRes.data?.emailConfirmed).toBe(false);
         expect(loginRes.data?.accessToken).toBeFalsy();
@@ -24,7 +24,7 @@ describe("/auth/login-jwt-v2", () => {
 
         await registerAndConfirm(client, email, password);
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email, password});
+        const loginRes = await client.post("/auth/login-jwt", {email, password});
         expect(loginRes.status).toBe(200);
         expect(loginRes.data?.accessToken).toBeTruthy();
         const setCookie = loginRes.headers?.["set-cookie"] as string[] | undefined;
@@ -38,13 +38,13 @@ describe("/auth/login-jwt-v2", () => {
 
         await registerAndConfirm(client, email, password);
 
-        const loginRes = await client.post("/auth/login-jwt-v2", {email, password: "wrong"});
+        const loginRes = await client.post("/auth/login-jwt", {email, password: "wrong"});
         expect(loginRes.status).toBe(400);
     });
 
     it("returns 422 for invalid email format", async () => {
         const {client} = createTestClient();
-        const loginRes = await client.post("/auth/login-jwt-v2", {email: "invalid", password: "x"});
+        const loginRes = await client.post("/auth/login-jwt", {email: "invalid", password: "x"});
         expect(loginRes.status).toBe(422);
     });
 });

@@ -16,7 +16,7 @@ public record class RefreshTokenResult(
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
     string? AccessToken = null,
-    string? RefreshToken = null) : ICqrsResultV2
+    string? RefreshToken = null) : ICqrsResult
 {
     public static RefreshTokenResult InvalidToken() =>
         new(false, Code: "InvalidToken", Message: "Токен недействителен или уже использован", StatusCode: 401);

@@ -1,6 +1,6 @@
 using Auth.TimeCafe.Application.CQRS.Account.Queries;
 
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Phone;
 
 public sealed class PhoneVerificationStatus : ICarterModule
 {
@@ -19,7 +19,7 @@ public sealed class PhoneVerificationStatus : ICarterModule
                 var query = new GetPhoneVerificationStatusQuery(userId);
                 var result = await sender.Send(query);
 
-                return result.ToHttpResultV2(r => Results.Ok(new
+                return result.ToHttpResult(r => Results.Ok(new
                 {
                     phoneNumber = r.PhoneNumber,
                     phoneNumberConfirmed = r.PhoneNumberConfirmed,

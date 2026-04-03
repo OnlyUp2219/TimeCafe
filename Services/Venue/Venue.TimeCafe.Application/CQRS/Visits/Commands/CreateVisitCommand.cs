@@ -13,7 +13,7 @@ public record CreateVisitResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResultV2
+    Visit? Visit = null) : ICqrsResult
 {
     public static CreateVisitResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);

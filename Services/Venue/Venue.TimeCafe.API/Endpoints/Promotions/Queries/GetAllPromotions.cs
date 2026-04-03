@@ -9,7 +9,7 @@ public class GetAllPromotions : ICarterModule
         {
             var query = new GetAllPromotionsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
         })
         .WithTags("Promotions")
         .WithName("GetAllPromotions")

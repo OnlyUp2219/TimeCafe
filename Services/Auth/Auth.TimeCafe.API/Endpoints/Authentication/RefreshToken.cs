@@ -1,10 +1,10 @@
 namespace Auth.TimeCafe.API.Endpoints.Authentication;
 
-public class RefreshTokenV2 : ICarterModule
+public class RefreshToken : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/refresh-jwt-v2", async (
+        app.MapPost("/refresh-jwt", async (
             HttpContext context,
             [FromServices] ISender sender,
             [FromServices] IConfiguration configuration) =>
@@ -15,10 +15,11 @@ public class RefreshTokenV2 : ICarterModule
             var command = new RefreshTokenCommand(refreshToken);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(r =>
+            return result.ToHttpResult(r =>
             {
                 var refreshDaysStr = configuration.GetSection("Jwt")["RefreshTokenExpirationDays"] ?? "30";
-                if (!int.TryParse(refreshDaysStr, out var refreshDays)) refreshDays = 30;
+                if (!int.TryParse(refreshDaysStr, out var refreshDays))
+                    refreshDays = 30;
                 context.Response.Cookies.Append("refresh_token", r.RefreshToken!, new CookieOptions
                 {
                     HttpOnly = true,
@@ -31,8 +32,8 @@ public class RefreshTokenV2 : ICarterModule
             });
         })
         .WithTags("Authentication")
-        .WithName("RefreshTokenV2")
-        .WithSummary("Обновление access токена через refresh cookie (v2)")
+        .WithName("RefreshToken")
+        .WithSummary("Обновление access токена через refresh cookie")
         .Produces(200)
         .WithDescription("Читает refresh токен из httpOnly cookie, выполняет ротацию, возвращает новый access токен.");
     }

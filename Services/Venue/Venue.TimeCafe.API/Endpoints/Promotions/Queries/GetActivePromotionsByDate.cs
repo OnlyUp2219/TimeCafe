@@ -10,7 +10,7 @@ public class GetActivePromotionsByDate : ICarterModule
         {
             var query = new GetActivePromotionsByDateQuery(date);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
         })
         .WithTags("Promotions")
         .WithName("GetActivePromotionsByDate")

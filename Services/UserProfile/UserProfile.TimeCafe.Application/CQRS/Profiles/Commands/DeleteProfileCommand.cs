@@ -7,7 +7,7 @@ public record DeleteProfileResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static DeleteProfileResult ProfileNotFound() =>
         new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);

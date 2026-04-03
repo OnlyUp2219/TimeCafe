@@ -35,7 +35,7 @@ public class UpdateTariff : ICarterModule
             );
 
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, tariff = r.Tariff }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, tariff = r.Tariff }));
         })
         .WithTags("Tariffs")
         .WithName("UpdateTariff")

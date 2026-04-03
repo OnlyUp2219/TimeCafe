@@ -8,7 +8,7 @@ public record CreateEmptyResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static CreateEmptyResult ProfileAlreadyExists() =>
         new(false, Code: "ProfileAlreadyExists", Message: "Профиль уже существует", StatusCode: 409);

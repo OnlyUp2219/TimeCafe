@@ -17,7 +17,7 @@ public class EmailResend : ICarterModule
             var command = new ResendConfirmationCommand(request.Email, SendEmail: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
@@ -34,7 +34,7 @@ public class EmailResend : ICarterModule
             var command = new ResendConfirmationCommand(request.Email, SendEmail: false);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")

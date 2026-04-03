@@ -8,7 +8,7 @@ public record GetVisitByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    VisitWithTariffDto? Visit = null) : ICqrsResultV2
+    VisitWithTariffDto? Visit = null) : ICqrsResult
 {
     public static GetVisitByIdResult VisitNotFound() =>
         new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);

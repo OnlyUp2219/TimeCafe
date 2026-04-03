@@ -11,7 +11,7 @@ public class GetProfilesPage : ICarterModule
         {
             var query = new GetProfilesPageQuery(pageNumber, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new
             {
                 message = r.Message,
                 profiles = r.Profiles,

@@ -10,7 +10,7 @@ public record GetAllProfilesResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Profile>? Profiles = null) : ICqrsResultV2
+    IEnumerable<Profile>? Profiles = null) : ICqrsResult
 {
     public static GetAllProfilesResult GetFailed() =>
         new(false, Code: "GetAllProfilesFailed", Message: "Не удалось получить профили", StatusCode: 500);

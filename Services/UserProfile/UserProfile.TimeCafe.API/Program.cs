@@ -2,9 +2,15 @@ using UserProfile.TimeCafe.API.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var sharedSettingsPath = Path.GetFullPath(
-    Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "appsettings.shared.json"));
-builder.Configuration.AddJsonFile(sharedSettingsPath, optional: true, reloadOnChange: true);
+var sharedSettingsCandidates = new[]
+{
+    Path.Combine(builder.Environment.ContentRootPath, "appsettings.shared.json"),
+    Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "..", "appsettings.shared.json"))
+};
+
+var sharedSettingsPath = sharedSettingsCandidates.FirstOrDefault(File.Exists);
+if (sharedSettingsPath is not null)
+    builder.Configuration.AddJsonFile(sharedSettingsPath, optional: false, reloadOnChange: true);
 
 // Serilog
 builder.Services.AddSerilogConfiguration(builder.Configuration);

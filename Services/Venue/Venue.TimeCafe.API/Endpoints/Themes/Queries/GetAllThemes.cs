@@ -9,7 +9,7 @@ public class GetAllThemes : ICarterModule
         {
             var query = new GetAllThemesQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { themes = r.Themes }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { themes = r.Themes }));
         })
         .WithTags("Themes")
         .WithName("GetAllThemes")

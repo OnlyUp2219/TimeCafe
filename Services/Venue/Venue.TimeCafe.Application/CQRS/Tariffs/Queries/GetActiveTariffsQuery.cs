@@ -8,7 +8,7 @@ public record GetActiveTariffsResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<TariffWithThemeDto>? Tariffs = null) : ICqrsResultV2
+    IEnumerable<TariffWithThemeDto>? Tariffs = null) : ICqrsResult
 {
     public static GetActiveTariffsResult GetFailed() =>
         new(false, Code: "GetActiveTariffsFailed", Message: "Не удалось получить активные тарифы", StatusCode: 500);

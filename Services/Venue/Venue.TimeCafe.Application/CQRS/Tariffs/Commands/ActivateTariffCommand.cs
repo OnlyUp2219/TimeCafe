@@ -7,7 +7,7 @@ public record ActivateTariffResult(
     string? Code = null,
     string? Message = null,
     int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResultV2
+    List<ErrorItem>? Errors = null) : ICqrsResult
 {
     public static ActivateTariffResult TariffNotFound() =>
         new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);

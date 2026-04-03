@@ -8,7 +8,7 @@ public record GetActiveVisitsResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResultV2
+    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResult
 {
     public static GetActiveVisitsResult GetFailed() =>
         new(false, Code: "GetActiveVisitsFailed", Message: "Не удалось получить активные посещения", StatusCode: 500);

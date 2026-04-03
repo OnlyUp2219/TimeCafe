@@ -19,7 +19,7 @@ public class Registration : ICarterModule
             var command = new RegisterUserCommand(request.Username, request.Email, request.Password, SendEmail: true);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
             .WithTags("Authentication")
             .WithName("Register")
@@ -34,7 +34,7 @@ public class Registration : ICarterModule
             var command = new RegisterUserCommand(request.Username, request.Email, request.Password, SendEmail: false);
             var result = await sender.Send(command);
 
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message, callbackUrl = r.CallbackUrl }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, callbackUrl = r.CallbackUrl }));
         })
             .WithTags("Authentication")
             .WithName("RegisterMock")

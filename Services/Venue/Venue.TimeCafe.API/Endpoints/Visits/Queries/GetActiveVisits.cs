@@ -9,7 +9,7 @@ public class GetActiveVisits : ICarterModule
         {
             var query = new GetActiveVisitsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { visits = r.Visits }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visits = r.Visits }));
         })
         .WithTags("Visits")
         .WithName("GetActiveVisits")

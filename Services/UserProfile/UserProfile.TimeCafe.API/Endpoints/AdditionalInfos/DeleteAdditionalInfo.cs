@@ -10,7 +10,7 @@ public class DeleteAdditionalInfo : ICarterModule
         {
             var command = new DeleteAdditionalInfoCommand(infoId);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .WithTags("AdditionalInfos")
         .WithName("DeleteAdditionalInfo")

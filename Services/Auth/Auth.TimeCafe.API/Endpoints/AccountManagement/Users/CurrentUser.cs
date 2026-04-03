@@ -1,10 +1,4 @@
-using Auth.TimeCafe.Domain.Models;
-
-using Microsoft.AspNetCore.Identity;
-
-using System.Security.Claims;
-
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Users;
 
 public record CurrentUserResponse(
     Guid UserId,

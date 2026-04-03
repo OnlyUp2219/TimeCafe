@@ -8,7 +8,7 @@ public record GetThemeByIdResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Theme? Theme = null) : ICqrsResultV2
+    Theme? Theme = null) : ICqrsResult
 {
     public static GetThemeByIdResult ThemeNotFound() =>
         new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);

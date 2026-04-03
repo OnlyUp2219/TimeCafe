@@ -1,5 +1,3 @@
-using Auth.TimeCafe.API.Services;
-
 namespace Auth.TimeCafe.API.Endpoints.ExternalAuth;
 
 public abstract class ExternalProviderBase(string provider) : ICarterModule

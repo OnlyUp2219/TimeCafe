@@ -10,7 +10,7 @@ public record GetTransactionHistoryResult(
     List<ErrorItem>? Errors = null,
     List<TransactionDto>? Transactions = null,
     int? TotalCount = null,
-    int? TotalPages = null) : ICqrsResultV2
+    int? TotalPages = null) : ICqrsResult
 {
     public static GetTransactionHistoryResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 404);

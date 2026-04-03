@@ -10,7 +10,7 @@ public class DeleteVisit : ICarterModule
         {
             var command = new DeleteVisitCommand(visitId);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
         .WithTags("Visits")
         .WithName("DeleteVisit")

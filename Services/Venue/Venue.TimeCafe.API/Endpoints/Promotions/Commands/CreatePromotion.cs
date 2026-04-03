@@ -24,7 +24,7 @@ public class CreatePromotion : ICarterModule
         {
             var command = new CreatePromotionCommand(request.Name, request.Description, request.DiscountPercent, request.ValidFrom, request.ValidTo, request.IsActive);
             var result = await sender.Send(command);
-            return result.ToHttpResultV2(onSuccess: r => Results.Json(new { message = r.Message, promotion = r.Promotion }, statusCode: 201));
+            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, promotion = r.Promotion }, statusCode: 201));
         })
         .WithTags("Promotions")
         .WithName("CreatePromotion")

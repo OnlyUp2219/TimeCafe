@@ -8,7 +8,7 @@ public record CreateAdditionalInfoResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    AdditionalInfo? AdditionalInfo = null) : ICqrsResultV2
+    AdditionalInfo? AdditionalInfo = null) : ICqrsResult
 {
     public static CreateAdditionalInfoResult CreateFailed() =>
         new(false, Code: "CreateAdditionalInfoFailed", Message: "Не удалось создать дополнительную информацию", StatusCode: 500);

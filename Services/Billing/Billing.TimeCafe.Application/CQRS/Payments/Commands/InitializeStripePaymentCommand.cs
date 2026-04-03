@@ -15,7 +15,7 @@ public record InitializeStripePaymentResult(
     Guid? PaymentId = null,
     string? ExternalPaymentId = null,
     string? ClientSecret = null,
-    string? PublishableKey = null) : ICqrsResultV2
+    string? PublishableKey = null) : ICqrsResult
 {
     public static InitializeStripePaymentResult ConfigurationMissing() =>
         new(false, Code: "StripeConfigurationMissing", Message: "Платежный провайдер не настроен", StatusCode: 500);

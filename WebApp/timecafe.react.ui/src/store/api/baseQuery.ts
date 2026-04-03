@@ -36,7 +36,7 @@ let refreshPromise: Promise<string | null> | null = null;
 const tryRefresh = async (): Promise<string | null> => {
     refreshPromise ??= (async () => {
         try {
-            const res = await fetch(`${getApiBaseUrl()}/auth/refresh-jwt-v2`, {
+            const res = await fetch(`${getApiBaseUrl()}/auth/refresh-jwt`, {
                 method: "POST",
                 credentials: "include",
                 headers: {"Content-Type": "application/json"},

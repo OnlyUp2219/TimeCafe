@@ -8,7 +8,7 @@ public record GetActivePromotionsByDateResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    IEnumerable<Promotion>? Promotions = null) : ICqrsResultV2
+    IEnumerable<Promotion>? Promotions = null) : ICqrsResult
 {
     public static GetActivePromotionsByDateResult GetFailed() =>
         new(false, Code: "GetActivePromotionsByDateFailed", Message: "Не удалось получить активные акции на дату", StatusCode: 500);

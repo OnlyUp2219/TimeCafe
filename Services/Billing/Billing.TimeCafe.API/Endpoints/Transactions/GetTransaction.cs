@@ -10,7 +10,7 @@ public class GetTransaction : ICarterModule
         {
             var query = new GetTransactionByIdQuery(transactionId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(new { transaction = r.Transaction }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { transaction = r.Transaction }));
         })
         .WithTags("Transactions")
         .WithName("GetTransaction")

@@ -10,7 +10,7 @@ public class GetAdditionalInfoById : ICarterModule
         {
             var query = new GetAdditionalInfoByIdQuery(infoId);
             var result = await sender.Send(query);
-            return result.ToHttpResultV2(onSuccess: r => Results.Ok(r.AdditionalInfo));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(r.AdditionalInfo));
         })
         .WithTags("AdditionalInfos")
         .WithName("GetAdditionalInfoById")

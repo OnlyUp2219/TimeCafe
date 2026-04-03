@@ -8,7 +8,7 @@ public record ClearPhoneResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null
-) : ICqrsResultV2
+) : ICqrsResult
 {
     public static ClearPhoneResult UserNotFound() =>
         new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);

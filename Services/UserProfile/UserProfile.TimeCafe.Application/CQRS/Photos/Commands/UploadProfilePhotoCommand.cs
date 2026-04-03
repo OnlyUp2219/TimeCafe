@@ -14,7 +14,7 @@ public record UploadProfilePhotoResult(
     string? Key = null,
     string? Url = null,
     long? Size = null,
-    string? ContentType = null) : ICqrsResultV2
+    string? ContentType = null) : ICqrsResult
 {
     public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) =>
         new(true, Message: "Фото загружено", StatusCode: 201, Key: key, Url: url,

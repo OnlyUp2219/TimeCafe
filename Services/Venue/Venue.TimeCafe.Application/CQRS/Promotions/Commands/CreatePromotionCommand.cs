@@ -14,7 +14,7 @@ public record CreatePromotionResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    Promotion? Promotion = null) : ICqrsResultV2
+    Promotion? Promotion = null) : ICqrsResult
 {
     public static CreatePromotionResult CreateFailed() =>
         new(false, Code: "CreatePromotionFailed", Message: "Не удалось создать акцию", StatusCode: 500);

@@ -13,7 +13,7 @@ public record GetProfilesPageResult(
     IEnumerable<Profile>? Profiles = null,
     int? PageNumber = null,
     int? PageSize = null,
-    int? TotalCount = null) : ICqrsResultV2
+    int? TotalCount = null) : ICqrsResult
 {
     public static GetProfilesPageResult GetFailed() =>
         new(false, Code: "GetProfilesPageFailed", Message: "Не удалось получить страницу профилей", StatusCode: 500);
