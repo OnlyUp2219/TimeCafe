@@ -18,7 +18,7 @@ WORKDIR /src
 COPY ["Directory.Packages.props", "./"]
 
 # Copy BuildingBlocks
-COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
+COPY ["Services/BuildingBlocks/BuildingBlocks.csproj", "Services/BuildingBlocks/"]
 
 # Copy Billing service projects
 COPY ["Services/Billing/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj", "Services/Billing/Billing.TimeCafe.API/"]
@@ -32,7 +32,7 @@ RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,s
     dotnet restore "Services/Billing/Billing.TimeCafe.API/Billing.TimeCafe.API.csproj"
 
 # Copy all source files
-COPY ["BuildingBlocks/", "BuildingBlocks/"]
+COPY ["Services/BuildingBlocks/", "Services/BuildingBlocks/"]
 COPY ["Services/Billing/", "Services/Billing/"]
 
 WORKDIR "/src/Services/Billing/Billing.TimeCafe.API"

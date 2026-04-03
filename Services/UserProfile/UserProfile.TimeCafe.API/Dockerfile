@@ -18,7 +18,7 @@ WORKDIR /src
 COPY ["Directory.Packages.props", "./"]
 
 # Copy BuildingBlocks
-COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
+COPY ["Services/BuildingBlocks/BuildingBlocks.csproj", "Services/BuildingBlocks/"]
 
 # Copy UserProfile service projects
 COPY ["Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj", "Services/UserProfile/UserProfile.TimeCafe.API/"]
@@ -32,7 +32,7 @@ RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,s
     dotnet restore "Services/UserProfile/UserProfile.TimeCafe.API/UserProfile.TimeCafe.API.csproj"
 
 # Copy all source files
-COPY ["BuildingBlocks/", "BuildingBlocks/"]
+COPY ["Services/BuildingBlocks/", "Services/BuildingBlocks/"]
 COPY ["Services/UserProfile/", "Services/UserProfile/"]
 
 WORKDIR "/src/Services/UserProfile/UserProfile.TimeCafe.API"

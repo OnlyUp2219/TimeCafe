@@ -17,21 +17,21 @@ WORKDIR /src
 COPY ["Directory.Packages.props", "./"]
 
 # Copy BuildingBlocks
-COPY ["BuildingBlocks/BuildingBlocks.csproj", "BuildingBlocks/"]
+COPY ["Services/BuildingBlocks/BuildingBlocks.csproj", "Services/BuildingBlocks/"]
 
 # Copy YarpProxy project
-COPY ["YarpProxy/YarpProxy.csproj", "YarpProxy/"]
+COPY ["Services/YarpProxy/YarpProxy.csproj", "Services/YarpProxy/"]
 
 # Restore dependencies
 RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
     --mount=type=cache,id=timecafe-nuget-cache,target=/root/.local/share/NuGet,sharing=locked \
-    dotnet restore "YarpProxy/YarpProxy.csproj"
+    dotnet restore "Services/YarpProxy/YarpProxy.csproj"
 
 # Copy all source files
-COPY ["BuildingBlocks/", "BuildingBlocks/"]
-COPY ["YarpProxy/", "YarpProxy/"]
+COPY ["Services/BuildingBlocks/", "Services/BuildingBlocks/"]
+COPY ["Services/YarpProxy/", "Services/YarpProxy/"]
 
-WORKDIR "/src/YarpProxy"
+WORKDIR "/src/Services/YarpProxy"
 
 FROM build AS publish
 RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,sharing=locked \
