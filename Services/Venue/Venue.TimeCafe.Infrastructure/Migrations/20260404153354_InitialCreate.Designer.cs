@@ -12,15 +12,15 @@ using Venue.TimeCafe.Infrastructure.Data;
 namespace Venue.TimeCafe.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251226171733_Field_DateTimeOffset")]
-    partial class Field_DateTimeOffset
+    [Migration("20260404153354_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -61,9 +61,15 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
                     b.HasKey("PromotionId");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("IsActive");
 
+                    b.HasIndex("IsActive", "CreatedAt");
+
                     b.HasIndex("ValidFrom", "ValidTo");
+
+                    b.HasIndex("IsActive", "ValidFrom", "ValidTo", "DiscountPercent");
 
                     b.ToTable("Promotions", (string)null);
                 });
@@ -108,9 +114,15 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("BillingType");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("IsActive");
 
                     b.HasIndex("ThemeId");
+
+                    b.HasIndex("IsActive", "Name");
+
+                    b.HasIndex("BillingType", "IsActive", "PricePerMinute");
 
                     b.ToTable("Tariffs", (string)null);
                 });
@@ -134,6 +146,9 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("ThemeId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.ToTable("Themes", (string)null);
                 });
@@ -163,7 +178,6 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("UserId")
-                        .HasMaxLength(450)
                         .HasColumnType("uuid");
 
                     b.HasKey("VisitId");
@@ -174,7 +188,13 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("TariffId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 1");
+
+                    b.HasIndex("Status", "EntryTime");
+
+                    b.HasIndex("UserId", "EntryTime");
 
                     b.HasIndex("UserId", "Status");
 

@@ -1,6 +1,5 @@
 global using Amazon.S3;
 
-global using BuildingBlocks.Authorization;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 

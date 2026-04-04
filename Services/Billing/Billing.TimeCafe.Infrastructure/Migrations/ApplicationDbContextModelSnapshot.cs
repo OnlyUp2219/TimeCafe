@@ -17,7 +17,7 @@ namespace Billing.TimeCafe.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -121,6 +121,8 @@ namespace Billing.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
+                    b.HasIndex("UserId", "CreatedAt");
+
                     b.ToTable("Payments", (string)null);
                 });
 
@@ -174,6 +176,10 @@ namespace Billing.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("Source", "SourceId")
                         .HasDatabaseName("IX_Transactions_Source_SourceId");
+
+                    b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("Source", "SourceId", "CreatedAt");
 
                     b.ToTable("Transactions", (string)null);
                 });

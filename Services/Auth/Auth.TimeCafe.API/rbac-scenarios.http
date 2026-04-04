@@ -1,9 +1,9 @@
-@baseUrl = http://127.0.0.1:8001
+@baseUrl = http://127.0.0.1:7001
 @json = application/json
-@clientEmail = rbac.client@example.com
-@clientPassword = P@ssw0rd123
-@clientUserId = paste-user-id-from-callbackUrl
-@clientConfirmToken = paste-token-from-callbackUrl
+@clientEmail = load.user@example.com
+@clientPassword = P@ssw0rd!
+@accessToken = paste
+@accessTokenAdmin = paste
 
 ### @name loginAdmin
 POST {{baseUrl}}/auth/login-jwt
@@ -16,30 +16,16 @@ Content-Type: {{json}}
 
 ### Admin -> protected-test
 GET {{baseUrl}}/auth/protected-test
-Authorization: Bearer {{loginAdmin.response.body.$.accessToken}}
+Authorization: Bearer {{accessTokenAdmin}}
 
 ### Admin -> me
 GET {{baseUrl}}/auth/account/me
-Authorization: Bearer {{loginAdmin.response.body.$.accessToken}}
+Authorization: Bearer {{accessTokenAdmin}}
 
-### @name registerClient
-POST {{baseUrl}}/auth/registerWithUsername-mock
-Content-Type: {{json}}
+### Admin -> admin/me
+GET {{baseUrl}}/auth/account/admin/me
+Authorization: Bearer {{accessTokenAdmin}}
 
-{
-  "username": "rbac.client",
-  "email": "{{clientEmail}}",
-  "password": "{{clientPassword}}"
-}
-
-### Confirm client email
-POST {{baseUrl}}/auth/email/confirm
-Content-Type: {{json}}
-
-{
-  "userId": "{{clientUserId}}",
-  "token": "{{clientConfirmToken}}"
-}
 
 ### @name loginClient
 POST {{baseUrl}}/auth/login-jwt
@@ -52,8 +38,12 @@ Content-Type: {{json}}
 
 ### Client -> protected-test
 GET {{baseUrl}}/auth/protected-test
-Authorization: Bearer {{loginClient.response.body.$.accessToken}}
+Authorization: Bearer {{accessToken}}
 
 ### Client -> me
 GET {{baseUrl}}/auth/account/me
-Authorization: Bearer {{loginClient.response.body.$.accessToken}}
+Authorization: Bearer {{accessToken}}
+
+### Client -> admin/me
+GET {{baseUrl}}/auth/account/admin/me
+Authorization: Bearer {{accessToken}}

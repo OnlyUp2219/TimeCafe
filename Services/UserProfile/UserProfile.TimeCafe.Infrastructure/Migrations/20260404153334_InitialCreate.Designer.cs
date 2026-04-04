@@ -12,8 +12,8 @@ using UserProfile.TimeCafe.Infrastructure.Data;
 namespace UserProfile.TimeCafe.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260329130906_SyncAdditionalInfoIndexes")]
-    partial class SyncAdditionalInfoIndexes
+    [Migration("20260404153334_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
