@@ -25,3 +25,5 @@ global using Microsoft.Extensions.Options;
 global using Microsoft.IdentityModel.Tokens;
 global using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
+global using Auth.TimeCafe.Domain.Errors;
+global using FluentResults;

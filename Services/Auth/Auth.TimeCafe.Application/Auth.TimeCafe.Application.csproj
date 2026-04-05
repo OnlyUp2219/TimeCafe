@@ -14,8 +14,15 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" />
+		
+		<PackageReference Include="FluentResults" />
+		<PackageReference Include="FluentResults.Extensions.AspNetCore" />
+		<PackageReference Include="FluentResults.Extensions.FluentAssertions" />
+		
 		<PackageReference Include="MassTransit" />
+		
 		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
+	
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 	</ItemGroup>

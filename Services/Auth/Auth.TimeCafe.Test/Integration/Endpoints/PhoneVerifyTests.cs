@@ -272,7 +272,7 @@ public class PhoneVerifyTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 }
 
-internal class FakeCaptchaValidator : ICaptchaValidator
+public class FakeCaptchaValidator : ICaptchaValidator
 {
     public bool IsValid { get; set; } = true;
 

@@ -18,6 +18,9 @@
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Animations" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls" Version="7.1.2" />
     <PackageVersion Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
+    <PackageVersion Include="FluentResults" Version="4.0.0" />
+    <PackageVersion Include="FluentResults.Extensions.AspNetCore" Version="0.2.0" />
+    <PackageVersion Include="FluentResults.Extensions.FluentAssertions" Version="2.2.1" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
     <PackageVersion Include="WinUIEx" Version="2.9.0" />
     <PackageVersion Include="coverlet.collector" Version="8.0.1" />

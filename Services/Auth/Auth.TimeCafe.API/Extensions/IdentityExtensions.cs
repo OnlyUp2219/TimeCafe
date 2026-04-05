@@ -28,6 +28,7 @@ public static class IdentityExtensions
         services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromMinutes(10));
 
         services.AddScoped<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
+        services.AddScoped<IRbacRepository, RbacRepository>();
 
         return services;
     }
