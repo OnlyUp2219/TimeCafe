@@ -17,6 +17,7 @@
 		<PackageReference Include="StackExchange.Redis" />
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+		<PackageReference Include="FluentResults" />
 
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" PrivateAssets="All" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />

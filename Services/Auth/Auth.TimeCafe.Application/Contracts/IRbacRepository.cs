@@ -6,11 +6,10 @@ public interface IRbacRepository
     Task<List<RoleClaimsResponse>> GetRoleClaimsAsync();
     Task<List<RolesResponse>> GetRolesAsync();
 
-    Task<bool> RoleExistsAsync(string RoleName);
+    Task<bool> RoleExistsAsync(string roleName);
 
-    Task<Result> CreateRoleClaimsAsync(string RoleName, List<string> Claims);
-    Task<Result> UpdateRoleClaimsAsync(string RoleName, List<string> NewClaims);
-    Task<Result> DeleteRoleAsync(string RoleName);
-    Task<Result> UpdateRoleNameAsync(string OldRoleName, string NewRoleName);
-
+    Task<Result> CreateRoleClaimsAsync(string roleName, List<string> claims);
+    Task<Result> UpdateRoleClaimsAsync(string roleName, List<string> newClaims);
+    Task<Result> DeleteRoleAsync(string roleName);
+    Task<Result> UpdateRoleNameAsync(string oldRoleName, string newRoleName);
 }

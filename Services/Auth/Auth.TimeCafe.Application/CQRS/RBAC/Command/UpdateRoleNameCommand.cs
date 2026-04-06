@@ -13,13 +13,20 @@ public sealed class UpdateRoleNameCommandValidator : AbstractValidator<UpdateRol
 
 public sealed class UpdateRoleNameCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<UpdateRoleNameCommand>
 {
-    private readonly IRbacRepository _rbacRepository = rbacRepository;
-
     public async Task<Result> Handle(UpdateRoleNameCommand request, CancellationToken cancellationToken)
     {
-        if (request.OldRoleName == Roles.Admin && request.OldRoleName == Roles.Client)
+        if (IsSystemRole(request.OldRoleName))
             return Result.Fail(new SystemRoleModificationError(request.OldRoleName));
 
-        return await _rbacRepository.UpdateRoleNameAsync(request.OldRoleName, request.NewRoleName);
+        if (IsSystemRole(request.NewRoleName))
+            return Result.Fail(new SystemRoleModificationError(request.NewRoleName));
+
+        return await rbacRepository.UpdateRoleNameAsync(request.OldRoleName, request.NewRoleName);
+    }
+
+    private static bool IsSystemRole(string roleName)
+    {
+        return string.Equals(roleName, Roles.Admin, StringComparison.OrdinalIgnoreCase)
+               || string.Equals(roleName, Roles.Client, StringComparison.OrdinalIgnoreCase);
     }
 }
