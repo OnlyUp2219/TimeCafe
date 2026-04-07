@@ -1,11 +1,19 @@
+using Microsoft.Extensions.Caching.Hybrid;
+
 namespace Auth.TimeCafe.API.Extensions;
 
 public static class AuthenticationExtensions
 {
-    public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAuthenticationConfiguration(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         services.AddScoped<IJwtService, JwtService>();
+        services.AddTransient<IClaimsTransformation, PermissionClaimsTransformer>();
         services.AddAuthorizationBuilder();
+
+        ConfigurePermissionCaching(services, configuration, environment);
 
         var jwtSection = configuration.GetSection("Jwt");
         if (!jwtSection.Exists())
@@ -92,5 +100,28 @@ public static class AuthenticationExtensions
         }
 
         return services;
+    }
+
+    private static void ConfigurePermissionCaching(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IHostEnvironment environment)
+    {
+        if (!environment.IsEnvironment("Testing"))
+        {
+            var redisConnectionString = configuration["Redis:ConnectionString"] ?? configuration["ConnectionStrings:Redis"];
+            if (!string.IsNullOrWhiteSpace(redisConnectionString))
+            {
+                services.AddStackExchangeRedisCache(options => options.Configuration = redisConnectionString);
+            }
+        }
+
+#pragma warning disable EXTEXP0018
+        services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
+        {
+            Expiration = TimeSpan.FromMinutes(10),
+            LocalCacheExpiration = TimeSpan.FromMinutes(5)
+        });
+#pragma warning restore EXTEXP0018
     }
 }

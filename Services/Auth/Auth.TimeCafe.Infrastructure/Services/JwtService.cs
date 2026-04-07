@@ -17,24 +17,12 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
             .Join(_context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
             .ToListAsync();
 
-        var permissions = await _context.Roles
-            .Where(r => roles.Contains(r.Name))
-            .Join(_context.RoleClaims,
-                r => r.Id,
-                rc => rc.RoleId,
-                (r, rc) => rc)
-            .Where(rc => rc.ClaimType == CustomClaimTypes.Permissions)
-            .Select(rc => rc.ClaimValue)
-            .Distinct()
-            .ToListAsync();
-
         List<Claim> claims =
         [
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            ..roles.Select(r => new Claim(ClaimTypes.Role, r!)),
-            ..permissions.Select(p => new Claim(CustomClaimTypes.Permissions, p!))
+            ..roles.Select(r => new Claim(ClaimTypes.Role, r!))
         ];
 
         var token = new JwtSecurityToken(

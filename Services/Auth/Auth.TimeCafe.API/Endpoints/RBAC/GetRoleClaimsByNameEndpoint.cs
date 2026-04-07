@@ -8,7 +8,6 @@ public class GetRoleClaimsByNameEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapGet("/role-claims/{roleName}", async (
                 [FromServices] ISender sender,
                 [FromRoute] string roleName,
@@ -22,6 +21,7 @@ public class GetRoleClaimsByNameEndpoint : ICarterModule
             .WithSummary("Получение разрешений роли по имени")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleRead))
             .WithDescription("Возвращает список разрешений для указанной роли.");
     }
 }

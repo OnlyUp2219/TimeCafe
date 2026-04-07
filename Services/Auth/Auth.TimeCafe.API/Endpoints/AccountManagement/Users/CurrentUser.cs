@@ -18,7 +18,7 @@ public sealed class CurrentUser : ICarterModule
         group.MapGet("/me", async (
             ClaimsPrincipal principal,
             [FromServices] UserManager<ApplicationUser> userManager) => await GetCurrentUserResponse(principal, userManager))
-        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.ClientRead))
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountSelfRead))
         .WithName("GetCurrentUser")
         .WithSummary("Текущий пользователь")
         .Produces(200)
@@ -28,7 +28,7 @@ public sealed class CurrentUser : ICarterModule
         group.MapGet("/admin/me", async (
             ClaimsPrincipal principal,
             [FromServices] UserManager<ApplicationUser> userManager) => await GetCurrentUserResponse(principal, userManager))
-        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.Admin))
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountAdminRead))
         .WithName("GetCurrentAdminUser")
         .WithSummary("Текущий администратор")
         .Produces(200)

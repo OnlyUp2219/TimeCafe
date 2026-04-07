@@ -10,7 +10,6 @@ public class UpdateRoleNameEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapPut("/roles/{oldRoleName}/name", async (
                 [FromServices] ISender sender,
                 [FromRoute] string oldRoleName,
@@ -28,6 +27,7 @@ public class UpdateRoleNameEndpoint : ICarterModule
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleUpdate))
             .WithDescription("Изменяет имя существующей роли.");
     }
 }

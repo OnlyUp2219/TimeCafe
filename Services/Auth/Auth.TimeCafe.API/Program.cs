@@ -21,7 +21,7 @@ builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration
 builder.Services.AddIdentityConfiguration();
 
 // Authentication: JWT + external providers
-builder.Services.AddAuthenticationConfiguration(builder.Configuration);
+builder.Services.AddAuthenticationConfiguration(builder.Configuration, builder.Environment);
 
 // Email sender
 builder.Services.AddEmailSender(builder.Configuration);

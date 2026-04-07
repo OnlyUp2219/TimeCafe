@@ -8,7 +8,6 @@ public class GetPermissionEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapGet("/permissions/{permission}", async (
                 [FromServices] ISender sender,
                 [FromRoute] string permission,
@@ -22,6 +21,7 @@ public class GetPermissionEndpoint : ICarterModule
             .WithSummary("Получение разрешения по имени")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacPermissionRead))
             .WithDescription("Возвращает одно разрешение по его имени.");
     }
 }

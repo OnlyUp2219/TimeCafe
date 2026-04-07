@@ -8,7 +8,6 @@ public class DeleteRoleEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapDelete("/roles/{roleName}", async (
                 [FromServices] ISender sender,
                 [FromRoute] string roleName,
@@ -24,6 +23,7 @@ public class DeleteRoleEndpoint : ICarterModule
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleDelete))
             .WithDescription("Удаляет роль по имени.");
     }
 }

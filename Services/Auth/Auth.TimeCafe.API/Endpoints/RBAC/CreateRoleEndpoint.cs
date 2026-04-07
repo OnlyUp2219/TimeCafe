@@ -10,7 +10,6 @@ public class CreateRoleEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapPost("/roles", async (
                 [FromServices] ISender sender,
                 [FromBody] CreateRoleRequest request,
@@ -27,6 +26,7 @@ public class CreateRoleEndpoint : ICarterModule
             .Produces(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleCreate))
             .WithDescription("Создает новую роль и назначает ей список разрешений.");
     }
 }

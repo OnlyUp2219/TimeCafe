@@ -10,34 +10,50 @@ public static class SeedRolesAndPermissionsExtensions
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-        var adminRole = await roleManager.FindByNameAsync(Roles.Admin);
-        if (adminRole is null)
+        var allPermissions = typeof(Permissions)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
+            .Select(f => (string)f.GetValue(null)!)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        await EnsureRoleClaimsAsync(roleManager, Roles.Admin, allPermissions);
+
+        var clientPermissions = new List<string>
         {
-            adminRole = new IdentityRole<Guid>(Roles.Admin);
-            await roleManager.CreateAsync(adminRole);
+            Permissions.AccountSelfRead
+        };
 
-            var allPermissions = typeof(Permissions)
-                .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
-                .Where(f => f.IsLiteral && !f.IsInitOnly && f.FieldType == typeof(string))
-                .Select(f => (string)f.GetValue(null))
-                .ToList();
+        await EnsureRoleClaimsAsync(roleManager, Roles.Client, clientPermissions);
+    }
 
-            foreach (var permissions in allPermissions)
-            {
-                await roleManager.AddClaimAsync(adminRole, new Claim(CustomClaimTypes.Permissions, permissions!));
-            }
+    private static async Task EnsureRoleClaimsAsync(
+        RoleManager<IdentityRole<Guid>> roleManager,
+        string roleName,
+        IReadOnlyCollection<string> targetPermissions)
+    {
+        var role = await roleManager.FindByNameAsync(roleName);
+        if (role is null)
+        {
+            role = new IdentityRole<Guid>(roleName);
+            await roleManager.CreateAsync(role);
         }
 
-        var clientRole = await roleManager.FindByNameAsync(Roles.Client);
-        if (clientRole is null)
-        {
-            clientRole = new IdentityRole<Guid>(Roles.Client);
-            await roleManager.CreateAsync(clientRole);
+        var existingClaims = await roleManager.GetClaimsAsync(role);
+        var existingPermissions = existingClaims
+            .Where(c => c.Type == CustomClaimTypes.Permissions)
+            .Select(c => c.Value)
+            .Distinct(StringComparer.Ordinal)
+            .ToHashSet(StringComparer.Ordinal);
 
-            await roleManager.AddClaimAsync(clientRole, new Claim(CustomClaimTypes.Permissions, Permissions.ClientCreate));
-            await roleManager.AddClaimAsync(clientRole, new Claim(CustomClaimTypes.Permissions, Permissions.ClientRead));
-            await roleManager.AddClaimAsync(clientRole, new Claim(CustomClaimTypes.Permissions, Permissions.ClientUpdate));
-            await roleManager.AddClaimAsync(clientRole, new Claim(CustomClaimTypes.Permissions, Permissions.ClientDelete));
+        foreach (var claim in existingClaims.Where(c => c.Type == CustomClaimTypes.Permissions && !targetPermissions.Contains(c.Value, StringComparer.Ordinal)))
+        {
+            await roleManager.RemoveClaimAsync(role, claim);
+        }
+
+        foreach (var permission in targetPermissions.Where(p => !existingPermissions.Contains(p)))
+        {
+            await roleManager.AddClaimAsync(role, new Claim(CustomClaimTypes.Permissions, permission));
         }
     }
 

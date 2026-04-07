@@ -4,13 +4,16 @@ public class RbacRepository : IRbacRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly RoleManager<IdentityRole<Guid>> _roleManager;
+    private readonly HybridCache _cache;
 
     public RbacRepository(
         ApplicationDbContext context,
-        RoleManager<IdentityRole<Guid>> roleManager)
+        RoleManager<IdentityRole<Guid>> roleManager,
+        HybridCache cache)
     {
         _context = context;
         _roleManager = roleManager;
+        _cache = cache;
     }
 
     public List<string> GetPermissions()
@@ -65,7 +68,8 @@ public class RbacRepository : IRbacRepository
         if (uniqueClaims.Count == 0)
             return Result.Fail("Список разрешений не должен быть пустым.");
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var useTransaction = !string.Equals(_context.Database.ProviderName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.Ordinal);
+        await using var transaction = useTransaction ? await _context.Database.BeginTransactionAsync() : null;
         try
         {
             var role = new IdentityRole<Guid>(roleName);
@@ -73,7 +77,8 @@ public class RbacRepository : IRbacRepository
 
             if (!identityResult.Succeeded)
             {
-                await transaction.RollbackAsync();
+                if (transaction is not null)
+                    await transaction.RollbackAsync();
                 return Result.Fail(identityResult.Errors.Select(error => error.Description));
             }
 
@@ -86,13 +91,16 @@ public class RbacRepository : IRbacRepository
 
             await _context.RoleClaims.AddRangeAsync(claimsToAdd);
             await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            if (transaction is not null)
+                await transaction.CommitAsync();
+            await InvalidatePermissionsCacheAsync();
 
             return Result.Ok();
         }
         catch (Exception exception)
         {
-            await transaction.RollbackAsync();
+            if (transaction is not null)
+                await transaction.RollbackAsync();
             return Result.Fail(exception.Message);
         }
     }
@@ -107,7 +115,8 @@ public class RbacRepository : IRbacRepository
         if (uniqueClaims.Count == 0)
             return Result.Fail("Список разрешений не должен быть пустым.");
 
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var useTransaction = !string.Equals(_context.Database.ProviderName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.Ordinal);
+        await using var transaction = useTransaction ? await _context.Database.BeginTransactionAsync() : null;
         try
         {
             var oldClaims = _context.RoleClaims.Where(roleClaim =>
@@ -125,13 +134,16 @@ public class RbacRepository : IRbacRepository
 
             await _context.RoleClaims.AddRangeAsync(claimsToAdd);
             await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            if (transaction is not null)
+                await transaction.CommitAsync();
+            await InvalidatePermissionsCacheAsync();
 
             return Result.Ok();
         }
         catch (Exception exception)
         {
-            await transaction.RollbackAsync();
+            if (transaction is not null)
+                await transaction.RollbackAsync();
             return Result.Fail(exception.Message);
         }
     }
@@ -146,6 +158,8 @@ public class RbacRepository : IRbacRepository
 
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
+
+        await InvalidatePermissionsCacheAsync();
 
         return Result.Ok();
     }
@@ -166,7 +180,14 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
+        await InvalidatePermissionsCacheAsync();
+
         return Result.Ok();
+    }
+
+    private async Task InvalidatePermissionsCacheAsync(CancellationToken ct = default)
+    {
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.AllPermissionsTag, ct);
     }
 
     private static List<string> NormalizeClaims(List<string> claims)

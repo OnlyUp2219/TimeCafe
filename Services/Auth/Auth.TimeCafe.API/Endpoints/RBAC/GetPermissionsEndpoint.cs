@@ -8,7 +8,6 @@ public class GetPermissionsEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapGet("/permissions", async (
                 [FromServices] ISender sender,
                 CancellationToken ct) =>
@@ -21,6 +20,7 @@ public class GetPermissionsEndpoint : ICarterModule
             .WithSummary("Получение списка разрешений")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacPermissionRead))
             .WithDescription("Возвращает список всех доступных разрешений для RBAC.");
     }
 }

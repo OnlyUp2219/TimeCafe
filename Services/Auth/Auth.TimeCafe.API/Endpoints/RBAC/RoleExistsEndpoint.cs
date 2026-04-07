@@ -8,7 +8,6 @@ public class RoleExistsEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapGet("/roles/{roleName}/exists", async (
                 [FromServices] ISender sender,
                 [FromRoute] string roleName,
@@ -22,6 +21,7 @@ public class RoleExistsEndpoint : ICarterModule
             .WithSummary("Проверка существования роли")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleRead))
             .WithDescription("Возвращает признак существования роли по ее имени.");
     }
 }

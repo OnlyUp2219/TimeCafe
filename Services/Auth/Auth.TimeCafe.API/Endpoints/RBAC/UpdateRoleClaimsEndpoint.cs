@@ -10,7 +10,6 @@ public class UpdateRoleClaimsEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapPut("/role-claims/{roleName}", async (
                 [FromServices] ISender sender,
                 [FromRoute] string roleName,
@@ -27,6 +26,7 @@ public class UpdateRoleClaimsEndpoint : ICarterModule
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status403Forbidden)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleClaimsUpdate))
             .WithDescription("Полностью заменяет список разрешений указанной роли.");
     }
 }

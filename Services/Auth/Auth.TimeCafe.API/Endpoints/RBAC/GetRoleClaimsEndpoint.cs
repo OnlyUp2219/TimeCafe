@@ -8,7 +8,6 @@ public class GetRoleClaimsEndpoint : ICarterModule
     {
         app.MapGroup("/rbac")
             .WithTags("RBAC")
-            .RequireAuthorization()
             .MapGet("/role-claims", async (
                 [FromServices] ISender sender,
                 CancellationToken ct) =>
@@ -21,6 +20,7 @@ public class GetRoleClaimsEndpoint : ICarterModule
             .WithSummary("Получение ролей и их разрешений")
             .Produces(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest)
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.RbacRoleRead))
             .WithDescription("Возвращает список ролей и связанных с ними разрешений.");
     }
 }
