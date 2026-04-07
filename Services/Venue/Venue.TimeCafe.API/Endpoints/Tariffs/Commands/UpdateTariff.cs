@@ -43,6 +43,6 @@ public class UpdateTariff : ICarterModule
         .WithDescription("Обновляет существующий тариф.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffUpdate));
     }
 }

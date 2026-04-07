@@ -16,6 +16,6 @@ public class GetActivePromotions : ICarterModule
         .WithSummary("Получить активные акции")
         .WithDescription("Возвращает список всех активных акций.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }

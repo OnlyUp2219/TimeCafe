@@ -18,6 +18,6 @@ public class GetTariffsPage : ICarterModule
         .WithSummary("Получить страницу тарифов")
         .WithDescription("Возвращает страницу тарифов с пагинацией.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }

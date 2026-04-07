@@ -35,6 +35,6 @@ public class UpdateVisit : ICarterModule
         .WithDescription("Обновляет существующее посещение с новыми данными.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitUpdate));
     }
 }

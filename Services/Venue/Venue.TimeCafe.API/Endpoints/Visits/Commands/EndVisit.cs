@@ -18,6 +18,6 @@ public class EndVisit : ICarterModule
         .WithDescription("Завершает активное посещение и рассчитывает стоимость.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitEnd));
     }
 }

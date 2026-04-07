@@ -44,6 +44,6 @@ public class UpdateProfile : ICarterModule
         .WithDescription("Обновляет существующий профиль пользователя.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileUpdate));
     }
 }

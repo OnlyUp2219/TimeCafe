@@ -27,6 +27,6 @@ public class CreateProfile : ICarterModule
         .WithSummary("Создать профиль")
         .WithDescription("Создаёт новый профиль пользователя.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileCreate));
     }
 }

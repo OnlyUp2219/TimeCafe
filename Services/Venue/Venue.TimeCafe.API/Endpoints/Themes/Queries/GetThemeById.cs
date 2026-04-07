@@ -18,6 +18,6 @@ public class GetThemeById : ICarterModule
         .WithDescription("Возвращает тему оформления по её идентификатору.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueThemeRead));
     }
 }

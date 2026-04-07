@@ -27,6 +27,6 @@ public class UpdateTheme : ICarterModule
         .WithDescription("Обновляет существующую тему оформления.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueThemeUpdate));
     }
 }

@@ -27,6 +27,6 @@ public class UpdateAdditionalInfo : ICarterModule
         .WithDescription("Обновляет существующую запись дополнительной информации.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoUpdate));
     }
 }

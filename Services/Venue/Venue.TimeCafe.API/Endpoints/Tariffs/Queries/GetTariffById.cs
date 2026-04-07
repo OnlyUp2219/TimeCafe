@@ -18,7 +18,7 @@ public class GetTariffById : ICarterModule
         .WithDescription("Возвращает тариф по идентификатору.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }
 

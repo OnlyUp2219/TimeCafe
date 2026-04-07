@@ -18,7 +18,7 @@ public class DeactivateTariff : ICarterModule
         .WithDescription("Деактивирует тариф по идентификатору.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffDeactivate));
     }
 }
 

@@ -4,6 +4,9 @@ public static class JwtAuthenticationExtensions
 {
     public static IServiceCollection AddJwtAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddAuthorizationBuilder();
+        services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, PermissionClaimsEnrichmentTransformer>();
+
         var jwtSection = configuration.GetSection("Jwt");
         if (!jwtSection.Exists())
             throw new InvalidOperationException("Jwt configuration section is missing.");

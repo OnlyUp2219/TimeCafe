@@ -31,6 +31,6 @@ public class CreatePromotion : ICarterModule
         .WithSummary("Создать акцию")
         .WithDescription("Создаёт новую акцию с указанными параметрами.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionCreate));
     }
 }

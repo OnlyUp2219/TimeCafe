@@ -33,6 +33,6 @@ public class UpdatePromotion : ICarterModule
         .WithDescription("Обновляет существующую акцию с новыми данными.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionUpdate));
     }
 }

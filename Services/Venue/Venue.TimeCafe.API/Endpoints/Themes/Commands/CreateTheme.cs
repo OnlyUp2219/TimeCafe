@@ -25,6 +25,6 @@ public class CreateTheme : ICarterModule
         .WithSummary("Создать тему")
         .WithDescription("Создаёт новую тему оформления для таймкафе.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueThemeCreate));
     }
 }

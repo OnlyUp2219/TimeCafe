@@ -38,6 +38,6 @@ public class InitializeStripePayment : ICarterModule
         .WithSummary("Инициализация платежа через Stripe")
         .WithDescription("Создаёт платёж Stripe и возвращает client secret для фронта")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingPaymentInitialize));
     }
 }

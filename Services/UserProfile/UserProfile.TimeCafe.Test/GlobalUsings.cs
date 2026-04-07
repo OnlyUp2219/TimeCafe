@@ -1,4 +1,3 @@
-global using BuildingBlocks.Authorization;
 global using BuildingBlocks.Exceptions;
 
 global using FluentAssertions;

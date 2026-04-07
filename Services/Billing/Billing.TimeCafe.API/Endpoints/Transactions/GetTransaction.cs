@@ -18,6 +18,6 @@ public class GetTransaction : ICarterModule
         .WithDescription("Возвращает информацию о конкретной транзакции.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingTransactionRead));
     }
 }

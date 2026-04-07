@@ -59,6 +59,6 @@ public class CreateTransaction : ICarterModule
         .WithSummary("Создать транзакцию (пополнение/списание)")
         .WithDescription("Создаёт транзакцию и корректирует баланс пользователя")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingTransactionCreate));
     }
 }

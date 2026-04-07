@@ -29,6 +29,6 @@ public class GetTransactionHistory : ICarterModule
         .WithSummary("История транзакций пользователя")
         .WithDescription("Возвращает историю транзакций с пагинацией (по 10 по умолчанию, макс 100).")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingTransactionRead));
     }
 }

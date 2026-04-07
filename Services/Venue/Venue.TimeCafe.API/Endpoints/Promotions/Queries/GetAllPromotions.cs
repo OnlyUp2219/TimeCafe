@@ -16,6 +16,6 @@ public class GetAllPromotions : ICarterModule
         .WithSummary("Получить все акции")
         .WithDescription("Возвращает список всех акций в системе.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }

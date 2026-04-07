@@ -16,6 +16,6 @@ public class GetAllThemes : ICarterModule
         .WithSummary("Получить все темы")
         .WithDescription("Возвращает список всех доступных тем оформления.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueThemeRead));
     }
 }

@@ -1,5 +1,6 @@
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
+global using BuildingBlocks.Permissions;
 
 global using Carter;
 

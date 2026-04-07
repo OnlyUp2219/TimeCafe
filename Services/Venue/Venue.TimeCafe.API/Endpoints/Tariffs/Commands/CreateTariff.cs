@@ -31,6 +31,6 @@ public class CreateTariff : ICarterModule
         .WithSummary("Создать тариф")
         .WithDescription("Создаёт новый тариф.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffCreate));
     }
 }

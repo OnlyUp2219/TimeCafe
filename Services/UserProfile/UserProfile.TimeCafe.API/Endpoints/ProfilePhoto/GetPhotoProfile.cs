@@ -19,6 +19,6 @@ public class GetPhotoProfile : ICarterModule
         .WithDescription("Загружает фото пользователя из S3 хранилища и возвращает его как файловый стрим. Поддерживает Range-запросы.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfilePhotoRead));
     }
 }

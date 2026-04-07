@@ -32,6 +32,6 @@ public class GetPaymentHistory : ICarterModule
         .WithSummary("История платежей пользователя")
         .WithDescription("Возвращает историю платежей с пагинацией (по 20 по умолчанию, макс 100).")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingPaymentHistoryRead));
     }
 }

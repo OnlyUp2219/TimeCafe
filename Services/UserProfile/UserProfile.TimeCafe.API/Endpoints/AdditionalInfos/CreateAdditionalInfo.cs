@@ -25,6 +25,6 @@ public class CreateAdditionalInfo : ICarterModule
         .WithSummary("Создать запись доп. информации")
         .WithDescription("Создаёт новую запись дополнительной информации для пользователя.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoCreate));
     }
 }

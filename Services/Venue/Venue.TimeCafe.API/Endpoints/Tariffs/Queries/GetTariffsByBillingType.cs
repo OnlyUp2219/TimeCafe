@@ -17,6 +17,6 @@ public class GetTariffsByBillingType : ICarterModule
         .WithSummary("Получить тарифы по типу биллинга")
         .WithDescription("Возвращает список тарифов по типу биллинга.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }

@@ -16,6 +16,6 @@ public class GetAllProfiles : ICarterModule
         .WithSummary("Получить все профили")
         .WithDescription("Возвращает список всех профилей пользователей.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileRead));
     }
 }

@@ -19,6 +19,6 @@ public class DeletePhotoProfile : ICarterModule
         .WithDescription("Удаляет фото пользователя из S3 хранилища и очищает PhotoUrl в профиле.")
         .Produces(204)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfilePhotoDelete));
     }
 }

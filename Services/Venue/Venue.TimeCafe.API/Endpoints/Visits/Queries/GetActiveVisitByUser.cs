@@ -18,6 +18,6 @@ public class GetActiveVisitByUser : ICarterModule
         .WithDescription("Возвращает активное посещение для указанного пользователя.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }

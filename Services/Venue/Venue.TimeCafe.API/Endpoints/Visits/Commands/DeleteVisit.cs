@@ -18,6 +18,6 @@ public class DeleteVisit : ICarterModule
         .WithDescription("Удаляет посещение по его идентификатору.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitDelete));
     }
 }

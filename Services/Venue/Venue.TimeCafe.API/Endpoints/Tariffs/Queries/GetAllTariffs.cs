@@ -16,6 +16,6 @@ public class GetAllTariffs : ICarterModule
         .WithSummary("Получить все тарифы")
         .WithDescription("Возвращает список всех тарифов.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }

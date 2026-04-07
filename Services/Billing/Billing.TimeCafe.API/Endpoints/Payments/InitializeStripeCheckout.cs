@@ -40,6 +40,6 @@ public class InitializeStripeCheckout : ICarterModule
         .WithSummary("Инициализация платежа через Stripe Checkout")
         .WithDescription("Создаёт Stripe Checkout Session и возвращает URL для редиректа")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingPaymentInitialize));
     }
 }

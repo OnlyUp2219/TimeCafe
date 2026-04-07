@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
+using BuildingBlocks.Permissions;
 
 using System.Security.Claims;
+using System.Reflection;
 using System.Text.Encodings.Web;
 
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
@@ -29,13 +31,21 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, CurrentUserId.ToString()),
             new Claim(ClaimTypes.Name, "Test User"),
             new Claim(ClaimTypes.Email, "test@example.com"),
             new Claim(ClaimTypes.Role, CurrentRole)
         };
+
+        var permissions = typeof(Permissions)
+            .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+            .Where(field => field.IsLiteral && !field.IsInitOnly && field.FieldType == typeof(string))
+            .Select(field => (string)field.GetValue(null)!)
+            .Distinct(StringComparer.Ordinal);
+
+        claims.AddRange(permissions.Select(permission => new Claim(CustomClaimTypes.Permissions, permission)));
 
         var identity = new ClaimsIdentity(claims, AuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);

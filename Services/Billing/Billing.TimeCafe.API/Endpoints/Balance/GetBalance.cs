@@ -28,6 +28,6 @@ public class GetBalance : ICarterModule
         .WithSummary("Получить баланс пользователя")
         .WithDescription("Возвращает текущий баланс, всего пополнено, всего потрачено и долг пользователя.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingBalanceRead));
     }
 }

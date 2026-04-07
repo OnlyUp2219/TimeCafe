@@ -34,6 +34,6 @@ public class CreateVisit : ICarterModule
         .WithSummary("Создать посещение")
         .WithDescription("Создаёт новое посещение пользователя по тарифу.")
         .Produces(201)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitCreate));
     }
 }

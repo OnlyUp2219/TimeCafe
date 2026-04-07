@@ -17,6 +17,6 @@ public class HasActiveVisit : ICarterModule
         .WithSummary("Проверить наличие активного посещения")
         .WithDescription("Проверяет, есть ли активное посещение у пользователя.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }

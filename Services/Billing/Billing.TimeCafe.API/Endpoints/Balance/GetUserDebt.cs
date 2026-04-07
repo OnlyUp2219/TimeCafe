@@ -18,6 +18,6 @@ public class GetUserDebt : ICarterModule
         .WithSummary("Получить долг пользователя")
         .WithDescription("Возвращает сумму задолженности пользователя.")
         .Produces(200)
-        .RequireAuthorization();
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingDebtRead));
     }
 }
