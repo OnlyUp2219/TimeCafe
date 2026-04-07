@@ -8,35 +8,45 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
     private const string LoginEndpoint = "/auth/login-jwt";
     private const string RbacRolesEndpoint = "/auth/rbac/roles";
 
-    private async Task<string> CreateUserWithRoleAndLoginAsync(string role, IEnumerable<string>? rolePermissions = null)
+    private async Task EnsureRoleWithPermissionsAsync(string roleName, IEnumerable<string>? rolePermissions)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+        var identityRole = await roleManager.FindByNameAsync(roleName);
+        if (identityRole is null)
+        {
+            identityRole = new IdentityRole<Guid>(roleName);
+            var createRole = await roleManager.CreateAsync(identityRole);
+            createRole.Succeeded.Should().BeTrue();
+        }
+
+        if (rolePermissions is null)
+            return;
+
+        var existingClaims = await roleManager.GetClaimsAsync(identityRole);
+        foreach (var claim in existingClaims.Where(c => c.Type == CustomClaimTypes.Permissions))
+        {
+            await roleManager.RemoveClaimAsync(identityRole, claim);
+        }
+
+        foreach (var permission in rolePermissions.Distinct(StringComparer.Ordinal))
+        {
+            await roleManager.AddClaimAsync(identityRole, new Claim(CustomClaimTypes.Permissions, permission));
+        }
+    }
+
+    private async Task<(Guid userId, string accessToken)> CreateUserAndLoginAsync(string? roleName = null, IEnumerable<string>? rolePermissions = null)
     {
         var email = $"rbac_user_{Guid.NewGuid():N}@example.com";
         const string password = "P@ssw0rd!";
 
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-        var identityRole = await roleManager.FindByNameAsync(role);
-        if (identityRole is null)
+        if (!string.IsNullOrWhiteSpace(roleName))
         {
-            identityRole = new IdentityRole<Guid>(role);
-            var createRole = await roleManager.CreateAsync(identityRole);
-            createRole.Succeeded.Should().BeTrue();
-        }
-
-        if (rolePermissions is not null)
-        {
-            var existingClaims = await roleManager.GetClaimsAsync(identityRole);
-            foreach (var claim in existingClaims.Where(c => c.Type == CustomClaimTypes.Permissions))
-            {
-                await roleManager.RemoveClaimAsync(identityRole, claim);
-            }
-
-            foreach (var permission in rolePermissions)
-            {
-                await roleManager.AddClaimAsync(identityRole, new Claim(CustomClaimTypes.Permissions, permission));
-            }
+            await EnsureRoleWithPermissionsAsync(roleName, rolePermissions);
         }
 
         var user = new ApplicationUser
@@ -49,14 +59,24 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
         var createUser = await userManager.CreateAsync(user, password);
         createUser.Succeeded.Should().BeTrue();
 
-        var addRole = await userManager.AddToRoleAsync(user, role);
-        addRole.Succeeded.Should().BeTrue();
+        if (!string.IsNullOrWhiteSpace(roleName))
+        {
+            var addRole = await userManager.AddToRoleAsync(user, roleName);
+            addRole.Succeeded.Should().BeTrue();
+        }
 
         var loginResponse = await Client.PostAsJsonAsync(LoginEndpoint, new { Email = email, Password = password });
         loginResponse.EnsureSuccessStatusCode();
 
         var json = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync()).RootElement;
-        return json.GetProperty("accessToken").GetString()!;
+        var accessToken = json.GetProperty("accessToken").GetString()!;
+        return (user.Id, accessToken);
+    }
+
+    private async Task<string> CreateUserWithRoleAndLoginAsync(string role, IEnumerable<string>? rolePermissions = null)
+    {
+        var (_, token) = await CreateUserAndLoginAsync(role, rolePermissions);
+        return token;
     }
 
     [Fact]
@@ -110,5 +130,73 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
 
         var json = JsonDocument.Parse(await existsResponse.Content.ReadAsStringAsync()).RootElement;
         json.GetProperty("exists").GetBoolean().Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Endpoint_AssignRoleToUser_Should_GrantPermission_WhenCacheAlreadyContainsDeniedSnapshot()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+
+        var assignableRole = $"assignable_{Guid.NewGuid():N}";
+        await EnsureRoleWithPermissionsAsync(assignableRole, [Permissions.RbacRoleRead]);
+
+        var (userId, userToken) = await CreateUserAndLoginAsync();
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var deniedBeforeAssign = await Client.GetAsync(RbacRolesEndpoint);
+        deniedBeforeAssign.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var assignResponse = await Client.PostAsync($"/auth/rbac/users/{userId}/roles/{assignableRole}", content: null);
+        assignResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var allowedAfterAssign = await Client.GetAsync(RbacRolesEndpoint);
+        allowedAfterAssign.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task Endpoint_RemoveRoleFromUser_Should_RevokePermission_WithSameToken()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+
+        var removableRole = $"removable_{Guid.NewGuid():N}";
+        var (userId, userToken) = await CreateUserAndLoginAsync(removableRole, [Permissions.RbacRoleRead]);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var allowedBeforeRemove = await Client.GetAsync(RbacRolesEndpoint);
+        allowedBeforeRemove.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var removeResponse = await Client.DeleteAsync($"/auth/rbac/users/{userId}/roles/{removableRole}");
+        removeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var deniedAfterRemove = await Client.GetAsync(RbacRolesEndpoint);
+        deniedAfterRemove.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_UpdateRoleClaims_Should_InvalidateRoleTagCache_ForAssignedUsers()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+
+        var mutableRole = $"mutable_{Guid.NewGuid():N}";
+        var (_, userToken) = await CreateUserAndLoginAsync(mutableRole, [Permissions.RbacRoleRead]);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var allowedBeforeUpdate = await Client.GetAsync(RbacRolesEndpoint);
+        allowedBeforeUpdate.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var updateResponse = await Client.PutAsJsonAsync($"/auth/rbac/role-claims/{mutableRole}", new
+        {
+            claims = new[] { Permissions.AccountSelfRead }
+        });
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
+        var deniedAfterUpdate = await Client.GetAsync(RbacRolesEndpoint);
+        deniedAfterUpdate.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }

@@ -35,7 +35,7 @@ public class EmailChange : ICarterModule
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountEmailChange))
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("RequestEmailChange")
@@ -57,7 +57,7 @@ public class EmailChange : ICarterModule
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountEmailChange))
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
         .WithName("RequestEmailChangeMock")

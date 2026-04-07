@@ -12,4 +12,6 @@ public interface IRbacRepository
     Task<Result> UpdateRoleClaimsAsync(string roleName, List<string> newClaims);
     Task<Result> DeleteRoleAsync(string roleName);
     Task<Result> UpdateRoleNameAsync(string oldRoleName, string newRoleName);
+    Task<Result> AssignRoleToUserAsync(Guid userId, string roleName);
+    Task<Result> RemoveRoleFromUserAsync(Guid userId, string roleName);
 }

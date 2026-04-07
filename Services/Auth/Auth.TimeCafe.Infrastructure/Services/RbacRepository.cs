@@ -136,7 +136,7 @@ public class RbacRepository : IRbacRepository
             await _context.SaveChangesAsync();
             if (transaction is not null)
                 await transaction.CommitAsync();
-            await InvalidatePermissionsCacheAsync();
+            await InvalidatePermissionsCacheByRoleAsync(roleName);
 
             return Result.Ok();
         }
@@ -159,7 +159,7 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await InvalidatePermissionsCacheAsync();
+        await InvalidatePermissionsCacheByRoleAsync(roleName);
 
         return Result.Ok();
     }
@@ -180,14 +180,79 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await InvalidatePermissionsCacheAsync();
+        await InvalidatePermissionsCacheByRoleAsync(oldRoleName);
+        await InvalidatePermissionsCacheByRoleAsync(newRoleName);
+
+        return Result.Ok();
+    }
+
+    public async Task<Result> AssignRoleToUserAsync(Guid userId, string roleName)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user is null)
+            return Result.Fail(new UserNotFoundError(userId));
+
+        var role = await _roleManager.FindByNameAsync(roleName);
+        if (role is null)
+            return Result.Fail(new RoleNotFoundError(roleName));
+
+        var alreadyAssigned = await _context.UserRoles
+            .AnyAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
+
+        if (alreadyAssigned)
+            return Result.Fail(new UserAlreadyInRoleError(userId, roleName));
+
+        _context.UserRoles.Add(new IdentityUserRole<Guid>
+        {
+            UserId = userId,
+            RoleId = role.Id
+        });
+
+        await _context.SaveChangesAsync();
+        await InvalidatePermissionsCacheByUserAsync(userId);
+        await InvalidatePermissionsCacheByRoleAsync(roleName);
+
+        return Result.Ok();
+    }
+
+    public async Task<Result> RemoveRoleFromUserAsync(Guid userId, string roleName)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        if (user is null)
+            return Result.Fail(new UserNotFoundError(userId));
+
+        var role = await _roleManager.FindByNameAsync(roleName);
+        if (role is null)
+            return Result.Fail(new RoleNotFoundError(roleName));
+
+        var userRole = await _context.UserRoles
+            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
+
+        if (userRole is null)
+            return Result.Fail(new UserRoleNotAssignedError(userId, roleName));
+
+        _context.UserRoles.Remove(userRole);
+        await _context.SaveChangesAsync();
+
+        await InvalidatePermissionsCacheByUserAsync(userId);
+        await InvalidatePermissionsCacheByRoleAsync(roleName);
 
         return Result.Ok();
     }
 
     private async Task InvalidatePermissionsCacheAsync(CancellationToken ct = default)
     {
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.AllPermissionsTag, ct);
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.PermissionsTag, ct);
+    }
+
+    private async Task InvalidatePermissionsCacheByRoleAsync(string roleName, CancellationToken ct = default)
+    {
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.RolePermissionsTag(roleName), ct);
+    }
+
+    private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken ct = default)
+    {
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), ct);
     }
 
     private static List<string> NormalizeClaims(List<string> claims)

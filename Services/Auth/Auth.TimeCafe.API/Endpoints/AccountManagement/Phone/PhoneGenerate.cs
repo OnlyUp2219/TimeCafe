@@ -13,7 +13,7 @@ public class PhoneGenerate : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/twilio")
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneGenerate))
             .WithTags("SMS");
 
         group.MapPost("generateSMS-mock", async (

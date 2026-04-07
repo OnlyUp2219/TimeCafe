@@ -23,6 +23,22 @@ public sealed class PermissionClaimsTransformer(
         if (!Guid.TryParse(subject, out var userId))
             return principal;
 
+        var roleTags = principal
+            .FindAll(ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .Where(role => !string.IsNullOrWhiteSpace(role))
+            .Select(PermissionClaimsCacheKeys.RolePermissionsTag)
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var cacheTags = new List<string>
+        {
+            PermissionClaimsCacheKeys.PermissionsTag,
+            PermissionClaimsCacheKeys.UserPermissionsTag(userId)
+        };
+
+        cacheTags.AddRange(roleTags);
+
         var permissions = await _cache.GetOrCreateAsync(
             PermissionClaimsCacheKeys.UserPermissionsKey(userId),
             token => LoadPermissionsAsync(userId, token),
@@ -31,10 +47,7 @@ public sealed class PermissionClaimsTransformer(
                 Expiration = TimeSpan.FromMinutes(10),
                 LocalCacheExpiration = TimeSpan.FromMinutes(5)
             },
-            tags: [
-                PermissionClaimsCacheKeys.AllPermissionsTag,
-                PermissionClaimsCacheKeys.UserPermissionsTag(userId)
-            ]);
+            tags: cacheTags);
 
         foreach (var permission in permissions)
         {

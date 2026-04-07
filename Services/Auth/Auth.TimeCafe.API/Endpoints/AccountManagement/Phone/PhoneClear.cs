@@ -21,7 +21,7 @@ public class PhoneClear : ICarterModule
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneClear))
         .WithName("ClearPhone")
         .WithSummary("Удалить номер телефона")
         .Produces(200)

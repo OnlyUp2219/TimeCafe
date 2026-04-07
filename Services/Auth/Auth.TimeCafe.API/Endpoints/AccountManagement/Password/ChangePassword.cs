@@ -33,7 +33,7 @@ public sealed class ChangePassword : ICarterModule
             );
 
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPasswordChange))
         .WithName("ChangePassword")
         .WithSummary("Смена пароля текущего пользователя")
         .Produces(200)

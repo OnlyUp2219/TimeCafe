@@ -26,7 +26,7 @@ public class PhoneSave : ICarterModule
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber }));
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneSave))
         .WithName("SavePhone")
         .WithSummary("Сохранить номер телефона")
         .Produces(200)

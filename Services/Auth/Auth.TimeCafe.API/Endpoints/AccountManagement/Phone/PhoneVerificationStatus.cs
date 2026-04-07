@@ -26,7 +26,7 @@ public sealed class PhoneVerificationStatus : ICarterModule
                     hasPendingVerification = r.HasPendingVerification
                 }));
             })
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneStatusRead))
             .WithName("GetPhoneVerificationStatus")
             .WithSummary("Статус верификации телефона")
             .Produces(200)

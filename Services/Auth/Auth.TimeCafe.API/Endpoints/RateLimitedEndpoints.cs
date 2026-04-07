@@ -12,7 +12,7 @@ public class RateLimitedEndpoints : ICarterModule
             }))
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.DebugRateLimitRead))
         .WithTags("RateLimit")
         .WithName("TestRateLimit")
         .WithSummary("Тестовый эндпоинт для проверки rate limiting")
@@ -33,7 +33,7 @@ public class RateLimitedEndpoints : ICarterModule
         })
         .RequireRateLimiting("OneRequestPerInterval")
         .RequireRateLimiting("MaxRequestPerWindow")
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.DebugRateLimitRead))
         .WithTags("RateLimit")
         .WithName("TestRateLimit2")
         .WithSummary("Тестовый эндпоинт для проверки rate limiting с заголовком окна")
@@ -52,7 +52,7 @@ public class RateLimitedEndpoints : ICarterModule
             var u = await userManager.FindByIdAsync(userId);
             return Results.Ok($"Protected OK. User: {u?.Email} ({userId})");
         })
-        .RequireAuthorization()
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.DebugProtectedRead))
         .WithTags("Authentication")
         .WithName("Test401")
         .WithSummary("Тестовый эндпоинт для проверки авторизации")
