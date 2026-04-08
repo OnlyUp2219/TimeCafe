@@ -1,3 +1,5 @@
+using BuildingBlocks.Extensions;
+
 namespace Billing.TimeCafe.Infrastructure;
 
 public static class InfrastructureDependencyInjection
@@ -8,10 +10,10 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
 
-        services.AddOptions<StripeOptions>()
-            .Bind(configuration.GetSection("Stripe"))
-            .ValidateDataAnnotations()
-            .Validate(options =>
+        services.AddValidatedOptions<StripeOptions>(
+            configuration,
+            "Stripe",
+            options =>
             {
                 if (string.IsNullOrWhiteSpace(options.SecretKey))
                     return false;
@@ -20,8 +22,8 @@ public static class InfrastructureDependencyInjection
                 if (string.IsNullOrWhiteSpace(options.DefaultCurrency))
                     return false;
                 return true;
-            }, "Критичные поля Stripe не заполнены: SecretKey, PublishableKey или DefaultCurrency отсутствуют в appsettings.json")
-            .ValidateOnStart();
+            },
+            "Критичные поля Stripe не заполнены: SecretKey, PublishableKey или DefaultCurrency отсутствуют в appsettings.json");
 
         services.AddScoped<IStripePaymentClient, StripePaymentClient>();
 

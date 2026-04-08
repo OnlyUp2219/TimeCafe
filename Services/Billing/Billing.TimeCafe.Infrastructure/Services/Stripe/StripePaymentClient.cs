@@ -5,10 +5,10 @@ namespace Billing.TimeCafe.Infrastructure.Services.Stripe;
 
 public class StripePaymentClient : IStripePaymentClient
 {
-    private readonly IOptions<StripeOptions> _options;
+    private readonly IOptionsSnapshot<StripeOptions> _options;
     private readonly ILogger<StripePaymentClient> _logger;
 
-    public StripePaymentClient(IOptions<StripeOptions> options, ILogger<StripePaymentClient> logger)
+    public StripePaymentClient(IOptionsSnapshot<StripeOptions> options, ILogger<StripePaymentClient> logger)
     {
         _options = options;
         _logger = logger;

@@ -1,16 +1,18 @@
+using BuildingBlocks.Options;
+
 namespace Auth.TimeCafe.Infrastructure.Services;
 
-public class JwtService(IConfiguration configuration, ApplicationDbContext context) : IJwtService
+public class JwtService(IOptionsSnapshot<JwtOptions> jwtOptions, ApplicationDbContext context) : IJwtService
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly IOptionsSnapshot<JwtOptions> _jwtOptions = jwtOptions;
     private readonly ApplicationDbContext _context = context;
 
     public async Task<AuthResponse> GenerateTokens(ApplicationUser user)
     {
-        var jwtSection = _configuration.GetSection("Jwt");
-        var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
-        var expires = DateTimeOffset.UtcNow.AddMinutes(int.Parse(jwtSection["AccessTokenExpirationMinutes"]!));
-        var refreshDays = int.Parse(jwtSection["RefreshTokenExpirationDays"]!);
+        var jwtOptions = _jwtOptions.Value;
+        var keyBytes = Encoding.UTF8.GetBytes(jwtOptions.SigningKey);
+        var expires = DateTimeOffset.UtcNow.AddMinutes(jwtOptions.AccessTokenExpirationMinutes);
+        var refreshDays = jwtOptions.RefreshTokenExpirationDays;
 
         var roles = await _context.UserRoles
             .Where(ur => ur.UserId == user.Id)
@@ -26,8 +28,8 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
         ];
 
         var token = new JwtSecurityToken(
-            issuer: jwtSection["Issuer"],
-            audience: jwtSection["Audience"],
+            issuer: jwtOptions.Issuer,
+            audience: jwtOptions.Audience,
             claims: claims,
             expires: expires.UtcDateTime,
             signingCredentials: new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
@@ -56,16 +58,16 @@ public class JwtService(IConfiguration configuration, ApplicationDbContext conte
 
     public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
-        var jwtSection = _configuration.GetSection("Jwt");
-        var keyBytes = Encoding.UTF8.GetBytes(jwtSection["SigningKey"]!);
+        var jwtOptions = _jwtOptions.Value;
+        var keyBytes = Encoding.UTF8.GetBytes(jwtOptions.SigningKey);
 
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
             ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSection["Issuer"],
-            ValidAudience = jwtSection["Audience"],
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
             ValidateLifetime = false
         };

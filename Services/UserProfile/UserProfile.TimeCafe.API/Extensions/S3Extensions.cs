@@ -6,27 +6,17 @@ public static class S3Extensions
 {
     public static IServiceCollection AddS3(this IServiceCollection services, IConfiguration configuration)
     {
-        var s3 = configuration.GetSection("S3");
-        if (!s3.Exists())
-            throw new InvalidOperationException("S3 configuration section is missing.");
+        services.AddValidatedOptions<S3Options>(configuration, "S3");
 
-        services.Configure<S3Options>(options =>
+        services.AddValidatedOptions<PhotoOptions>(
+            configuration,
+            "Photo",
+            options => options.AllowedContentTypes is { Length: > 0 } && options.AllowedContentTypes.All(contentType => !string.IsNullOrWhiteSpace(contentType)),
+            "Photo:AllowedContentTypes must contain at least one non-empty content type.");
+
+        services.AddScoped<IAmazonS3>(sp =>
         {
-            options.AccessKey = s3["AccessKey"] ?? throw new InvalidOperationException("S3:AccessKey is not configured.");
-            options.SecretKey = s3["SecretKey"] ?? throw new InvalidOperationException("S3:SecretKey is not configured.");
-            options.ServiceUrl = s3["ServiceUrl"] ?? throw new InvalidOperationException("S3:ServiceUrl is not configured.");
-            options.BucketName = s3["BucketName"] ?? throw new InvalidOperationException("S3:BucketName is not configured.");
-        });
-
-        var photo = configuration.GetSection("Photo");
-        if (!photo.Exists())
-            throw new InvalidOperationException("Photo configuration section is missing.");
-
-        services.Configure<PhotoOptions>(photo);
-
-        services.AddSingleton<IAmazonS3>(sp =>
-        {
-            var options = sp.GetRequiredService<IOptions<S3Options>>().Value;
+            var options = sp.GetRequiredService<IOptionsSnapshot<S3Options>>().Value;
             return new AmazonS3Client(options.AccessKey, options.SecretKey, new AmazonS3Config
             {
                 ServiceURL = options.ServiceUrl,
@@ -37,7 +27,7 @@ public static class S3Extensions
 
         services.AddScoped<IProfilePhotoStorage>(sp =>
         {
-            var s3Opts = sp.GetRequiredService<IOptions<S3Options>>().Value;
+            var s3Opts = sp.GetRequiredService<IOptionsSnapshot<S3Options>>().Value;
             var s3Client = sp.GetRequiredService<IAmazonS3>();
             return new S3ProfilePhotoStorage(s3Client, s3Opts);
         });

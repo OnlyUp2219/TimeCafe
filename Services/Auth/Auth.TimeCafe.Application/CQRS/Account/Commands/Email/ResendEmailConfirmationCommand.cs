@@ -37,7 +37,7 @@ public class ResendEmailConfirmationCommandValidator : AbstractValidator<ResendE
 public class ResendConfirmationCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
-    IOptions<PostmarkOptions> postmarkOptions,
+    IOptionsSnapshot<PostmarkOptions> postmarkOptions,
     ILogger<ResendConfirmationCommandHandler> logger) : IRequestHandler<ResendEmailConfirmationCommand, ResendEmailConfirmationResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;

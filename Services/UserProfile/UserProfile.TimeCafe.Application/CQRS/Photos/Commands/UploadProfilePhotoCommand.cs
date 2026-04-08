@@ -27,7 +27,7 @@ Size: size, ContentType: contentType);
 
 public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
 {
-    public UploadProfilePhotoCommandValidator(IOptions<PhotoOptions> photoOptions)
+    public UploadProfilePhotoCommandValidator(IOptionsSnapshot<PhotoOptions> photoOptions)
     {
         var opts = photoOptions.Value;
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");

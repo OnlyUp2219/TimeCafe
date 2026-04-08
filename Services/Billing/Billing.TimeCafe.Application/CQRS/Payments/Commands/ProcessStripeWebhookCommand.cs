@@ -46,12 +46,12 @@ public class ProcessStripeWebhookCommandValidator : AbstractValidator<ProcessStr
 public class ProcessStripeWebhookCommandHandler(
     IPaymentRepository paymentRepository,
     ISender sender,
-    IOptions<StripeOptions> options,
+    IOptionsSnapshot<StripeOptions> options,
     ILogger<ProcessStripeWebhookCommandHandler> logger) : IRequestHandler<ProcessStripeWebhookCommand, ProcessStripeWebhookResult>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly ISender _sender = sender;
-    private readonly IOptions<StripeOptions> _options = options;
+    private readonly IOptionsSnapshot<StripeOptions> _options = options;
     private readonly ILogger _logger = logger;
 
     public async Task<ProcessStripeWebhookResult> Handle(ProcessStripeWebhookCommand request, CancellationToken cancellationToken)

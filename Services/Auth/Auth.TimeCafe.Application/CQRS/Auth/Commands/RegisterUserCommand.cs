@@ -34,7 +34,7 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
 public class RegisterUserCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
-    IOptions<PostmarkOptions> postmarkOptions,
+    IOptionsSnapshot<PostmarkOptions> postmarkOptions,
     IPublishEndpoint publishEndpoint) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;

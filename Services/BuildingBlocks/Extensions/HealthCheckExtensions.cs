@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 using StackExchange.Redis;
+using System.Net.Sockets;
 
 namespace BuildingBlocks.Extensions;
 
@@ -22,11 +23,34 @@ public static class HealthCheckExtensions
         if (!string.IsNullOrEmpty(redisConnectionString))
             hcBuilder.AddCheck("redis", new RedisHealthCheck(redisConnectionString), tags: ["cache"]);
 
+        var rabbitMqSection = configuration.GetSection("RabbitMQ");
+        var rabbitMqHost = rabbitMqSection["Host"];
+        if (!string.IsNullOrWhiteSpace(rabbitMqHost))
+        {
+            var rabbitMqPort = ushort.TryParse(rabbitMqSection["Port"], out var parsedPort)
+                ? parsedPort
+                : (ushort)5672;
+
+            hcBuilder.AddCheck("rabbitmq", new RabbitMqHealthCheck(rabbitMqHost, rabbitMqPort), tags: ["broker"]);
+        }
+
         return services;
     }
 
     public static WebApplication UseHealthChecks(this WebApplication app)
     {
+        app.MapHealthChecks("/health/live", new HealthCheckOptions
+        {
+            Predicate = _ => false,
+            ResponseWriter = WriteResponseAsync
+        }).AllowAnonymous();
+
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = _ => true,
+            ResponseWriter = WriteResponseAsync
+        }).AllowAnonymous();
+
         app.MapHealthChecks("/health", new HealthCheckOptions
         {
             ResponseWriter = WriteResponseAsync
@@ -89,6 +113,26 @@ internal sealed class RedisHealthCheck(string connectionString) : IHealthCheck
             var db = redis.GetDatabase();
             await db.PingAsync();
             return HealthCheckResult.Healthy();
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(exception: ex);
+        }
+    }
+}
+
+internal sealed class RabbitMqHealthCheck(string host, int port) : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync(
+        HealthCheckContext context, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            using var client = new TcpClient();
+            await client.ConnectAsync(host, port, cancellationToken);
+            return client.Connected
+                ? HealthCheckResult.Healthy()
+                : HealthCheckResult.Unhealthy("RabbitMQ TCP connection failed.");
         }
         catch (Exception ex)
         {

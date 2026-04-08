@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var sharedSettingsCandidates = new[]
@@ -26,12 +28,14 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration);
 // Redis
 builder.Services.AddRedis(builder.Configuration);
 
+builder.Services.AddValidatedOptions<BillingApiOptions>(builder.Configuration, "Services:Billing");
+
 // HttpClient
 builder.Services.AddTransient<AuthorizationDelegatingHandler>();
-builder.Services.AddHttpClient("BillingApi", (_, client) =>
+builder.Services.AddHttpClient("BillingApi", (sp, client) =>
 {
-    var billingBaseUrl = builder.Configuration["Services:Billing:BaseUrl"] ?? "http://localhost:8004";
-    client.BaseAddress = new Uri(billingBaseUrl);
+    var billingOptions = sp.GetRequiredService<IOptionsSnapshot<BillingApiOptions>>().Value;
+    client.BaseAddress = new Uri(billingOptions.BaseUrl, UriKind.Absolute);
     client.Timeout = TimeSpan.FromSeconds(5);
 })
 .AddHttpMessageHandler<AuthorizationDelegatingHandler>();

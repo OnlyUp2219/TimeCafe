@@ -42,7 +42,7 @@ public class RequestEmailChangeCommandValidator : AbstractValidator<RequestEmail
 public class RequestEmailChangeCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
-    IOptions<PostmarkOptions> postmarkOptions,
+    IOptionsSnapshot<PostmarkOptions> postmarkOptions,
     IHostEnvironment environment,
     ILogger<RequestEmailChangeCommandHandler> logger) : IRequestHandler<RequestEmailChangeCommand, RequestEmailChangeResult>
 {

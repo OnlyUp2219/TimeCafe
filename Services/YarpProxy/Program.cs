@@ -1,3 +1,6 @@
+using BuildingBlocks.Options;
+using Microsoft.Extensions.Options;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var sharedSettingsCandidates = new[]
@@ -39,12 +42,12 @@ app.MapHealthChecks("/health").AllowAnonymous();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapPost("/dev/admin-token", (HttpContext httpContext, IConfiguration configuration) =>
+    app.MapPost("/dev/admin-token", (HttpContext httpContext, IOptionsSnapshot<JwtOptions> jwtOptionsAccessor) =>
     {
-        var jwtSection = configuration.GetSection("Jwt");
-        var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-        var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
-        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
+        var jwtOptions = jwtOptionsAccessor.Value;
+        var issuer = jwtOptions.Issuer;
+        var audience = jwtOptions.Audience;
+        var signingKey = jwtOptions.SigningKey;
 
         const string userId = "00000000-0000-0000-0000-000000000001";
         var now = DateTime.UtcNow;

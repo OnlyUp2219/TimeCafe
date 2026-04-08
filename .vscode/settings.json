@@ -13,6 +13,7 @@
     "Test-Path": true,
     "Set-Content": true,
     "dotnet test": true,
-    "ForEach-Object": true
+    "ForEach-Object": true,
+    "Get-Command": true
   }
 }

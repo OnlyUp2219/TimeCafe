@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using BuildingBlocks.Options;
 
 namespace Auth.TimeCafe.API.Extensions;
 
@@ -13,16 +14,13 @@ public static class AuthenticationExtensions
         services.AddTransient<IClaimsTransformation, PermissionClaimsTransformer>();
         services.AddAuthorizationBuilder();
 
+        services.AddValidatedOptions<JwtOptions>(configuration, "Jwt");
+
         ConfigurePermissionCaching(services, configuration, environment);
 
-        var jwtSection = configuration.GetSection("Jwt");
-        if (!jwtSection.Exists())
-            throw new InvalidOperationException("Jwt configuration section is missing.");
-
-        var issuer = jwtSection["Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is not configured.");
-        var audience = jwtSection["Audience"] ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
-        var signingKey = jwtSection["SigningKey"] ?? throw new InvalidOperationException("Jwt:SigningKey is not configured.");
-        var keyBytes = Encoding.UTF8.GetBytes(signingKey);
+        var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
+            ?? throw new InvalidOperationException("Jwt configuration section is missing.");
+        var keyBytes = Encoding.UTF8.GetBytes(jwtOptions.SigningKey);
 
         var authBuilder = services
             .AddAuthentication(options =>
@@ -42,8 +40,8 @@ public static class AuthenticationExtensions
                     ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     NameClaimType = "sub",
-                    ValidIssuer = issuer,
-                    ValidAudience = audience,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
                     ClockSkew = TimeSpan.FromMinutes(1)
                 };

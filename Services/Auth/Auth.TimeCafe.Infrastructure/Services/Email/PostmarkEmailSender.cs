@@ -1,6 +1,6 @@
 namespace Auth.TimeCafe.Infrastructure.Services.Email;
 
-public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptions<PostmarkOptions> options) : IEmailSender<ApplicationUser>
+public sealed class PostmarkEmailSender(IHttpClientFactory httpClientFactory, IOptionsSnapshot<PostmarkOptions> options) : IEmailSender<ApplicationUser>
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly PostmarkOptions _options = options.Value;

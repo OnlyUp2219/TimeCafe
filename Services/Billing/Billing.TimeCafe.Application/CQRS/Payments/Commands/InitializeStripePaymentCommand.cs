@@ -47,11 +47,11 @@ public class InitializeStripePaymentCommandValidator : AbstractValidator<Initial
 public class InitializeStripePaymentCommandHandler(
     IPaymentRepository paymentRepository,
     IStripePaymentClient stripeClient,
-    IOptions<StripeOptions> options) : IRequestHandler<InitializeStripePaymentCommand, InitializeStripePaymentResult>
+    IOptionsSnapshot<StripeOptions> options) : IRequestHandler<InitializeStripePaymentCommand, InitializeStripePaymentResult>
 {
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly IStripePaymentClient _stripeClient = stripeClient;
-    private readonly IOptions<StripeOptions> _options = options;
+    private readonly IOptionsSnapshot<StripeOptions> _options = options;
 
     public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken)
     {
