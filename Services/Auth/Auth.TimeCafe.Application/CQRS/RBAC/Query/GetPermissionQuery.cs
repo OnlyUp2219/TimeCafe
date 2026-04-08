@@ -2,6 +2,15 @@
 
 public sealed record GetPermissionQuery(string Permission) : IQuery<string>;
 
+public sealed class GetPermissionQueryValidator : AbstractValidator<GetPermissionQuery>
+{
+	public GetPermissionQueryValidator()
+	{
+		RuleFor(x => x.Permission)
+			.NotEmpty().WithMessage("Разрешение не найдено");
+	}
+}
+
 public sealed class GetPermissionQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetPermissionQuery, string>
 {
 	private readonly IRbacRepository _rbacRepository = rbacRepository;

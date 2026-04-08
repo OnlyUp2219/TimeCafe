@@ -56,8 +56,16 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         var email = $"user_{Guid.NewGuid():N}@example.com";
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user, "P@ssw0rd!");
+
+        if (!await roleManager.RoleExistsAsync(BuildingBlocks.Permissions.Roles.Client))
+        {
+            await roleManager.CreateAsync(new IdentityRole<Guid>(BuildingBlocks.Permissions.Roles.Client));
+        }
+
+        await userManager.AddToRoleAsync(user, BuildingBlocks.Permissions.Roles.Client);
 
         var loginDto = new { Email = email, Password = "P@ssw0rd!" };
         var loginResp = await Client.PostAsJsonAsync("/auth/login-jwt", loginDto);

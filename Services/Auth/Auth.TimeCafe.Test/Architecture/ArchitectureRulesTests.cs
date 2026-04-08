@@ -24,6 +24,7 @@ public partial class ArchitectureRulesTests
         var publicEndpoints = new[] {
             "EmailConfirmation.cs", "ResetPassword.cs", "EmailResend.cs",
             "Registration.cs", "ExternalProviders.cs",
+            "ExternalProviderBase.cs",
             "GoogleProvider.cs", "MicrosoftProvider.cs",
             "Login.cs", "LoginV2.cs", "Logout.cs", "RefreshToken.cs", "RefreshTokenV2.cs"
         };

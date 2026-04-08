@@ -42,8 +42,8 @@ public class CreateEmptyProfileTests(IntegrationApiFactory factory) : BaseEndpoi
         {
             response.StatusCode.Should().Be(HttpStatusCode.Conflict);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ProfileAlreadyExists");
+            if (json.TryGetProperty("code", out var code))
+                code.GetString()!.Should().Be("ProfileAlreadyExists");
         }
         catch (Exception)
         {

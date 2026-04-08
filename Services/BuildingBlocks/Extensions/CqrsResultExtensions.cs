@@ -13,12 +13,15 @@ public static class CqrsResultExtensions
         var statusCode = result.StatusCode ?? MapCodeToStatus(result.Code);
         var message = result.Message ?? "Произошла ошибка при обработке запроса";
         var errors = result.Errors?
-            .Select(error => error.Description)
-            .Where(error => !string.IsNullOrWhiteSpace(error))
-            .Distinct()
+            .Where(error => !string.IsNullOrWhiteSpace(error.Description))
+            .Select(error => (object)new Dictionary<string, object?>
+            {
+                ["code"] = error.Code,
+                ["message"] = error.Description
+            })
             .ToList();
 
-        return BuildErrorResponse(message, statusCode, errors, extra);
+        return BuildErrorResponse(message, statusCode, result.Code, errors, extra);
     }
 
     public static IResult ToHttpResult<T>(this Result<T> result, Func<T, IResult> onSuccess, object? extra = null)
@@ -42,22 +45,29 @@ public static class CqrsResultExtensions
         var firstError = errors.FirstOrDefault();
         var statusCode = ExtractStatusCode(firstError) ?? StatusCodes.Status400BadRequest;
         var message = firstError?.Message ?? "Произошла ошибка при обработке запроса";
-        var messages = errors
-            .Select(error => error.Message)
-            .Where(error => !string.IsNullOrWhiteSpace(error))
-            .Distinct()
+        var code = ExtractErrorCode(firstError);
+        var payloadErrors = errors
+            .Where(error => !string.IsNullOrWhiteSpace(error.Message))
+            .Select(error => (object)new Dictionary<string, object?>
+            {
+                ["code"] = ExtractErrorCode(error) ?? code ?? "Error",
+                ["message"] = error.Message
+            })
             .ToList();
 
-        return BuildErrorResponse(message, statusCode, messages, extra);
+        return BuildErrorResponse(message, statusCode, code, payloadErrors, extra);
     }
 
-    private static IResult BuildErrorResponse(string message, int statusCode, List<string>? errors, object? extra)
+    private static IResult BuildErrorResponse(string message, int statusCode, string? code, List<object>? errors, object? extra)
     {
         var payload = new Dictionary<string, object?>
         {
             ["message"] = message,
             ["statusCode"] = statusCode
         };
+
+        if (!string.IsNullOrWhiteSpace(code))
+            payload["code"] = code;
 
         if (errors is { Count: > 0 })
             payload["errors"] = errors;
@@ -71,6 +81,17 @@ public static class CqrsResultExtensions
         }
 
         return Results.Json(payload, statusCode: statusCode);
+    }
+
+    private static string? ExtractErrorCode(IError? error)
+    {
+        if (error is null)
+            return null;
+
+        if (error.Metadata.TryGetValue("Code", out var rawCode))
+            return rawCode?.ToString();
+
+        return null;
     }
 
     private static int? ExtractStatusCode(IError? error)

@@ -21,7 +21,14 @@ public static class SeedRolesAndPermissionsExtensions
 
         var clientPermissions = new List<string>
         {
-            Permissions.AccountSelfRead
+            Permissions.AccountSelfRead,
+            Permissions.AccountEmailChange,
+            Permissions.AccountPasswordChange,
+            Permissions.AccountPhoneSave,
+            Permissions.AccountPhoneClear,
+            Permissions.AccountPhoneGenerate,
+            Permissions.AccountPhoneVerify,
+            Permissions.AccountPhoneStatusRead
         };
 
         await EnsureRoleClaimsAsync(roleManager, Roles.Client, clientPermissions);

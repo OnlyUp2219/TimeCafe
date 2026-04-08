@@ -22,8 +22,16 @@ public class ChangePasswordTests(IntegrationApiFactory factory) : BaseEndpointTe
         // создаём пользователя
         using var scope = Factory.Services.CreateScope();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var user = new ApplicationUser { UserName = email, Email = email, EmailConfirmed = true };
         await userManager.CreateAsync(user, oldPassword);
+
+        if (!await roleManager.RoleExistsAsync(BuildingBlocks.Permissions.Roles.Client))
+        {
+            await roleManager.CreateAsync(new IdentityRole<Guid>(BuildingBlocks.Permissions.Roles.Client));
+        }
+
+        await userManager.AddToRoleAsync(user, BuildingBlocks.Permissions.Roles.Client);
 
         // логинимся и получаем оба токена
         var loginDto = new { Email = email, Password = oldPassword };

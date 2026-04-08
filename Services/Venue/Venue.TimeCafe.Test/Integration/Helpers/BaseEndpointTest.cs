@@ -3,10 +3,23 @@ using Venue.TimeCafe.Domain.Constants;
 
 namespace Venue.TimeCafe.Test.Integration.Helpers;
 
-public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
+public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>, IAsyncLifetime
 {
-    protected readonly HttpClient Client = factory.CreateClient();
     protected readonly IntegrationApiFactory Factory = factory;
+    private HttpClient? _client;
+    protected HttpClient Client => _client ??= Factory.CreateClient();
+
+    public Task InitializeAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(IntegrationApiFactory.InfrastructureUnavailableReason))
+        {
+            throw new InvalidOperationException(IntegrationApiFactory.InfrastructureUnavailableReason);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     protected async Task ClearDatabaseAndCacheAsync()
     {

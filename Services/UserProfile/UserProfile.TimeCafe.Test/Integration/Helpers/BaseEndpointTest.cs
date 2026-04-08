@@ -4,11 +4,17 @@ namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 
 public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>, IAsyncLifetime
 {
-    protected readonly HttpClient Client = factory.CreateClient();
     protected readonly IntegrationApiFactory Factory = factory;
+    private HttpClient? _client;
+    protected HttpClient Client => _client ??= Factory.CreateClient();
 
     public async Task InitializeAsync()
     {
+        if (!string.IsNullOrWhiteSpace(IntegrationApiFactory.InfrastructureUnavailableReason))
+        {
+            throw new InvalidOperationException(IntegrationApiFactory.InfrastructureUnavailableReason);
+        }
+
         foreach (var (id, firstName, lastName, gender) in TestData.GetAllExistingUsers())
         {
             await SeedProfileAsync(id, firstName, lastName, gender);

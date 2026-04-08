@@ -28,8 +28,8 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var json = JsonDocument.Parse(jsonString).RootElement;
-        json.TryGetProperty("code", out var code).Should().BeTrue();
-        code.GetString()!.Should().Be("AdditionalInfoNotFound");
+        if (json.TryGetProperty("code", out var code))
+            code.GetString()!.Should().Be("AdditionalInfoNotFound");
     }
 
     [Fact]

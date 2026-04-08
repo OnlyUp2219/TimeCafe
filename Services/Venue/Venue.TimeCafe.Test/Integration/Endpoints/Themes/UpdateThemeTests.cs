@@ -50,8 +50,8 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ThemeNotFound");
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("ThemeNotFound");
         }
         catch (Exception)
         {

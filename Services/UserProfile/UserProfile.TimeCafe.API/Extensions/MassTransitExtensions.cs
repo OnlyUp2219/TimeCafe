@@ -6,7 +6,9 @@ public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        if (environment.IsEnvironment("Testing"))
+        var useRealInfrastructureInTests = configuration.GetValue<bool>("IntegrationTests:UseRealInfrastructure");
+
+        if (environment.IsEnvironment("Testing") && !useRealInfrastructureInTests)
         {
             services.AddMassTransit(x =>
             {
@@ -23,6 +25,8 @@ public static class MassTransitExtensions
             throw new InvalidOperationException("RabbitMQ configuration section is missing.");
 
         var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
+        var virtualHost = rabbitMqSection["VirtualHost"] ?? "/";
+        var hasPort = ushort.TryParse(rabbitMqSection["Port"], out var port);
 
         services.AddMassTransit(x =>
         {
@@ -30,11 +34,22 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqSection["Host"]!, h =>
+                if (hasPort)
                 {
-                    h.Username(rabbitMqSection["Username"]!);
-                    h.Password(rabbitMqSection["Password"]!);
-                });
+                    cfg.Host(host, port, virtualHost, h =>
+                    {
+                        h.Username(rabbitMqSection["Username"]!);
+                        h.Password(rabbitMqSection["Password"]!);
+                    });
+                }
+                else
+                {
+                    cfg.Host(host, h =>
+                    {
+                        h.Username(rabbitMqSection["Username"]!);
+                        h.Password(rabbitMqSection["Password"]!);
+                    });
+                }
 
                 cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
 

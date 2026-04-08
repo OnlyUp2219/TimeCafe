@@ -2,6 +2,13 @@
 
 public sealed record GetRolesQuery() : IQuery<List<RolesResponse>>;
 
+public sealed class GetRolesQueryValidator : AbstractValidator<GetRolesQuery>
+{
+	public GetRolesQueryValidator()
+	{
+	}
+}
+
 public sealed class GetRolesQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetRolesQuery, List<RolesResponse>>
 {
 	private readonly IRbacRepository _rbacRepository = rbacRepository;

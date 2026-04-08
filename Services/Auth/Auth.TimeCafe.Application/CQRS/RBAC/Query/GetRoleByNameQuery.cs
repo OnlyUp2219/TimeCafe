@@ -2,6 +2,15 @@
 
 public sealed record GetRoleByNameQuery(string RoleName) : IQuery<RolesResponse>;
 
+public sealed class GetRoleByNameQueryValidator : AbstractValidator<GetRoleByNameQuery>
+{
+	public GetRoleByNameQueryValidator()
+	{
+		RuleFor(x => x.RoleName)
+			.NotEmpty().WithMessage("Роль не найдена");
+	}
+}
+
 public sealed class GetRoleByNameQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetRoleByNameQuery, RolesResponse>
 {
 	private readonly IRbacRepository _rbacRepository = rbacRepository;

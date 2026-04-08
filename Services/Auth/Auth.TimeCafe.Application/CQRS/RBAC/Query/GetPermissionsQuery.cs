@@ -2,6 +2,13 @@
 
 public sealed class GetPermissionsQuery() : IQuery<List<string>>;
 
+public sealed class GetPermissionsQueryValidator : AbstractValidator<GetPermissionsQuery>
+{
+    public GetPermissionsQueryValidator()
+    {
+    }
+}
+
 public sealed class GetPermissionsQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetPermissionsQuery, List<string>>
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
