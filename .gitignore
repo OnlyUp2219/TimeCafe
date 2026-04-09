@@ -376,7 +376,6 @@ secrets.local.*
 
 # Common environment variable files
 .env
-.env.*
 *.env
 
 # Optional: uncomment if you ever generate JSON dumps of secrets
