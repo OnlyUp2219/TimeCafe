@@ -1,3 +1,5 @@
+using MassTransit;
+
 namespace Venue.TimeCafe.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
@@ -16,5 +18,7 @@ public class ApplicationDbContext : DbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        modelBuilder.AddTransactionalOutboxEntities();
     }
 }

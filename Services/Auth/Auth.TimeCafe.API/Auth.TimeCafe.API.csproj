@@ -12,6 +12,8 @@
 		<PackageReference Include="Carter" />
 
 		<PackageReference Include="MassTransit" />
+
+		<PackageReference Include="MassTransit.EntityFrameworkCore" />
 		<PackageReference Include="MassTransit.RabbitMQ" />
 
 		<PackageReference Include="Microsoft.CodeAnalysis.Common" />

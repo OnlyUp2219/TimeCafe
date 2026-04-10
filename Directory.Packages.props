@@ -4,8 +4,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AutoMapper" Version="16.1.1" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.30" />
-    <PackageVersion Include="AWSSDK.S3" Version="4.0.20.2" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.32" />
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.21" />
     <PackageVersion Include="Bogus" Version="35.6.4" />
     <PackageVersion Include="Carter" Version="10.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -21,6 +21,7 @@
     <PackageVersion Include="FluentResults" Version="4.0.0" />
     <PackageVersion Include="FluentResults.Extensions.AspNetCore" Version="0.2.0" />
     <PackageVersion Include="FluentResults.Extensions.FluentAssertions" Version="2.2.1" />
+    <PackageVersion Include="MassTransit.EntityFrameworkCore" Version="8.5.8" />
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="1.8.251003001" />
     <PackageVersion Include="WinUIEx" Version="2.9.0" />
     <PackageVersion Include="coverlet.collector" Version="8.0.1" />
@@ -65,15 +66,15 @@
     <PackageVersion Include="Microsoft.Identity.Web" Version="3.14.1" />
     <PackageVersion Include="Microsoft.Identity.Web.DownstreamApi" Version="3.14.1" />
     <PackageVersion Include="Microsoft.Identity.Web.UI" Version="3.14.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.3537.50" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="3.0.0" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.10.3" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.10.3" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.13.18" />
-    <PackageVersion Include="Scalar.AspNetCore.Microsoft" Version="2.13.18" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.13.21" />
+    <PackageVersion Include="Scalar.AspNetCore.Microsoft" Version="2.13.21" />
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
@@ -85,10 +86,10 @@
     <PackageVersion Include="Stripe.net" Version="51.0.0" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
     <PackageVersion Include="System.Text.Json" Version="10.0.5" />
-    <PackageVersion Include="Testcontainers" Version="3.10.0" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.10.0" />
-    <PackageVersion Include="Testcontainers.Redis" Version="3.10.0" />
-    <PackageVersion Include="Testcontainers.RabbitMq" Version="3.10.0" />
+    <PackageVersion Include="Testcontainers" Version="4.11.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
+    <PackageVersion Include="Testcontainers.Redis" Version="4.11.0" />
+    <PackageVersion Include="Testcontainers.RabbitMq" Version="4.11.0" />
     <PackageVersion Include="Twilio" Version="7.14.3" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />

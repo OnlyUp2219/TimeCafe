@@ -30,6 +30,13 @@ public static class MassTransitExtensions
 
         services.AddMassTransit(x =>
         {
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+
+                o.UseBusOutbox();
+            });
+
             x.AddConsumer<UserRegisteredConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>

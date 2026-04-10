@@ -35,54 +35,69 @@ public class RegisterUserCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
     IOptionsSnapshot<PostmarkOptions> postmarkOptions,
-    IPublishEndpoint publishEndpoint) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+    IPublishEndpoint publishEndpoint,
+    IUnitOfWork uow) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
-    private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
+    private readonly IOptionsSnapshot<PostmarkOptions> _postmarkOptions = postmarkOptions;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly IUnitOfWork _uow = uow;
 
     // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
 
-        var user = new ApplicationUser
-        {
-            UserName = request.Username,
-            Email = request.Email,
-            EmailConfirmed = false,
-        };
+        using var transaction = await _uow.BeginTransactionAsync(cancellationToken);
 
-        var createResult = await _userManager.CreateAsync(user, request.Password);
-        if (!createResult.Succeeded)
+        try
         {
-            List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
-            return RegisterUserResult.Error(errs);
+            var user = new ApplicationUser
+            {
+                UserName = request.Username,
+                Email = request.Email,
+                EmailConfirmed = false,
+            };
+
+            var createResult = await _userManager.CreateAsync(user, request.Password);
+            if (!createResult.Succeeded)
+            {
+                List<ErrorItem> errs = [.. createResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
+                return RegisterUserResult.Error(errs);
+            }
+
+            var addToRoleResult = await _userManager.AddToRoleAsync(user, Roles.Client);
+            if (!addToRoleResult.Succeeded)
+            {
+                await _userManager.DeleteAsync(user);
+                List<ErrorItem> errs = [.. addToRoleResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
+                return RegisterUserResult.Error(errs);
+            }
+
+            await _publishEndpoint.Publish(new UserRegisteredEvent
+            {
+                UserId = user.Id,
+                Email = user.Email ?? string.Empty
+            }, cancellationToken);
+
+            // TODO : перенести отправку письм после успешного завершения событий
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var callbackUrl = $"{_postmarkOptions.Value.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
+
+            if (request.SendEmail)
+            {
+                await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
+            }
+
+            await transaction.CommitAsync(cancellationToken);
+
+            return RegisterUserResult.SuccessResult(callbackUrl);
         }
-
-        var addToRoleResult = await _userManager.AddToRoleAsync(user, Roles.Client);
-        if (!addToRoleResult.Succeeded)
+        catch (Exception ex)
         {
-            await _userManager.DeleteAsync(user);
-            List<ErrorItem> errs = [.. addToRoleResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
-            return RegisterUserResult.Error(errs);
+            await transaction.RollbackAsync(cancellationToken);
+            return RegisterUserResult.Error(new List<ErrorItem> { new("Ошибка ", ex.ToString()) });
         }
-
-        await _publishEndpoint.Publish(new UserRegisteredEvent
-        {
-            UserId = user.Id,
-            Email = user.Email ?? string.Empty
-        }, cancellationToken);
-
-        var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
-        var callbackUrl = $"{_postmarkOptions.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
-
-        if (request.SendEmail)
-        {
-            await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
-        }
-
-        return RegisterUserResult.SuccessResult(callbackUrl);
     }
 }

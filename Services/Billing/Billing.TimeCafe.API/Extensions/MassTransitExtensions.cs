@@ -28,6 +28,13 @@ public static class MassTransitExtensions
         {
             x.AddBillingMassTransit();
 
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+
+                o.UseBusOutbox();
+            });
+
             x.UsingRabbitMq((context, cfg) =>
             {
                 cfg.Host(rabbitMqSection["Host"]!, h =>

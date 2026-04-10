@@ -33,6 +33,13 @@ public static class MassTransitExtensions
                     });
                 }
 
+                x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+                {
+                    o.UsePostgres();
+
+                    o.UseBusOutbox();
+                });
+
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
                 cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 

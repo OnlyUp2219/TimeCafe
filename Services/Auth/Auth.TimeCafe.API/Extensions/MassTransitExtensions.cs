@@ -20,24 +20,36 @@ public static class MassTransitExtensions
             throw new InvalidOperationException("RabbitMQ configuration section is missing.");
         _ = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
-        services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
+        services.AddMassTransit(x =>
+        { 
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
             {
-                cfg.Host(rabbitMqSection["Host"]!, h =>
+                o.UsePostgres(); 
+
+                o.UseBusOutbox();
+            });
+
+            x.UsingRabbitMq((context, cfg) =>
                 {
-                    h.Username(rabbitMqSection["Username"]!);
-                    h.Password(rabbitMqSection["Password"]!);
+                    cfg.Host(rabbitMqSection["Host"]!, h =>
+                    {
+                        h.Username(rabbitMqSection["Username"]!);
+                        h.Password(rabbitMqSection["Password"]!);
+                    });
+
+                    cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
+                    cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
+
+                    cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
+                    cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
+
+                    cfg.ConfigureEndpoints(context);
                 });
-
-                cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
-                cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
-
-                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
-
-                cfg.ConfigureEndpoints(context);
-            }));
+        });
 
         services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
+
+
 
         return services;
     }
