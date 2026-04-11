@@ -9,6 +9,7 @@ public interface IVisitRepository
     Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken ct = default);
 
     Task<Visit> CreateAsync(Visit visit, CancellationToken ct = default);
-    Task<Visit> UpdateAsync(Visit visit, CancellationToken ct = default);
+    Task<Visit> UpdateAsync(Visit visit, bool saveChanges = true, CancellationToken ct = default);
+    Task SaveChangesAsync(CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid visitId, CancellationToken ct = default);
 }

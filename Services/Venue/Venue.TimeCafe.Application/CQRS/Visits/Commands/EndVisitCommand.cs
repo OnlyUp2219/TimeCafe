@@ -55,33 +55,25 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
                     entryTime: existing.EntryTime),
                 status: VisitStatus.Completed);
 
-            var updated = await _repository.UpdateAsync(visit);
-
+            var updated = await _repository.UpdateAsync(visit, saveChanges: false, cancellationToken);
             if (updated == null)
                 return EndVisitResult.EndFailed();
 
-            try
+            await _publishEndpoint.Publish(new VisitCompletedEvent
             {
-                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                VisitId = updated.VisitId,
+                UserId = updated.UserId,
+                Amount = visit.CalculatedCost ?? 0,
+                CompletedAt = exitTime
+            }, cancellationToken);
 
-                await _publishEndpoint.Publish(new VisitCompletedEvent
-                {
-                    VisitId = updated.VisitId,
-                    UserId = updated.UserId,
-                    Amount = visit.CalculatedCost ?? 0,
-                    CompletedAt = exitTime
-                }, cts.Token);
-            }
-            catch (OperationCanceledException ex)
-            {
-                _logger.LogWarning(ex, "Operation was cancelled");
-            }
+            await _repository.SaveChangesAsync(cancellationToken);
 
             return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Ошибка при завершении визита {VisitId}", request.VisitId);
             throw new CqrsResultException(EndVisitResult.EndFailed(), ex);
         }
     }

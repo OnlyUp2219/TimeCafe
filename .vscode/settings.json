@@ -14,6 +14,7 @@
     "Set-Content": true,
     "dotnet test": true,
     "ForEach-Object": true,
-    "Get-Command": true
+    "Get-Command": true,
+    "dotnet build": true
   }
 }

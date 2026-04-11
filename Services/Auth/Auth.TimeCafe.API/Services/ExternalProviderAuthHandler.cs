@@ -33,34 +33,51 @@ internal static class ExternalProviderAuthHandler
 
         var user = await userManager.FindByEmailAsync(email);
 
-        if (user is null)
+        await using var transaction = await db.Database.BeginTransactionAsync();
+        try
         {
-            user = new ApplicationUser
+            if (user is null)
             {
-                UserName = email,
-                Email = email,
-                EmailConfirmed = true
-            };
+                user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
 
-            var createResult = await userManager.CreateAsync(user);
-            if (!createResult.Succeeded)
-                return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                var createResult = await userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    return Results.BadRequest(string.Join(", ", createResult.Errors.Select(e => e.Description)));
+                }
 
-            await userManager.AddToRoleAsync(user, Roles.Client);
+                var roleResult = await userManager.AddToRoleAsync(user, Roles.Client);
+                if (!roleResult.Succeeded)
+                {
+                    return Results.BadRequest(string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                }
+            }
+            else if (!user.EmailConfirmed)
+            {
+                await ConfirmUserFromExternalProviderAsync(email, user, userManager, db, logger);
+            }
+
+            var addLoginResult = await userManager.AddLoginAsync(user, new UserLoginInfo(provider, externalUserId, provider));
+            if (!addLoginResult.Succeeded)
+                return Results.BadRequest(string.Join(", ", addLoginResult.Errors.Select(e => e.Description)));
+
+            var userTokens = await jwtService.GenerateTokens(user);
+            var hasPassword = await userManager.HasPasswordAsync(user);
+
+            await transaction.CommitAsync();
+
+            return Results.Redirect(BuildRedirectUrl(returnUrl, userTokens.AccessToken, userTokens.RefreshToken, hasPassword));
         }
-        else if (!user.EmailConfirmed)
+        catch (Exception ex)
         {
-            await ConfirmUserFromExternalProviderAsync(email, user, userManager, db, logger);
+            logger.LogError(ex, "Ошибка при обработке внешней аутентификации пользователя {Email}", email);
+            return Results.Problem("Не удалось завершить внешний вход. Попробуйте позже.");
         }
-
-        var addLoginResult = await userManager.AddLoginAsync(user, new UserLoginInfo(provider, externalUserId, provider));
-        if (!addLoginResult.Succeeded)
-            return Results.BadRequest(string.Join(", ", addLoginResult.Errors.Select(e => e.Description)));
-
-        var userTokens = await jwtService.GenerateTokens(user);
-        var hasPassword = await userManager.HasPasswordAsync(user);
-
-        return Results.Redirect(BuildRedirectUrl(returnUrl, userTokens.AccessToken, userTokens.RefreshToken, hasPassword));
     }
 
     private static async Task ConfirmUserFromExternalProviderAsync(

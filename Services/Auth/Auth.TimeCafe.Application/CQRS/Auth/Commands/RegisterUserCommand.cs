@@ -35,24 +35,21 @@ public class RegisterUserCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
     IOptionsSnapshot<PostmarkOptions> postmarkOptions,
-    IPublishEndpoint publishEndpoint,
-    IUnitOfWork uow) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+    IPublishEndpoint publishEndpoint) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly IOptionsSnapshot<PostmarkOptions> _postmarkOptions = postmarkOptions;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
-    private readonly IUnitOfWork _uow = uow;
 
     // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
     {
-
-        using var transaction = await _uow.BeginTransactionAsync(cancellationToken);
+        ApplicationUser? user = null;
 
         try
         {
-            var user = new ApplicationUser
+            user = new ApplicationUser
             {
                 UserName = request.Username,
                 Email = request.Email,
@@ -74,13 +71,6 @@ public class RegisterUserCommandHandler(
                 return RegisterUserResult.Error(errs);
             }
 
-            await _publishEndpoint.Publish(new UserRegisteredEvent
-            {
-                UserId = user.Id,
-                Email = user.Email ?? string.Empty
-            }, cancellationToken);
-
-            // TODO : перенести отправку письм после успешного завершения событий
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
             var callbackUrl = $"{_postmarkOptions.Value.FrontendBaseUrl}/confirm-email?userId={user.Id}&token={encodedToken}";
@@ -90,13 +80,21 @@ public class RegisterUserCommandHandler(
                 await _emailSender.SendConfirmationLinkAsync(user, request.Email, callbackUrl);
             }
 
-            await transaction.CommitAsync(cancellationToken);
+            await _publishEndpoint.Publish(new UserRegisteredEvent
+            {
+                UserId = user.Id,
+                Email = user.Email ?? string.Empty
+            }, cancellationToken);
 
             return RegisterUserResult.SuccessResult(callbackUrl);
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            // Compensating action: if anything fails after user creation, delete the user
+            if (user is not null)
+            {
+                await _userManager.DeleteAsync(user);
+            }
             return RegisterUserResult.Error(new List<ErrorItem> { new("Ошибка ", ex.ToString()) });
         }
     }

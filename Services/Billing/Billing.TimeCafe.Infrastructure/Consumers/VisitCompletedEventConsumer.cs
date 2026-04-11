@@ -1,10 +1,12 @@
 namespace Billing.TimeCafe.Infrastructure.Consumers;
 
 public class VisitCompletedEventConsumer(
+    ApplicationDbContext db,
     IBalanceRepository balanceRepository,
     ITransactionRepository transactionRepository,
     ILogger<VisitCompletedEventConsumer> logger) : IConsumer<VisitCompletedEvent>
 {
+    private readonly ApplicationDbContext _db = db;
     private readonly IBalanceRepository _balanceRepository = balanceRepository;
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
     private readonly ILogger _logger = logger;
@@ -13,6 +15,7 @@ public class VisitCompletedEventConsumer(
     {
         var evt = context.Message;
 
+        await using var dbTransaction = await _db.Database.BeginTransactionAsync(context.CancellationToken);
         try
         {
             var balance = await _balanceRepository.GetByUserIdAsync(evt.UserId, context.CancellationToken);
@@ -65,6 +68,8 @@ public class VisitCompletedEventConsumer(
 
             await _balanceRepository.UpdateAsync(balance, context.CancellationToken);
             await _transactionRepository.CreateAsync(transaction, context.CancellationToken);
+
+            await dbTransaction.CommitAsync(context.CancellationToken);
 
             _logger.LogInformation(
                 "Визит {VisitId} пользователя {UserId} успешно обработан. Списано: {Amount}₽, Баланс: {Balance}₽",

@@ -140,7 +140,7 @@ public class VisitRepository(
         return visit;
     }
 
-    public async Task<Visit> UpdateAsync(Visit visit, CancellationToken ct = default)
+    public async Task<Visit> UpdateAsync(Visit visit, bool saveChanges = true, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(visit);
         var existingVisit = await _context.Visits.FindAsync([visit.VisitId], ct);
@@ -148,11 +148,20 @@ public class VisitRepository(
             return null!;
 
         _context.Entry(existingVisit).CurrentValues.SetValues(visit);
-        await _context.SaveChangesAsync(ct);
 
-        await _cache.RemoveByTagAsync(CacheTags.Visits, ct);
+        if (saveChanges)
+        {
+            await _context.SaveChangesAsync(ct);
+
+            await _cache.RemoveByTagAsync(CacheTags.Visits, ct);
+        }
 
         return visit;
+    }
+
+    public async Task SaveChangesAsync(CancellationToken ct = default)
+    {
+        await _context.SaveChangesAsync(ct);
     }
 
     public async Task<bool> DeleteAsync(Guid visitId, CancellationToken ct = default)
