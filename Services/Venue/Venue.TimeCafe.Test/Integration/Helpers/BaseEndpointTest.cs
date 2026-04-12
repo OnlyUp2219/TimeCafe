@@ -105,6 +105,10 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
         context.Themes.Add(theme);
         await context.SaveChangesAsync();
+
+        var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        await hybridCache.RemoveByTagAsync(CacheTags.Themes);
+
         return theme;
     }
 

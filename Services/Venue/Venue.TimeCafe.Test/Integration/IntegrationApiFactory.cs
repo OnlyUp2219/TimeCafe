@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
+using MassTransit;
+using Moq;
 using StackExchange.Redis;
 using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
@@ -55,6 +57,23 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+            // Remove MassTransit services to avoid read-only collection issues in tests
+            var massTransitDescriptors = services.Where(d => d.ServiceType.Namespace?.StartsWith("MassTransit") == true).ToList();
+            foreach (var descriptor in massTransitDescriptors)
+            {
+                services.Remove(descriptor);
+            }
+
+            var publishEndpointMock = new Mock<MassTransit.IPublishEndpoint>();
+            publishEndpointMock.Setup(p => p.Publish(It.IsAny<object>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            services.AddScoped(typeof(MassTransit.IPublishEndpoint), _ => publishEndpointMock.Object);
+
+            var busDepotMock = new Mock<MassTransit.IBusDepot>();
+            services.AddScoped(typeof(MassTransit.IBusDepot), _ => busDepotMock.Object);
+
+            var busMock = new Mock<MassTransit.IBus>();
+            services.AddScoped(typeof(MassTransit.IBus), _ => busMock.Object);
+
             var configurationDescriptors = services
                 .Where(d => d.ServiceType.Name.Contains("IDbContextOptionsConfiguration")
                             && d.ServiceType.IsGenericType
