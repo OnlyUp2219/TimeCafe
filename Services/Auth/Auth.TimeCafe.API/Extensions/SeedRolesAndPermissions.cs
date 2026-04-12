@@ -21,6 +21,7 @@ public static class SeedRolesAndPermissionsExtensions
 
         var clientPermissions = new List<string>
         {
+            // TODO : добавить роли
             Permissions.AccountSelfRead,
             Permissions.AccountEmailChange,
             Permissions.AccountPasswordChange,

@@ -17,3 +17,4 @@ global using UserProfile.TimeCafe.Application.Helpers;
 global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.Enums;
 global using UserProfile.TimeCafe.Domain.Models;
+global using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;

@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace UserProfile.TimeCafe.API.Json;
 
+// TODO : при put UpdateProfile выдает throw new JsonException("BirthDate must be a string.");, что приводит к 500 
 public sealed class FlexibleDateOnlyJsonConverter : JsonConverter<DateOnly>
 {
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

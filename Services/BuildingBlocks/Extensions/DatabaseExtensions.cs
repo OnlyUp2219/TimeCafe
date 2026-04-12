@@ -1,6 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
-
 namespace BuildingBlocks.Extensions;
 
 public static class DatabaseExtensions
@@ -12,7 +9,12 @@ public static class DatabaseExtensions
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<TContext>(options =>
-            options.UseNpgsql(connectionString));
+        {
+            // TODO : убрать в проде.
+            options.UseNpgsql(connectionString).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+
+            options.UseNpgsql(connectionString);
+        });
 
         return services;
     }

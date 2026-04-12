@@ -28,3 +28,5 @@ global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.OpenApi;
 global using Scalar.AspNetCore;
 global using Serilog;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Diagnostics;

@@ -30,3 +30,4 @@ global using Auth.TimeCafe.Domain.Errors;
 global using FluentResults;
 
 global using Microsoft.EntityFrameworkCore.Storage;
+global using Auth.TimeCafe.Infrastructure.Repositories;

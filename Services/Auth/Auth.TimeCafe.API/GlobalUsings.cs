@@ -14,6 +14,7 @@ global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Application.DependencyInjection;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
+global using Auth.TimeCafe.Infrastructure;
 global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Infrastructure.Services.Email;
@@ -36,3 +37,6 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.IdentityModel.Tokens;
 global using Scalar.AspNetCore;
 global using Serilog;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.EntityFrameworkCore.Diagnostics;
+

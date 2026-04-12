@@ -18,6 +18,36 @@ public class BalanceRepository(
             cancellationToken: ct);
     }
 
+    //   Microsoft.EntityFrameworkCore.DbUpdateException
+    //    HResult=0x80131500
+    //  Сообщение = An error occurred while saving the entity changes.See the inner exception for details.
+    //  Источник = Microsoft.EntityFrameworkCore.Relational
+    //  Трассировка стека:
+    //   в Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.<ExecuteAsync>d__50.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.<SaveChangesAsync>d__8.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__113.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__117.MoveNext()
+    //   в Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.<ExecuteAsync>d__7`2.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
+    //   в Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
+    //   в Billing.TimeCafe.Infrastructure.Repositories.BalanceRepository.<CreateAsync>d__4.MoveNext() в D:\IT\TimeCafe\Services\Billing\Billing.TimeCafe.Infrastructure\Repositories\BalanceRepository.cs:строка 28
+    //   в Billing.TimeCafe.Application.CQRS.Balances.Queries.GetUserDebtQueryHandler.<Handle>d__2.MoveNext() в D:\IT\TimeCafe\Services\Billing\Billing.TimeCafe.Application\CQRS\Balances\Queries\GetUserDebtQuery.cs:строка 39
+    //   в BuildingBlocks.Behaviors.ErrorHandlingBehavior`2.<Handle>d__2.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\ErrorHandlingBehavior.cs:строка 12
+    //   в BuildingBlocks.Behaviors.PerformanceBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\PerformanceBehavior.cs:строка 12
+    //   в BuildingBlocks.Behaviors.LoggingBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\LoggingBehavior.cs:строка 29
+    //   в BuildingBlocks.Behaviors.ValidationBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\ValidationBehavior.cs:строка 30
+    //   в MediatR.Pipeline.RequestExceptionProcessorBehavior`2.<Handle>d__2.MoveNext()
+
+    //  Изначально это исключение было создано в этом стеке вызовов: 
+    //    [Внешний код]
+
+    //Внутреннее исключение 1:
+    //PostgresException: 23505: duplicate key value violates unique constraint "PK_Balances"
+
+    //DETAIL: Detail redacted as it may contain sensitive data.Specify 'Include Error Detail' in the connection string to include this information.
     public async Task<Balance> CreateAsync(Balance balance, CancellationToken ct = default)
     {
         var existingBalance = await GetByUserIdAsync(balance.UserId, ct);

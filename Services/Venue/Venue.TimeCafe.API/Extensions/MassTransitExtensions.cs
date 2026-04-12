@@ -14,7 +14,18 @@ public static class MassTransitExtensions
         var virtualHost = rabbitMqSection["VirtualHost"] ?? "/";
         var hasPort = ushort.TryParse(rabbitMqSection["Port"], out var port);
 
-        services.AddMassTransit(x => x.UsingRabbitMq((context, cfg) =>
+        services.AddMassTransit(x =>
+        {
+
+            x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
+            {
+                o.UsePostgres();
+
+                o.UseBusOutbox();
+            });
+
+
+            x.UsingRabbitMq((context, cfg) =>
             {
                 if (hasPort)
                 {
@@ -33,18 +44,12 @@ public static class MassTransitExtensions
                     });
                 }
 
-                x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
-                {
-                    o.UsePostgres();
-
-                    o.UseBusOutbox();
-                });
-
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
                 cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
                 cfg.ConfigureEndpoints(context);
-            }));
+            });
+        });
 
         services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
 

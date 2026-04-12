@@ -17,6 +17,9 @@ builder.Host.UseSerilog();
 // DbContext
 builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
+// Infrastructure
+builder.Services.AddAuthInfrastructure();
+
 // Identity
 builder.Services.AddIdentityConfiguration();
 
