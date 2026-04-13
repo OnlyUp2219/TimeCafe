@@ -26,6 +26,8 @@ import {EmailPendingPage} from "@pages/auth/EmailPendingPage";
 import {ConfirmEmailPage} from "@pages/auth/ConfirmEmailPage";
 import {PrivateRoute} from "@components/PrivateRoute/PrivateRoute";
 import {JwtCrossServiceTestPage} from "@pages/dev/JwtCrossServiceTestPage";
+import {AdminRoute} from "@components/AdminRoute/AdminRoute";
+import {UsersListPage} from "@pages/admin/UsersListPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -83,6 +85,9 @@ const AppRoutes = () => {
                     <Route path="/visit/start" element={<TariffSelectionPage/>}/>
                     <Route path="/visit/active" element={<ActiveVisitPage/>}/>
                     <Route path="/billing" element={<BillingPage/>}/>
+                </Route>
+                <Route element={<AdminRoute><MainLayout/></AdminRoute>}>
+                    <Route path="/admin/users" element={<UsersListPage/>}/>
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage/>}/>
 

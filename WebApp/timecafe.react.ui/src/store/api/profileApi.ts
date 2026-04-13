@@ -65,7 +65,7 @@ export const profileApi = createApi({
 
         updateProfile: builder.mutation<UpdateProfileResponse, UpdateProfileRequest>({
             query: (body) => ({
-                url: "/userprofile/profiles",
+                url: `/userprofile/profiles/${body.userId}`,
                 method: "PUT",
                 body,
             }),

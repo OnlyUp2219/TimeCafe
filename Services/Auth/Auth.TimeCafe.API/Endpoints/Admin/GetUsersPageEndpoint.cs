@@ -11,7 +11,7 @@ public class GetUsersPageEndpoint : ICarterModule
         app.MapGroup("/auth/admin")
             .WithTags("Admin")
             .MapGet("/users", async (
-                [FromBody] GetUsersPageRequest request,
+                [AsParameters] GetUsersPageRequest request,
                 [FromServices] ISender sender) =>
             {
                 var query = new GetUsersPageQuery(request.Page, request.Size, request.Search, request.Status);

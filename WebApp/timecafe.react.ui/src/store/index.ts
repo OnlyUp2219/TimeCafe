@@ -9,6 +9,7 @@ import {authApi} from "@store/api/authApi";
 import {profileApi} from "@store/api/profileApi";
 import {billingApi} from "@store/api/billingApi";
 import {venueApi} from "@store/api/venueApi";
+import {adminApi} from "@store/api/adminApi";
 
 const appReducer = combineReducers({
     ui: uiSlice,
@@ -18,6 +19,7 @@ const appReducer = combineReducers({
     [profileApi.reducerPath]: profileApi.reducer,
     [billingApi.reducerPath]: billingApi.reducer,
     [venueApi.reducerPath]: venueApi.reducer,
+    [adminApi.reducerPath]: adminApi.reducer,
 });
 
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: { type: string }) => {
@@ -61,6 +63,7 @@ export const store = configureStore({
             profileApi.middleware,
             billingApi.middleware,
             venueApi.middleware,
+            adminApi.middleware,
         ),
 });
 

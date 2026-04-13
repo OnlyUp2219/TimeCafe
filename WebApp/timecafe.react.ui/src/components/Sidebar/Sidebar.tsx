@@ -15,6 +15,7 @@ import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {type FC, useCallback, useEffect, useMemo, useState} from "react";
 import {useHasActiveVisitQuery} from "@store/api/venueApi";
 import {selectUserId} from "@store/authSlice";
+import {Roles} from "@shared/auth/roles";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -24,6 +25,8 @@ export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
     const isOpen = useAppSelector((state) => state.ui.isSideBarOpen);
     const userId = useAppSelector(selectUserId);
+    const role = useAppSelector((state) => state.auth.role);
+    const isAdmin = role === Roles.Admin;
     const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
     const location = useLocation();
 
@@ -36,9 +39,10 @@ export const Sidebar: FC = () => {
             {id: "1", label: "Главная", path: "/home"},
             {id: "2", label: "Персональные данные", path: "/personal-data"},
             visitNav,
-            {id: "6", label: "Баланс и транзакции", path: "/billing"},
+            { id: "6", label: "Баланс и транзакции", path: "/billing" },
+            ...(isAdmin ? [{ id: "7", label: "Пользователи", path: "/admin/users" }] : []),
         ];
-    }, [hasActive]);
+    }, [hasActive, isAdmin]);
 
     useEffect(() => {
         const navIdFromState = location.state?.navId;

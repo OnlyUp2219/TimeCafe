@@ -18,7 +18,7 @@ type TooltipButtonProps = {
 
 export const TooltipButton = ({tooltip, label, icon, positioning = "below", ...buttonProps}: TooltipButtonProps) => {
     const button = (
-        <Button as="button" {...buttonProps} icon={icon}>
+        <Button as="button" {...buttonProps} icon={icon} size={"large"} >
             <Text truncate wrap={false}>
                 {label}
             </Text>
