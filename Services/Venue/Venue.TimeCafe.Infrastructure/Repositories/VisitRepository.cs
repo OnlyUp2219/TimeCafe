@@ -121,6 +121,41 @@ public class VisitRepository(
             cancellationToken: ct) ?? [];
     }
 
+    public async Task<IEnumerable<VisitWithTariffDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
+            CacheKeys.Visit_Page(pageNumber),
+            async ct => await (from v in _context.Visits
+                               join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                               from t in tGroup.DefaultIfEmpty()
+                               orderby v.EntryTime descending
+                               select new VisitWithTariffDto
+                               {
+                                   VisitId = v.VisitId,
+                                   UserId = v.UserId,
+                                   TariffId = v.TariffId,
+                                   EntryTime = v.EntryTime,
+                                   ExitTime = v.ExitTime,
+                                   CalculatedCost = v.CalculatedCost,
+                                   Status = v.Status,
+                                   TariffName = t != null ? t.Name : string.Empty,
+                                   TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                                   TariffDescription = t != null ? t.Description! : string.Empty
+                               })
+                              .AsNoTracking()
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize)
+                              .ToListAsync(ct),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Visits],
+            cancellationToken: ct) ?? [];
+    }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
+    {
+        return await _context.Visits.CountAsync(ct);
+    }
+
     public async Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken ct = default)
     {
         return await _context.Visits

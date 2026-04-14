@@ -64,6 +64,30 @@ app.UseForwardedHeaders();
 await app.ApplyMigrationsAsync();
 await app.SeedRolesAndPermissions();
 
+using (var warmupScope = app.Services.CreateScope())
+{
+    var warmupContext = warmupScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var warmupUserRepository = warmupScope.ServiceProvider.GetRequiredService<IUserRepository>();
+
+    await warmupContext.UserRoles
+        .Join(warmupContext.Set<IdentityRoleClaim<Guid>>().Where(rc => rc.ClaimType == CustomClaimTypes.Permissions),
+            ur => ur.RoleId, rc => rc.RoleId, (_, rc) => rc.ClaimValue)
+        .Take(1)
+        .ToListAsync();
+
+    var (warmupUsersPage1, _) = await warmupUserRepository.GetUsersPageAsync(1, 1, null, null, CancellationToken.None);
+    if (warmupUsersPage1.Count > 0)
+    {
+        await warmupUserRepository.GetUsersRolesBatchAsync(warmupUsersPage1.Select(u => u.Id), CancellationToken.None);
+    }
+
+    var (warmupUsersPage20, _) = await warmupUserRepository.GetUsersPageAsync(1, 20, null, null, CancellationToken.None);
+    if (warmupUsersPage20.Count > 0)
+    {
+        await warmupUserRepository.GetUsersRolesBatchAsync(warmupUsersPage20.Select(u => u.Id), CancellationToken.None);
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     await app.SeedDevelopmentUsersAsync();

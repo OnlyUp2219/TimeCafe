@@ -15,6 +15,7 @@ public static class CacheKeys
     public static string Visit_ById(Guid id) => $"venue:visit:id:{id}";
     public static string Visit_ActiveByUser(Guid userId) => $"venue:visit:user:{userId}:active";
     public static string Visit_HistoryByUser(Guid userId, int page) => $"venue:visit:user:{userId}:history:p{page}";
+    public static string Visit_Page(int page) => $"venue:visit:page:p{page}";
 
     public const string Promotion_All = "venue:promotion:all";
     public const string Promotion_Active = "venue:promotion:active";

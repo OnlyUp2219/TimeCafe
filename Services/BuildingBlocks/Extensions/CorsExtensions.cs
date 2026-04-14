@@ -15,6 +15,7 @@ public static class CorsExtensions
              .AllowAnyMethod()
              .AllowCredentials()
              .WithExposedHeaders("Retry-After", "X-Rate-Limit-Window", "X-Rate-Limit-Remaining")
+             .SetPreflightMaxAge(TimeSpan.FromMinutes(10))
              .WithOrigins(origins)));
 
         return policyName;

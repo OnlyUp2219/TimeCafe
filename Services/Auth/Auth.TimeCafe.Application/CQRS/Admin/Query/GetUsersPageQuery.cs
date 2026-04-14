@@ -21,24 +21,23 @@ public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : I
         var (users, totalCount) = await _userRepository.GetUsersPageAsync(
             request.Page, request.Size, request.Search, request.Status, cancellationToken);
 
-        var userResponses = new List<AdminUserResponse>();
+        var rolesMap = await _userRepository.GetUsersRolesBatchAsync(
+            users.Select(u => u.Id), cancellationToken);
 
-        foreach (var user in users)
+        var userResponses = users.Select(user =>
         {
-            var roles = await _userRepository.GetUserRolesAsync(user.Id, cancellationToken);
-            var role = roles.Count > 0 ? string.Join(", ", roles) : string.Empty;
-
+            var role = rolesMap.TryGetValue(user.Id, out var roles) ? string.Join(", ", roles) : string.Empty;
             var status = user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.Now ? "inactive" : "active";
 
-            userResponses.Add(new AdminUserResponse
+            return new AdminUserResponse
             {
                 Id = user.Id,
                 Email = user.Email!,
                 Name = user.UserName,
                 Role = role,
                 Status = status
-            });
-        }
+            };
+        }).ToList();
 
         return Result.Ok((userResponses, totalCount));
     }
