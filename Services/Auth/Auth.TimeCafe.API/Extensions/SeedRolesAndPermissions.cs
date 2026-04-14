@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Auth.TimeCafe.API.Extensions;
 
@@ -9,6 +10,7 @@ public static class SeedRolesAndPermissionsExtensions
         using var scope = app.Services.CreateScope();
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
 
         var allPermissions = typeof(Permissions)
             .GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
@@ -21,7 +23,6 @@ public static class SeedRolesAndPermissionsExtensions
 
         var clientPermissions = new List<string>
         {
-            // TODO : добавить роли
             Permissions.AccountSelfRead,
             Permissions.AccountEmailChange,
             Permissions.AccountPasswordChange,
@@ -29,10 +30,41 @@ public static class SeedRolesAndPermissionsExtensions
             Permissions.AccountPhoneClear,
             Permissions.AccountPhoneGenerate,
             Permissions.AccountPhoneVerify,
-            Permissions.AccountPhoneStatusRead
+            Permissions.AccountPhoneStatusRead,
+
+            Permissions.UserProfileProfileCreate,
+            Permissions.UserProfileProfileRead,
+            Permissions.UserProfileProfileUpdate,
+            Permissions.UserProfileAdditionalInfoCreate,
+            Permissions.UserProfileAdditionalInfoRead,
+            Permissions.UserProfileAdditionalInfoUpdate,
+            Permissions.UserProfilePhotoCreate,
+            Permissions.UserProfilePhotoRead,
+            Permissions.UserProfilePhotoDelete,
+
+            Permissions.BillingBalanceRead,
+            Permissions.BillingDebtRead,
+            Permissions.BillingTransactionRead,
+            Permissions.BillingPaymentInitialize,
+            Permissions.BillingPaymentHistoryRead,
+
+            Permissions.VenueTariffRead,
+            Permissions.VenuePromotionRead,
+            Permissions.VenueThemeRead,
+            Permissions.VenueVisitCreate,
+            Permissions.VenueVisitRead,
+            Permissions.VenueVisitEnd
         };
 
         await EnsureRoleClaimsAsync(roleManager, Roles.Client, clientPermissions);
+
+        try
+        {
+            await cache.RemoveByTagAsync(BuildingBlocks.Permissions.PermissionClaimsCacheKeys.PermissionsTag);
+        }
+        catch
+        {
+        }
     }
 
     private static async Task EnsureRoleClaimsAsync(

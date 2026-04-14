@@ -144,7 +144,7 @@ export const HomePage = () => {
                 />
             </div>
 
-            <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
+            <div className="page-content relative">
                 <div
                     className="flex flex-col gap-4 overflow-hidden rounded-3xl p-5 sm:p-8"
                 >

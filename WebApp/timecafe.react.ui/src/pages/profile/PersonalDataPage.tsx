@@ -126,7 +126,7 @@ export const PersonalDataPage = () => {
     }, [deletePhoto, profile, userId]);
 
     const content = profile ? (
-        <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+        <div className="page-content relative z-10">
 
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

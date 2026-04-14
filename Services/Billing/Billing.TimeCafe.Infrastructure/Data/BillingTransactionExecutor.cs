@@ -6,6 +6,11 @@ public class BillingTransactionExecutor(ApplicationDbContext db) : IBillingTrans
 
     public async Task<T> ExecuteAsync<T>(Func<CancellationToken, Task<T>> action, CancellationToken ct = default)
     {
+        if (string.Equals(_db.Database.ProviderName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.OrdinalIgnoreCase))
+        {
+            return await action(ct);
+        }
+
         await using var transaction = await _db.Database.BeginTransactionAsync(ct);
 
         try

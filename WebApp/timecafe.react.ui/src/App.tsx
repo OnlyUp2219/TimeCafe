@@ -28,6 +28,8 @@ import {PrivateRoute} from "@components/PrivateRoute/PrivateRoute";
 import {JwtCrossServiceTestPage} from "@pages/dev/JwtCrossServiceTestPage";
 import {AdminRoute} from "@components/AdminRoute/AdminRoute";
 import {UsersListPage} from "@pages/admin/UsersListPage";
+import {TariffsPage} from "@pages/admin/TariffsPage";
+import {AdminLayout} from "@layouts/AdminLayout/AdminLayout";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -86,8 +88,10 @@ const AppRoutes = () => {
                     <Route path="/visit/active" element={<ActiveVisitPage/>}/>
                     <Route path="/billing" element={<BillingPage/>}/>
                 </Route>
-                <Route element={<AdminRoute><MainLayout/></AdminRoute>}>
+                <Route element={<AdminRoute><AdminLayout/></AdminRoute>}>
                     <Route path="/admin/users" element={<UsersListPage/>}/>
+                    <Route path="/admin/tariffs" element={<TariffsPage/>}/>
+                    <Route path="/admin/dashboard" element={<UsersListPage/>}/>
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage/>}/>
 
@@ -96,12 +100,16 @@ const AppRoutes = () => {
     );
 };
 
+import {ComponentSizeProvider} from "@hooks/useComponentSize";
+
 export default function App() {
     return (
-        <div className="app_root">
-            <BrowserRouter>
-                <AppRoutes/>
-            </BrowserRouter>
-        </div>
+        <ComponentSizeProvider defaultPreset="large">
+            <div className="app_root">
+                <BrowserRouter>
+                    <AppRoutes/>
+                </BrowserRouter>
+            </div>
+        </ComponentSizeProvider>
     )
 }

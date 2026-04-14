@@ -59,15 +59,58 @@ const mapTariff = (item: TariffApiResponse): Tariff => ({
     isActive: item.isActive,
 });
 
+interface GetTariffsPageResponse {
+    tariffs: TariffWithTheme[];
+    totalCount: number;
+}
+
+interface GetTariffsPageArgs {
+    pageNumber: number;
+    pageSize: number;
+}
+
+interface CreateTariffRequest {
+    name: string;
+    description?: string;
+    pricePerMinute: number;
+    billingType: 1 | 2;
+    themeId?: string;
+    isActive: boolean;
+}
+
+interface UpdateTariffRequest {
+    tariffId: string;
+    name: string;
+    description?: string;
+    pricePerMinute: number;
+    billingType: 1 | 2;
+    themeId?: string;
+    isActive: boolean;
+}
+
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "ActiveVisit", "VisitHistory"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
             transformResponse: (response: GetTariffsResponse) => response.tariffs,
             providesTags: ["ActiveTariffs"],
+        }),
+
+        getAllTariffs: builder.query<TariffWithTheme[], void>({
+            query: () => "/venue/tariffs",
+            transformResponse: (response: GetTariffsResponse) => response.tariffs,
+            providesTags: ["AllTariffs"],
+        }),
+
+        getTariffsPage: builder.query<GetTariffsPageResponse, GetTariffsPageArgs>({
+            query: ({pageNumber, pageSize}) => ({
+                url: "/venue/tariffs/page",
+                params: {pageNumber, pageSize},
+            }),
+            providesTags: ["AllTariffs"],
         }),
 
         getTariffById: builder.query<Tariff, string>({
@@ -108,17 +151,60 @@ export const venueApi = createApi({
 
         endVisit: builder.mutation<EndVisitResponse, string>({
             query: (visitId) => ({
-                url: "/venue/visits/end",
+                url: `/venue/visits/${visitId}/end`,
                 method: "POST",
-                body: {visitId},
             }),
             invalidatesTags: ["ActiveVisit", "VisitHistory"],
+        }),
+
+        createTariff: builder.mutation<{message: string; tariff: TariffWithTheme}, CreateTariffRequest>({
+            query: (body) => ({
+                url: "/venue/tariffs",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["AllTariffs", "ActiveTariffs"],
+        }),
+
+        updateTariff: builder.mutation<{message: string; tariff: TariffWithTheme}, UpdateTariffRequest>({
+            query: ({tariffId, ...body}) => ({
+                url: `/venue/tariffs/${tariffId}`,
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: ["AllTariffs", "ActiveTariffs"],
+        }),
+
+        deleteTariff: builder.mutation<{message: string}, string>({
+            query: (tariffId) => ({
+                url: `/venue/tariffs/${tariffId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["AllTariffs", "ActiveTariffs"],
+        }),
+
+        activateTariff: builder.mutation<{message: string}, string>({
+            query: (tariffId) => ({
+                url: `/venue/tariffs/${tariffId}/activate`,
+                method: "POST",
+            }),
+            invalidatesTags: ["AllTariffs", "ActiveTariffs"],
+        }),
+
+        deactivateTariff: builder.mutation<{message: string}, string>({
+            query: (tariffId) => ({
+                url: `/venue/tariffs/${tariffId}/deactivate`,
+                method: "POST",
+            }),
+            invalidatesTags: ["AllTariffs", "ActiveTariffs"],
         }),
     }),
 });
 
 export const {
     useGetActiveTariffsQuery,
+    useGetAllTariffsQuery,
+    useGetTariffsPageQuery,
     useGetTariffByIdQuery,
     useHasActiveVisitQuery,
     useGetActiveVisitByUserQuery,
@@ -126,4 +212,9 @@ export const {
     useGetVisitHistoryQuery,
     useCreateVisitMutation,
     useEndVisitMutation,
+    useCreateTariffMutation,
+    useUpdateTariffMutation,
+    useDeleteTariffMutation,
+    useActivateTariffMutation,
+    useDeactivateTariffMutation,
 } = venueApi;

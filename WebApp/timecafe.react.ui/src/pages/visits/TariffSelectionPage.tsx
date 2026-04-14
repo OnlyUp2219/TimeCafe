@@ -26,6 +26,8 @@ import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffFore
 import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection";
 import {VisitParamsCard} from "@components/Tariff/VisitParamsCard";
 import {useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation} from "@store/api/venueApi";
+import {getRtkErrorMessage} from "@api/errors/extractRtkError";
+import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 
 const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
@@ -148,8 +150,9 @@ export const TariffSelectionPage = () => {
                 requireEnoughForPlanned: true,
             }).unwrap();
             navigate("/visit/active");
-        } catch {
-            showToast("Не удалось начать визит", "error", "Ошибка");
+        } catch (err) {
+            const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось начать визит";
+            showToast(message, "error", "Ошибка");
         }
     }, [createVisit, durationMinutes, navigate, selectedTariff, showToast, userId]);
 
@@ -193,7 +196,7 @@ export const TariffSelectionPage = () => {
                 />
             </div>
 
-            <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+            <div className="page-content relative z-10">
                 <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-start-page">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

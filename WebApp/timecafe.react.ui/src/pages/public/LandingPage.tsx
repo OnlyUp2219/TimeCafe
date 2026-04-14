@@ -188,7 +188,7 @@ export const LandingPage: FC = () => {
                 />
             </div>
 
-            <div className="flex flex-col gap-10 py-10 z-10 mx-auto w-full max-w-6xl px-4 sm:px-6">
+            <div className="flex flex-col gap-10 py-10 z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6">
                 <section className="flex flex-col gap-2">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10">
                         <div className="flex flex-col gap-4">

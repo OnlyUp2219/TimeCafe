@@ -12,10 +12,11 @@ import {
 import {useLocation, useNavigate} from "react-router-dom";
 import {setSelectedNav, setSidebarOpen, toggleSidebar} from "@store/uiSlice";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {type FC, useCallback, useEffect, useMemo, useState} from "react";
+import {type FC, type ReactElement, useCallback, useEffect, useMemo, useState} from "react";
 import {useHasActiveVisitQuery} from "@store/api/venueApi";
 import {selectUserId} from "@store/authSlice";
 import {Roles} from "@shared/auth/roles";
+import {Home20Regular, Person20Regular, Clock20Regular, Money20Regular, People20Regular} from "@fluentui/react-icons";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -32,16 +33,16 @@ export const Sidebar: FC = () => {
 
     const navItems = useMemo(() => {
         const visitNav = hasActive
-            ? {id: "3", label: "Активный визит", path: "/visit/active"}
-            : {id: "3", label: "Начать визит", path: "/visit/start"};
+            ? {id: "3", label: "Активный визит", path: "/visit/active", icon: <Clock20Regular />}
+            : {id: "3", label: "Начать визит", path: "/visit/start", icon: <Clock20Regular />};
 
         return [
-            {id: "1", label: "Главная", path: "/home"},
-            {id: "2", label: "Персональные данные", path: "/personal-data"},
+            {id: "1", label: "Главная", path: "/home", icon: <Home20Regular />},
+            {id: "2", label: "Персональные данные", path: "/personal-data", icon: <Person20Regular />},
             visitNav,
-            { id: "6", label: "Баланс и транзакции", path: "/billing" },
-            ...(isAdmin ? [{ id: "7", label: "Пользователи", path: "/admin/users" }] : []),
-        ];
+            {id: "6", label: "Баланс и транзакции", path: "/billing", icon: <Money20Regular />},
+            ...(isAdmin ? [{id: "7", label: "Пользователи", path: "/admin/users", icon: <People20Regular />}] : []),
+        ] as {id: string; label: string; path: string; icon: ReactElement}[];
     }, [hasActive, isAdmin]);
 
     useEffect(() => {
@@ -117,6 +118,7 @@ export const Sidebar: FC = () => {
                 <NavDrawerBody>
                     {navItems.map((item) => (
                         <NavItem
+                            icon={item.icon}
                             value={item.id}
                             key={item.id}
                             data-testid={`sidebar-nav-${item.id}`}

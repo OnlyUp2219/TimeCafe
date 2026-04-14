@@ -179,7 +179,7 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
         });
     });
 
-    await page.route("**/venue/visits/end", async (route) => {
+    await page.route("**/venue/visits/*/end", async (route) => {
         if (route.request().method() !== "POST") {
             await route.continue();
             return;

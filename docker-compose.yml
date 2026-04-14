@@ -178,6 +178,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8002
       - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${PROFILE_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__AuthConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
@@ -225,6 +226,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8003
       - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${VENUE_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__AuthConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}
@@ -263,6 +265,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8004
       - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${BILLING_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__AuthConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
       - RabbitMQ__Host=${RABBITMQ_HOST}
       - RabbitMQ__Username=${RABBITMQ_USER}

@@ -32,9 +32,12 @@ public static class SeedData
             };
 
             var result = await userManager.CreateAsync(user, adminPassword);
-            if (result.Succeeded)
-                await userManager.AddToRoleAsync(user, adminRole);
+            if (!result.Succeeded)
+                return;
         }
+
+        if (!await userManager.IsInRoleAsync(user, adminRole))
+            await userManager.AddToRoleAsync(user, adminRole);
     }
 
     public static async Task SeedLoadTestUserAsync(IServiceProvider serviceProvider)
@@ -53,7 +56,11 @@ public static class SeedData
 
         var existing = await userManager.FindByEmailAsync(email);
         if (existing != null)
+        {
+            if (!await userManager.IsInRoleAsync(existing, clientRole))
+                await userManager.AddToRoleAsync(existing, clientRole);
             return;
+        }
 
         var user = new ApplicationUser
         {

@@ -28,6 +28,8 @@ import repeat from "@assets/rrrepeat (2).svg";
 import surf from "@assets/sssurf.svg";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import "./visits.css";
+import {getRtkErrorMessage} from "@api/errors/extractRtkError";
+import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useGetActiveVisitByUserQuery, useEndVisitMutation} from "@store/api/venueApi";
 import {VisitEndDialog} from "./VisitEndDialog";
 import {VisitDetailsCard} from "./VisitDetailsCard";
@@ -135,8 +137,9 @@ export const ActiveVisitPage = () => {
             setConfirmOpen(false);
             showToast("Визит завершён", "success", "Готово");
             navigate("/visit/start", {replace: true});
-        } catch {
-            showToast("Не удалось завершить визит", "error", "Ошибка");
+        } catch (err) {
+            const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось завершить визит";
+            showToast(message, "error", "Ошибка");
         }
     };
 
@@ -144,7 +147,7 @@ export const ActiveVisitPage = () => {
         return (
             <div className="tc-noise-overlay relative overflow-hidden min-h-full">
                 {ToasterElement}
-                <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+                <div className="page-content relative z-10">
                     <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-active-loading">
                         <Body1 block>Загружаем активный визит...</Body1>
                     </div>
@@ -187,7 +190,7 @@ export const ActiveVisitPage = () => {
                 />
             </div>
 
-            <div className="mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
+            <div className="page-content relative z-10">
                 <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-active-page">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">

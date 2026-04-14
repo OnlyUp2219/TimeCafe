@@ -2,6 +2,7 @@ import type {AxiosError} from "axios";
 import {isAxiosError} from "axios";
 import type {ApiError, ApiErrorItem} from "@api/errors/types";
 import {isApiError} from "@api/errors/types";
+import {extractRtkError} from "@api/errors/extractRtkError";
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -154,12 +155,21 @@ export const normalizeUnknownError = (error: unknown): ApiError => {
         return error;
     }
 
+    const rtkError = extractRtkError(error as never);
+    if (rtkError) {
+        return rtkError;
+    }
+
     if (isAxiosError(error)) {
         return normalizeAxiosError(error);
     }
 
     if (error instanceof Error) {
-        return {statusCode: 0, message: error.message, raw: error};
+        const message = error.message || "Неизвестная ошибка";
+        const normalizedMessage = /Failed to fetch|NetworkError|fetch/i.test(message)
+            ? "Не удалось подключиться к серверу. Проверьте интернет или повторите позже."
+            : message;
+        return {statusCode: 0, message: normalizedMessage, raw: error};
     }
 
     if (typeof error === "string") {

@@ -4,12 +4,11 @@ import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {
     Button,
-    Dialog,
-    DialogActions,
-    DialogBody,
-    DialogContent,
-    DialogSurface,
-    DialogTitle,
+    DrawerBody,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerHeaderTitle,
+    OverlayDrawer,
 } from "@fluentui/react-components";
 import {isNameCompleted} from "@utility/profileCompletion";
 import {getJwtInfo} from "@shared/auth/jwt";
@@ -168,7 +167,7 @@ export const ProfileCompletionGate: FC = () => {
         refetchProfile();
     }, [refetchProfile]);
 
-    const renderDialogContent = () => {
+    const renderGateContent = () => {
         if (!effectiveUserId || loadingTimedOut || profileLoading || (!profile && profileError) || !profile) {
             return (
                 <GateStatusContent
@@ -209,68 +208,82 @@ export const ProfileCompletionGate: FC = () => {
 
     return (
         <>
-            <Dialog open={mustCompleteProfile} modalType="alert" unmountOnClose={false}>
-                <DialogSurface>
-                    <DialogBody>
-                        <DialogTitle data-testid="profile-gate-title">Заполните профиль</DialogTitle>
+            <OverlayDrawer
+                open={mustCompleteProfile}
+                modalType="alert"
+                size="full"
+                position="end"
+                unmountOnClose={false}
+            >
+                <div className="profile-gate-shell">
+                    <div className="profile-gate-bg" aria-hidden="true">
+                        <span className="profile-gate-shape profile-gate-shape--circle"/>
+                        <span className="profile-gate-shape profile-gate-shape--square"/>
+                        <span className="profile-gate-shape profile-gate-shape--triangle"/>
+                    </div>
 
-                        <DialogContent>
-                            {renderDialogContent()}
-                        </DialogContent>
+                    <DrawerHeader>
+                        <DrawerHeaderTitle data-testid="profile-gate-title">Заполните профиль</DrawerHeaderTitle>
+                    </DrawerHeader>
 
-                        <DialogActions>
-                            <Button appearance="secondary" onClick={handleLogout}>
-                                Выйти
-                            </Button>
-                            <Button
-                                appearance="primary"
-                                data-testid="profile-gate-save"
-                                disabled={!canSave}
-                                onClick={async () => {
-                                    setPhoneSendError(null);
-                                    setSaveError(null);
+                    <DrawerBody className="profile-gate-body">
+                        <div className="profile-gate-card">
+                            {renderGateContent()}
+                        </div>
+                    </DrawerBody>
 
-                                    try {
-                                        await updateProfileMutation({
-                                            userId: effectiveUserId,
-                                            firstName: firstName.trim(),
-                                            lastName: lastName.trim(),
-                                            middleName: middleName.trim() || null,
-                                            photoUrl: profile?.photoUrl ?? null,
-                                            birthDate: toDateOnlyStringOrUndefined(birthDate) ?? null,
-                                            gender: genderId,
-                                        }).unwrap();
+                    <DrawerFooter className="profile-gate-footer">
+                        <Button appearance="secondary" onClick={handleLogout}>
+                            Выйти
+                        </Button>
+                        <Button
+                            appearance="primary"
+                            data-testid="profile-gate-save"
+                            disabled={!canSave}
+                            onClick={async () => {
+                                setPhoneSendError(null);
+                                setSaveError(null);
 
-                                        const nextPhone = phoneDraft.trim();
-                                        const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
-                                        const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed);
+                                try {
+                                    await updateProfileMutation({
+                                        userId: effectiveUserId,
+                                        firstName: firstName.trim(),
+                                        lastName: lastName.trim(),
+                                        middleName: middleName.trim() || null,
+                                        photoUrl: profile?.photoUrl ?? null,
+                                        birthDate: toDateOnlyStringOrUndefined(birthDate) ?? null,
+                                        gender: genderId,
+                                    }).unwrap();
 
-                                        if (phoneNeedsVerification) {
-                                            const validation = validatePhoneNumber(nextPhone);
-                                            if (validation) {
-                                                setPhoneSendError(validation);
-                                                return;
-                                            }
+                                    const nextPhone = phoneDraft.trim();
+                                    const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
+                                    const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed);
 
-                                            const recently = phoneVerifiedRecentlyRef.current;
-                                            if (recently && recently.phone === nextPhone && Date.now() - recently.at < 30_000) return;
-
-                                            if (showPhoneModal) return;
-
-                                            setPhoneAutoSend(true);
-                                            setShowPhoneModal(true);
+                                    if (phoneNeedsVerification) {
+                                        const validation = validatePhoneNumber(nextPhone);
+                                        if (validation) {
+                                            setPhoneSendError(validation);
+                                            return;
                                         }
-                                    } catch (err: unknown) {
-                                        setSaveError(getUserMessageFromUnknown(err) || "Не удалось сохранить профиль.");
+
+                                        const recently = phoneVerifiedRecentlyRef.current;
+                                        if (recently && recently.phone === nextPhone && Date.now() - recently.at < 30_000) return;
+
+                                        if (showPhoneModal) return;
+
+                                        setPhoneAutoSend(true);
+                                        setShowPhoneModal(true);
                                     }
-                                }}
-                            >
-                                Сохранить
-                            </Button>
-                        </DialogActions>
-                    </DialogBody>
-                </DialogSurface>
-            </Dialog>
+                                } catch (err: unknown) {
+                                    setSaveError(getUserMessageFromUnknown(err) || "Не удалось сохранить профиль.");
+                                }
+                            }}
+                        >
+                            Сохранить
+                        </Button>
+                    </DrawerFooter>
+                </div>
+            </OverlayDrawer>
 
             <PhoneVerificationModal
                 isOpen={showPhoneModal}

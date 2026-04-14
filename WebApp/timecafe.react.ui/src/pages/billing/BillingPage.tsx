@@ -28,6 +28,7 @@ import {TransactionsSection} from "@components/Billing/TransactionsSection";
 import {RestTimeCard} from "@components/Billing/RestTimeCard";
 import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
 import {SupportCard} from "@components/Billing/SupportCard";
+import {getRtkErrorMessage} from "@api/errors/extractRtkError";
 import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation} from "@store/api/billingApi";
 
 const TELEGRAM_SUPPORT_URL = "https://t.me/OnlyUp_S";
@@ -54,7 +55,7 @@ export const BillingPage = () => {
     const balanceRub = balance?.currentBalance ?? 0;
     const transactions: BillingTransaction[] = useMemo(() => txData?.transactions ?? [], [txData?.transactions]);
     const pagination = txData?.pagination ?? {currentPage: 1, pageSize, totalCount: 0, totalPages: 0};
-    const checkoutError = checkoutRtkError ? "Не удалось инициализировать пополнение" : null;
+    const checkoutError = checkoutRtkError ? getRtkErrorMessage(checkoutRtkError) || "Не удалось инициализировать пополнение" : null;
 
     const tariffs: Tariff[] = useMemo(() => {
         if (!tariffsData) return [];
@@ -265,7 +266,7 @@ export const BillingPage = () => {
                 />
             </div>
 
-            <div className="relative mx-auto w-full max-w-6xl px-2 py-4 sm:px-3 sm:py-6">
+            <div className="page-content relative">
                 <div className="flex flex-col gap-4">
                     {checkoutError && (
                         <MessageBar intent="error">
