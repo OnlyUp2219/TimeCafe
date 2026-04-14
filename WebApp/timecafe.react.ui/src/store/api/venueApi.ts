@@ -88,10 +88,40 @@ interface UpdateTariffRequest {
     isActive: boolean;
 }
 
+export interface Promotion {
+    promotionId: string;
+    name: string;
+    description?: string;
+    discountPercent?: number;
+    validFrom: string;
+    validTo: string;
+    isActive: boolean;
+    createdAt: string;
+}
+
+export interface CreatePromotionRequest {
+    name: string;
+    description?: string;
+    discountPercent?: number;
+    validFrom: string;
+    validTo: string;
+    isActive: boolean;
+}
+
+export interface UpdatePromotionRequest {
+    promotionId: string;
+    name: string;
+    description?: string;
+    discountPercent?: number;
+    validFrom: string;
+    validTo: string;
+    isActive: boolean;
+}
+
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "Promotions"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
@@ -198,6 +228,54 @@ export const venueApi = createApi({
             }),
             invalidatesTags: ["AllTariffs", "ActiveTariffs"],
         }),
+
+        getAllPromotions: builder.query<Promotion[], void>({
+            query: () => "/venue/promotions",
+            transformResponse: (response: {promotions: Promotion[]}) => response.promotions,
+            providesTags: ["Promotions"],
+        }),
+
+        createPromotion: builder.mutation<{message: string; promotion: Promotion}, CreatePromotionRequest>({
+            query: (body) => ({
+                url: "/venue/promotions",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Promotions"],
+        }),
+
+        updatePromotion: builder.mutation<{message: string; promotion: Promotion}, UpdatePromotionRequest>({
+            query: ({promotionId, ...body}) => ({
+                url: `/venue/promotions/${promotionId}`,
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: ["Promotions"],
+        }),
+
+        deletePromotion: builder.mutation<{message: string}, string>({
+            query: (promotionId) => ({
+                url: `/venue/promotions/${promotionId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Promotions"],
+        }),
+
+        activatePromotion: builder.mutation<{message: string}, string>({
+            query: (promotionId) => ({
+                url: `/venue/promotions/${promotionId}/activate`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Promotions"],
+        }),
+
+        deactivatePromotion: builder.mutation<{message: string}, string>({
+            query: (promotionId) => ({
+                url: `/venue/promotions/${promotionId}/deactivate`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Promotions"],
+        }),
     }),
 });
 
@@ -217,4 +295,10 @@ export const {
     useDeleteTariffMutation,
     useActivateTariffMutation,
     useDeactivateTariffMutation,
+    useGetAllPromotionsQuery,
+    useCreatePromotionMutation,
+    useUpdatePromotionMutation,
+    useDeletePromotionMutation,
+    useActivatePromotionMutation,
+    useDeactivatePromotionMutation,
 } = venueApi;

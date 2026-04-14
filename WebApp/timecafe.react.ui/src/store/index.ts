@@ -5,6 +5,7 @@ import storage from "redux-persist/lib/storage";
 import authSlice from "@store/authSlice";
 import {clearTokens} from "@store/authSlice";
 import visitSlice from "@store/visitSlice";
+import permissionsSlice from "@store/permissionsSlice";
 import {authApi} from "@store/api/authApi";
 import {profileApi} from "@store/api/profileApi";
 import {billingApi} from "@store/api/billingApi";
@@ -15,6 +16,7 @@ const appReducer = combineReducers({
     ui: uiSlice,
     auth: authSlice,
     visit: visitSlice,
+    permissions: permissionsSlice,
     [authApi.reducerPath]: authApi.reducer,
     [profileApi.reducerPath]: profileApi.reducer,
     [billingApi.reducerPath]: billingApi.reducer,
@@ -26,7 +28,6 @@ const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: {
     if (action.type === clearTokens.type) {
         return appReducer(undefined, action);
     }
-
     return appReducer(state, action);
 };
 

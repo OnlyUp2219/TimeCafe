@@ -191,6 +191,10 @@ export const authApi = createApi({
                 body: data,
             }),
         }),
+
+        getMyPermissions: builder.query<{ permissions: string[] }, void>({
+            query: () => "/auth/account/my-permissions",
+        }),
     }),
 });
 
@@ -210,4 +214,5 @@ export const {
     useConfirmEmailMutation,
     useRequestEmailChangeMutation,
     useConfirmEmailChangeMutation,
+    useLazyGetMyPermissionsQuery,
 } = authApi;

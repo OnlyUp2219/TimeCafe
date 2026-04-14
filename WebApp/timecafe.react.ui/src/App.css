@@ -110,7 +110,6 @@
 }
 
 .admin-sidebar {
-  width: 260px;
   background: var(--colorNeutralBackground1);
   border-right: 1px solid var(--colorNeutralStroke2);
   display: flex;
@@ -122,11 +121,18 @@
   height: 100dvh;
   z-index: 50;
   overflow-y: auto;
+  transition: width 0.2s ease;
+}
+
+.admin-sidebar__header {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  min-height: 48px;
 }
 
 .admin-sidebar__logo {
-  padding: 1rem 1.25rem;
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -134,11 +140,26 @@
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  white-space: nowrap;
 }
 
 .admin-sidebar__nav {
   flex: 1;
   border-right: none !important;
+}
+
+.admin-sidebar__collapsed-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+}
+
+.admin-sidebar__icon-btn {
+  width: 40px !important;
+  min-width: 40px !important;
 }
 
 .admin-sidebar__bottom {
@@ -153,6 +174,11 @@
   padding: 1.5rem;
   min-height: 100vh;
   min-height: 100dvh;
+  transition: margin-left 0.2s ease;
+}
+
+.admin-sidebar[data-collapsed="true"] ~ .admin-content {
+  margin-left: 56px;
 }
 
 .profile-gate-shell {

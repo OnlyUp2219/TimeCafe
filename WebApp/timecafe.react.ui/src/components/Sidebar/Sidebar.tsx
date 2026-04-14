@@ -5,6 +5,7 @@ import {
     NavDrawerHeader,
     NavItem,
     Tooltip,
+    Button,
     useRestoreFocusSource,
     type NavDrawerProps,
     type OnNavItemSelectData,
@@ -15,8 +16,9 @@ import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {type FC, type ReactElement, useCallback, useEffect, useMemo, useState} from "react";
 import {useHasActiveVisitQuery} from "@store/api/venueApi";
 import {selectUserId} from "@store/authSlice";
-import {Roles} from "@shared/auth/roles";
-import {Home20Regular, Person20Regular, Clock20Regular, Money20Regular, People20Regular} from "@fluentui/react-icons";
+import {Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Shield20Regular} from "@fluentui/react-icons";
+import {usePermissions} from "@hooks/usePermissions";
+import {AdminPanelPermission} from "@shared/auth/permissions";
 
 type DrawerType = Required<NavDrawerProps>["type"];
 
@@ -26,8 +28,8 @@ export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
     const isOpen = useAppSelector((state) => state.ui.isSideBarOpen);
     const userId = useAppSelector(selectUserId);
-    const role = useAppSelector((state) => state.auth.role);
-    const isAdmin = role === Roles.Admin;
+    const {has: hasPerm} = usePermissions();
+    const canAccessAdmin = hasPerm(AdminPanelPermission);
     const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
     const location = useLocation();
 
@@ -41,9 +43,8 @@ export const Sidebar: FC = () => {
             {id: "2", label: "Персональные данные", path: "/personal-data", icon: <Person20Regular />},
             visitNav,
             {id: "6", label: "Баланс и транзакции", path: "/billing", icon: <Money20Regular />},
-            ...(isAdmin ? [{id: "7", label: "Пользователи", path: "/admin/users", icon: <People20Regular />}] : []),
         ] as {id: string; label: string; path: string; icon: ReactElement}[];
-    }, [hasActive, isAdmin]);
+    }, [hasActive]);
 
     useEffect(() => {
         const navIdFromState = location.state?.navId;
@@ -133,6 +134,18 @@ export const Sidebar: FC = () => {
                         </NavItem>
                     ))}
                 </NavDrawerBody>
+                {canAccessAdmin && (
+                    <div className="p-3 border-t border-neutral-200">
+                        <Button
+                            appearance="subtle"
+                            icon={<Shield20Regular />}
+                            onClick={() => navigate("/admin/dashboard")}
+                            className="w-full"
+                        >
+                            Админ-панель
+                        </Button>
+                    </div>
+                )}
             </NavDrawer>
         </aside>
     );

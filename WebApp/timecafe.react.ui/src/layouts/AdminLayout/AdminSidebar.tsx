@@ -1,9 +1,9 @@
-import {type FC, useMemo} from "react";
+import {type FC, useMemo, useState} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {selectUserId} from "@store/authSlice";
 import {clearTokens} from "@store/authSlice";
-import {Avatar, Button, Body1, Caption1} from "@fluentui/react-components";
+import {Avatar, Button, Body1, Caption1, Tooltip} from "@fluentui/react-components";
 import {
     NavDrawer,
     NavDrawerBody,
@@ -21,6 +21,8 @@ import {
     Payment20Regular,
     SignOut20Regular,
     Eye20Regular,
+    PanelLeftContract20Regular,
+    PanelLeftExpand20Regular,
 } from "@fluentui/react-icons";
 
 interface AdminNavItem {
@@ -41,6 +43,7 @@ export const AdminSidebar: FC = () => {
     const location = useLocation();
     const email = useAppSelector((state) => state.auth.email);
     const userId = useAppSelector(selectUserId);
+    const [collapsed, setCollapsed] = useState(false);
 
     const sections: AdminNavSection[] = useMemo(() => [
         {
@@ -81,72 +84,119 @@ export const AdminSidebar: FC = () => {
         navigate("/login", {replace: true});
     };
 
+    const sidebarWidth = collapsed ? 56 : 260;
+
     return (
-        <aside className="admin-sidebar">
-            <div className="admin-sidebar__logo" onClick={() => navigate("/admin/dashboard")}>
-                ☕ TimeCafe
+        <aside className="admin-sidebar" style={{width: sidebarWidth}} data-collapsed={collapsed}>
+            <div className="admin-sidebar__header">
+                {!collapsed && (
+                    <div className="admin-sidebar__logo" onClick={() => navigate("/admin/dashboard")}>
+                        ☕ TimeCafe
+                    </div>
+                )}
+                <Tooltip content={collapsed ? "Развернуть" : "Свернуть"} relationship="label">
+                    <Button
+                        appearance="subtle"
+                        size="small"
+                        icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
+                        onClick={() => setCollapsed(prev => !prev)}
+                        className={collapsed ? "mx-auto" : "ml-auto"}
+                    />
+                </Tooltip>
             </div>
 
-            <NavDrawer
-                open
-                type="inline"
-                selectedValue={selectedValue}
-                onNavItemSelect={(_, data) => {
-                    for (const section of sections) {
-                        const item = section.items.find(i => i.id === String(data.value));
-                        if (item) {
-                            navigate(item.path);
-                            return;
-                        }
-                    }
-                }}
-                className="admin-sidebar__nav"
-            >
-                <NavDrawerBody>
-                    {sections.map((section) => (
-                        <div key={section.title}>
-                            <NavSectionHeader>{section.title}</NavSectionHeader>
-                            {section.items.map((item) => (
-                                <NavItem
-                                    key={item.id}
-                                    value={item.id}
+            {collapsed ? (
+                <nav className="admin-sidebar__collapsed-nav">
+                    {sections.flatMap(section =>
+                        section.items.map(item => (
+                            <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
+                                <Button
+                                    appearance={selectedValue === item.id ? "primary" : "subtle"}
+                                    size="medium"
                                     icon={item.icon}
                                     onClick={() => navigate(item.path)}
-                                >
-                                    {item.label}
-                                </NavItem>
-                            ))}
-                        </div>
-                    ))}
-                </NavDrawerBody>
-            </NavDrawer>
+                                    className="admin-sidebar__icon-btn"
+                                />
+                            </Tooltip>
+                        ))
+                    )}
+                </nav>
+            ) : (
+                <NavDrawer
+                    open
+                    type="inline"
+                    selectedValue={selectedValue}
+                    onNavItemSelect={(_, data) => {
+                        for (const section of sections) {
+                            const item = section.items.find(i => i.id === String(data.value));
+                            if (item) {
+                                navigate(item.path);
+                                return;
+                            }
+                        }
+                    }}
+                    className="admin-sidebar__nav"
+                >
+                    <NavDrawerBody>
+                        {sections.map((section) => (
+                            <div key={section.title}>
+                                <NavSectionHeader>{section.title}</NavSectionHeader>
+                                {section.items.map((item) => (
+                                    <NavItem
+                                        key={item.id}
+                                        value={item.id}
+                                        icon={item.icon}
+                                        onClick={() => navigate(item.path)}
+                                    >
+                                        {item.label}
+                                    </NavItem>
+                                ))}
+                            </div>
+                        ))}
+                    </NavDrawerBody>
+                </NavDrawer>
+            )}
 
             <div className="admin-sidebar__bottom">
-                <div className="flex items-center gap-2">
-                    <Avatar name={email ?? "Admin"} size={32} />
-                    <div className="min-w-0">
-                        <Body1 truncate wrap={false} block>Админ</Body1>
-                        <Caption1 truncate wrap={false} block>{email ?? "—"}</Caption1>
+                {collapsed ? (
+                    <div className="flex flex-col items-center gap-2">
+                        <Avatar name={email ?? "Admin"} size={28} />
+                        <Tooltip content="Вид клиента" relationship="label" positioning="after">
+                            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")} />
+                        </Tooltip>
+                        <Tooltip content="Выйти" relationship="label" positioning="after">
+                            <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout} />
+                        </Tooltip>
                     </div>
-                </div>
-                <div className="flex gap-2 mt-2">
-                    <Button
-                        appearance="subtle"
-                        size="small"
-                        icon={<Eye20Regular />}
-                        onClick={() => navigate("/home")}
-                    >
-                        Вид клиента
-                    </Button>
-                    <Button
-                        appearance="subtle"
-                        size="small"
-                        icon={<SignOut20Regular />}
-                        onClick={handleLogout}
-                    >
-                        Выйти
-                    </Button>
-                </div>
+                ) : (
+                    <>
+                        <div className="flex items-center gap-2">
+                            <Avatar name={email ?? "Admin"} size={32} />
+                            <div className="min-w-0">
+                                <Body1 truncate wrap={false} block>Админ</Body1>
+                                <Caption1 truncate wrap={false} block>{email ?? "—"}</Caption1>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                            <Button
+                                appearance="subtle"
+                                size="small"
+                                icon={<Eye20Regular />}
+                                onClick={() => navigate("/home")}
+                            >
+                                Вид клиента
+                            </Button>
+                            <Button
+                                appearance="subtle"
+                                size="small"
+                                icon={<SignOut20Regular />}
+                                onClick={handleLogout}
+                            >
+                                Выйти
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
         </aside>
     );

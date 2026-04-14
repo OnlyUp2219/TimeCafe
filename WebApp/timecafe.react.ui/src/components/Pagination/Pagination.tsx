@@ -6,11 +6,11 @@ import {ChevronLeftRegular, ChevronRightRegular} from "@fluentui/react-icons";
 interface PaginationProps {
     currentPage: number;
     totalPages: number;
-    className: string;
+    className?: string;
     onPageChange: (page: number) => void;
 }
 
-export const Pagination = ({ currentPage, totalPages, className, onPageChange }: PaginationProps) => {
+export const Pagination = ({ currentPage, totalPages, className = "", onPageChange }: PaginationProps) => {
     const [jumpPage, setJumpPage] = useState("");
 
     const handleJump = () => {
@@ -58,6 +58,7 @@ export const Pagination = ({ currentPage, totalPages, className, onPageChange }:
                     appearance={page === currentPage ? "primary" : "outline"}
                     onClick={() => onPageChange(page as number)}
                     size="large"
+                    className="min-w-0"
                 >
                     {page}
                 </Button>
@@ -66,14 +67,14 @@ export const Pagination = ({ currentPage, totalPages, className, onPageChange }:
     };
 
     return (
-        <div className={className}>
+        <div className={`flex items-center gap-2 flex-wrap ${className}`}>
             <Button
                 icon={<ChevronLeftRegular />}
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}  
                 size="large"          
                 />
-            <div>
+            <div className="flex items-center gap-1">
                 {renderPages()}
             </div>
             <Button

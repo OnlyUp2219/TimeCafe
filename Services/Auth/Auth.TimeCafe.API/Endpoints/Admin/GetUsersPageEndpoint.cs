@@ -8,7 +8,7 @@ public class GetUsersPageEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGroup("/auth/admin")
+        app.MapGroup("/admin")
             .WithTags("Admin")
             .MapGet("/users", async (
                 [AsParameters] GetUsersPageRequest request,
