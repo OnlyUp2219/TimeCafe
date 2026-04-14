@@ -97,6 +97,20 @@ services:
       retries: 5
       start_period: 30s
 
+  elasticsearch-mcp:
+    image: docker.elastic.co/mcp/elasticsearch
+    container_name: timecafe-elasticsearch-mcp
+    environment:
+      - ES_URL=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - timecafe-network
+    command: ["stdio"]
+    stdin_open: true
+    tty: true
+
 
   # Microservices
   auth-service:

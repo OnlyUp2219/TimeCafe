@@ -9,6 +9,7 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<IBalanceRepository, BalanceRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IBillingTransactionExecutor, BillingTransactionExecutor>();
 
         services.AddValidatedOptions<StripeOptions>(
             configuration,

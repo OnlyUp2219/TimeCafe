@@ -50,63 +50,89 @@ public class AdjustBalanceCommandValidator : AbstractValidator<AdjustBalanceComm
 
 public class AdjustBalanceCommandHandler(
     IBalanceRepository balanceRepository,
-    ITransactionRepository transactionRepository) : IRequestHandler<AdjustBalanceCommand, AdjustBalanceResult>
+    ITransactionRepository transactionRepository,
+    IBillingTransactionExecutor transactionExecutor) : IRequestHandler<AdjustBalanceCommand, AdjustBalanceResult>
 {
     private readonly IBalanceRepository _balanceRepository = balanceRepository;
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
+    private readonly IBillingTransactionExecutor _transactionExecutor = transactionExecutor;
 
     public async Task<AdjustBalanceResult> Handle(AdjustBalanceCommand request, CancellationToken cancellationToken)
     {
-        var sourceId = request.SourceId;
-
-        if (sourceId.HasValue)
+        try
         {
-            var duplicate = await _transactionRepository.ExistsBySourceAsync(
-                request.Source, sourceId.Value, cancellationToken);
-            if (duplicate)
-                return AdjustBalanceResult.DuplicateTransaction();
+            return await _transactionExecutor.ExecuteAsync(async ct =>
+            {
+                var sourceId = request.SourceId;
+
+                if (sourceId.HasValue)
+                {
+                    var duplicate = await _transactionRepository.ExistsBySourceAsync(
+                        request.Source, sourceId.Value, ct);
+                    if (duplicate)
+                        return AdjustBalanceResult.DuplicateTransaction();
+                }
+
+                var balance = await _balanceRepository.GetByUserIdAsync(request.UserId, ct);
+                if (balance == null)
+                {
+                    balance = new Balance(request.UserId);
+                    balance = await _balanceRepository.CreateAsync(balance, ct);
+                }
+
+                if (request.Type == TransactionType.Withdrawal && balance.CurrentBalance < request.Amount)
+                    return AdjustBalanceResult.InsufficientFunds(request.Amount, balance.CurrentBalance);
+
+                if (request.Type == TransactionType.Deposit)
+                {
+                    balance.CurrentBalance += request.Amount;
+                    balance.TotalDeposited += request.Amount;
+                }
+                else
+                {
+                    balance.CurrentBalance -= request.Amount;
+                    balance.TotalSpent += request.Amount;
+                }
+
+                balance.LastUpdated = DateTimeOffset.UtcNow;
+
+                var transaction = new Transaction
+                {
+                    TransactionId = Guid.NewGuid(),
+                    UserId = request.UserId,
+                    Amount = request.Amount,
+                    Type = request.Type,
+                    Source = request.Source,
+                    SourceId = sourceId,
+                    Status = TransactionStatus.Completed,
+                    Comment = request.Comment,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    BalanceAfter = balance.CurrentBalance
+                };
+
+                await _balanceRepository.UpdateAsync(balance, ct);
+                await _transactionRepository.CreateAsync(transaction, ct);
+
+                return AdjustBalanceResult.AdjustSuccess(balance, transaction);
+            }, cancellationToken);
         }
-
-        var balance = await _balanceRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-        if (balance == null)
+        catch (Exception ex) when (IsDuplicateSourceKeyViolation(ex))
         {
-            balance = new Balance(request.UserId);
-            balance = await _balanceRepository.CreateAsync(balance, cancellationToken);
+            return AdjustBalanceResult.DuplicateTransaction();
         }
+    }
 
-        if (request.Type == TransactionType.Withdrawal && balance.CurrentBalance < request.Amount)
-            return AdjustBalanceResult.InsufficientFunds(request.Amount, balance.CurrentBalance);
+    private static bool IsDuplicateSourceKeyViolation(Exception ex)
+    {
+        var providerException = ex.GetBaseException();
+        var providerExceptionType = providerException.GetType();
+        var sqlState = providerExceptionType.GetProperty("SqlState")?.GetValue(providerException) as string;
+        var constraintName = providerExceptionType.GetProperty("ConstraintName")?.GetValue(providerException) as string;
 
-        if (request.Type == TransactionType.Deposit)
-        {
-            balance.CurrentBalance += request.Amount;
-            balance.TotalDeposited += request.Amount;
-        }
-        else
-        {
-            balance.CurrentBalance -= request.Amount;
-            balance.TotalSpent += request.Amount;
-        }
+        if (string.IsNullOrWhiteSpace(sqlState))
+            return false;
 
-        balance.LastUpdated = DateTimeOffset.UtcNow;
-
-        var transaction = new Transaction
-        {
-            TransactionId = Guid.NewGuid(),
-            UserId = request.UserId,
-            Amount = request.Amount,
-            Type = request.Type,
-            Source = request.Source,
-            SourceId = sourceId,
-            Status = TransactionStatus.Completed,
-            Comment = request.Comment,
-            CreatedAt = DateTimeOffset.UtcNow,
-            BalanceAfter = balance.CurrentBalance
-        };
-
-        await _balanceRepository.UpdateAsync(balance, cancellationToken);
-        await _transactionRepository.CreateAsync(transaction, cancellationToken);
-
-        return AdjustBalanceResult.AdjustSuccess(balance, transaction);
+        return string.Equals(sqlState, "23505", StringComparison.Ordinal)
+            && string.Equals(constraintName, "UX_Transactions_Source_SourceId_NotNull", StringComparison.Ordinal);
     }
 }

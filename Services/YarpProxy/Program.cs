@@ -2,16 +2,7 @@ using BuildingBlocks.Options;
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var sharedSettingsCandidates = new[]
-{
-    Path.Combine(builder.Environment.ContentRootPath, "appsettings.shared.json"),
-    Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "appsettings.shared.json"))
-};
-
-var sharedSettingsPath = sharedSettingsCandidates.FirstOrDefault(File.Exists);
-if (sharedSettingsPath is not null)
-    builder.Configuration.AddJsonFile(sharedSettingsPath, optional: false, reloadOnChange: true);
+builder.AddSharedConfiguration();
 
 var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
 

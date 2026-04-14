@@ -47,4 +47,11 @@
 		<ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Content Include="..\..\..\appsettings.shared.json" Link="appsettings.shared.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
 </Project>

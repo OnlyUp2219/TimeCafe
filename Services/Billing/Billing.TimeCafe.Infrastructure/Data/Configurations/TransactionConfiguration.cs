@@ -51,7 +51,9 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasIndex(t => t.UserId);
         builder.HasIndex(t => t.SourceId);
         builder.HasIndex(t => new { t.Source, t.SourceId })
-            .HasDatabaseName("IX_Transactions_Source_SourceId");
+            .HasDatabaseName("UX_Transactions_Source_SourceId_NotNull")
+            .IsUnique()
+            .HasFilter("\"SourceId\" IS NOT NULL");
         builder.HasIndex(t => t.CreatedAt);
         builder.HasIndex(t => t.Type);
         builder.HasIndex(t => new { t.UserId, t.CreatedAt });

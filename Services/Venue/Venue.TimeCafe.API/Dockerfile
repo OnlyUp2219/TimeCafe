@@ -16,6 +16,7 @@ WORKDIR /src
 
 # Central package versions (required for restore)
 COPY ["Directory.Packages.props", "./"]
+COPY ["appsettings.shared.json", "./"]
 
 # Copy BuildingBlocks
 COPY ["Services/BuildingBlocks/BuildingBlocks.csproj", "Services/BuildingBlocks/"]
@@ -50,14 +51,12 @@ RUN --mount=type=cache,id=timecafe-nuget-packages,target=/root/.nuget/packages,s
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-COPY ["appsettings.shared.json", "/app/"]
 
 ENTRYPOINT ["dotnet", "Venue.TimeCafe.API.dll"]
 
 FROM base AS debug
 WORKDIR /app
 COPY --from=publish-debug /app/publish .
-COPY ["appsettings.shared.json", "/app/"]
 
 HEALTHCHECK NONE
 
