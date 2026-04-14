@@ -1,0 +1,157 @@
+import {useMemo, useState} from "react";
+import {
+    Badge,
+    Body1,
+    Body2,
+    Card,
+    MessageBar,
+    MessageBarBody,
+    Title2,
+    createTableColumn,
+    TableCellLayout,
+} from "@fluentui/react-components";
+import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
+import {useGetVisitsPageQuery} from "@store/api/venueApi";
+import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
+import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import type {VisitWithTariff} from "@app-types/visitWithTariff";
+import {VisitStatus} from "@app-types/visit";
+import {DataTable} from "@components/DataTable/DataTable";
+import {Pagination} from "@components/Pagination/Pagination";
+import {useComponentSize} from "@hooks/useComponentSize";
+
+const statusLabel = (status: number) => {
+    switch (status) {
+        case VisitStatus.Active: return "Активен";
+        case VisitStatus.Completed: return "Завершён";
+        default: return "Неизвестно";
+    }
+};
+
+const statusColor = (status: number): "success" | "informative" | "warning" => {
+    switch (status) {
+        case VisitStatus.Active: return "success";
+        case VisitStatus.Completed: return "informative";
+        default: return "warning";
+    }
+};
+
+const formatDateTime = (iso: string | null) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    return d.toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+};
+
+const formatCost = (cost: number | null) => {
+    if (cost == null) return "—";
+    return `${cost.toFixed(2)} ₽`;
+};
+
+export const VisitsPage = () => {
+    const {sizes} = useComponentSize();
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 20;
+    const {data, isLoading, error} = useGetVisitsPageQuery({pageNumber: currentPage, pageSize});
+    const visits = data?.visits ?? [];
+    const totalCount = data?.totalCount ?? 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
+
+    const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
+        tariff: {minWidth: 120, defaultWidth: 200},
+        status: {minWidth: 80, defaultWidth: 120},
+        entryTime: {minWidth: 130, defaultWidth: 170},
+        exitTime: {minWidth: 130, defaultWidth: 170},
+        cost: {minWidth: 80, defaultWidth: 120},
+        userId: {minWidth: 100, defaultWidth: 180},
+    }), []);
+
+    const columns: TableColumnDefinition<VisitWithTariff>[] = useMemo(() => [
+        createTableColumn<VisitWithTariff>({
+            columnId: "tariff",
+            compare: (a, b) => a.tariffName.localeCompare(b.tariffName),
+            renderHeaderCell: () => "Тариф",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>
+                    <Body1>{visit.tariffName || "—"}</Body1>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
+            columnId: "status",
+            compare: (a, b) => a.status - b.status,
+            renderHeaderCell: () => "Статус",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>
+                    <Badge appearance="filled" color={statusColor(visit.status)}>{statusLabel(visit.status)}</Badge>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
+            columnId: "entryTime",
+            compare: (a, b) => new Date(a.entryTime).getTime() - new Date(b.entryTime).getTime(),
+            renderHeaderCell: () => "Вход",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>{formatDateTime(visit.entryTime)}</TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
+            columnId: "exitTime",
+            compare: (a, b) => new Date(a.exitTime ?? "").getTime() - new Date(b.exitTime ?? "").getTime(),
+            renderHeaderCell: () => "Выход",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>{formatDateTime(visit.exitTime)}</TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
+            columnId: "cost",
+            compare: (a, b) => (a.calculatedCost ?? 0) - (b.calculatedCost ?? 0),
+            renderHeaderCell: () => "Стоимость",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>{formatCost(visit.calculatedCost)}</TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
+            columnId: "userId",
+            compare: (a, b) => a.userId.localeCompare(b.userId),
+            renderHeaderCell: () => "Пользователь",
+            renderCell: (visit) => (
+                <TableCellLayout truncate>
+                    <Body2 className="font-mono text-xs">{visit.userId.slice(0, 8)}…</Body2>
+                </TableCellLayout>
+            ),
+        }),
+    ], []);
+
+    return (
+        <div>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <div>
+                    <Title2>Визиты</Title2>
+                    <Body2 block>{totalCount} визитов</Body2>
+                </div>
+            </div>
+
+            {queryError && (
+                <MessageBar intent="error" className="mb-4">
+                    <MessageBarBody>{queryError}</MessageBarBody>
+                </MessageBar>
+            )}
+
+            <Card className="overflow-x-auto" size={sizes.card}>
+                <DataTable
+                    items={visits}
+                    columns={columns}
+                    getRowId={(v) => v.visitId}
+                    loading={isLoading}
+                    columnSizingOptions={columnSizingOptions}
+                />
+            </Card>
+
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {visits.length} из {totalCount}</Body1>
+                <Pagination className="" currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+            </div>
+        </div>
+    );
+};

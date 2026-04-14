@@ -19,7 +19,10 @@ import {
     Spinner,
     Switch,
     Title2,
+    createTableColumn,
+    TableCellLayout,
 } from "@fluentui/react-components";
+import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {Add20Regular, Delete20Regular, Edit20Regular} from "@fluentui/react-icons";
 import {
     useGetAllPromotionsQuery,
@@ -33,6 +36,7 @@ import type {Promotion} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 const formatDate = (iso: string) => {
     const d = new Date(iso);
@@ -60,6 +64,7 @@ const emptyForm: PromotionFormState = {
 };
 
 export const PromotionsPage = () => {
+    const {sizes} = useComponentSize();
     const {data: promotions = [], isLoading, error} = useGetAllPromotionsQuery();
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -141,68 +146,74 @@ export const PromotionsPage = () => {
         }
     }, [activatePromotion, deactivatePromotion]);
 
-    const columns = useMemo(() => [
-        {
-            columnId: "name",
-            renderHeaderCell: () => "Акция",
-            compare: (a: Promotion, b: Promotion) => a.name.localeCompare(b.name),
-        },
-        {
-            columnId: "discount",
-            renderHeaderCell: () => "Скидка",
-            compare: (a: Promotion, b: Promotion) => (a.discountPercent ?? 0) - (b.discountPercent ?? 0),
-        },
-        {
-            columnId: "period",
-            renderHeaderCell: () => "Период",
-            compare: (a: Promotion, b: Promotion) => a.validFrom.localeCompare(b.validFrom),
-        },
-        {
-            columnId: "status",
-            renderHeaderCell: () => "Статус",
-            compare: (a: Promotion, b: Promotion) => Number(a.isActive) - Number(b.isActive),
-        },
-        {
-            columnId: "actions",
-            renderHeaderCell: () => "Действия",
-            compare: () => 0,
-        },
-    ], []);
+    const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
+        name: {minWidth: 150, defaultWidth: 250},
+        discount: {minWidth: 80, defaultWidth: 120},
+        period: {minWidth: 150, defaultWidth: 220},
+        status: {minWidth: 100, defaultWidth: 150},
+        actions: {minWidth: 90, defaultWidth: 100},
+    }), []);
 
-    const renderCell = (promo: Promotion, columnId: string) => {
-        switch (columnId) {
-            case "name":
-                return (
+    const columns: TableColumnDefinition<Promotion>[] = useMemo(() => [
+        createTableColumn<Promotion>({
+            columnId: "name",
+            compare: (a, b) => a.name.localeCompare(b.name),
+            renderHeaderCell: () => "Акция",
+            renderCell: (promo) => (
+                <TableCellLayout truncate>
                     <div>
                         <Body1 block>{promo.name}</Body1>
                         {promo.description && <Body2 block className="text-gray-500">{promo.description}</Body2>}
                     </div>
-                );
-            case "discount":
-                return promo.discountPercent != null
-                    ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
-                    : "—";
-            case "period":
-                return `${formatDate(promo.validFrom)} — ${formatDate(promo.validTo)}`;
-            case "status":
-                return (
-                    <Switch
-                        checked={promo.isActive}
-                        onChange={() => handleToggleActive(promo)}
-                        label={promo.isActive ? "Активна" : "Неактивна"}
-                    />
-                );
-            case "actions":
-                return (
-                    <div className="flex gap-1">
-                        <Button appearance="subtle" size="small" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
-                        <Button appearance="subtle" size="small" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
-                    </div>
-                );
-            default:
-                return "";
-        }
-    };
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<Promotion>({
+            columnId: "discount",
+            compare: (a, b) => (a.discountPercent ?? 0) - (b.discountPercent ?? 0),
+            renderHeaderCell: () => "Скидка",
+            renderCell: (promo) => (
+                <TableCellLayout truncate>
+                    {promo.discountPercent != null
+                        ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
+                        : "—"}
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<Promotion>({
+            columnId: "period",
+            compare: (a, b) => a.validFrom.localeCompare(b.validFrom),
+            renderHeaderCell: () => "Период",
+            renderCell: (promo) => (
+                <TableCellLayout truncate>
+                    {formatDate(promo.validFrom)} — {formatDate(promo.validTo)}
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<Promotion>({
+            columnId: "status",
+            compare: (a, b) => Number(a.isActive) - Number(b.isActive),
+            renderHeaderCell: () => "Статус",
+            renderCell: (promo) => (
+                <Switch
+                    checked={promo.isActive}
+                    onChange={() => handleToggleActive(promo)}
+                    label={promo.isActive ? "Активна" : "Неактивна"}
+                />
+            ),
+        }),
+        createTableColumn<Promotion>({
+            columnId: "actions",
+            compare: () => 0,
+            renderHeaderCell: () => "Действия",
+            renderCell: (promo) => (
+                <div className="flex gap-1">
+                    <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
+                    <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                </div>
+            ),
+        }),
+    ], [sizes, handleToggleActive, openEdit, handleDelete]);
 
     return (
         <div>
@@ -211,7 +222,7 @@ export const PromotionsPage = () => {
                     <Title2>Акции</Title2>
                     <Body2 block>{promotions.length} акций</Body2>
                 </div>
-                <Button appearance="primary" size="large" icon={<Add20Regular />} onClick={openCreate}>
+                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
                     Добавить акцию
                 </Button>
             </div>
@@ -222,15 +233,13 @@ export const PromotionsPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size="large">
+            <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable
                     items={promotions}
-                    columns={columns.map(col => ({
-                        ...col,
-                        renderCell: (item: Promotion) => renderCell(item, col.columnId),
-                    }))}
+                    columns={columns}
                     getRowId={(p) => p.promotionId}
                     loading={isLoading}
+                    columnSizingOptions={columnSizingOptions}
                 />
             </Card>
 

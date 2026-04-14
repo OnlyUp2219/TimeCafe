@@ -37,7 +37,7 @@ export const AdminRoute = ({children}: AdminRouteProps) => {
 
         const loadPermissions = async (): Promise<string[]> => {
             try {
-                const result = await dispatch(authApi.endpoints.getMyPermissions.initiate(undefined, {forceRefetch: true})).unwrap();
+                const result = await dispatch(authApi.endpoints.getMyPermissions.initiate()).unwrap();
                 dispatch(setPermissions(result.permissions));
                 return result.permissions;
             } catch {

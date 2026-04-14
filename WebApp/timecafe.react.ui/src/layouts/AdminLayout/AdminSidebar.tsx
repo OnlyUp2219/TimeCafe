@@ -89,20 +89,20 @@ export const AdminSidebar: FC = () => {
     return (
         <aside className="admin-sidebar" style={{width: sidebarWidth}} data-collapsed={collapsed}>
             <div className="admin-sidebar__header">
-                {!collapsed && (
-                    <div className="admin-sidebar__logo" onClick={() => navigate("/admin/dashboard")}>
-                        ☕ TimeCafe
-                    </div>
-                )}
                 <Tooltip content={collapsed ? "Развернуть" : "Свернуть"} relationship="label">
                     <Button
                         appearance="subtle"
-                        size="small"
+                        size="large"
                         icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
                         onClick={() => setCollapsed(prev => !prev)}
                         className={collapsed ? "mx-auto" : "ml-auto"}
                     />
                 </Tooltip>
+                                {!collapsed && (
+                    <div className="admin-sidebar__logo" onClick={() => navigate("/admin/dashboard")}>
+                        ☕ TimeCafe
+                    </div>
+                )}
             </div>
 
             {collapsed ? (
@@ -136,6 +136,7 @@ export const AdminSidebar: FC = () => {
                         }
                     }}
                     className="admin-sidebar__nav"
+                    style={{backgroundColor: "var(--colorNeutralBackground1)"}}
                 >
                     <NavDrawerBody>
                         {sections.map((section) => (
@@ -146,7 +147,7 @@ export const AdminSidebar: FC = () => {
                                         key={item.id}
                                         value={item.id}
                                         icon={item.icon}
-                                        onClick={() => navigate(item.path)}
+                                        className="admin-sidebar__navItem"
                                     >
                                         {item.label}
                                     </NavItem>

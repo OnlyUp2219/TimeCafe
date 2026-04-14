@@ -20,7 +20,10 @@ import {
     Spinner,
     Switch,
     Title2,
+    createTableColumn,
+    TableCellLayout,
 } from "@fluentui/react-components";
+import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {Add20Regular, Delete20Regular, Edit20Regular} from "@fluentui/react-icons";
 import {
     useGetTariffsPageQuery,
@@ -36,6 +39,7 @@ import type {TariffWithTheme} from "@app-types/tariffWithTheme";
 import {BillingType} from "@app-types/tariff";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
@@ -56,6 +60,7 @@ const emptyForm: TariffFormState = {
 };
 
 export const TariffsPage = () => {
+    const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 20;
     const {data, isLoading, error} = useGetTariffsPageQuery({pageNumber: currentPage, pageSize});
@@ -140,76 +145,79 @@ export const TariffsPage = () => {
         }
     }, [activateTariff, deactivateTariff]);
 
-    const columns = useMemo(() => [
-        {
-            columnId: "name",
-            renderHeaderCell: () => "Тариф",
-            compare: (a: TariffWithTheme, b: TariffWithTheme) => a.name.localeCompare(b.name),
-        },
-        {
-            columnId: "price",
-            renderHeaderCell: () => "Цена/мин",
-            compare: (a: TariffWithTheme, b: TariffWithTheme) => a.pricePerMinute - b.pricePerMinute,
-        },
-        {
-            columnId: "billingType",
-            renderHeaderCell: () => "Тип",
-            compare: (a: TariffWithTheme, b: TariffWithTheme) => a.billingType - b.billingType,
-        },
-        {
-            columnId: "theme",
-            renderHeaderCell: () => "Тема",
-            compare: (a: TariffWithTheme, b: TariffWithTheme) => (a.themeName ?? "").localeCompare(b.themeName ?? ""),
-        },
-        {
-            columnId: "status",
-            renderHeaderCell: () => "Статус",
-            compare: (a: TariffWithTheme, b: TariffWithTheme) => Number(a.isActive) - Number(b.isActive),
-        },
-        {
-            columnId: "actions",
-            renderHeaderCell: () => "Действия",
-            compare: () => 0,
-        },
-    ], []);
+    const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
+        name: {minWidth: 150, defaultWidth: 250},
+        price: {minWidth: 80, defaultWidth: 120},
+        billingType: {minWidth: 100, defaultWidth: 140},
+        theme: {minWidth: 80, defaultWidth: 140},
+        status: {minWidth: 100, defaultWidth: 150},
+        actions: {minWidth: 90, defaultWidth: 100},
+    }), []);
 
-    const renderCell = (tariff: TariffWithTheme, columnId: string) => {
-        switch (columnId) {
-            case "name":
-                return (
-                    <div className="flex items-center gap-2">
-                        {tariff.themeEmoji && <Avatar name={tariff.themeEmoji} size={28} />}
-                        <div>
-                            <Body1 block>{tariff.name}</Body1>
-                            {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
-                        </div>
+    const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => [
+        createTableColumn<TariffWithTheme>({
+            columnId: "name",
+            compare: (a, b) => a.name.localeCompare(b.name),
+            renderHeaderCell: () => "Тариф",
+            renderCell: (tariff) => (
+                <TableCellLayout truncate media={tariff.themeEmoji ? <Avatar name={tariff.themeEmoji} /> : undefined}>
+                    <div>
+                        <Body1 block>{tariff.name}</Body1>
+                        {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
                     </div>
-                );
-            case "price":
-                return `${tariff.pricePerMinute} ₽`;
-            case "billingType":
-                return <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>;
-            case "theme":
-                return tariff.themeName || "—";
-            case "status":
-                return (
-                    <Switch
-                        checked={tariff.isActive}
-                        onChange={() => handleToggleActive(tariff)}
-                        label={tariff.isActive ? "Активен" : "Неактивен"}
-                    />
-                );
-            case "actions":
-                return (
-                    <div className="flex gap-1">
-                        <Button appearance="subtle" size="small" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
-                        <Button appearance="subtle" size="small" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
-                    </div>
-                );
-            default:
-                return "";
-        }
-    };
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<TariffWithTheme>({
+            columnId: "price",
+            compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
+            renderHeaderCell: () => "Цена/мин",
+            renderCell: (tariff) => (
+                <TableCellLayout truncate>{tariff.pricePerMinute} ₽</TableCellLayout>
+            ),
+        }),
+        createTableColumn<TariffWithTheme>({
+            columnId: "billingType",
+            compare: (a, b) => a.billingType - b.billingType,
+            renderHeaderCell: () => "Тип",
+            renderCell: (tariff) => (
+                <TableCellLayout truncate>
+                    <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<TariffWithTheme>({
+            columnId: "theme",
+            compare: (a, b) => (a.themeName ?? "").localeCompare(b.themeName ?? ""),
+            renderHeaderCell: () => "Тема",
+            renderCell: (tariff) => (
+                <TableCellLayout truncate>{tariff.themeName || "—"}</TableCellLayout>
+            ),
+        }),
+        createTableColumn<TariffWithTheme>({
+            columnId: "status",
+            compare: (a, b) => Number(a.isActive) - Number(b.isActive),
+            renderHeaderCell: () => "Статус",
+            renderCell: (tariff) => (
+                <Switch
+                    checked={tariff.isActive}
+                    onChange={() => handleToggleActive(tariff)}
+                    label={tariff.isActive ? "Активен" : "Неактивен"}
+                />
+            ),
+        }),
+        createTableColumn<TariffWithTheme>({
+            columnId: "actions",
+            compare: () => 0,
+            renderHeaderCell: () => "Действия",
+            renderCell: (tariff) => (
+                <div className="flex gap-1">
+                    <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
+                    <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
+                </div>
+            ),
+        }),
+    ], [sizes, handleToggleActive, openEdit, handleDelete]);
 
     return (
         <div>
@@ -218,7 +226,7 @@ export const TariffsPage = () => {
                     <Title2>Тарифы</Title2>
                     <Body2 block>{totalCount} тарифов</Body2>
                 </div>
-                <Button appearance="primary" size="large" icon={<Add20Regular />} onClick={openCreate}>
+                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
                     Добавить тариф
                 </Button>
             </div>
@@ -229,15 +237,13 @@ export const TariffsPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size="large">
+            <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable
                     items={tariffs}
-                    columns={columns.map(col => ({
-                        ...col,
-                        renderCell: (item: TariffWithTheme) => renderCell(item, col.columnId),
-                    }))}
+                    columns={columns}
                     getRowId={(t) => t.tariffId}
                     loading={isLoading}
+                    columnSizingOptions={columnSizingOptions}
                 />
             </Card>
 

@@ -16,8 +16,10 @@ import {
 } from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
 import {useGetUsersQuery} from "@store/api/adminApi";
+import {useGetTariffsPageQuery, useGetAllPromotionsQuery, useGetVisitsPageQuery} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 interface StatCardProps {
     title: string;
@@ -26,26 +28,30 @@ interface StatCardProps {
     onClick?: () => void;
 }
 
-const StatCard = ({title, value, icon, onClick}: StatCardProps) => (
+const StatCard = ({title, value, icon, onClick, cardSize}: StatCardProps & {cardSize: "small" | "medium" | "large"}) => (
     <Card
         className={`flex-1 min-w-[200px] ${onClick ? "cursor-pointer" : ""}`}
-        size="large"
+        size={cardSize}
         onClick={onClick}
     >
         <div className="flex items-center justify-between">
-            <div>
-                <Body2 block>{title}</Body2>
+            <div className="min-w-0 flex-1">
+                <Body2 block className="line-clamp-3">{title}</Body2>
                 <Title2>{value}</Title2>
             </div>
-            <div className="text-2xl opacity-50">{icon}</div>
+            <div className="text-2xl opacity-50 shrink-0 ml-2">{icon}</div>
         </div>
     </Card>
 );
 
 export const DashboardPage = () => {
     const navigate = useNavigate();
-    const {data: usersData, isLoading, error} = useGetUsersQuery({page: 1, size: 1});
-    const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
+    const {sizes} = useComponentSize();
+    const {data: usersData, isLoading: usersLoading, error: usersError} = useGetUsersQuery({page: 1, size: 1});
+    const {data: tariffsData, isLoading: tariffsLoading} = useGetTariffsPageQuery({pageNumber: 1, pageSize: 1});
+    const {data: promotionsData, isLoading: promotionsLoading} = useGetAllPromotionsQuery();
+    const {data: visitsData, isLoading: visitsLoading} = useGetVisitsPageQuery({pageNumber: 1, pageSize: 1});
+    const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
     return (
         <div>
@@ -63,32 +69,36 @@ export const DashboardPage = () => {
             <div className="flex gap-4 flex-wrap mb-6">
                 <StatCard
                     title="Пользователи"
-                    value={isLoading ? "..." : (usersData?.pagination.totalCount ?? "—")}
+                    value={usersLoading ? "..." : (usersData?.pagination.totalCount ?? "—")}
                     icon={<People20Regular />}
                     onClick={() => navigate("/admin/users")}
+                    cardSize={sizes.card}
                 />
                 <StatCard
                     title="Тарифы"
-                    value="—"
+                    value={tariffsLoading ? "..." : (tariffsData?.totalCount ?? "—")}
                     icon={<Money20Regular />}
                     onClick={() => navigate("/admin/tariffs")}
+                    cardSize={sizes.card}
                 />
                 <StatCard
                     title="Визиты"
-                    value="—"
+                    value={visitsLoading ? "..." : (visitsData?.totalCount ?? "—")}
                     icon={<Clock20Regular />}
                     onClick={() => navigate("/admin/visits")}
+                    cardSize={sizes.card}
                 />
                 <StatCard
                     title="Акции"
-                    value="—"
+                    value={promotionsLoading ? "..." : (promotionsData?.length ?? "—")}
                     icon={<Gift20Regular />}
                     onClick={() => navigate("/admin/promotions")}
+                    cardSize={sizes.card}
                 />
             </div>
 
             <div className="flex gap-4 flex-wrap">
-                <Card className="flex-1 min-w-[300px]" size="large">
+                <Card className="flex-1 min-w-[300px]" size={sizes.card}>
                     <Title2 className="mb-2">Быстрые действия</Title2>
                     <div className="flex flex-col gap-2">
                         <Body1
@@ -112,7 +122,7 @@ export const DashboardPage = () => {
                     </div>
                 </Card>
 
-                <Card className="flex-1 min-w-[300px]" size="large">
+                <Card className="flex-1 min-w-[300px]" size={sizes.card}>
                     <Title2 className="mb-2">Статус системы</Title2>
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between">

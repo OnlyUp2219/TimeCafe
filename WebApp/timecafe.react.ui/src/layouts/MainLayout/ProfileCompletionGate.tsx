@@ -4,6 +4,7 @@ import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {
     Button,
+    Card,
     DrawerBody,
     DrawerFooter,
     DrawerHeader,
@@ -212,8 +213,8 @@ export const ProfileCompletionGate: FC = () => {
                 open={mustCompleteProfile}
                 modalType="alert"
                 size="full"
-                position="end"
-                unmountOnClose={false}
+                position="bottom"
+
             >
                 <div className="profile-gate-shell">
                     <div className="profile-gate-bg" aria-hidden="true">
@@ -222,17 +223,17 @@ export const ProfileCompletionGate: FC = () => {
                         <span className="profile-gate-shape profile-gate-shape--triangle"/>
                     </div>
 
-                    <DrawerHeader>
+                    <DrawerHeader >
                         <DrawerHeaderTitle data-testid="profile-gate-title">Заполните профиль</DrawerHeaderTitle>
                     </DrawerHeader>
 
                     <DrawerBody className="profile-gate-body">
-                        <div className="profile-gate-card">
+                        <Card size="large" >
                             {renderGateContent()}
-                        </div>
+                        </Card>
                     </DrawerBody>
 
-                    <DrawerFooter className="profile-gate-footer">
+                    <DrawerFooter className="profile-gate-footer" >
                         <Button appearance="secondary" onClick={handleLogout}>
                             Выйти
                         </Button>

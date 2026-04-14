@@ -69,6 +69,16 @@ interface GetTariffsPageArgs {
     pageSize: number;
 }
 
+interface GetVisitsPageResponse {
+    visits: VisitWithTariff[];
+    totalCount: number;
+}
+
+interface GetVisitsPageArgs {
+    pageNumber: number;
+    pageSize: number;
+}
+
 interface CreateTariffRequest {
     name: string;
     description?: string;
@@ -118,10 +128,30 @@ export interface UpdatePromotionRequest {
     isActive: boolean;
 }
 
+export interface Theme {
+    themeId: string;
+    name: string;
+    emoji?: string;
+    colors?: string;
+}
+
+export interface CreateThemeRequest {
+    name: string;
+    emoji?: string;
+    colors?: string;
+}
+
+export interface UpdateThemeRequest {
+    themeId: string;
+    name: string;
+    emoji?: string;
+    colors?: string;
+}
+
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "Promotions"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "Promotions", "Themes"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
@@ -165,6 +195,14 @@ export const venueApi = createApi({
             query: (userId) => `/venue/visits/history/${userId}`,
             transformResponse: (response: VisitsResponse) => response.visits,
             providesTags: (_result, _error, userId) => [{type: "VisitHistory", id: userId}],
+        }),
+
+        getVisitsPage: builder.query<GetVisitsPageResponse, GetVisitsPageArgs>({
+            query: ({pageNumber, pageSize}) => ({
+                url: "/venue/visits/page",
+                params: {pageNumber, pageSize},
+            }),
+            providesTags: ["VisitsPage"],
         }),
 
         createVisit: builder.mutation<CreateVisitResponse, CreateVisitRequest>({
@@ -276,6 +314,38 @@ export const venueApi = createApi({
             }),
             invalidatesTags: ["Promotions"],
         }),
+
+        getAllThemes: builder.query<Theme[], void>({
+            query: () => "/venue/themes",
+            transformResponse: (response: {themes: Theme[]}) => response.themes,
+            providesTags: ["Themes"],
+        }),
+
+        createTheme: builder.mutation<{message: string; theme: Theme}, CreateThemeRequest>({
+            query: (body) => ({
+                url: "/venue/themes",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Themes"],
+        }),
+
+        updateTheme: builder.mutation<{message: string; theme: Theme}, UpdateThemeRequest>({
+            query: ({themeId, ...body}) => ({
+                url: `/venue/themes/${themeId}`,
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: ["Themes"],
+        }),
+
+        deleteTheme: builder.mutation<{message: string}, string>({
+            query: (themeId) => ({
+                url: `/venue/themes/${themeId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Themes"],
+        }),
     }),
 });
 
@@ -288,6 +358,7 @@ export const {
     useGetActiveVisitByUserQuery,
     useLazyGetActiveVisitByUserQuery,
     useGetVisitHistoryQuery,
+    useGetVisitsPageQuery,
     useCreateVisitMutation,
     useEndVisitMutation,
     useCreateTariffMutation,
@@ -301,4 +372,8 @@ export const {
     useDeletePromotionMutation,
     useActivatePromotionMutation,
     useDeactivatePromotionMutation,
+    useGetAllThemesQuery,
+    useCreateThemeMutation,
+    useUpdateThemeMutation,
+    useDeleteThemeMutation,
 } = venueApi;

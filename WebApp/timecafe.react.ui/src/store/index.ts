@@ -59,6 +59,7 @@ export const store = configureStore({
                     "persist/PURGE",
                 ],
             },
+            immutableCheck: {warnAfter: 64},
         }).concat(
             authApi.middleware,
             profileApi.middleware,

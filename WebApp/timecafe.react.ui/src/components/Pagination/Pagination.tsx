@@ -1,5 +1,5 @@
 import {useState} from "react";
-import {Button, Field, Input} from "@fluentui/react-components";
+import {Button, Input} from "@fluentui/react-components";
 import {ChevronLeftRegular, ChevronRightRegular} from "@fluentui/react-icons";
 
 
@@ -58,7 +58,7 @@ export const Pagination = ({ currentPage, totalPages, className = "", onPageChan
                     appearance={page === currentPage ? "primary" : "outline"}
                     onClick={() => onPageChange(page as number)}
                     size="large"
-                    className="min-w-0"
+                    style={{minWidth: 0}}
                 >
                     {page}
                 </Button>
@@ -72,7 +72,8 @@ export const Pagination = ({ currentPage, totalPages, className = "", onPageChan
                 icon={<ChevronLeftRegular />}
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}  
-                size="large"          
+                size="large"   
+                style={{minWidth: 0}}
                 />
             <div className="flex items-center gap-1">
                 {renderPages()}
@@ -82,6 +83,7 @@ export const Pagination = ({ currentPage, totalPages, className = "", onPageChan
                 disabled={currentPage >= totalPages}
                 onClick={() => onPageChange(currentPage + 1)}   
                 size="large"         
+                style={{minWidth: 0}}
                 />
             <div className="flex items-center gap-2">
                     <Input
