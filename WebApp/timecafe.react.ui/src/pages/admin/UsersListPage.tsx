@@ -1,4 +1,5 @@
 import {useCallback, useMemo, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {
     Avatar,
     Badge,
@@ -36,6 +37,7 @@ const getUserStatusBadgeClass = (status: string): string => {
 };
 
 export const UsersListPage = () => {
+    const navigate = useNavigate();
     const {sizes} = useComponentSize();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -118,14 +120,14 @@ export const UsersListPage = () => {
                 columnId: "actions",
                 compare: () => 0,
                 renderHeaderCell: () => "Действия",
-                renderCell: () => (
-                    <Button appearance="subtle" icon={<Eye20Regular />}>
+                renderCell: (user) => (
+                    <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)}>
                         Открыть
                     </Button>
                 ),
             }),
         ],
-        [sizes]
+        [sizes, navigate]
     );
 
     return (

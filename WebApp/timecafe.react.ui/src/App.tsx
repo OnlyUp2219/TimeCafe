@@ -1,5 +1,4 @@
-// App.tsx
-import {BrowserRouter, Routes, Route, useNavigate} from "react-router-dom";
+import {BrowserRouter, Routes, Route, Navigate, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 
 import "./App.css";
@@ -28,11 +27,14 @@ import {PrivateRoute} from "@components/PrivateRoute/PrivateRoute";
 import {JwtCrossServiceTestPage} from "@pages/dev/JwtCrossServiceTestPage";
 import {AdminRoute} from "@components/AdminRoute/AdminRoute";
 import {UsersListPage} from "@pages/admin/UsersListPage";
+import {UserDetailPage} from "@pages/admin/UserDetailPage";
 import {TariffsPage} from "@pages/admin/TariffsPage";
 import {DashboardPage} from "@pages/admin/DashboardPage";
 import {PromotionsPage} from "@pages/admin/PromotionsPage";
 import {ThemesPage} from "@pages/admin/ThemesPage";
 import {VisitsPage} from "@pages/admin/VisitsPage";
+import {TransactionsPage} from "@pages/admin/TransactionsPage";
+import {PaymentsPage} from "@pages/admin/PaymentsPage";
 import {AdminLayout} from "@layouts/AdminLayout/AdminLayout";
 
 const AppRoutes = () => {
@@ -93,12 +95,16 @@ const AppRoutes = () => {
                     <Route path="/billing" element={<BillingPage/>}/>
                 </Route>
                 <Route element={<AdminRoute><AdminLayout/></AdminRoute>}>
+                    <Route index path="/admin" element={<Navigate to="/admin/dashboard" replace />}/>
                     <Route path="/admin/dashboard" element={<DashboardPage/>}/>
                     <Route path="/admin/users" element={<UsersListPage/>}/>
+                    <Route path="/admin/users/:id" element={<UserDetailPage/>}/>
                     <Route path="/admin/tariffs" element={<TariffsPage/>}/>
                     <Route path="/admin/promotions" element={<PromotionsPage/>}/>
                     <Route path="/admin/themes" element={<ThemesPage/>}/>
                     <Route path="/admin/visits" element={<VisitsPage/>}/>
+                    <Route path="/admin/transactions" element={<TransactionsPage/>}/>
+                    <Route path="/admin/payments" element={<PaymentsPage/>}/>
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage/>}/>
 
