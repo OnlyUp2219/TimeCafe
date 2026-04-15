@@ -11,13 +11,12 @@ import {
     MenuTrigger,
     MenuItem,
     Spinner,
-    Text,
     TableCellLayout,
-    tokens,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableRowId, DataGridProps, TableColumnSizingOptions} from "@fluentui/react-components";
 import {useRef, useMemo, useCallback} from "react";
 import type {ReactNode} from "react";
+import {EmptyState} from "@components/EmptyState/EmptyState";
 
 export type DataTableProps<TItem> = {
     items: TItem[];
@@ -54,13 +53,6 @@ export function DataTable<TItem>({
 }: DataTableProps<TItem>) {
     const isEmpty = !loading && items.length === 0;
     const refMap = useRef<Record<string, HTMLElement | null>>({});
-
-    const emptyStyle = useMemo(
-        () => ({
-            color: tokens.colorNeutralForeground2,
-        }),
-        []
-    );
 
     const selectionProps = useMemo(() => {
         const props: Partial<DataGridProps> = {};
@@ -115,7 +107,7 @@ export function DataTable<TItem>({
     if (isEmpty) {
         return (
             <div className={className}>
-                <Text style={emptyStyle}>{emptyMessage}</Text>
+                <EmptyState title={emptyMessage} />
             </div>
         );
     }

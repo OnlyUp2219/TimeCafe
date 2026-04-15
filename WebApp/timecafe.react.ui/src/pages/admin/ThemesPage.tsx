@@ -2,6 +2,7 @@ import {useCallback, useMemo, useState} from "react";
 import {
     Body1,
     Body2,
+    Caption1,
     Button,
     Card,
     Dialog,
@@ -15,6 +16,7 @@ import {
     Input,
     MessageBar,
     MessageBarBody,
+    Subtitle2,
     Title2,
     createTableColumn,
     TableCellLayout,
@@ -204,16 +206,38 @@ export const ThemesPage = () => {
                             <Field label="Цвета (через запятую)" size={sizes.field}>
                                 <Input value={form.colors} placeholder="#1a1a2e,#16213e,#0f3460" onChange={(_, d) => setForm(f => ({...f, colors: d.value}))} size={sizes.input} />
                             </Field>
-                            {form.colors && (
-                                <div className="flex gap-2 items-center">
-                                    <Body2>Превью:</Body2>
-                                    {form.colors.split(",").map((c) => (
-                                        <span
-                                            key={c}
-                                            className="inline-block w-6 h-6 rounded-sm border border-gray-300"
-                                            style={{backgroundColor: c.trim()}}
-                                        />
-                                    ))}
+                            {(form.colors || form.emoji) && (
+                                <div>
+                                    <Caption1 block style={{marginBottom: 6, color: "var(--colorNeutralForeground3)"}}>Превью темы</Caption1>
+                                    <div
+                                        className="rounded-lg flex flex-col items-center justify-center gap-2"
+                                        style={{
+                                            minHeight: 100,
+                                            background: form.colors
+                                                ? `linear-gradient(135deg, ${form.colors.split(",").map(c => c.trim()).join(", ")})`
+                                                : "var(--colorNeutralBackground3)",
+                                            padding: "16px 24px",
+                                        }}
+                                    >
+                                        {form.emoji && <span style={{fontSize: 32}}>{form.emoji}</span>}
+                                        {form.name && (
+                                            <Subtitle2 style={{color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,0.5)"}}>
+                                                {form.name}
+                                            </Subtitle2>
+                                        )}
+                                        {form.colors && (
+                                            <div className="flex gap-1 mt-1">
+                                                {form.colors.split(",").map((c) => (
+                                                    <span
+                                                        key={c}
+                                                        title={c.trim()}
+                                                        className="inline-block w-5 h-5 rounded-full border-2 border-white/50"
+                                                        style={{backgroundColor: c.trim()}}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                             {mutationError && (

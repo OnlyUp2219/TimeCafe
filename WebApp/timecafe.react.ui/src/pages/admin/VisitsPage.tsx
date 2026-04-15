@@ -50,8 +50,11 @@ const formatCost = (cost: number | null) => {
 export const VisitsPage = () => {
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 20;
-    const {data, isLoading, error} = useGetVisitsPageQuery({pageNumber: currentPage, pageSize});
+    const [pageSize, setPageSize] = useState(20);
+    const {data, isLoading, error} = useGetVisitsPageQuery(
+        {pageNumber: currentPage, pageSize},
+        {refetchOnMountOrArgChange: true}
+    );
     const visits = data?.visits ?? [];
     const totalCount = data?.totalCount ?? 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -150,7 +153,14 @@ export const VisitsPage = () => {
 
             <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
                 <Body1>Показано {visits.length} из {totalCount}</Body1>
-                <Pagination className="" currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
             </div>
         </div>
     );

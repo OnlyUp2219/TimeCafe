@@ -6,6 +6,7 @@ import {
     Body2,
     Button,
     Card,
+    Caption1,
     Dialog,
     DialogActions,
     DialogBody,
@@ -59,11 +60,20 @@ const emptyForm: TariffFormState = {
     isActive: true,
 };
 
+const calcPerHour = (perMinute: string): string => {
+    const v = parseFloat(perMinute);
+    if (!v || isNaN(v)) return "";
+    return (v * 60).toFixed(2);
+};
+
 export const TariffsPage = () => {
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 20;
-    const {data, isLoading, error} = useGetTariffsPageQuery({pageNumber: currentPage, pageSize});
+    const [pageSize, setPageSize] = useState(20);
+    const {data, isLoading, error} = useGetTariffsPageQuery(
+        {pageNumber: currentPage, pageSize},
+        {refetchOnMountOrArgChange: true}
+    );
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -147,7 +157,7 @@ export const TariffsPage = () => {
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         name: {minWidth: 150, defaultWidth: 250},
-        price: {minWidth: 80, defaultWidth: 120},
+        price: {minWidth: 80, defaultWidth: 140},
         billingType: {minWidth: 100, defaultWidth: 140},
         theme: {minWidth: 80, defaultWidth: 140},
         status: {minWidth: 100, defaultWidth: 150},
@@ -171,9 +181,16 @@ export const TariffsPage = () => {
         createTableColumn<TariffWithTheme>({
             columnId: "price",
             compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
-            renderHeaderCell: () => "Цена/мин",
+            renderHeaderCell: () => "Цена",
             renderCell: (tariff) => (
-                <TableCellLayout truncate>{tariff.pricePerMinute} ₽</TableCellLayout>
+                <TableCellLayout truncate>
+                    <div>
+                        <Body1 block>{tariff.pricePerMinute} ₽/мин</Body1>
+                        <Caption1 block style={{color: "var(--colorNeutralForeground3)"}}>
+                            {(tariff.pricePerMinute * 60).toFixed(2)} ₽/час
+                        </Caption1>
+                    </div>
+                </TableCellLayout>
             ),
         }),
         createTableColumn<TariffWithTheme>({
@@ -219,6 +236,8 @@ export const TariffsPage = () => {
         }),
     ], [sizes, handleToggleActive, openEdit, handleDelete]);
 
+    const perHour = calcPerHour(form.pricePerMinute);
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -249,7 +268,14 @@ export const TariffsPage = () => {
 
             <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
                 <Body1>Показано {tariffs.length} из {totalCount}</Body1>
-                <Pagination className="" currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
@@ -263,8 +289,12 @@ export const TariffsPage = () => {
                             <Field label="Описание">
                                 <Input value={form.description} onChange={(_, d) => setForm(f => ({...f, description: d.value}))} />
                             </Field>
-                            <Field label="Цена за минуту (₽)" required>
-                                <Input type="number" value={form.pricePerMinute} onChange={(_, d) => setForm(f => ({...f, pricePerMinute: d.value}))} />
+                            <Field label="Цена за минуту (₽)" required hint={perHour ? `≈ ${perHour} ₽/час` : undefined}>
+                                <Input
+                                    type="number"
+                                    value={form.pricePerMinute}
+                                    onChange={(_, d) => setForm(f => ({...f, pricePerMinute: d.value}))}
+                                />
                             </Field>
                             <Field label="Тип тарификации">
                                 <div className="flex gap-4">

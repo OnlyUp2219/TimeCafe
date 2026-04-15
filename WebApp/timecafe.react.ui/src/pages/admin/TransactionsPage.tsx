@@ -77,7 +77,7 @@ export const TransactionsPage = () => {
     const {sizes} = useComponentSize();
     const [userId, setUserId] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const pageSize = 20;
+    const [pageSize, setPageSize] = useState(20);
 
     const {data, isLoading, error} = useGetTransactionHistoryQuery(
         {userId, page: currentPage, pageSize},
@@ -204,7 +204,14 @@ export const TransactionsPage = () => {
             {userId && (
                 <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
                     <Body1>Показано {transactions.length} из {totalCount}</Body1>
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
                 </div>
             )}
         </div>

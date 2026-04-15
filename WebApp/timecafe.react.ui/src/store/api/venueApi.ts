@@ -171,6 +171,7 @@ export const venueApi = createApi({
                 params: {pageNumber, pageSize},
             }),
             providesTags: ["AllTariffs"],
+            keepUnusedDataFor: 0,
         }),
 
         getTariffById: builder.query<Tariff, string>({
