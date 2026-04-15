@@ -15,6 +15,7 @@
 		<PackageReference Include="MassTransit.RabbitMQ" />
 
 		<PackageReference Include="Stripe.net" />
+		<PackageReference Include="FluentResults" />
 
 	</ItemGroup>
 

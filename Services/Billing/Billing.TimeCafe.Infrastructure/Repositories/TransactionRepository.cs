@@ -67,4 +67,15 @@ public class TransactionRepository(
             .Where(t => t.UserId == userId)
             .CountAsync(ct);
     }
+
+    public async Task<(List<Transaction> Items, int TotalCount)> GetPageAsync(int page, int pageSize, Guid? userId, CancellationToken ct = default)
+    {
+        var query = _context.Transactions.AsNoTracking();
+        if (userId.HasValue)
+            query = query.Where(t => t.UserId == userId.Value);
+        query = query.OrderByDescending(t => t.CreatedAt);
+        var totalCount = await query.CountAsync(ct);
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return (items, totalCount);
+    }
 }

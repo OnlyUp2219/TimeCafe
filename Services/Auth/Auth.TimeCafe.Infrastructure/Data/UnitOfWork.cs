@@ -1,4 +1,6 @@
-﻿namespace Auth.TimeCafe.Infrastructure.Data;
+﻿using BuildingBlocks.Contracts;
+
+namespace Auth.TimeCafe.Infrastructure.Data;
 
 public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {

@@ -93,4 +93,24 @@ public class BalanceRepository(
             tags: [CacheTags.Balances],
             cancellationToken: ct);
     }
+
+    public async Task<(List<Balance> Items, int TotalCount)> GetPageAsync(int page, int pageSize, CancellationToken ct = default)
+    {
+        var query = _context.Balances.AsNoTracking().OrderByDescending(b => b.LastUpdated);
+        var totalCount = await query.CountAsync(ct);
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return (items, totalCount);
+    }
+
+    public async Task DeleteAsync(Guid userId, CancellationToken ct = default)
+    {
+        var balance = await _context.Balances.FirstOrDefaultAsync(b => b.UserId == userId, ct);
+        if (balance is not null)
+        {
+            _context.Balances.Remove(balance);
+            await _context.SaveChangesAsync(ct);
+            await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
+            await _cache.RemoveByTagAsync(CacheTags.Balance(userId), ct);
+        }
+    }
 }

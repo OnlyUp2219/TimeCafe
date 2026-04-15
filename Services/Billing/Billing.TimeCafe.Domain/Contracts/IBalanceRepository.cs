@@ -7,4 +7,6 @@ public interface IBalanceRepository
     Task<Balance> UpdateAsync(Balance balance, CancellationToken ct = default);
     Task<bool> ExistsAsync(Guid userId, CancellationToken ct = default);
     Task<List<Balance>> GetUsersWithDebtAsync(CancellationToken ct = default);
+    Task<(List<Balance> Items, int TotalCount)> GetPageAsync(int page, int pageSize, CancellationToken ct = default);
+    Task DeleteAsync(Guid userId, CancellationToken ct = default);
 }

@@ -70,4 +70,15 @@ public class PaymentRepository(
             .Where(p => p.UserId == userId)
             .CountAsync(ct);
     }
+
+    public async Task<(List<Payment> Items, int TotalCount)> GetPageAsync(int page, int pageSize, Guid? userId, CancellationToken ct = default)
+    {
+        var query = _context.Payments.AsNoTracking();
+        if (userId.HasValue)
+            query = query.Where(p => p.UserId == userId.Value);
+        query = query.OrderByDescending(p => p.CreatedAt);
+        var totalCount = await query.CountAsync(ct);
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+        return (items, totalCount);
+    }
 }

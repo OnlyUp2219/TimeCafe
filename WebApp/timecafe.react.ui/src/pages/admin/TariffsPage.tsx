@@ -25,7 +25,7 @@ import {
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Add20Regular, Delete20Regular, Edit20Regular} from "@fluentui/react-icons";
+import {Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular} from "@fluentui/react-icons";
 import {
     useGetTariffsPageQuery,
     useCreateTariffMutation,
@@ -70,7 +70,7 @@ export const TariffsPage = () => {
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const {data, isLoading, error} = useGetTariffsPageQuery(
+    const {data, isLoading, error, refetch} = useGetTariffsPageQuery(
         {pageNumber: currentPage, pageSize},
         {refetchOnMountOrArgChange: true}
     );
@@ -245,9 +245,12 @@ export const TariffsPage = () => {
                     <Title2>Тарифы</Title2>
                     <Body2 block>{totalCount} тарифов</Body2>
                 </div>
-                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                    Добавить тариф
-                </Button>
+                <div className="flex gap-2">
+                    <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
+                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                        Добавить тариф
+                    </Button>
+                </div>
             </div>
 
             {(queryError || mutationError) && (

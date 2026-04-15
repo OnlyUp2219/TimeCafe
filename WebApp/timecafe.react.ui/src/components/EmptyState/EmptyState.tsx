@@ -1,6 +1,6 @@
 import type {FC} from "react";
-import {Body1, Caption1} from "@fluentui/react-components";
-import {DatabaseSearch20Regular} from "@fluentui/react-icons";
+import {Subtitle2, Caption1} from "@fluentui/react-components";
+import {DatabaseSearchRegular} from "@fluentui/react-icons";
 
 interface EmptyStateProps {
     title?: string;
@@ -11,14 +11,14 @@ interface EmptyStateProps {
 export const EmptyState: FC<EmptyStateProps> = ({
     title = "Нет данных",
     description,
-    icon = <DatabaseSearch20Regular style={{fontSize: 40, opacity: 0.4}} />,
+    icon = <DatabaseSearchRegular style={{fontSize: 56, opacity: 0.35}} />,
 }) => (
     <div
         style={{minHeight: 260}}
-        className="flex flex-col items-center justify-center gap-2 text-center py-8"
+        className="flex flex-col items-center justify-center gap-3 text-center py-10"
     >
-        <span className="text-[var(--colorNeutralForeground3)]">{icon}</span>
-        <Body1 style={{color: "var(--colorNeutralForeground3)"}}>{title}</Body1>
+        <span style={{color: "var(--colorNeutralForeground3)", display: "flex"}}>{icon}</span>
+        <Subtitle2 style={{color: "var(--colorNeutralForeground3)"}}>{title}</Subtitle2>
         {description && (
             <Caption1 style={{color: "var(--colorNeutralForeground4)"}}>{description}</Caption1>
         )}

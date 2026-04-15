@@ -30,3 +30,4 @@ global using Scalar.AspNetCore;
 global using Serilog;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Diagnostics;
+global using FluentResults;

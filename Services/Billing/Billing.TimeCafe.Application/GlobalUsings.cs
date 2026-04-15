@@ -1,5 +1,6 @@
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
 global using Billing.TimeCafe.Application.DTOs.Balance;
+global using Billing.TimeCafe.Application.DTOs.Payment;
 global using Billing.TimeCafe.Application.DTOs.Transaction;
 global using Billing.TimeCafe.Application.Services.Payments;
 global using Billing.TimeCafe.Domain.Enums;
@@ -20,3 +21,5 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 
 global using System.Reflection;
+global using BuildingBlocks.Contracts.CQRS;
+global using FluentResults;

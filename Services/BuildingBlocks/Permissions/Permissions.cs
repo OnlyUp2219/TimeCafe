@@ -20,6 +20,8 @@ public static class Permissions
     public const string BillingTransactionRead = "billing.transaction.read";
     public const string BillingPaymentInitialize = "billing.payment.initialize";
     public const string BillingPaymentHistoryRead = "billing.payment.read";
+    public const string BillingAdminRead = "billing.admin.read";
+    public const string BillingAdminWrite = "billing.admin.write";
 
     public const string VenueTariffCreate = "venue.tariff.create";
     public const string VenueTariffRead = "venue.tariff.read";

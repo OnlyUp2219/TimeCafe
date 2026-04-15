@@ -8,4 +8,5 @@ public interface ITransactionRepository
     Task<List<Transaction>> GetBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken ct = default);
     Task<bool> ExistsBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken ct = default);
     Task<int> GetTotalCountByUserIdAsync(Guid userId, CancellationToken ct = default);
+    Task<(List<Transaction> Items, int TotalCount)> GetPageAsync(int page, int pageSize, Guid? userId, CancellationToken ct = default);
 }

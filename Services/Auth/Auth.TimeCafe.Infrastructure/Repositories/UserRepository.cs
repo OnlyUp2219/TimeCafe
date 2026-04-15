@@ -113,4 +113,9 @@ public class UserRepository(
 
         return result;
     }
+
+    public async Task<ApplicationUser?> GetByIdAsync(Guid userId, CancellationToken ct)
+    {
+        return await _userManager.FindByIdAsync(userId.ToString());
+    }
 }

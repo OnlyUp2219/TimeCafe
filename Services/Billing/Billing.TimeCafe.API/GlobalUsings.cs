@@ -2,6 +2,7 @@ global using Billing.TimeCafe.API.Extensions;
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
 global using Billing.TimeCafe.Application.CQRS.Balances.Queries;
 global using Billing.TimeCafe.Application.CQRS.Payments.Commands;
+global using Billing.TimeCafe.Application.CQRS.Payments.Queries;
 global using Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 global using Billing.TimeCafe.Application.DependencyInjection;
 global using Billing.TimeCafe.Application.Services.Payments;
