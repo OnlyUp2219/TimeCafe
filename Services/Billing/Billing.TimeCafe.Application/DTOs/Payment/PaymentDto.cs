@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Application.DTOs.Payment;
 
-public record PaymentDto(
+public record AdminPaymentDto(
     Guid PaymentId,
     Guid UserId,
     decimal Amount,

@@ -8,11 +8,11 @@ public record GetPaymentsPageResult(
     string? Message = null,
     int? StatusCode = null,
     List<ErrorItem>? Errors = null,
-    List<PaymentDto>? Payments = null,
+    List<AdminPaymentDto>? Payments = null,
     int? TotalCount = null,
     int? TotalPages = null) : ICqrsResult
 {
-    public static GetPaymentsPageResult GetSuccess(List<PaymentDto> payments, int totalCount, int pageSize) =>
+    public static GetPaymentsPageResult GetSuccess(List<AdminPaymentDto> payments, int totalCount, int pageSize) =>
         new(true, Message: "Платежи получены",
             Payments: payments,
             TotalCount: totalCount,
@@ -35,7 +35,7 @@ public class GetPaymentsPageQueryHandler(IPaymentRepository repository)
     {
         var (items, totalCount) = await repository.GetPageAsync(request.Page, request.PageSize, request.UserId, cancellationToken);
 
-        var dtos = items.ConvertAll(p => new PaymentDto(
+        var dtos = items.ConvertAll(p => new AdminPaymentDto(
             p.PaymentId,
             p.UserId,
             p.Amount,

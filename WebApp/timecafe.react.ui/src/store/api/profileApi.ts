@@ -28,10 +28,17 @@ export interface UploadProfilePhotoResponse {
     contentType: string;
 }
 
+export interface GetProfilesPageResponse {
+    profiles: Profile[];
+    pageNumber: number;
+    pageSize: number;
+    totalCount: number;
+}
+
 export const profileApi = createApi({
     reducerPath: "profileApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Profile", "ProfilePhoto"],
+    tagTypes: ["Profile", "ProfilePhoto", "ProfilesPage"],
     endpoints: (builder) => ({
         getProfileByUserId: builder.query<Profile, string>({
             async queryFn(userId, _queryApi, _extraOptions, fetchWithBQ) {
@@ -98,6 +105,24 @@ export const profileApi = createApi({
                 {type: "ProfilePhoto", id: userId},
             ],
         }),
+        getProfilesPage: builder.query<GetProfilesPageResponse, {pageNumber: number; pageSize: number}>({
+            query: ({pageNumber, pageSize}) => ({
+                url: "/userprofile/profiles/page",
+                params: {pageNumber, pageSize},
+            }),
+            providesTags: ["ProfilesPage"],
+        }),
+
+        deleteProfile: builder.mutation<{message: string}, string>({
+            query: (userId) => ({
+                url: `/userprofile/profiles/${userId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: (_result, _error, userId) => [
+                {type: "Profile", id: userId},
+                "ProfilesPage",
+            ],
+        }),
     }),
 });
 
@@ -108,4 +133,6 @@ export const {
     useUpdateProfileMutation,
     useUploadProfilePhotoMutation,
     useDeleteProfilePhotoMutation,
+    useGetProfilesPageQuery,
+    useDeleteProfileMutation,
 } = profileApi;

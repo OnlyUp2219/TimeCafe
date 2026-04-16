@@ -18,7 +18,7 @@ import {
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {ArrowLeft20Regular} from "@fluentui/react-icons";
-import {useGetUsersQuery} from "@store/api/adminApi";
+import {useGetUserByIdQuery} from "@store/api/adminApi";
 import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
 import {useGetVisitHistoryQuery} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
@@ -76,8 +76,8 @@ export const UserDetailPage = () => {
     const [txPage, setTxPage] = useState(1);
     const txPageSize = 10;
 
-    const {data: usersData, isLoading: userLoading, error: userError} = useGetUsersQuery({page: 1, size: 100});
-    const user = useMemo(() => usersData?.users.find(u => u.id === id), [usersData, id]);
+    const {data: userData, isLoading: userLoading, error: userError} = useGetUserByIdQuery(id!, {skip: !id});
+    const user = userData?.user;
 
     const {data: balance, isLoading: balanceLoading} = useGetBalanceQuery(id!, {skip: !id});
     const {data: txData, isLoading: txLoading, error: txError} = useGetTransactionHistoryQuery(

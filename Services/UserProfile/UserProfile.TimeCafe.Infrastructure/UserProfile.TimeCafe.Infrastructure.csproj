@@ -9,6 +9,7 @@
   <ItemGroup>
 	<PackageReference Include="AWSSDK.Extensions.NETCore.Setup" />
 	<PackageReference Include="AWSSDK.S3" />
+	<PackageReference Include="FluentResults" />
 	<PackageReference Include="MassTransit" />
 	<PackageReference Include="MassTransit.EntityFrameworkCore" />
 	<PackageReference Include="Microsoft.CodeAnalysis.Common" />

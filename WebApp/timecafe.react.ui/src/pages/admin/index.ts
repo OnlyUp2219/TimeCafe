@@ -7,3 +7,4 @@ export {ThemesPage} from "./ThemesPage";
 export {VisitsPage} from "./VisitsPage";
 export {TransactionsPage} from "./TransactionsPage";
 export {PaymentsPage} from "./PaymentsPage";
+export {BalancesPage} from "./BalancesPage";

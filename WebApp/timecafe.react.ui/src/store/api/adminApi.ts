@@ -72,6 +72,23 @@ export const adminApi = createApi({
             providesTags: (_result, _error, id) => [{type: "Users", id}],
         }),
 
+        updateUser: builder.mutation<{message: string}, {userId: string; email?: string; userName?: string; emailConfirmed?: boolean; lockoutEnabled?: boolean; lockoutEnd?: string | null}>({
+            query: ({userId, ...body}) => ({
+                url: `/auth/admin/users/${userId}`,
+                method: "PUT",
+                body,
+            }),
+            invalidatesTags: (_result, _error, arg) => ["Users", {type: "Users", id: arg.userId}],
+        }),
+
+        deleteUser: builder.mutation<{message: string}, string>({
+            query: (userId) => ({
+                url: `/auth/admin/users/${userId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Users"],
+        }),
+
         getAdminBalances: builder.query<{balances: AdminBalanceDto[]; pagination: AdminPagination}, GetBalancesPageArgs>({
             query: ({page, pageSize}) => ({
                 url: "/billing/admin/balances",
@@ -101,6 +118,8 @@ export const adminApi = createApi({
 export const {
     useGetUsersQuery,
     useGetUserByIdQuery,
+    useUpdateUserMutation,
+    useDeleteUserMutation,
     useGetAdminBalancesQuery,
     useGetAdminTransactionsQuery,
     useGetAdminPaymentsQuery,

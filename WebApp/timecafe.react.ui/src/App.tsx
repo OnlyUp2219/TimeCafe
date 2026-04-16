@@ -35,6 +35,7 @@ import {ThemesPage} from "@pages/admin/ThemesPage";
 import {VisitsPage} from "@pages/admin/VisitsPage";
 import {TransactionsPage} from "@pages/admin/TransactionsPage";
 import {PaymentsPage} from "@pages/admin/PaymentsPage";
+import {BalancesPage} from "@pages/admin/BalancesPage";
 import {AdminLayout} from "@layouts/AdminLayout/AdminLayout";
 
 const AppRoutes = () => {
@@ -105,6 +106,7 @@ const AppRoutes = () => {
                     <Route path="/admin/visits" element={<VisitsPage/>}/>
                     <Route path="/admin/transactions" element={<TransactionsPage/>}/>
                     <Route path="/admin/payments" element={<PaymentsPage/>}/>
+                    <Route path="/admin/balances" element={<BalancesPage/>}/>
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage/>}/>
 

@@ -65,6 +65,7 @@ export const AdminSidebar: FC = () => {
         {
             title: "Финансы",
             items: [
+                {id: "balances", label: "Балансы", path: "/admin/balances", icon: <Money20Regular />},
                 {id: "transactions", label: "Транзакции", path: "/admin/transactions", icon: <ArrowTrending20Regular />},
                 {id: "payments", label: "Платежи", path: "/admin/payments", icon: <Payment20Regular />},
             ],
