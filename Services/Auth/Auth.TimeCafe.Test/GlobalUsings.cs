@@ -1,3 +1,5 @@
+global using Auth.TimeCafe.Application.CQRS.Admin.Command;
+global using Auth.TimeCafe.Application.CQRS.Admin.Query;
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
 global using Auth.TimeCafe.Domain.Contracts;
 global using Auth.TimeCafe.Domain.Models;
@@ -9,6 +11,8 @@ global using Auth.TimeCafe.Test.Integration.Helpers;
 global using BuildingBlocks.Exceptions;
 
 global using FluentAssertions;
+
+global using FluentValidation;
 
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Identity;

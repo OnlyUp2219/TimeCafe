@@ -51,12 +51,15 @@ export const AdminSidebar: FC = () => {
             items: [
                 {id: "dashboard", label: "Дашборд", path: "/admin/dashboard", icon: <Board20Regular />},
                 {id: "users", label: "Пользователи", path: "/admin/users", icon: <People20Regular />},
+                {id: "roles", label: "Роли", path: "/admin/roles", icon: <People20Regular />},
                 {id: "visits", label: "Визиты", path: "/admin/visits", icon: <Clock20Regular />},
             ],
         },
         {
             title: "Управление",
             items: [
+                {id: "profiles", label: "Профили", path: "/admin/profiles", icon: <People20Regular />},
+                {id: "additional-infos", label: "Доп. информация", path: "/admin/additional-infos", icon: <People20Regular />},
                 {id: "tariffs", label: "Тарифы", path: "/admin/tariffs", icon: <Money20Regular />},
                 {id: "promotions", label: "Акции", path: "/admin/promotions", icon: <Gift20Regular />},
                 {id: "themes", label: "Темы оформления", path: "/admin/themes", icon: <Color20Regular />},

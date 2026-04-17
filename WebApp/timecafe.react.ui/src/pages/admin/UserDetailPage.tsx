@@ -17,10 +17,12 @@ import {
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular} from "@fluentui/react-icons";
+import {ArrowLeft20Regular, PeopleSettings20Regular, Info20Regular} from "@fluentui/react-icons";
 import {useGetUserByIdQuery} from "@store/api/adminApi";
 import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
 import {useGetVisitHistoryQuery} from "@store/api/venueApi";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import {ProfileStatus} from "@app-types/profile";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
@@ -85,6 +87,7 @@ export const UserDetailPage = () => {
         {skip: !id}
     );
     const {data: visits = [], isLoading: visitsLoading} = useGetVisitHistoryQuery(id!, {skip: !id});
+    const {data: profile} = useGetProfileByUserIdQuery(id!, {skip: !id});
 
     const transactions = txData?.transactions ?? [];
     const txTotalPages = txData?.pagination.totalPages ?? 1;
@@ -217,9 +220,17 @@ export const UserDetailPage = () => {
 
     return (
         <div>
-            <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")} className="mb-4">
-                Назад к списку
-            </Button>
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
+                    Назад к списку
+                </Button>
+                <Button appearance="outline" size="small" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                    Управление ролями
+                </Button>
+                <Button appearance="outline" size="small" icon={<Info20Regular />} onClick={() => navigate(`/admin/additional-infos?userId=${id}`)}>
+                    Доп. информация
+                </Button>
+            </div>
 
             <Card className="mb-6" size={sizes.card}>
                 <div className="flex items-center gap-4 flex-wrap">
@@ -259,6 +270,39 @@ export const UserDetailPage = () => {
                     )}
                 </div>
             </Card>
+
+            {profile && (
+                <Card className="mb-6" size={sizes.card}>
+                    <Title3 className="mb-3">Профиль</Title3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        <div>
+                            <Body2 block>Имя</Body2>
+                            <Body1 block>{profile.firstName} {profile.lastName} {profile.middleName ?? ""}</Body1>
+                        </div>
+                        {profile.birthDate && (
+                            <div>
+                                <Body2 block>Дата рождения</Body2>
+                                <Body1 block>{new Date(profile.birthDate).toLocaleDateString("ru-RU")}</Body1>
+                            </div>
+                        )}
+                        <div>
+                            <Body2 block>Статус профиля</Body2>
+                            <Badge appearance="tint" color={
+                                profile.profileStatus === 1 ? "success" :
+                                profile.profileStatus === 2 ? "danger" : "warning"
+                            }>
+                                {profile.profileStatus === 0 ? "Ожидает" : profile.profileStatus === 1 ? "Заполнен" : "Заблокирован"}
+                            </Badge>
+                        </div>
+                        {profile.banReason && (
+                            <div className="col-span-full">
+                                <Body2 block>Причина блокировки</Body2>
+                                <Body1 block className="text-red-500">{profile.banReason}</Body1>
+                            </div>
+                        )}
+                    </div>
+                </Card>
+            )}
 
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">

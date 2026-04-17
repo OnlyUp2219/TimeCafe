@@ -1,57 +1,188 @@
+import {useMemo, useState} from "react";
 import {
+    Badge,
     Body1,
     Body2,
     Card,
+    Caption1,
+    Field,
+    Input,
     MessageBar,
     MessageBarBody,
     Title2,
-    Title3,
+    createTableColumn,
+    TableCellLayout,
 } from "@fluentui/react-components";
-import {Payment20Regular, ArrowTrending20Regular} from "@fluentui/react-icons";
+import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
+import {useGetAdminPaymentsQuery} from "@store/api/adminApi";
+import type {AdminPaymentDto} from "@store/api/adminApi";
+import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
+import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import {DataTable} from "@components/DataTable/DataTable";
+import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+
+const paymentStatusLabel = (s: number) => {
+    switch (s) {
+        case 0: return "Ожидание";
+        case 1: return "Выполнен";
+        case 2: return "Ошибка";
+        case 3: return "Возврат";
+        case 4: return "Отменён";
+        default: return "—";
+    }
+};
+
+const paymentStatusColor = (s: number): "warning" | "success" | "danger" | "informative" => {
+    switch (s) {
+        case 0: return "warning";
+        case 1: return "success";
+        case 2: return "danger";
+        case 3: return "informative";
+        case 4: return "danger";
+        default: return "warning";
+    }
+};
+
+const paymentMethodLabel = (m: number) => {
+    switch (m) {
+        case 0: return "Stripe";
+        case 1: return "Вручную";
+        default: return "—";
+    }
+};
+
+const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
+const formatDate = (iso: string) =>
+    new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
 export const PaymentsPage = () => {
     const {sizes} = useComponentSize();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [userIdFilter, setUserIdFilter] = useState("");
+
+    const {data, isLoading, error} = useGetAdminPaymentsQuery(
+        {page: currentPage, pageSize, userId: userIdFilter || undefined},
+        {refetchOnMountOrArgChange: true}
+    );
+
+    const payments = data?.payments ?? [];
+    const totalCount = data?.pagination.totalCount ?? 0;
+    const totalPages = data?.pagination.totalPages ?? 1;
+    const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
+
+    const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
+        userId: {minWidth: 100, defaultWidth: 160},
+        amount: {minWidth: 80, defaultWidth: 120},
+        method: {minWidth: 80, defaultWidth: 110},
+        status: {minWidth: 100, defaultWidth: 130},
+        externalId: {minWidth: 100, defaultWidth: 180},
+        createdAt: {minWidth: 130, defaultWidth: 160},
+    }), []);
+
+    const columns: TableColumnDefinition<AdminPaymentDto>[] = useMemo(() => [
+        createTableColumn<AdminPaymentDto>({
+            columnId: "userId",
+            compare: (a, b) => a.userId.localeCompare(b.userId),
+            renderHeaderCell: () => "Пользователь",
+            renderCell: (p) => (
+                <TableCellLayout truncate>
+                    <Caption1 className="font-mono">{p.userId.slice(0, 8)}…</Caption1>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<AdminPaymentDto>({
+            columnId: "amount",
+            compare: (a, b) => a.amount - b.amount,
+            renderHeaderCell: () => "Сумма",
+            renderCell: (p) => (
+                <TableCellLayout truncate>
+                    <Body1 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(p.amount)}</Body1>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<AdminPaymentDto>({
+            columnId: "method",
+            compare: (a, b) => a.paymentMethod - b.paymentMethod,
+            renderHeaderCell: () => "Метод",
+            renderCell: (p) => <TableCellLayout truncate>{paymentMethodLabel(p.paymentMethod)}</TableCellLayout>,
+        }),
+        createTableColumn<AdminPaymentDto>({
+            columnId: "status",
+            compare: (a, b) => a.status - b.status,
+            renderHeaderCell: () => "Статус",
+            renderCell: (p) => (
+                <TableCellLayout truncate>
+                    <Badge appearance="tint" color={paymentStatusColor(p.status)}>{paymentStatusLabel(p.status)}</Badge>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<AdminPaymentDto>({
+            columnId: "externalId",
+            compare: (a, b) => (a.externalPaymentId ?? "").localeCompare(b.externalPaymentId ?? ""),
+            renderHeaderCell: () => "External ID",
+            renderCell: (p) => (
+                <TableCellLayout truncate>
+                    <Caption1 className="font-mono">{p.externalPaymentId ? p.externalPaymentId.slice(0, 16) + "…" : "—"}</Caption1>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<AdminPaymentDto>({
+            columnId: "createdAt",
+            compare: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+            renderHeaderCell: () => "Создан",
+            renderCell: (p) => <TableCellLayout truncate>{formatDate(p.createdAt)}</TableCellLayout>,
+        }),
+    ], []);
 
     return (
         <div>
-            <div className="mb-6">
-                <Title2>Платежи</Title2>
-                <Body2 block className="mt-1">Управление платёжными операциями</Body2>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <div>
+                    <Title2>Платежи</Title2>
+                    <Body2 block>{totalCount} платежей</Body2>
+                </div>
             </div>
 
-            <MessageBar intent="info" className="mb-6">
-                <MessageBarBody>
-                    Страница платежей находится в разработке. Здесь будет отображаться история Stripe-платежей.
-                </MessageBarBody>
-            </MessageBar>
+            <div className="flex gap-4 flex-wrap items-end mb-4">
+                <Field label="Фильтр по userId" size={sizes.field}>
+                    <Input
+                        size={sizes.input}
+                        value={userIdFilter}
+                        onChange={(e) => { setUserIdFilter(e.target.value); setCurrentPage(1); }}
+                        placeholder="Введите userId..."
+                        style={{minWidth: 280}}
+                    />
+                </Field>
+            </div>
 
-            <div className="flex gap-4 flex-wrap">
-                <Card className="flex-1 min-w-[240px]" size={sizes.card}>
-                    <div className="flex items-center gap-3">
-                        <div className="text-2xl opacity-50"><Payment20Regular /></div>
-                        <div>
-                            <Body2 block>Stripe Checkout</Body2>
-                            <Title3>—</Title3>
-                        </div>
-                    </div>
-                    <Body1 block className="mt-2 text-gray-500">
-                        Платежи через Stripe Checkout будут отображаться здесь после интеграции с Billing API.
-                    </Body1>
-                </Card>
+            {queryError && (
+                <MessageBar intent="error" className="mb-4">
+                    <MessageBarBody>{queryError}</MessageBarBody>
+                </MessageBar>
+            )}
 
-                <Card className="flex-1 min-w-[240px]" size={sizes.card}>
-                    <div className="flex items-center gap-3">
-                        <div className="text-2xl opacity-50"><ArrowTrending20Regular /></div>
-                        <div>
-                            <Body2 block>Транзакции</Body2>
-                            <Title3>—</Title3>
-                        </div>
-                    </div>
-                    <Body1 block className="mt-2 text-gray-500">
-                        Для просмотра транзакций перейдите в раздел «Транзакции».
-                    </Body1>
-                </Card>
+            <Card className="overflow-x-auto" size={sizes.card}>
+                <DataTable
+                    items={payments}
+                    columns={columns}
+                    getRowId={(p) => p.paymentId}
+                    loading={isLoading}
+                    columnSizingOptions={columnSizingOptions}
+                />
+            </Card>
+
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {payments.length} из {totalCount}</Body1>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
             </div>
         </div>
     );

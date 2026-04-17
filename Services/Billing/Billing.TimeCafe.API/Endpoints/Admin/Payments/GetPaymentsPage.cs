@@ -2,37 +2,36 @@ using Billing.TimeCafe.Application.CQRS.Payments.Queries;
 
 namespace Billing.TimeCafe.API.Endpoints.Admin.Payments;
 
-public sealed record GetPaymentsPageRequest(int Page = 1, int PageSize = 20, Guid? UserId = null);
-
 public class GetPaymentsPageEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGroup("/billing/admin")
-            .WithTags("Admin - Billing")
-            .MapGet("/payments", async (
-                [AsParameters] GetPaymentsPageRequest request,
-                [FromServices] ISender sender) =>
+        app.MapGet("/admin/payments", async (
+            [FromQuery] int page,
+            [FromQuery] int pageSize,
+            [FromQuery] Guid? userId,
+            [FromServices] ISender sender) =>
+        {
+            var query = new GetPaymentsPageQuery(page <= 0 ? 1 : page, pageSize <= 0 ? 20 : pageSize, userId);
+            var result = await sender.Send(query);
+            return result.ToHttpResult(data => Results.Ok(new
             {
-                var query = new GetPaymentsPageQuery(request.Page, request.PageSize, request.UserId);
-                var result = await sender.Send(query);
-                return result.ToHttpResult(data => Results.Ok(new
+                payments = data.Payments,
+                pagination = new
                 {
-                    payments = data.Payments,
-                    pagination = new
-                    {
-                        currentPage = request.Page,
-                        pageSize = request.PageSize,
-                        totalCount = data.TotalCount,
-                        totalPages = data.TotalPages
-                    }
-                }));
-            })
-            .WithName("GetPaymentsPage")
-            .WithSummary("Получение страницы платежей (admin)")
-            .WithDescription("Возвращает страницу платежей с опциональной фильтрацией по userId.")
-            .Produces(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status400BadRequest)
-            .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingAdminRead));
+                    currentPage = page,
+                    pageSize,
+                    totalCount = data.TotalCount,
+                    totalPages = data.TotalPages
+                }
+            }));
+        })
+        .WithTags("Admin - Billing")
+        .WithName("GetPaymentsPage")
+        .WithSummary("Получение страницы платежей (admin)")
+        .WithDescription("Возвращает страницу платежей с опциональной фильтрацией по userId.")
+        .Produces(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.BillingAdminRead));
     }
 }

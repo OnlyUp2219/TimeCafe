@@ -198,6 +198,11 @@ export const venueApi = createApi({
             providesTags: (_result, _error, userId) => [{type: "VisitHistory", id: userId}],
         }),
 
+        getVisitById: builder.query<{visit: VisitWithTariff}, string>({
+            query: (visitId) => `/venue/visits/${visitId}`,
+            providesTags: (_result, _error, visitId) => [{type: "VisitsPage", id: visitId}],
+        }),
+
         getVisitsPage: builder.query<GetVisitsPageResponse, GetVisitsPageArgs>({
             query: ({pageNumber, pageSize}) => ({
                 url: "/venue/visits/page",
@@ -351,6 +356,7 @@ export const venueApi = createApi({
 });
 
 export const {
+    useGetVisitByIdQuery,
     useGetActiveTariffsQuery,
     useGetAllTariffsQuery,
     useGetTariffsPageQuery,

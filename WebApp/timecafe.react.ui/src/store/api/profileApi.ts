@@ -105,6 +105,11 @@ export const profileApi = createApi({
                 {type: "ProfilePhoto", id: userId},
             ],
         }),
+        getAdditionalInfosByUserId: builder.query<{infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string}[], string>({
+            query: (userId) => `/userprofile/profiles/${userId}/infos`,
+            providesTags: (_result, _error, userId) => [{type: "Profile", id: `infos-${userId}`}],
+        }),
+
         getProfilesPage: builder.query<GetProfilesPageResponse, {pageNumber: number; pageSize: number}>({
             query: ({pageNumber, pageSize}) => ({
                 url: "/userprofile/profiles/page",
@@ -133,6 +138,7 @@ export const {
     useUpdateProfileMutation,
     useUploadProfilePhotoMutation,
     useDeleteProfilePhotoMutation,
+    useGetAdditionalInfosByUserIdQuery,
     useGetProfilesPageQuery,
     useDeleteProfileMutation,
 } = profileApi;

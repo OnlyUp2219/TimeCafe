@@ -40,6 +40,7 @@ const persistConfigure = {
         profileApi.reducerPath,
         billingApi.reducerPath,
         venueApi.reducerPath,
+        adminApi.reducerPath,
     ],
 };
 

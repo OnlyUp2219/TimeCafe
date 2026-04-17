@@ -1,7 +1,12 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {baseQueryWithReauth} from "@store/api/baseQuery";
 import type {User} from "@app-types/user";
-import type {BillingBalance, BillingTransaction} from "@app-types/billing";
+import type {BillingTransaction} from "@app-types/billing";
+
+export interface RoleDto {
+    name: string;
+    normalizedName: string;
+}
 
 export interface GetUsersResponse {
     users: User[];
@@ -67,6 +72,63 @@ export const adminApi = createApi({
             providesTags: ["Users"],
         }),
 
+        getRoleClaimsByName: builder.query<{roleClaim: {roleName: string; claims: string[]}}, string>({
+            query: (roleName) => `/auth/rbac/role-claims/${roleName}`,
+            providesTags: (_result, _error, roleName) => [{type: "Users", id: `claims-${roleName}`}],
+        }),
+
+        updateRoleClaims: builder.mutation<{message: string}, {roleName: string; claims: string[]}>({
+            query: ({roleName, claims}) => ({
+                url: `/auth/rbac/role-claims/${roleName}`,
+                method: "PUT",
+                body: {claims},
+            }),
+            invalidatesTags: (_result, _error, arg) => [{type: "Users", id: `claims-${arg.roleName}`}],
+        }),
+
+        assignRoleToUser: builder.mutation<{message: string}, {userId: string; roleName: string}>({
+            query: ({userId, roleName}) => ({
+                url: `/auth/rbac/users/${userId}/roles/${roleName}`,
+                method: "POST",
+            }),
+            invalidatesTags: ["Users"],
+        }),
+
+        removeRoleFromUser: builder.mutation<{message: string}, {userId: string; roleName: string}>({
+            query: ({userId, roleName}) => ({
+                url: `/auth/rbac/users/${userId}/roles/${roleName}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Users"],
+        }),
+
+        getPermissions: builder.query<{permissions: string[]}, void>({
+            query: () => "/auth/rbac/permissions",
+            providesTags: ["Users"],
+        }),
+
+        getRoles: builder.query<{roles: RoleDto[]}, void>({
+            query: () => "/auth/roles",
+            providesTags: ["Users"],
+        }),
+
+        createRole: builder.mutation<{message: string}, {roleName: string}>({
+            query: (body) => ({
+                url: "/auth/roles",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Users"],
+        }),
+
+        deleteRole: builder.mutation<{message: string}, string>({
+            query: (roleName) => ({
+                url: `/auth/roles/${roleName}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Users"],
+        }),
+
         getUserById: builder.query<{user: User}, string>({
             query: (userId) => `/auth/admin/users/${userId}`,
             providesTags: (_result, _error, id) => [{type: "Users", id}],
@@ -117,6 +179,14 @@ export const adminApi = createApi({
 
 export const {
     useGetUsersQuery,
+    useGetRolesQuery,
+    useCreateRoleMutation,
+    useDeleteRoleMutation,
+    useGetRoleClaimsByNameQuery,
+    useUpdateRoleClaimsMutation,
+    useAssignRoleToUserMutation,
+    useRemoveRoleFromUserMutation,
+    useGetPermissionsQuery,
     useGetUserByIdQuery,
     useUpdateUserMutation,
     useDeleteUserMutation,

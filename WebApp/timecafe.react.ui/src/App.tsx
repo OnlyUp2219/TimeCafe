@@ -36,6 +36,12 @@ import {VisitsPage} from "@pages/admin/VisitsPage";
 import {TransactionsPage} from "@pages/admin/TransactionsPage";
 import {PaymentsPage} from "@pages/admin/PaymentsPage";
 import {BalancesPage} from "@pages/admin/BalancesPage";
+import {ProfilesPage} from "@pages/admin/ProfilesPage";
+import {RolesPage} from "@pages/admin/RolesPage";
+import {RoleClaimsPage} from "@pages/admin/RoleClaimsPage";
+import {UserRolesPage} from "@pages/admin/UserRolesPage";
+import {AdditionalInfosPage} from "@pages/admin/AdditionalInfosPage";
+import {VisitDetailPage} from "@pages/admin/VisitDetailPage";
 import {AdminLayout} from "@layouts/AdminLayout/AdminLayout";
 
 const AppRoutes = () => {
@@ -104,9 +110,15 @@ const AppRoutes = () => {
                     <Route path="/admin/promotions" element={<PromotionsPage/>}/>
                     <Route path="/admin/themes" element={<ThemesPage/>}/>
                     <Route path="/admin/visits" element={<VisitsPage/>}/>
+                    <Route path="/admin/visits/:id" element={<VisitDetailPage/>}/>
                     <Route path="/admin/transactions" element={<TransactionsPage/>}/>
                     <Route path="/admin/payments" element={<PaymentsPage/>}/>
                     <Route path="/admin/balances" element={<BalancesPage/>}/>
+                    <Route path="/admin/profiles" element={<ProfilesPage/>}/>
+                    <Route path="/admin/roles" element={<RolesPage/>}/>
+                    <Route path="/admin/roles/:roleName/claims" element={<RoleClaimsPage/>}/>
+                    <Route path="/admin/users/:id/roles" element={<UserRolesPage/>}/>
+                    <Route path="/admin/additional-infos" element={<AdditionalInfosPage/>}/>
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage/>}/>
 

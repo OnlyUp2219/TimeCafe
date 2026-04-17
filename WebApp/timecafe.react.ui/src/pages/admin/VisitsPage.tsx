@@ -1,8 +1,10 @@
 import {useMemo, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {
     Badge,
     Body1,
     Body2,
+    Button,
     Card,
     MessageBar,
     MessageBarBody,
@@ -11,6 +13,7 @@ import {
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
+import {Eye20Regular} from "@fluentui/react-icons";
 import {useGetVisitsPageQuery} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
@@ -48,6 +51,7 @@ const formatCost = (cost: number | null) => {
 };
 
 export const VisitsPage = () => {
+    const navigate = useNavigate();
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
@@ -124,7 +128,17 @@ export const VisitsPage = () => {
                 </TableCellLayout>
             ),
         }),
-    ], []);
+        createTableColumn<VisitWithTariff>({
+            columnId: "actions",
+            compare: () => 0,
+            renderHeaderCell: () => "Действия",
+            renderCell: (visit) => (
+                <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/visits/${visit.visitId}`)}>
+                    Открыть
+                </Button>
+            ),
+        }),
+    ], [navigate]);
 
     return (
         <div>
