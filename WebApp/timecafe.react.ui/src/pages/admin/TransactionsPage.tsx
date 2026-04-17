@@ -9,6 +9,7 @@ import {
     MessageBar,
     MessageBarBody,
     Title2,
+    Title3,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
@@ -89,14 +90,19 @@ export const TransactionsPage = () => {
     const totalCount = data?.pagination.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
+    const totalDeposits = useMemo(() => transactions.reduce((sum, item) => sum + (item.type === TransactionType.Deposit ? item.amount : 0), 0), [transactions]);
+    const totalWithdrawals = useMemo(() => transactions.reduce((sum, item) => sum + (item.type === TransactionType.Withdrawal ? Math.abs(item.amount) : 0), 0), [transactions]);
+    const completedCount = useMemo(() => transactions.filter((item) => item.status === TransactionStatus.Completed).length, [transactions]);
+
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         date: {minWidth: 130, defaultWidth: 160},
+        user: {minWidth: 150, defaultWidth: 220},
         type: {minWidth: 100, defaultWidth: 140},
         source: {minWidth: 100, defaultWidth: 130},
         status: {minWidth: 100, defaultWidth: 130},
         amount: {minWidth: 80, defaultWidth: 120},
         balance: {minWidth: 80, defaultWidth: 120},
-        comment: {minWidth: 100, defaultWidth: 200},
+        comment: {minWidth: 100, defaultWidth: 220},
     }), []);
 
     const columns: TableColumnDefinition<BillingTransaction>[] = useMemo(() => [
@@ -105,6 +111,19 @@ export const TransactionsPage = () => {
             compare: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
             renderHeaderCell: () => "Дата",
             renderCell: (tx) => <TableCellLayout truncate>{formatDateTime(tx.createdAt)}</TableCellLayout>,
+        }),
+        createTableColumn<BillingTransaction>({
+            columnId: "user",
+            compare: (a, b) => a.userId.localeCompare(b.userId),
+            renderHeaderCell: () => "Пользователь",
+            renderCell: (tx) => (
+                <TableCellLayout truncate>
+                    <div className="min-w-0">
+                        <Body1 block truncate>{tx.userId}</Body1>
+                        <Body2 block className="font-mono text-gray-400">{tx.userId.slice(0, 8)}…</Body2>
+                    </div>
+                </TableCellLayout>
+            ),
         }),
         createTableColumn<BillingTransaction>({
             columnId: "type",
@@ -163,8 +182,23 @@ export const TransactionsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Транзакции</Title2>
-                    {userId && <Body2 block>{totalCount} транзакций</Body2>}
+                    <Body2 block>Все финансовые операции</Body2>
                 </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-3 mb-4">
+                <Card size={sizes.card}>
+                    <Body2 block>Найдено</Body2>
+                    <Title2>{userId ? totalCount : 0}</Title2>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Пополнения</Body2>
+                    <Title2>{formatMoney(totalDeposits)}</Title2>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Списания</Body2>
+                    <Title2>{formatMoney(totalWithdrawals)}</Title2>
+                </Card>
             </div>
 
             <div className="flex gap-4 flex-wrap items-end mb-4">
@@ -177,6 +211,10 @@ export const TransactionsPage = () => {
                         style={{minWidth: 320}}
                     />
                 </Field>
+                <Card size={sizes.card} className="px-4 py-3">
+                    <Body2 block>Выполнено</Body2>
+                    <Title3>{completedCount}</Title3>
+                </Card>
             </div>
 
             {errorMessage && (

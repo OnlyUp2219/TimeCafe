@@ -93,7 +93,7 @@ public class VisitRepository(
     public async Task<IEnumerable<VisitWithTariffDto>> GetVisitHistoryByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 20, CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
-            CacheKeys.Visit_HistoryByUser(userId, pageNumber),
+            CacheKeys.Visit_HistoryByUser(userId, pageNumber, pageSize),
             async ct => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
@@ -124,7 +124,7 @@ public class VisitRepository(
     public async Task<IEnumerable<VisitWithTariffDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
-            CacheKeys.Visit_Page(pageNumber),
+            CacheKeys.Visit_Page(pageNumber, pageSize),
             async ct => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()

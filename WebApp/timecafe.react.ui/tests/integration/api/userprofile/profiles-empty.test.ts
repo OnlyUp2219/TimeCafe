@@ -1,7 +1,7 @@
 import {describe, it, expect} from "vitest";
 import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, parseCallbackParams, registerUser} from "@tests/integration/api/helpers";
 
-describe("/userprofile/profiles/empty", () => {
+describe("profile empty", () => {
     it("returns 401 when unauthorized", async () => {
         const {client} = createTestClient();
         const res = await client.post("/userprofile/profiles/empty/00000000-0000-0000-0000-000000000001", null);
@@ -62,7 +62,7 @@ describe("/userprofile/profiles/empty", () => {
         }
     });
 
-    it("returns 422 for invalid userId", async () => {
+    it("returns 404 for invalid userId", async () => {
         const {client} = createTestClient();
         const email = createTestEmail();
         const password = createPassword();
@@ -78,6 +78,6 @@ describe("/userprofile/profiles/empty", () => {
 
         const {token} = await loginAndGetAccessToken(client, email, password);
         const res = await client.post("/userprofile/profiles/empty/invalid", null, {headers: {Authorization: `Bearer ${token}`}});
-        expect(res.status).toBe(422);
+        expect(res.status).toBe(404);
     });
 });

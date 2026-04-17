@@ -108,13 +108,13 @@ export const adminApi = createApi({
         }),
 
         getRoles: builder.query<{roles: RoleDto[]}, void>({
-            query: () => "/auth/roles",
+            query: () => "/auth/rbac/roles",
             providesTags: ["Users"],
         }),
 
         createRole: builder.mutation<{message: string}, {roleName: string}>({
             query: (body) => ({
-                url: "/auth/roles",
+                url: "/auth/rbac/roles",
                 method: "POST",
                 body,
             }),
@@ -123,7 +123,7 @@ export const adminApi = createApi({
 
         deleteRole: builder.mutation<{message: string}, string>({
             query: (roleName) => ({
-                url: `/auth/roles/${roleName}`,
+                url: `/auth/rbac/roles/${roleName}`,
                 method: "DELETE",
             }),
             invalidatesTags: ["Users"],

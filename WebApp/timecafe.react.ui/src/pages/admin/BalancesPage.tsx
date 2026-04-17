@@ -2,7 +2,7 @@ import {useMemo, useState} from "react";
 import {
     Body1,
     Body2,
-    Caption1,
+    Badge,
     Card,
     MessageBar,
     MessageBarBody,
@@ -23,6 +23,20 @@ const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
+const getBalanceType = (balance: AdminBalanceDto) => {
+    if (balance.debt > 0) return "Долг";
+    if (balance.currentBalance > 0) return "Положительный";
+    if (balance.currentBalance < 0) return "Отрицательный";
+    return "Нулевой";
+};
+
+const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "warning" | "informative" => {
+    if (balance.debt > 0) return "danger";
+    if (balance.currentBalance > 0) return "success";
+    if (balance.currentBalance < 0) return "warning";
+    return "informative";
+};
+
 export const BalancesPage = () => {
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,22 +53,36 @@ export const BalancesPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        userId: {minWidth: 120, defaultWidth: 200},
-        current: {minWidth: 80, defaultWidth: 130},
-        deposited: {minWidth: 80, defaultWidth: 130},
-        spent: {minWidth: 80, defaultWidth: 130},
-        debt: {minWidth: 80, defaultWidth: 110},
+        user: {minWidth: 180, defaultWidth: 260},
+        type: {minWidth: 110, defaultWidth: 150},
+        current: {minWidth: 100, defaultWidth: 130},
+        deposited: {minWidth: 100, defaultWidth: 130},
+        spent: {minWidth: 100, defaultWidth: 130},
+        debt: {minWidth: 100, defaultWidth: 120},
         updated: {minWidth: 130, defaultWidth: 170},
     }), []);
 
     const columns: TableColumnDefinition<AdminBalanceDto>[] = useMemo(() => [
         createTableColumn<AdminBalanceDto>({
-            columnId: "userId",
+            columnId: "user",
             compare: (a, b) => a.userId.localeCompare(b.userId),
             renderHeaderCell: () => "Пользователь",
             renderCell: (b) => (
                 <TableCellLayout truncate>
-                    <Caption1 className="font-mono">{b.userId.slice(0, 8)}…</Caption1>
+                    <div className="min-w-0">
+                        <Body1 block truncate>{b.userId}</Body1>
+                        <Body2 block className="font-mono text-gray-400">{b.userId.slice(0, 8)}…</Body2>
+                    </div>
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<AdminBalanceDto>({
+            columnId: "type",
+            compare: (a, b) => getBalanceType(a).localeCompare(getBalanceType(b)),
+            renderHeaderCell: () => "Тип",
+            renderCell: (b) => (
+                <TableCellLayout truncate>
+                    <Badge appearance="tint" color={getBalanceTypeColor(b)}>{getBalanceType(b)}</Badge>
                 </TableCellLayout>
             ),
         }),

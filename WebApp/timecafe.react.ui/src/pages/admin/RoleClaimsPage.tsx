@@ -24,7 +24,9 @@ export const RoleClaimsPage = () => {
     const navigate = useNavigate();
     const {sizes} = useComponentSize();
 
-    const {data: roleClaimsData, isLoading: claimsLoading, error: claimsError} = useGetRoleClaimsByNameQuery(roleName!, {skip: !roleName});
+    const normalizedRoleName = roleName?.trim() || null;
+
+    const {data: roleClaimsData, isLoading: claimsLoading, error: claimsError} = useGetRoleClaimsByNameQuery(normalizedRoleName!, {skip: !normalizedRoleName});
     const {data: permissionsData, isLoading: permsLoading} = useGetPermissionsQuery();
     const [updateRoleClaims, {isLoading: saving}] = useUpdateRoleClaimsMutation();
 
@@ -48,15 +50,15 @@ export const RoleClaimsPage = () => {
     }, [currentClaims]);
 
     const handleSave = useCallback(async () => {
-        if (!roleName) return;
+        if (!normalizedRoleName) return;
         setMutationError(null);
         try {
-            await updateRoleClaims({roleName, claims: Array.from(effectiveSelected)}).unwrap();
+            await updateRoleClaims({roleName: normalizedRoleName, claims: Array.from(effectiveSelected)}).unwrap();
             setSaved(true);
         } catch (err) {
             setMutationError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось сохранить");
         }
-    }, [roleName, effectiveSelected, updateRoleClaims]);
+    }, [normalizedRoleName, effectiveSelected, updateRoleClaims]);
 
     const claimsError2 = claimsError ? getRtkErrorMessage(claimsError as FetchBaseQueryError) : null;
 
@@ -75,57 +77,66 @@ export const RoleClaimsPage = () => {
                 Назад к ролям
             </Button>
 
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
-                    <Title2>Permissions роли</Title2>
-                    <Body2 block>
-                        <Badge appearance="outline" size="large">{roleName}</Badge>
-                        {" "}{effectiveSelected.size} из {allPermissions.length} выбрано
-                    </Body2>
-                </div>
-                <Button
-                    appearance="primary"
-                    size={sizes.button}
-                    icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
-                    onClick={handleSave}
-                    disabled={saving}
-                >
-                    Сохранить
-                </Button>
-            </div>
-
-            {(claimsError2 || mutationError) && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{claimsError2 || mutationError}</MessageBarBody>
-                </MessageBar>
-            )}
-
-            {saved && (
-                <MessageBar intent="success" className="mb-4">
-                    <MessageBarBody>Permissions сохранены</MessageBarBody>
-                </MessageBar>
-            )}
-
-            <div className="flex flex-col gap-4">
-                {Object.entries(groupedPermissions).map(([group, perms]) => (
-                    <Card key={group} size={sizes.card}>
-                        <Title3 className="mb-3">{group}</Title3>
-                        <div className="flex flex-wrap gap-2">
-                            {perms.map(perm => (
-                                <Checkbox
-                                    key={perm}
-                                    label={perm}
-                                    checked={effectiveSelected.has(perm)}
-                                    onChange={() => toggle(perm)}
-                                />
-                            ))}
+            {!normalizedRoleName ? (
+                <Card size={sizes.card}>
+                    <Title2>Роль не указана</Title2>
+                    <Body2 block>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
+                </Card>
+            ) : (
+                <>
+                    <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                        <div>
+                            <Title2>Permissions роли</Title2>
+                            <Body2 block>
+                                <Badge appearance="outline" size="large">{normalizedRoleName}</Badge>
+                                {" "}{effectiveSelected.size} из {allPermissions.length} выбрано
+                            </Body2>
                         </div>
-                    </Card>
-                ))}
-            </div>
+                        <Button
+                            appearance="primary"
+                            size={sizes.button}
+                            icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
+                            onClick={handleSave}
+                            disabled={saving}
+                        >
+                            Сохранить
+                        </Button>
+                    </div>
 
-            {allPermissions.length === 0 && (
-                <Body1>Нет доступных permissions</Body1>
+                    {(claimsError2 || mutationError) && (
+                        <MessageBar intent="error" className="mb-4">
+                            <MessageBarBody>{claimsError2 || mutationError}</MessageBarBody>
+                        </MessageBar>
+                    )}
+
+                    {saved && (
+                        <MessageBar intent="success" className="mb-4">
+                            <MessageBarBody>Permissions сохранены</MessageBarBody>
+                        </MessageBar>
+                    )}
+
+                    <div className="flex flex-col gap-4">
+                        {Object.entries(groupedPermissions).map(([group, perms]) => (
+                            <Card key={group} size={sizes.card}>
+                                <Title3 className="mb-3">{group}</Title3>
+                                <div className="flex flex-wrap gap-2">
+                                    {perms.map(perm => (
+                                        <Checkbox
+                                            key={perm}
+                                            label={perm}
+                                            checked={effectiveSelected.has(perm)}
+                                            onChange={() => toggle(perm)}
+                                        />
+                                    ))}
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+
+                    {allPermissions.length === 0 && (
+                        <Body1>Нет доступных permissions</Body1>
+                    )}
+                </>
             )}
         </div>
     );

@@ -1,10 +1,10 @@
 import {describe, it, expect} from "vitest";
 import {createPassword, createTestClient, createTestEmail, loginAndGetAccessToken, parseCallbackParams, registerUser} from "@tests/integration/api/helpers";
 
-describe("/userprofile/profiles (update)", () => {
+describe("/userprofile/profiles/{id} (update)", () => {
     it("returns 401 when unauthorized", async () => {
         const {client} = createTestClient();
-        const res = await client.put("/userprofile/profiles", {userId: "id", firstName: "A", lastName: "B", gender: 0});
+        const res = await client.put("/userprofile/profiles/00000000-0000-0000-0000-000000000001", {firstName: "A", lastName: "B", gender: 0});
         expect(res.status).toBe(401);
     });
 
@@ -30,7 +30,7 @@ describe("/userprofile/profiles (update)", () => {
         if (userId) {
             await client.post(`/userprofile/profiles/empty/${userId}`, null, {headers: {Authorization: `Bearer ${token}`}});
             const res = await client.put(
-                "/userprofile/profiles",
+                `/userprofile/profiles/${userId}`,
                 {userId, firstName: "Test", lastName: "User", gender: 0},
                 {headers: {Authorization: `Bearer ${token}`}}
             );
@@ -55,8 +55,8 @@ describe("/userprofile/profiles (update)", () => {
 
         const {token} = await loginAndGetAccessToken(client, email, password);
         const res = await client.put(
-            "/userprofile/profiles",
-            {userId: "00000000-0000-0000-0000-000000000123", firstName: "", lastName: "", gender: 0},
+            "/userprofile/profiles/00000000-0000-0000-0000-000000000123",
+            {firstName: "", lastName: "", gender: 0},
             {headers: {Authorization: `Bearer ${token}`}}
         );
         expect(res.status).toBe(422);
@@ -78,7 +78,7 @@ describe("/userprofile/profiles (update)", () => {
 
         const {token} = await loginAndGetAccessToken(client, email, password);
         const res = await client.put(
-            "/userprofile/profiles",
+            "/userprofile/profiles/00000000-0000-0000-0000-000000000999",
             {userId: "00000000-0000-0000-0000-000000000999", firstName: "Test", lastName: "User", gender: 0},
             {headers: {Authorization: `Bearer ${token}`}}
         );

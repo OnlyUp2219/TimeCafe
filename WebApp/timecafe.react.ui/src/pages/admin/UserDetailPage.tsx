@@ -1,5 +1,5 @@
 import {useParams, useNavigate} from "react-router-dom";
-import {useState, useMemo} from "react";
+import {useMemo, useState} from "react";
 import {
     Avatar,
     Badge,
@@ -17,12 +17,12 @@ import {
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular, PeopleSettings20Regular, Info20Regular} from "@fluentui/react-icons";
+import {ArrowLeft20Regular, PeopleSettings20Regular} from "@fluentui/react-icons";
 import {useGetUserByIdQuery} from "@store/api/adminApi";
 import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
 import {useGetVisitHistoryQuery} from "@store/api/venueApi";
 import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
-import {ProfileStatus} from "@app-types/profile";
+import {ProfileStatus, Gender} from "@app-types/profile";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
@@ -70,6 +70,43 @@ const txSourceLabel = (s: number) => {
 const visitStatusLabel = (s: number) => s === VisitStatus.Active ? "Активен" : "Завершён";
 const visitStatusColor = (s: number): "success" | "informative" => s === VisitStatus.Active ? "success" : "informative";
 
+const genderLabel = (gender?: number) => {
+    switch (gender) {
+        case Gender.Male:
+            return "Мужской";
+        case Gender.Female:
+            return "Женский";
+        default:
+            return "Не указан";
+    }
+};
+
+const profileStatusLabel = (status?: number) => {
+    switch (status) {
+        case ProfileStatus.Pending:
+            return "Ожидает заполнения";
+        case ProfileStatus.Completed:
+            return "Заполнен";
+        case ProfileStatus.Banned:
+            return "Заблокирован";
+        default:
+            return "Неизвестно";
+    }
+};
+
+const profileStatusColor = (status?: number): "warning" | "success" | "danger" => {
+    switch (status) {
+        case ProfileStatus.Pending:
+            return "warning";
+        case ProfileStatus.Completed:
+            return "success";
+        case ProfileStatus.Banned:
+            return "danger";
+        default:
+            return "warning";
+    }
+};
+
 export const UserDetailPage = () => {
     const {id} = useParams<{id: string}>();
     const navigate = useNavigate();
@@ -95,6 +132,20 @@ export const UserDetailPage = () => {
 
     const errorMessage = userError ? getRtkErrorMessage(userError as FetchBaseQueryError) : null;
     const txErrorMessage = txError ? getRtkErrorMessage(txError as FetchBaseQueryError) : null;
+
+    const displayName = useMemo(() => {
+        const parts = [profile?.lastName, profile?.firstName, profile?.middleName].filter(Boolean).map(String);
+        return parts.join(" ").trim() || user?.name || user?.email || "Пользователь";
+    }, [profile?.firstName, profile?.lastName, profile?.middleName, user?.email, user?.name]);
+
+    const nickname = useMemo(() => {
+        const emailLogin = user?.email?.split("@")[0]?.trim();
+        if (emailLogin) return `@${emailLogin}`;
+        return user?.name?.trim() ? `@${user.name.trim().toLowerCase().replace(/\s+/g, "_")}` : "—";
+    }, [user?.email, user?.name]);
+
+    const contactLine = [user?.email, profile?.phoneNumber, nickname].filter(Boolean).join(" · ") || "—";
+    const registrationDate = profile?.birthDate ? formatDateTime(profile.birthDate) : "—";
 
     const txColumnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         date: {minWidth: 130, defaultWidth: 160},
@@ -227,82 +278,117 @@ export const UserDetailPage = () => {
                 <Button appearance="outline" size="small" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
                     Управление ролями
                 </Button>
-                <Button appearance="outline" size="small" icon={<Info20Regular />} onClick={() => navigate(`/admin/additional-infos?userId=${id}`)}>
-                    Доп. информация
-                </Button>
             </div>
 
             <Card className="mb-6" size={sizes.card}>
-                <div className="flex items-center gap-4 flex-wrap">
-                    <Avatar name={user.name || user.email} size={64} />
-                    <div className="min-w-0 flex-1">
-                        <Title2>{user.name || "—"}</Title2>
-                        <Body1 block>{user.email}</Body1>
-                        <div className="flex gap-2 mt-1 flex-wrap">
-                            <Badge appearance="outline">{user.role}</Badge>
-                            <Badge appearance="tint" color={user.status.toLowerCase() === "active" ? "success" : "danger"}>
-                                {user.status}
-                            </Badge>
+                <div className="flex items-start gap-4 flex-wrap justify-between">
+                    <div className="flex items-start gap-4 flex-wrap min-w-0 flex-1">
+                        <Avatar name={displayName} size={72} />
+                        <div className="min-w-0 flex-1">
+                            <Title2>{displayName}</Title2>
+                            <Body1 block>{contactLine}</Body1>
+                            <Body2 block className="mt-1 text-gray-500">{user.role} · {user.status}</Body2>
+                            <div className="flex gap-2 mt-2 flex-wrap">
+                                <Badge appearance="outline">{nickname}</Badge>
+                                {profile && <Badge appearance="tint" color={profile.emailConfirmed ? "success" : "warning"}>{profile.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
+                                {profile?.phoneNumber && <Badge appearance="tint" color={profile.phoneNumberConfirmed ? "success" : "warning"}>{profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
+                                {profile && <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>{profileStatusLabel(profile.profileStatus)}</Badge>}
+                            </div>
+                            <Caption1 block className="mt-1 font-mono text-gray-400">{user.id}</Caption1>
                         </div>
-                        <Caption1 block className="mt-1 font-mono text-gray-400">{user.id}</Caption1>
                     </div>
-                    {!balanceLoading && balance && (
-                        <div className="flex gap-4 flex-wrap">
-                            <div className="text-center">
-                                <Body2 block>Баланс</Body2>
-                                <Title3>{formatMoney(balance.currentBalance)}</Title3>
-                            </div>
-                            <div className="text-center">
-                                <Body2 block>Пополнено</Body2>
-                                <Body1 block className="text-green-600">{formatMoney(balance.totalDeposited)}</Body1>
-                            </div>
-                            <div className="text-center">
-                                <Body2 block>Потрачено</Body2>
-                                <Body1 block className="text-red-500">{formatMoney(balance.totalSpent)}</Body1>
-                            </div>
-                            {balance.debt > 0 && (
-                                <div className="text-center">
-                                    <Body2 block>Долг</Body2>
-                                    <Body1 block className="text-red-600 font-bold">{formatMoney(balance.debt)}</Body1>
-                                </div>
-                            )}
-                        </div>
-                    )}
+                    <div className="flex gap-2 flex-wrap">
+                        <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                            Роли
+                        </Button>
+                        <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}`)}>
+                            Редактировать
+                        </Button>
+                    </div>
                 </div>
             </Card>
 
-            {profile && (
-                <Card className="mb-6" size={sizes.card}>
+            <div className="grid gap-4 md:grid-cols-3 mb-6">
+                <Card size={sizes.card}>
+                    <Body2 block>Баланс</Body2>
+                    <Title3>{balanceLoading ? "—" : formatMoney(balance?.currentBalance ?? 0)}</Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Визитов всего</Body2>
+                    <Title3>{visitsLoading ? "—" : visits.length}</Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Потрачено</Body2>
+                    <Title3>{balanceLoading ? "—" : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                </Card>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[1.3fr_0.9fr] mb-6">
+                <Card size={sizes.card}>
                     <Title3 className="mb-3">Профиль</Title3>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <Body2 block>Имя</Body2>
-                            <Body1 block>{profile.firstName} {profile.lastName} {profile.middleName ?? ""}</Body1>
+                            <Body1 block>{profile?.firstName || "—"}</Body1>
                         </div>
-                        {profile.birthDate && (
-                            <div>
-                                <Body2 block>Дата рождения</Body2>
-                                <Body1 block>{new Date(profile.birthDate).toLocaleDateString("ru-RU")}</Body1>
-                            </div>
-                        )}
                         <div>
-                            <Body2 block>Статус профиля</Body2>
-                            <Badge appearance="tint" color={
-                                profile.profileStatus === 1 ? "success" :
-                                profile.profileStatus === 2 ? "danger" : "warning"
-                            }>
-                                {profile.profileStatus === 0 ? "Ожидает" : profile.profileStatus === 1 ? "Заполнен" : "Заблокирован"}
-                            </Badge>
+                            <Body2 block>Фамилия</Body2>
+                            <Body1 block>{profile?.lastName || "—"}</Body1>
                         </div>
-                        {profile.banReason && (
-                            <div className="col-span-full">
+                        <div>
+                            <Body2 block>Отчество</Body2>
+                            <Body1 block>{profile?.middleName || "—"}</Body1>
+                        </div>
+                        <div>
+                            <Body2 block>Пол</Body2>
+                            <Body1 block>{genderLabel(profile?.gender)}</Body1>
+                        </div>
+                        <div>
+                            <Body2 block>Дата рождения</Body2>
+                            <Body1 block>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : "—"}</Body1>
+                        </div>
+                        <div>
+                            <Body2 block>Регистрация</Body2>
+                            <Body1 block>{registrationDate}</Body1>
+                        </div>
+                        <div>
+                            <Body2 block>Email</Body2>
+                            <Body1 block>{profile?.email || user.email}</Body1>
+                        </div>
+                        <div>
+                            <Body2 block>Телефон</Body2>
+                            <Body1 block>{profile?.phoneNumber || "—"}</Body1>
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Body2 block>Статус профиля</Body2>
+                            <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
+                        </div>
+                        {profile?.banReason && (
+                            <div className="sm:col-span-2">
                                 <Body2 block>Причина блокировки</Body2>
                                 <Body1 block className="text-red-500">{profile.banReason}</Body1>
                             </div>
                         )}
                     </div>
                 </Card>
-            )}
+
+                <Card size={sizes.card}>
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                        <Title3>Заметки администратора</Title3>
+                        <Button appearance="outline" size="small">+ Добавить</Button>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <div className="rounded-md bg-neutral-100 p-3">
+                            <Body1 block className="mb-1">Постоянный клиент, предпочитает зону у окна. Аллергия на орехи.</Body1>
+                            <Caption1>Добавлено: Админ · 20 мар 2026</Caption1>
+                        </div>
+                        <div className="rounded-md bg-neutral-100 p-3">
+                            <Body1 block className="mb-1">Работает фрилансером, часто приходит на целый день. VIP-статус?</Body1>
+                            <Caption1>Добавлено: Админ · 18 мар 2026</Caption1>
+                        </div>
+                    </div>
+                </Card>
+            </div>
 
             <div className="mb-6">
                 <div className="flex items-center justify-between mb-3 flex-wrap gap-2">

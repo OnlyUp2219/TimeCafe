@@ -128,7 +128,7 @@ public class TariffRepository(
     public async Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
-            CacheKeys.Tariff_Page(pageNumber),
+            CacheKeys.Tariff_Page(pageNumber, pageSize),
             async ct => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
                                from th in thGroup.DefaultIfEmpty()

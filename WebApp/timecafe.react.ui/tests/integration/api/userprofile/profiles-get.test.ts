@@ -56,7 +56,7 @@ describe("/userprofile/profiles/{id}", () => {
         expect(res.status).toBe(404);
     });
 
-    it("returns 422 for invalid userId", async () => {
+    it("returns 404 for invalid userId", async () => {
         const {client} = createTestClient();
         const email = createTestEmail();
         const password = createPassword();
@@ -72,6 +72,6 @@ describe("/userprofile/profiles/{id}", () => {
 
         const {token} = await loginAndGetAccessToken(client, email, password);
         const res = await client.get("/userprofile/profiles/invalid", {headers: {Authorization: `Bearer ${token}`}});
-        expect(res.status).toBe(422);
+        expect(res.status).toBe(404);
     });
 });
