@@ -75,13 +75,13 @@ export const BalancesPage = () => {
     const debtorsCount = useMemo(() => balances.filter(b => b.debt > 0).length, [balances]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        user: {minWidth: 180, defaultWidth: 260},
-        type: {minWidth: 110, defaultWidth: 150},
-        current: {minWidth: 100, defaultWidth: 130},
-        deposited: {minWidth: 100, defaultWidth: 130},
-        spent: {minWidth: 100, defaultWidth: 130},
-        debt: {minWidth: 100, defaultWidth: 120},
-        updated: {minWidth: 130, defaultWidth: 170},
+        user: {minWidth: 180, defaultWidth: 260, idealWidth: 300},
+        type: {minWidth: 110, defaultWidth: 150, idealWidth: 180},
+        current: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
+        deposited: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
+        spent: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
+        debt: {minWidth: 100, defaultWidth: 120, idealWidth: 140},
+        updated: {minWidth: 130, defaultWidth: 170, idealWidth: 200},
     }), []);
 
     const columns: TableColumnDefinition<AdminBalanceDto>[] = useMemo(() => [
@@ -183,7 +183,7 @@ export const BalancesPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={balances}
                     columns={columns}

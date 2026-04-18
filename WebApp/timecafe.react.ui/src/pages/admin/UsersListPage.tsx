@@ -1,5 +1,5 @@
-import {useCallback, useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Avatar,
     Badge,
@@ -15,16 +15,18 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Eye20Regular} from "@fluentui/react-icons";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import type {User} from "@app-types/user";
-import {useGetUsersQuery} from "@store/api/adminApi";
-import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {useComponentSize} from "@hooks/useComponentSize";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Eye20Regular } from "@fluentui/react-icons";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import type { User } from "@app-types/user";
+import { useGetUsersQuery } from "@store/api/adminApi";
+import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
+import { useGetBalanceQuery } from "@store/api/billingApi";
+import { formatMoneyByN } from "@utility/formatMoney";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 const getUserStatusBadgeClass = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -38,8 +40,10 @@ const getUserStatusBadgeClass = (status: string): string => {
 };
 
 const ProfileNameCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdQuery(user.id);
-    const displayName = profile?.firstName || profile?.lastName ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() : (user.name || "—");
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
+    const displayName = profile?.firstName || profile?.lastName
+        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
+        : (user.name || "—");
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
             {displayName}
@@ -48,7 +52,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
 };
 
 const ProfilePhoneCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdQuery(user.id);
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
     return <TableCellLayout truncate>{profile?.phoneNumber || "—"}</TableCellLayout>;
 };
 
@@ -71,7 +75,7 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 };
 
 const ProfileStatusCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdQuery(user.id);
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
     if (!profile) return <TableCellLayout truncate>—</TableCellLayout>;
     return (
         <TableCellLayout truncate>
@@ -82,15 +86,22 @@ const ProfileStatusCell = ({ user }: { user: User }) => {
     );
 };
 
+const BalanceCell = ({ user }: { user: User }) => {
+    const { data: balance, isLoading } = useGetBalanceQuery(user.id);
+    if (isLoading) return <TableCellLayout truncate>—</TableCellLayout>;
+    if (balance === undefined) return <TableCellLayout truncate>—</TableCellLayout>;
+    return <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>;
+};
+
 export const UsersListPage = () => {
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
-    const {data, isLoading, error} = useGetUsersQuery({
+    const { data, isLoading, error } = useGetUsersQuery({
         page: currentPage,
         size: pageSize,
         search: search || undefined,
@@ -109,13 +120,14 @@ export const UsersListPage = () => {
     }, []);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        user: {minWidth: 150, defaultWidth: 220},
-        email: {minWidth: 150, defaultWidth: 200},
-        phone: {minWidth: 120, defaultWidth: 150},
-        role: {minWidth: 80, defaultWidth: 120},
-        authStatus: {minWidth: 80, defaultWidth: 120},
-        profileStatus: {minWidth: 120, defaultWidth: 160},
-        actions: {minWidth: 90, defaultWidth: 120},
+        user: { minWidth: 150, defaultWidth: 220, idealWidth: 250 },
+        email: { minWidth: 150, defaultWidth: 200, idealWidth: 250 },
+        phone: { minWidth: 120, defaultWidth: 150, idealWidth: 180 },
+        role: { minWidth: 80, defaultWidth: 120, idealWidth: 140 },
+        authStatus: { minWidth: 80, defaultWidth: 120, idealWidth: 140 },
+        profileStatus: { minWidth: 120, defaultWidth: 160, idealWidth: 200 },
+        balance: { minWidth: 100, defaultWidth: 130, idealWidth: 150 },
+        actions: { minWidth: 100, defaultWidth: 120, idealWidth: 150 },
     }), []);
 
     const columns: TableColumnDefinition<User>[] = useMemo(
@@ -173,6 +185,12 @@ export const UsersListPage = () => {
                 renderCell: (user) => <ProfileStatusCell user={user} />,
             }),
             createTableColumn<User>({
+                columnId: "balance",
+                compare: () => 0,
+                renderHeaderCell: () => "Баланс",
+                renderCell: (user) => <BalanceCell user={user} />,
+            }),
+            createTableColumn<User>({
                 columnId: "actions",
                 compare: () => 0,
                 renderHeaderCell: () => "Действия",
@@ -213,7 +231,7 @@ export const UsersListPage = () => {
                 </Button>
             </div>
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={users}
                     columns={columns}

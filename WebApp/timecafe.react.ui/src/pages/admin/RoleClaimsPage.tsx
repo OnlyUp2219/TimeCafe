@@ -1,75 +1,258 @@
-import {useCallback, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
+import { useCallback, useMemo, useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Badge,
-    Body1,
     Body2,
     Button,
     Card,
-    Checkbox,
     MessageBar,
     MessageBarBody,
     Spinner,
     Title2,
-    Title3,
+    FlatTree,
+    FlatTreeItem,
+    TreeItemLayout,
+    CounterBadge,
+    useHeadlessFlatTree_unstable,
 } from "@fluentui/react-components";
-import {ArrowLeft20Regular, Save20Regular} from "@fluentui/react-icons";
-import {useGetRoleClaimsByNameQuery, useUpdateRoleClaimsMutation, useGetPermissionsQuery} from "@store/api/adminApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {useComponentSize} from "@hooks/useComponentSize";
+import type {
+    TreeCheckedChangeData,
+    TreeItemValue,
+    HeadlessFlatTreeItemProps,
+} from "@fluentui/react-components";
+import { ArrowLeft20Regular, Save20Regular } from "@fluentui/react-icons";
+import { useGetRoleClaimsByNameQuery, useUpdateRoleClaimsMutation, useGetPermissionsQuery } from "@store/api/adminApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
+
+const SERVICE_LABELS: Record<string, string> = {
+    "userprofile": "👤 UserProfile",
+    "billing": "💳 Billing",
+    "venue": "🏠 Venue",
+    "auth": "🔑 Auth",
+};
+
+const ENTITY_LABELS: Record<string, string> = {
+    "profile": "Профиль",
+    "additionalinfo": "Доп. информация",
+    "photo": "Фото",
+    "balance": "Баланс",
+    "debt": "Задолженность",
+    "transaction": "Транзакции",
+    "payment": "Платежи",
+    "tariff": "Тарифы",
+    "promotion": "Акции",
+    "theme": "Темы",
+    "visit": "Визиты",
+    "account": "Аккаунт",
+    "rbac": "RBAC",
+    "role": "Роли",
+    "permission": "Права",
+    "userrole": "Роли пользователей",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+    "create": "Создание",
+    "read": "Чтение",
+    "update": "Обновление",
+    "delete": "Удаление",
+    "activate": "Активация",
+    "deactivate": "Деактивация",
+    "initialize": "Инициализация",
+    "assign": "Назначение",
+    "remove": "Удаление назначения",
+    "change": "Изменение",
+    "save": "Сохранение",
+    "clear": "Очистка",
+    "generate": "Генерация",
+    "verify": "Верификация",
+    "self": "Своё",
+    "admin": "Администраторское",
+    "claims": "Клеймы",
+    "end": "Завершение",
+    "status": "Статус",
+};
+
+function formatPermissionLabel(parts: string[]): string {
+    return parts.map(p => ACTION_LABELS[p] ?? p).join(" → ");
+}
 
 export const RoleClaimsPage = () => {
-    const {roleName} = useParams<{roleName: string}>();
+    const { roleName } = useParams<{ roleName: string }>();
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
 
     const normalizedRoleName = roleName?.trim() || null;
 
-    const {data: roleClaimsData, isLoading: claimsLoading, error: claimsError} = useGetRoleClaimsByNameQuery(normalizedRoleName!, {skip: !normalizedRoleName});
-    const {data: permissionsData, isLoading: permsLoading} = useGetPermissionsQuery();
-    const [updateRoleClaims, {isLoading: saving}] = useUpdateRoleClaimsMutation();
+    const { data: roleClaimsData, isLoading: claimsLoading, error: claimsError } = useGetRoleClaimsByNameQuery(normalizedRoleName!, { skip: !normalizedRoleName, refetchOnMountOrArgChange: true });
+    const { data: permissionsData, isLoading: permsLoading } = useGetPermissionsQuery();
+    const [updateRoleClaims, { isLoading: saving }] = useUpdateRoleClaimsMutation();
 
     const currentClaims = roleClaimsData?.roleClaim?.claims ?? [];
     const allPermissions = permissionsData?.permissions ?? [];
 
-    const [selected, setSelected] = useState<Set<string> | null>(null);
-    const effectiveSelected = selected ?? new Set(currentClaims);
+    const groupedPermissions = useMemo(() => {
+        const groups: Record<string, Record<string, string[]>> = {};
+        allPermissions.forEach(perm => {
+            const parts = perm.split(".");
+            const service = parts[0] ?? "other";
+            const entity = parts.slice(1, -1).join(".") || "other";
+            if (!groups[service]) groups[service] = {};
+            if (!groups[service][entity]) groups[service][entity] = [];
+            groups[service][entity].push(perm);
+        });
+        return groups;
+    }, [allPermissions]);
+
+    const flatTreeItems = useMemo(() => {
+        const items: (HeadlessFlatTreeItemProps & { content: React.ReactNode; service?: string; entity?: string })[] = [];
+        Object.entries(groupedPermissions).forEach(([service, entities]) => {
+            const serviceLabel = SERVICE_LABELS[service] ?? service;
+            items.push({
+                value: service,
+                content: serviceLabel,
+                itemType: "branch",
+                service
+            });
+
+            Object.entries(entities).forEach(([entity, perms]) => {
+                const entityValue = `${service}.${entity}`;
+                items.push({
+                    value: entityValue,
+                    parentValue: service,
+                    content: ENTITY_LABELS[entity] ?? entity,
+                    itemType: "branch",
+                    service,
+                    entity
+                });
+
+                perms.forEach(perm => {
+                    const actionParts = perm.split(".").slice(service === "auth" ? 2 : 1);
+                    items.push({
+                        value: perm,
+                        parentValue: entityValue,
+                        content: (
+                            <>
+                                {formatPermissionLabel(actionParts)}
+                                <span className="text-xs text-[var(--colorNeutralForeground3)] ml-2 font-mono">{perm}</span>
+                            </>
+                        ),
+                        itemType: "leaf"
+                    });
+                });
+            });
+        });
+        return items;
+    }, [groupedPermissions]);
+
+    const [selectedLeaves, setSelectedLeaves] = useState<Set<string>>(new Set());
+    const [initializedRole, setInitializedRole] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (currentClaims.length > 0 && allPermissions.length > 0 && initializedRole !== normalizedRoleName) {
+            setSelectedLeaves(new Set(currentClaims));
+            setInitializedRole(normalizedRoleName);
+        } else if (currentClaims.length === 0 && allPermissions.length > 0 && initializedRole !== normalizedRoleName) {
+             // Handle case where role has no claims initially
+             setSelectedLeaves(new Set());
+             setInitializedRole(normalizedRoleName);
+        }
+    }, [currentClaims, allPermissions, normalizedRoleName, initializedRole]);
+
+    const checkedItemsMap = useMemo(() => {
+        const map = new Map<TreeItemValue, "checked" | "mixed">();
+        
+        selectedLeaves.forEach(leaf => map.set(leaf, "checked"));
+
+        Object.entries(groupedPermissions).forEach(([service, entities]) => {
+            let serviceTotal = 0;
+            let serviceChecked = 0;
+
+            Object.entries(entities).forEach(([entity, perms]) => {
+                let entityChecked = 0;
+                perms.forEach(p => {
+                    if (selectedLeaves.has(p)) entityChecked++;
+                });
+
+                if (entityChecked === perms.length && perms.length > 0) {
+                    map.set(`${service}.${entity}`, "checked");
+                } else if (entityChecked > 0) {
+                    map.set(`${service}.${entity}`, "mixed");
+                }
+
+                serviceTotal += perms.length;
+                serviceChecked += entityChecked;
+            });
+
+            if (serviceChecked === serviceTotal && serviceTotal > 0) {
+                map.set(service, "checked");
+            } else if (serviceChecked > 0) {
+                map.set(service, "mixed");
+            }
+        });
+
+        return map;
+    }, [selectedLeaves, groupedPermissions]);
+
+    const handleCheckedChange = useCallback((_: unknown, data: TreeCheckedChangeData) => {
+        setSaved(false);
+        const val = String(data.value);
+        // data.checked might be boolean or "mixed" 
+        // In FlatTree, checking an item yields true or "checked", unchecking yields false or "unselected"
+        const isChecking = data.checked === "checked" || data.checked === true;
+
+        setSelectedLeaves(prev => {
+            const next = new Set(prev);
+            
+            const applyChange = (perm: string) => {
+                if (isChecking) next.add(perm);
+                else next.delete(perm);
+            };
+
+            if (allPermissions.includes(val)) {
+                applyChange(val);
+            } else if (groupedPermissions[val]) {
+                Object.values(groupedPermissions[val]).flat().forEach(applyChange);
+            } else {
+                const firstDotIndex = val.indexOf(".");
+                if (firstDotIndex > 0) {
+                    const s = val.substring(0, firstDotIndex);
+                    const ent = val.substring(firstDotIndex + 1);
+                    if (groupedPermissions[s]?.[ent]) {
+                        groupedPermissions[s][ent].forEach(applyChange);
+                    }
+                }
+            }
+            return next;
+        });
+    }, [groupedPermissions, allPermissions]);
+
+    const flatTree = useHeadlessFlatTree_unstable(flatTreeItems, {
+        selectionMode: "multiselect",
+        checkedItems: checkedItemsMap,
+        onCheckedChange: handleCheckedChange,
+        defaultOpenItems: Object.keys(groupedPermissions),
+    });
 
     const [mutationError, setMutationError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
 
-    const toggle = useCallback((perm: string) => {
-        setSelected(prev => {
-            const s = new Set(prev ?? currentClaims);
-            if (s.has(perm)) s.delete(perm);
-            else s.add(perm);
-            return s;
-        });
-        setSaved(false);
-    }, [currentClaims]);
 
     const handleSave = useCallback(async () => {
         if (!normalizedRoleName) return;
         setMutationError(null);
         try {
-            await updateRoleClaims({roleName: normalizedRoleName, claims: Array.from(effectiveSelected)}).unwrap();
+            await updateRoleClaims({ roleName: normalizedRoleName, claims: Array.from(selectedLeaves) }).unwrap();
             setSaved(true);
         } catch (err) {
             setMutationError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось сохранить");
         }
-    }, [normalizedRoleName, effectiveSelected, updateRoleClaims]);
+    }, [normalizedRoleName, selectedLeaves, updateRoleClaims]);
 
     const claimsError2 = claimsError ? getRtkErrorMessage(claimsError as FetchBaseQueryError) : null;
 
     if (claimsLoading || permsLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
-
-    const groupedPermissions = allPermissions.reduce<Record<string, string[]>>((acc, perm) => {
-        const prefix = perm.split(".").slice(0, 2).join(".");
-        if (!acc[prefix]) acc[prefix] = [];
-        acc[prefix].push(perm);
-        return acc;
-    }, {});
 
     return (
         <div>
@@ -87,9 +270,9 @@ export const RoleClaimsPage = () => {
                     <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                         <div>
                             <Title2>Permissions роли</Title2>
-                            <Body2 block>
-                                <Badge appearance="outline" size="large">{normalizedRoleName}</Badge>
-                                {" "}{effectiveSelected.size} из {allPermissions.length} выбрано
+                            <Body2 block className="flex items-center gap-2 mt-1">
+                                <Badge appearance="filled" size="large">{normalizedRoleName}</Badge>
+                                <span className="text-[var(--colorNeutralForeground3)]">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
                             </Body2>
                         </div>
                         <Button
@@ -115,26 +298,42 @@ export const RoleClaimsPage = () => {
                         </MessageBar>
                     )}
 
-                    <div className="flex flex-col gap-4">
-                        {Object.entries(groupedPermissions).map(([group, perms]) => (
-                            <Card key={group} size={sizes.card}>
-                                <Title3 className="mb-3">{group}</Title3>
-                                <div className="flex flex-wrap gap-2">
-                                    {perms.map(perm => (
-                                        <Checkbox
-                                            key={perm}
-                                            label={perm}
-                                            checked={effectiveSelected.has(perm)}
-                                            onChange={() => toggle(perm)}
-                                        />
-                                    ))}
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
+                    {allPermissions.length === 0 ? (
+                        <Body2>Нет доступных permissions</Body2>
+                    ) : (
+                        <FlatTree {...flatTree.getTreeProps()} aria-label="Permissions">
+                            {Array.from(flatTree.items(), (item) => {
+                                const { content, service, entity, ...treeItemProps } = item.getTreeItemProps() as any;
 
-                    {allPermissions.length === 0 && (
-                        <Body1>Нет доступных permissions</Body1>
+                                let badgeCount = 0;
+                                if (service && !entity) {
+                                    const servicePerms = Object.values(groupedPermissions[service]).flat();
+                                    badgeCount = servicePerms.filter(p => selectedLeaves.has(p)).length;
+                                } else if (service && entity) {
+                                    const entityPerms = groupedPermissions[service][entity];
+                                    badgeCount = entityPerms.filter(p => selectedLeaves.has(p)).length;
+                                }
+
+                                return (
+                                    <FlatTreeItem {...treeItemProps} key={item.value}>
+                                        <TreeItemLayout
+                                            aside={
+                                                badgeCount > 0 ? (
+                                                    <CounterBadge
+                                                        count={badgeCount}
+                                                        color="brand"
+                                                        size="small"
+                                                        overflowCount={99}
+                                                    />
+                                                ) : undefined
+                                            }
+                                        >
+                                            {content}
+                                        </TreeItemLayout>
+                                    </FlatTreeItem>
+                                );
+                            })}
+                        </FlatTree>
                     )}
                 </>
             )}

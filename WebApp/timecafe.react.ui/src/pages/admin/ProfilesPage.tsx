@@ -63,11 +63,11 @@ export const ProfilesPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: {minWidth: 150, defaultWidth: 220},
-        email: {minWidth: 150, defaultWidth: 220},
-        gender: {minWidth: 50, defaultWidth: 70},
-        birthDate: {minWidth: 100, defaultWidth: 130},
-        status: {minWidth: 100, defaultWidth: 140},
+        name: {minWidth: 150, defaultWidth: 220, idealWidth: 260},
+        email: {minWidth: 150, defaultWidth: 220, idealWidth: 260},
+        gender: {minWidth: 50, defaultWidth: 70, idealWidth: 90},
+        birthDate: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
+        status: {minWidth: 100, defaultWidth: 140, idealWidth: 180},
     }), []);
 
     const columns: TableColumnDefinition<Profile>[] = useMemo(() => [
@@ -126,7 +126,7 @@ export const ProfilesPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={profiles}
                     columns={columns}

@@ -127,7 +127,7 @@ export function DataTable<TItem>({
                 size={size}
                 {...selectionProps}
                 resizableColumnsOptions={{
-                    autoFitColumns: false,
+                    autoFitColumns: true,
                 }}
             >
                 <DataGridHeader>

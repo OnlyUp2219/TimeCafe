@@ -24,4 +24,5 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using FluentResults;
 global using Auth.TimeCafe.Domain.Errors;
+global using BuildingBlocks.Contracts;
 global using BuildingBlocks.Contracts.CQRS;

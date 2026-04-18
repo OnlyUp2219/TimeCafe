@@ -11,11 +11,15 @@ public sealed class DeleteUserCommandValidator : AbstractValidator<DeleteUserCom
 }
 
 public sealed class DeleteUserCommandHandler(
-    UserManager<ApplicationUser> userManager)
+    UserManager<ApplicationUser> userManager,
+    IUserContext userContext)
     : IRequestHandler<DeleteUserCommand, Result>
 {
     public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
     {
+        if (request.UserId == userContext.UserId)
+            return Result.Fail(new Error("Нельзя удалить собственный аккаунт").WithMetadata("StatusCode", 403));
+
         var user = await userManager.FindByIdAsync(request.UserId.ToString());
         if (user is null)
             return Result.Fail(new Error("Пользователь не найден").WithMetadata("StatusCode", 404));

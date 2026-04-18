@@ -29,8 +29,8 @@ export const UserRolesPage = () => {
     const navigate = useNavigate();
     const {sizes} = useComponentSize();
 
-    const {data: userData, isLoading: userLoading} = useGetUserByIdQuery(id!, {skip: !id});
-    const {data: rolesData, isLoading: rolesLoading} = useGetRolesQuery();
+    const {data: userData, isLoading: userLoading} = useGetUserByIdQuery(id!, {skip: !id, refetchOnMountOrArgChange: true});
+    const {data: rolesData, isLoading: rolesLoading} = useGetRolesQuery(undefined, {refetchOnMountOrArgChange: true});
     const [assignRole] = useAssignRoleToUserMutation();
     const [removeRole] = useRemoveRoleFromUserMutation();
 
@@ -91,8 +91,8 @@ export const UserRolesPage = () => {
                         <Body2>Нет назначенных ролей</Body2>
                     ) : (
                         <div className="flex flex-wrap gap-2">
-                            {userRoles.map(role => (
-                                <div key={role} className="flex items-center gap-1">
+                            {userRoles.map((role, idx) => (
+                                <div key={`${role}-${idx}`} className="flex items-center gap-1">
                                     <Badge appearance="filled">{role}</Badge>
                                     <Button
                                         appearance="subtle"
@@ -110,19 +110,19 @@ export const UserRolesPage = () => {
                     <Title3 className="mb-3">Доступные роли</Title3>
                     <div className="flex flex-wrap gap-2">
                         {allRoles
-                            .filter(r => !userRoles.includes(r.name))
+                            .filter(r => !userRoles.includes(r.roleName))
                             .map(r => (
                                 <Button
-                                    key={r.name}
+                                    key={r.roleId}
                                     appearance="outline"
                                     size="small"
                                     icon={<Add20Regular />}
-                                    onClick={() => handleAssign(r.name)}
+                                    onClick={() => handleAssign(r.roleName)}
                                 >
-                                    {r.name}
+                                    {r.roleName}
                                 </Button>
                             ))}
-                        {allRoles.filter(r => !userRoles.includes(r.name)).length === 0 && (
+                        {allRoles.filter(r => !userRoles.includes(r.roleName)).length === 0 && (
                             <Body2>Все роли уже назначены</Body2>
                         )}
                     </div>

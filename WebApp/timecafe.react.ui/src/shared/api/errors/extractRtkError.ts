@@ -62,7 +62,12 @@ export const getRtkErrorMessage = (error: FetchBaseQueryError | SerializedError 
     if (!apiError) return "";
 
     if (apiError.statusCode === 401) return "Сессия истекла. Войдите снова.";
-    if (apiError.statusCode === 403) return "Недостаточно прав для выполнения действия.";
+    if (apiError.statusCode === 403) {
+        const serverMsg = apiError.errors?.map(e => e.message).filter(Boolean).join(". ");
+        if (serverMsg) return serverMsg;
+        if (apiError.message && apiError.message !== "Произошла ошибка") return apiError.message;
+        return "Недостаточно прав для выполнения действия.";
+    }
 
     if (apiError.errors?.length) {
         const messages = apiError.errors.map(e => e.message).filter(Boolean);

@@ -1,6 +1,6 @@
-import {useState} from "react";
-import {Button, Input, Select, Caption1} from "@fluentui/react-components";
-import {ChevronLeftRegular, ChevronRightRegular} from "@fluentui/react-icons";
+import { useState } from "react";
+import { Button, Input, Select, Caption1, Body1 } from "@fluentui/react-components";
+import { ChevronLeftRegular, ChevronRightRegular } from "@fluentui/react-icons";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -34,43 +34,48 @@ export const Pagination = ({
     };
 
     const renderPages = () => {
-        const delta = 2;
-        const range = [];
-        const rangeWithDots = [];
-
-        for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
-            range.push(i);
-        }
-
-        if (currentPage - delta > 2) {
-            rangeWithDots.push(1, "...");
+        const pages: (number | string)[] = [];
+        
+        if (totalPages <= 1) {
+            pages.push(1);
         } else {
-            rangeWithDots.push(1);
+            const delta = 2;
+            const left = Math.max(2, currentPage - delta);
+            const right = Math.min(totalPages - 1, currentPage + delta);
+
+            pages.push(1);
+
+            if (left > 2) {
+                pages.push("dots-left");
+            }
+
+            for (let i = left; i <= right; i++) {
+                pages.push(i);
+            }
+
+            if (right < totalPages - 1) {
+                pages.push("dots-right");
+            }
+
+            pages.push(totalPages);
         }
 
-        rangeWithDots.push(...range);
-
-        if (currentPage + delta < totalPages - 1) {
-            rangeWithDots.push("...", totalPages);
-        } else if (totalPages > 1) {
-            rangeWithDots.push(totalPages);
-        }
-
-        return rangeWithDots.map((page, index) => {
-            if (page === "...") {
+        return pages.map((item, idx) => {
+            if (item === "dots-left" || item === "dots-right") {
                 return (
-                    <span key={index} className="px-2 text-neutral-500">
+                    <span key={`${item}-${idx}`} className="px-2 text-neutral-500 self-center">
                         ...
                     </span>
                 );
             }
+            const page = item as number;
             return (
                 <Button
-                    key={page}
+                    key={`page-${page}-${idx}`}
                     appearance={page === currentPage ? "primary" : "outline"}
-                    onClick={() => onPageChange(page as number)}
+                    onClick={() => onPageChange(page)}
                     size="large"
-                    style={{minWidth: 0}}
+                    style={{ minWidth: 0 }}
                 >
                     {page}
                 </Button>
@@ -82,22 +87,21 @@ export const Pagination = ({
         <div className={`flex items-center gap-3 flex-wrap ${className}`}>
             {onPageSizeChange && pageSize !== undefined && (
                 <div className="flex items-center gap-2">
-                    <Caption1>Строк:</Caption1>
+                    <Body1>Строк:</Body1>
                     <Select
-                        size="medium"
+                        size="large"
                         value={String(pageSize)}
                         onChange={(_, d) => {
                             onPageSizeChange(Number(d.value));
                             onPageChange(1);
                         }}
-                        style={{width: 80}}
                     >
                         {PAGE_SIZE_OPTIONS.map(s => (
                             <option key={s} value={s}>{s}</option>
                         ))}
                     </Select>
                     {totalCount !== undefined && (
-                        <Caption1>из {totalCount}</Caption1>
+                        <Body1>из {totalCount}</Body1>
                     )}
                 </div>
             )}
@@ -107,7 +111,7 @@ export const Pagination = ({
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}
                 size="large"
-                style={{minWidth: 0}}
+                style={{ minWidth: 0 }}
             />
             <div className="flex items-center gap-1">
                 {renderPages()}
@@ -117,7 +121,7 @@ export const Pagination = ({
                 disabled={currentPage >= totalPages}
                 onClick={() => onPageChange(currentPage + 1)}
                 size="large"
-                style={{minWidth: 0}}
+                style={{ minWidth: 0 }}
             />
             <div className="flex items-center gap-2">
                 <Input
@@ -127,7 +131,7 @@ export const Pagination = ({
                     min={1}
                     max={totalPages}
                     size="large"
-                    style={{width: 72}}
+                    style={{ width: 72 }}
                 />
                 <Button appearance="secondary" size="large" onClick={handleJump}>
                     Перейти

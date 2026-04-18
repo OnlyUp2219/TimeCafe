@@ -11,7 +11,7 @@
   min-height: 100dvh;
 }
 
-.app_root > div {
+.app_root>div {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -284,7 +284,8 @@
   transition: margin-left 0.2s ease;
 }
 
-@media (max-width: 375px) {
+@media (max-width: theme('screens.md')) {
+
   .admin-sidebar,
   .user-sidebar {
     transform: translateX(-100%);
@@ -323,7 +324,7 @@
     padding-top: 0.75rem;
   }
 
-  .admin-sidebar[data-collapsed="true"] ~ .admin-content {
+  .admin-sidebar[data-collapsed="true"]~.admin-content {
     margin-left: 0 !important;
   }
 
@@ -349,13 +350,13 @@
   }
 }
 
-@media (min-width: 376px) {
+@media (min-width: calc(theme('screens.md') + 1px)) {
   .header-mobile-toggle {
     display: none !important;
   }
 }
 
-.admin-sidebar[data-collapsed="true"] ~ .admin-content {
+.admin-sidebar[data-collapsed="true"]~.admin-content {
   margin-left: 56px;
 }
 
@@ -438,7 +439,7 @@
 }
 
 .profile-gate-footer {
-  justify-content: flex-end !important; 
+  justify-content: flex-end !important;
   flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.5rem 1rem 1rem;
@@ -513,10 +514,63 @@
   align-items: center;
 }
 
-.button-action > :first-child {
+.button-action> :first-child {
   grid-column: 1;
 }
 
-.button-action > :last-child {
+.button-action> :last-child {
   grid-column: 3;
+}
+
+.icons8-google {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciICB2aWV3Qm94PSIwIDAgNDggNDgiIHdpZHRoPSIxNDRweCIgaGVpZ2h0PSIxNDRweCI+PHBhdGggZmlsbD0iI0ZGQzEwNyIgZD0iTTQzLjYxMSwyMC4wODNINDJWMjBIMjR2OGgxMS4zMDNjLTEuNjQ5LDQuNjU3LTYuMDgsOC0xMS4zMDMsOGMtNi42MjcsMC0xMi01LjM3My0xMi0xMmMwLTYuNjI3LDUuMzczLTEyLDEyLTEyYzMuMDU5LDAsNS44NDIsMS4xNTQsNy45NjEsMy4wMzlsNS42NTctNS42NTdDMzQuMDQ2LDYuMDUzLDI5LjI2OCw0LDI0LDRDMTIuOTU1LDQsNCwxMi45NTUsNCwyNGMwLDExLjA0NSw4Ljk1NSwyMCwyMCwyMGMxMS4wNDUsMCwyMC04Ljk1NSwyMC0yMEM0NCwyMi42NTksNDMuODYyLDIxLjM1LDQzLjYxMSwyMC4wODN6Ii8+PHBhdGggZmlsbD0iI0ZGM0QwMCIgZD0iTTYvMzA2LDE0LjY5MWw2LjU3MSw0LjgxOUMxNC42NTUsMTUuMTA4LDE4Ljk2MSwxMiwyNCwxMmMzLjA1OSwwLDUuODQyLDEuMTU0LDcuOTYxLDMuMDM5bDUuNjU3LTUuNjU3QzM0LjA0Niw2LjA1MywyOS4yNjgsNCwyNCw0QzE2LjMxOCw0LDkuNjU2LDguMzM3LDYuMzA2LDE0LjY5MXoiLz48cGF0aCBmaWxsPSIjNENBRjUwIiBkPSJNMjQsNDRjNS4xNjYsMCw5Ljg2LTEuOTc3LDEzLjQwOS01LjE5MmwtNi4xOS01LjIzOEMyOS4yMTEsMzUuMDkxLDI2LjcxNSwzNiwyNCwzNmMtNS4yMDIsMC05LjYxOS0zLjMxNy0xMS4yODMtNy45NDZsLTYuNTIyLDUuMDI1QzkuNTA1LDM5LjU1NiwxNi4yMjcsNDQsMjQsNDR6Ii8+PHBhdGggZmlsbD0iIzE5NzZEMiIgZD0iTTQzLjYxMSwyMC4wODNINDJWMjBIMjR2OGgxMS4zMDNjLTAuNzkyLDIuMjM3LTIuMjMxLDQuMTY2LTQuMDg3LDUuNTcxYzAuMDAxLTAuMDAxLDAuMDAyLTAuMDAxLDAuMDAzLTAuMDAybDYuMTksNS4yMzhDMzYuOTcxLDM5LjIwNSw0NCwzNCw0NCwyNEM0NCwyMi42NTksNDMuODYyLDIxLjM1LDQzLjYxMSwyMC4wODN6Ii8+PC9zdmc+") 50% 50% no-repeat;
+  background-size: 100%;
+}
+
+.icons8-microsoft {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciICB2aWV3Qm94PSIwIDAgNDggNDgiIHdpZHRoPSI5NnB4IiBoZWlnaHQ9Ijk2cHgiPjxwYXRoIGZpbGw9IiNmZjU3MjIiIGQ9Ik02IDZIMjJWMjJINnoiIHRyYW5zZm9ybT0icm90YXRlKC0xODAgMTQgMTQpIi8+PHBhdGggZmlsbD0iIzRjYWY1MCIgZD0iTTI2IDZINDJWMjJIMjZ6IiB0cmFuc2Zvcm09InJvdGF0ZSgtMTgwIDM0IDE0KSIvPjxwYXRoIGZpbGw9IiNmZmMxMDciIGQ9Ik0yNiAyNkg0MlY0MkgyNnoiIHRyYW5zZm9ybT0icm90YXRlKC0xODAgMzQgMzQpIi8+PHBhdGggZmlsbD0iIzAzYTlmNCIgZD0iTTYgMjZIMjJWNDJINnoiIHRyYW5zZm9ybT0icm90YXRlKC0xODAgMTQgMzQpIi8+PC9zdmc+") 50% 50% no-repeat;
+  background-size: 100%;
+}
+
+/* Общие классы для статусных страниц (успех, ошибка, ожидание) */
+.status-card {
+  align-items: center;
+  text-align: center;
+}
+
+.status-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 48px;
+}
+
+.status-icon--success {
+  background-color: var(--colorPaletteGreenBackground2);
+  color: var(--colorPaletteGreenForeground1);
+}
+
+.status-icon--error {
+  background-color: var(--colorPaletteRedBackground2);
+  color: var(--colorPaletteRedForeground1);
+}
+
+.status-icon--pending {
+  background-color: var(--colorNeutralBackground3);
+  color: var(--colorBrandForeground1);
+}
+
+.status-message {
+  color: var(--colorNeutralForeground2);
+  font-size: 16px;
+  line-height: 24px;
 }

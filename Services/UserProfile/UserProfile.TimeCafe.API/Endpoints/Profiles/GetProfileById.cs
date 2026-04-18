@@ -10,6 +10,10 @@ public class GetProfileById : ICarterModule
         {
             var query = new GetProfileByIdQuery(userId);
             var result = await sender.Send(query);
+
+            if (!result.Success && result.Code == "ProfileNotFound")
+                return Results.Ok(new { profile = (object?)null });
+
             return result.ToHttpResult(onSuccess: r => Results.Ok(r.Profile));
         })
         .WithTags("Profiles")

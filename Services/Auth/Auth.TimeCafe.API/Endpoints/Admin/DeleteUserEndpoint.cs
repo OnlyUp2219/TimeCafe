@@ -18,8 +18,9 @@ public class DeleteUserEndpoint : ICarterModule
             })
             .WithName("DeleteUser")
             .WithSummary("Удаление пользователя (admin)")
-            .WithDescription("Удаляет пользователя по ID. Операция необратима.")
+            .WithDescription("Удаляет пользователя по ID. Операция необратима. Нельзя удалить собственный аккаунт.")
             .Produces(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status403Forbidden)
             .Produces(StatusCodes.Status404NotFound)
             .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountAdminRead));
     }

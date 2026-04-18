@@ -10,11 +10,15 @@ import {
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 
-export const AdminSidebar: FC = () => {
+interface AdminSidebarProps {
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const email = useAppSelector((state) => state.auth.email);
-    const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
     const sections: NavSectionType[] = useMemo(() => [
         {
@@ -84,7 +88,7 @@ export const AdminSidebar: FC = () => {
     const renderMobileFooter = () => (
         <>
             <Avatar name={email ?? "Admin"} size={28} />
-            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => { setIsMobileNavOpen(false); navigate("/home"); }}>Вид клиента</Button>
+            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => { onOpenChange(false); navigate("/home"); }}>Вид клиента</Button>
             <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
         </>
     );
@@ -98,9 +102,8 @@ export const AdminSidebar: FC = () => {
             renderBottom={renderBottom}
             renderMobileFooter={renderMobileFooter}
             onLogoClick={() => navigate("/admin/dashboard")}
-            isOpen={isMobileNavOpen}
-            onOpenChange={setIsMobileNavOpen}
-            showMobileToggle
+            isOpen={isOpen}
+            onOpenChange={onOpenChange}
         />
     );
 };

@@ -28,12 +28,13 @@ import type {RoleDto} from "@store/api/adminApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
+import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
 
 export const RolesPage = () => {
     const navigate = useNavigate();
     const {sizes} = useComponentSize();
-    const {data, isLoading, error} = useGetRolesQuery();
+    const {data, isLoading, error} = useGetRolesQuery(undefined, {refetchOnMountOrArgChange: true});
     const roles = data?.roles ?? [];
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -68,27 +69,20 @@ export const RolesPage = () => {
     }, [deleteRole]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: {minWidth: 150, defaultWidth: 250},
-        normalized: {minWidth: 150, defaultWidth: 250},
-        actions: {minWidth: 90, defaultWidth: 100},
+        roleName: {minWidth: 150, defaultWidth: 300, idealWidth: 350},
+        actions: {minWidth: 100, defaultWidth: 120, idealWidth: 150},
     }), []);
 
     const columns: TableColumnDefinition<RoleDto>[] = useMemo(() => [
         createTableColumn<RoleDto>({
-            columnId: "name",
-            compare: (a, b) => a.name.localeCompare(b.name),
+            columnId: "roleName",
+            compare: (a, b) => a.roleName.localeCompare(b.roleName),
             renderHeaderCell: () => "Роль",
             renderCell: (r) => (
                 <TableCellLayout truncate>
-                    <Badge appearance="outline">{r.name}</Badge>
+                    <Badge appearance="outline">{r.roleName}</Badge>
                 </TableCellLayout>
             ),
-        }),
-        createTableColumn<RoleDto>({
-            columnId: "normalized",
-            compare: (a, b) => a.normalizedName.localeCompare(b.normalizedName),
-            renderHeaderCell: () => "Нормализованное имя",
-            renderCell: (r) => <TableCellLayout truncate>{r.normalizedName}</TableCellLayout>,
         }),
         createTableColumn<RoleDto>({
             columnId: "actions",
@@ -99,12 +93,14 @@ export const RolesPage = () => {
                     <Button
                         appearance="subtle"
                         icon={<LockClosed20Regular />}
-                        onClick={() => navigate(`/admin/roles/${r.name}/claims`)}
+                        onClick={() => navigate(`/admin/roles/${r.roleName}/claims`)}
+                        title="Управление правами"
                     />
                     <Button
                         appearance="subtle"
                         icon={<Delete20Regular />}
-                        onClick={() => handleDelete(r.name)}
+                        onClick={() => handleDelete(r.roleName)}
+                        title="Удалить роль"
                     />
                 </div>
             ),
@@ -112,7 +108,7 @@ export const RolesPage = () => {
     ], [handleDelete, navigate]);
 
     return (
-        <div>
+        <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Роли</Title2>
@@ -129,15 +125,23 @@ export const RolesPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={roles}
                     columns={columns}
-                    getRowId={(r) => r.name}
+                    getRowId={(r) => r.roleId}
                     loading={isLoading}
                     columnSizingOptions={columnSizingOptions}
                 />
             </Card>
+
+            <div className="flex justify-center mt-4">
+                <Pagination
+                    currentPage={1}
+                    totalPages={1}
+                    onPageChange={() => {}}
+                />
+            </div>
 
             <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
                 <DialogSurface>

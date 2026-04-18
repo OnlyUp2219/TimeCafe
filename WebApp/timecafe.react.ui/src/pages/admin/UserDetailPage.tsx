@@ -30,7 +30,7 @@ import {ArrowLeft20Regular, PeopleSettings20Regular, Delete20Regular} from "@flu
 import {useGetUserByIdQuery} from "@store/api/adminApi";
 import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
 import {useGetVisitHistoryQuery} from "@store/api/venueApi";
-import {useGetProfileByUserIdQuery, useGetAdditionalInfosByUserIdQuery, useCreateAdditionalInfoMutation, useDeleteAdditionalInfoMutation} from "@store/api/profileApi";
+import {useGetProfileByUserIdReadOnlyQuery, useGetAdditionalInfosByUserIdQuery, useCreateAdditionalInfoMutation, useDeleteAdditionalInfoMutation} from "@store/api/profileApi";
 import {useAppSelector} from "@store/hooks";
 import {ProfileStatus, Gender} from "@app-types/profile";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
@@ -125,7 +125,7 @@ export const UserDetailPage = () => {
     const [txPage, setTxPage] = useState(1);
     const txPageSize = 10;
 
-    const {data: userData, isLoading: userLoading, error: userError} = useGetUserByIdQuery(id!, {skip: !id});
+    const {data: userData, isLoading: userLoading, error: userError} = useGetUserByIdQuery(id!, {skip: !id, refetchOnMountOrArgChange: true});
     const user = userData?.user;
 
     const {data: balance, isLoading: balanceLoading} = useGetBalanceQuery(id!, {skip: !id});
@@ -133,8 +133,8 @@ export const UserDetailPage = () => {
         {userId: id!, page: txPage, pageSize: txPageSize},
         {skip: !id}
     );
-    const {data: visits = [], isLoading: visitsLoading} = useGetVisitHistoryQuery(id!, {skip: !id});
-    const {data: profile} = useGetProfileByUserIdQuery(id!, {skip: !id});
+    const {data: visits = [], isLoading: visitsLoading} = useGetVisitHistoryQuery({userId: id!}, {skip: !id});
+    const {data: profile} = useGetProfileByUserIdReadOnlyQuery(id!, {skip: !id});
     const {data: adminNotes = [], isLoading: notesLoading} = useGetAdditionalInfosByUserIdQuery(id!, {skip: !id});
     const [createNote, {isLoading: creatingNote}] = useCreateAdditionalInfoMutation();
     const [deleteNote] = useDeleteAdditionalInfoMutation();

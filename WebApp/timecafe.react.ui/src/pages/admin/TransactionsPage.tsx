@@ -95,14 +95,14 @@ export const TransactionsPage = () => {
     const completedCount = useMemo(() => transactions.filter((item) => item.status === TransactionStatus.Completed).length, [transactions]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        date: {minWidth: 130, defaultWidth: 160},
-        user: {minWidth: 150, defaultWidth: 220},
-        type: {minWidth: 100, defaultWidth: 140},
-        source: {minWidth: 100, defaultWidth: 130},
-        status: {minWidth: 100, defaultWidth: 130},
-        amount: {minWidth: 80, defaultWidth: 120},
-        balance: {minWidth: 80, defaultWidth: 120},
-        comment: {minWidth: 100, defaultWidth: 220},
+        date: {minWidth: 130, defaultWidth: 160, idealWidth: 180},
+        user: {minWidth: 150, defaultWidth: 220, idealWidth: 250},
+        type: {minWidth: 100, defaultWidth: 140, idealWidth: 160},
+        source: {minWidth: 100, defaultWidth: 130, idealWidth: 150},
+        status: {minWidth: 100, defaultWidth: 130, idealWidth: 150},
+        amount: {minWidth: 80, defaultWidth: 120, idealWidth: 140},
+        balance: {minWidth: 80, defaultWidth: 120, idealWidth: 140},
+        comment: {minWidth: 100, defaultWidth: 220, idealWidth: 280},
     }), []);
 
     const columns: TableColumnDefinition<BillingTransaction>[] = useMemo(() => [
@@ -227,7 +227,7 @@ export const TransactionsPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={transactions}
                     columns={columns}

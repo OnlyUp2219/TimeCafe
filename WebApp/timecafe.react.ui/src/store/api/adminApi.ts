@@ -4,8 +4,8 @@ import type {User} from "@app-types/user";
 import type {BillingTransaction} from "@app-types/billing";
 
 export interface RoleDto {
-    name: string;
-    normalizedName: string;
+    roleId: string;
+    roleName: string;
 }
 
 export interface GetUsersResponse {

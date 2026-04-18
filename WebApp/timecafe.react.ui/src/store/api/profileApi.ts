@@ -43,21 +43,33 @@ export const profileApi = createApi({
         getProfileByUserId: builder.query<Profile, string>({
             async queryFn(userId, _queryApi, _extraOptions, fetchWithBQ) {
                 const result = await fetchWithBQ(`/userprofile/profiles/${userId}`);
-                if (result.error) {
-                    const status = (result.error as { status?: number }).status;
-                    if (status === 404) {
-                        const createResult = await fetchWithBQ({
-                            url: `/userprofile/profiles/empty/${userId}`,
-                            method: "POST",
-                        });
-                        if (createResult.error) return {error: createResult.error};
-                        const retryResult = await fetchWithBQ(`/userprofile/profiles/${userId}`);
-                        if (retryResult.error) return {error: retryResult.error};
-                        return {data: retryResult.data as Profile};
-                    }
-                    return {error: result.error};
+                if (result.error) return {error: result.error};
+
+                const data = result.data as {profile: Profile | null} | Profile;
+                const profile = "profile" in data ? data.profile : data as Profile;
+
+                if (!profile) {
+                    const createResult = await fetchWithBQ({
+                        url: `/userprofile/profiles/empty/${userId}`,
+                        method: "POST",
+                    });
+                    if (createResult.error) return {error: createResult.error};
+                    const retryResult = await fetchWithBQ(`/userprofile/profiles/${userId}`);
+                    if (retryResult.error) return {error: retryResult.error};
+                    const retryData = retryResult.data as {profile: Profile | null} | Profile;
+                    const retryProfile = "profile" in retryData ? retryData.profile : retryData as Profile;
+                    return retryProfile ? {data: retryProfile} : {error: {status: 500, error: "Profile creation failed"} as never};
                 }
-                return {data: result.data as Profile};
+                return {data: profile};
+            },
+            providesTags: (_result, _error, userId) => [{type: "Profile", id: userId}],
+        }),
+
+        getProfileByUserIdReadOnly: builder.query<Profile | null, string>({
+            query: (userId) => `/userprofile/profiles/${userId}`,
+            transformResponse: (response: {profile: Profile | null} | Profile) => {
+                if ("profile" in response) return response.profile;
+                return response as Profile;
             },
             providesTags: (_result, _error, userId) => [{type: "Profile", id: userId}],
         }),
@@ -154,6 +166,7 @@ export const profileApi = createApi({
 export const {
     useGetProfileByUserIdQuery,
     useLazyGetProfileByUserIdQuery,
+    useGetProfileByUserIdReadOnlyQuery,
     useCreateEmptyProfileMutation,
     useUpdateProfileMutation,
     useUploadProfilePhotoMutation,

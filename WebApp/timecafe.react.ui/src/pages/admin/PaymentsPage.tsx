@@ -73,12 +73,12 @@ export const PaymentsPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        userId: {minWidth: 100, defaultWidth: 160},
-        amount: {minWidth: 80, defaultWidth: 120},
-        method: {minWidth: 80, defaultWidth: 110},
-        status: {minWidth: 100, defaultWidth: 130},
-        externalId: {minWidth: 100, defaultWidth: 180},
-        createdAt: {minWidth: 130, defaultWidth: 160},
+        userId: {minWidth: 100, defaultWidth: 160, idealWidth: 200},
+        amount: {minWidth: 80, defaultWidth: 120, idealWidth: 140},
+        method: {minWidth: 80, defaultWidth: 110, idealWidth: 130},
+        status: {minWidth: 100, defaultWidth: 130, idealWidth: 150},
+        externalId: {minWidth: 100, defaultWidth: 180, idealWidth: 220},
+        createdAt: {minWidth: 130, defaultWidth: 160, idealWidth: 180},
     }), []);
 
     const columns: TableColumnDefinition<AdminPaymentDto>[] = useMemo(() => [
@@ -163,7 +163,7 @@ export const PaymentsPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={payments}
                     columns={columns}

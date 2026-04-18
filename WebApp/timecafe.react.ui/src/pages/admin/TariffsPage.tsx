@@ -156,12 +156,12 @@ export const TariffsPage = () => {
     }, [activateTariff, deactivateTariff]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: {minWidth: 150, defaultWidth: 250},
-        price: {minWidth: 80, defaultWidth: 140},
-        billingType: {minWidth: 100, defaultWidth: 140},
-        theme: {minWidth: 80, defaultWidth: 140},
-        status: {minWidth: 100, defaultWidth: 150},
-        actions: {minWidth: 90, defaultWidth: 100},
+        name: {minWidth: 150, defaultWidth: 250, idealWidth: 300},
+        price: {minWidth: 80, defaultWidth: 140, idealWidth: 160},
+        billingType: {minWidth: 100, defaultWidth: 140, idealWidth: 160},
+        theme: {minWidth: 80, defaultWidth: 140, idealWidth: 160},
+        status: {minWidth: 100, defaultWidth: 150, idealWidth: 180},
+        actions: {minWidth: 100, defaultWidth: 120, idealWidth: 140},
     }), []);
 
     const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => [
@@ -259,7 +259,7 @@ export const TariffsPage = () => {
                 </MessageBar>
             )}
 
-            <Card className="overflow-x-auto" size={sizes.card}>
+            <Card size={sizes.card}>
                 <DataTable
                     items={tariffs}
                     columns={columns}

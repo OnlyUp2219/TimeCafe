@@ -192,10 +192,13 @@ export const venueApi = createApi({
             providesTags: (_result, _error, userId) => [{type: "ActiveVisit", id: userId}],
         }),
 
-        getVisitHistory: builder.query<VisitWithTariff[], string>({
-            query: (userId) => `/venue/visits/history/${userId}`,
+        getVisitHistory: builder.query<VisitWithTariff[], {userId: string; pageNumber?: number; pageSize?: number}>({
+            query: ({userId, pageNumber = 1, pageSize = 50}) => ({
+                url: `/venue/visits/history/${userId}`,
+                params: {pageNumber, pageSize},
+            }),
             transformResponse: (response: VisitsResponse) => response.visits,
-            providesTags: (_result, _error, userId) => [{type: "VisitHistory", id: userId}],
+            providesTags: (_result, _error, {userId}) => [{type: "VisitHistory", id: userId}],
         }),
 
         getVisitById: builder.query<{visit: VisitWithTariff}, string>({
