@@ -110,6 +110,26 @@ export const profileApi = createApi({
             providesTags: (_result, _error, userId) => [{type: "Profile", id: `infos-${userId}`}],
         }),
 
+        createAdditionalInfo: builder.mutation<
+            {message: string; info: {infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string}},
+            {userId: string; infoText: string; createdBy?: string}
+        >({
+            query: (body) => ({
+                url: "/userprofile/infos",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: (_result, _error, arg) => [{type: "Profile", id: `infos-${arg.userId}`}],
+        }),
+
+        deleteAdditionalInfo: builder.mutation<{message: string}, {infoId: string; userId: string}>({
+            query: ({infoId}) => ({
+                url: `/userprofile/infos/${infoId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: (_result, _error, arg) => [{type: "Profile", id: `infos-${arg.userId}`}],
+        }),
+
         getProfilesPage: builder.query<GetProfilesPageResponse, {pageNumber: number; pageSize: number}>({
             query: ({pageNumber, pageSize}) => ({
                 url: "/userprofile/profiles/page",
@@ -139,6 +159,8 @@ export const {
     useUploadProfilePhotoMutation,
     useDeleteProfilePhotoMutation,
     useGetAdditionalInfosByUserIdQuery,
+    useCreateAdditionalInfoMutation,
+    useDeleteAdditionalInfoMutation,
     useGetProfilesPageQuery,
     useDeleteProfileMutation,
 } = profileApi;

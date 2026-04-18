@@ -114,11 +114,13 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
                     {!isPublic && !isSidebarOpen && onMenuToggle && (
-                    <Hamburger
-                        aria-label="Toggle sidebar"
-                        onClick={onMenuToggle}
-                    />
-                )}
+                        <div className="header-mobile-toggle flex items-center">
+                            <Hamburger
+                                aria-label="Toggle sidebar"
+                                onClick={onMenuToggle}
+                            />
+                        </div>
+                    )}
                     <h1 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">TimeCafe</h1>
                     {!isPublic && isActiveVisit && activeVisitDuration && (
                         <div className="hidden items-center gap-2 sm:flex">

@@ -116,7 +116,7 @@ export const adminApi = createApi({
             query: (body) => ({
                 url: "/auth/rbac/roles",
                 method: "POST",
-                body,
+                body: { roleName: body.roleName, claims: [] },
             }),
             invalidatesTags: ["Users"],
         }),

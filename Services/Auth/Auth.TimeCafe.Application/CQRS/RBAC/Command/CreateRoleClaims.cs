@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.Application.CQRS.RBAC.Command;
+namespace Auth.TimeCafe.Application.CQRS.RBAC.Command;
 
 public sealed record CreateRoleClaimsCommand(string RoleName, List<string> Claims) : ICommand;
 
@@ -7,7 +7,6 @@ public sealed class CreateRoleClaimsValidator : AbstractValidator<CreateRoleClai
     public CreateRoleClaimsValidator()
     {
         RuleFor(x => x.RoleName).NotEmpty();
-        RuleFor(x => x.Claims).NotEmpty();
     }
 }
 

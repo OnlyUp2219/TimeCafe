@@ -4,7 +4,6 @@ import {
     Body1,
     Body2,
     Badge,
-    Spinner,
     MessageBar,
     MessageBarBody,
 } from "@fluentui/react-components";
@@ -14,12 +13,12 @@ import {
     Clock20Regular,
     Gift20Regular,
 } from "@fluentui/react-icons";
-import {useNavigate} from "react-router-dom";
-import {useGetUsersQuery} from "@store/api/adminApi";
-import {useGetTariffsPageQuery, useGetAllPromotionsQuery, useGetVisitsPageQuery} from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {useComponentSize} from "@hooks/useComponentSize";
+import { useNavigate } from "react-router-dom";
+import { useGetUsersQuery } from "@store/api/adminApi";
+import { useGetTariffsPageQuery, useGetAllPromotionsQuery, useGetVisitsPageQuery } from "@store/api/venueApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 interface StatCardProps {
     title: string;
@@ -28,7 +27,7 @@ interface StatCardProps {
     onClick?: () => void;
 }
 
-const StatCard = ({title, value, icon, onClick, cardSize}: StatCardProps & {cardSize: "small" | "medium" | "large"}) => (
+const StatCard = ({ title, value, icon, onClick, cardSize }: StatCardProps & { cardSize: "small" | "medium" | "large" }) => (
     <Card
         className={`flex-1 min-w-[200px] ${onClick ? "cursor-pointer" : ""}`}
         size={cardSize}
@@ -46,11 +45,11 @@ const StatCard = ({title, value, icon, onClick, cardSize}: StatCardProps & {card
 
 export const DashboardPage = () => {
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
-    const {data: usersData, isLoading: usersLoading, error: usersError} = useGetUsersQuery({page: 1, size: 1});
-    const {data: tariffsData, isLoading: tariffsLoading} = useGetTariffsPageQuery({pageNumber: 1, pageSize: 1});
-    const {data: promotionsData, isLoading: promotionsLoading} = useGetAllPromotionsQuery();
-    const {data: visitsData, isLoading: visitsLoading} = useGetVisitsPageQuery({pageNumber: 1, pageSize: 1});
+    const { sizes } = useComponentSize();
+    const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 });
+    const { data: tariffsData, isLoading: tariffsLoading } = useGetTariffsPageQuery({ pageNumber: 1, pageSize: 20 });
+    const { data: promotionsData, isLoading: promotionsLoading } = useGetAllPromotionsQuery();
+    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ pageNumber: 1, pageSize: 20 });
     const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
     return (

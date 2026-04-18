@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.Infrastructure.Services;
+namespace Auth.TimeCafe.Infrastructure.Services;
 
 public class RbacRepository : IRbacRepository
 {
@@ -63,10 +63,7 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> CreateRoleClaimsAsync(string roleName, List<string> claims)
     {
-        var uniqueClaims = NormalizeClaims(claims);
-
-        if (uniqueClaims.Count == 0)
-            return Result.Fail("Список разрешений не должен быть пустым.");
+        var uniqueClaims = claims == null ? new List<string>() : NormalizeClaims(claims);
 
         var useTransaction = !string.Equals(_context.Database.ProviderName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.Ordinal);
         await using var transaction = useTransaction ? await _context.Database.BeginTransactionAsync() : null;

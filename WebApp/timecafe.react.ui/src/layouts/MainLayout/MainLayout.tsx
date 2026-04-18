@@ -20,11 +20,13 @@ export const MainLayout: FC = () => {
 
             <ProfileCompletionGate />
 
-            <div className="main-layout__content">
-                <Sidebar/>
-
-                <main className="main-layout__main"><Outlet/></main>
-            </div>
+                
+            <main className="main-layout__main flex flex-1 min-w-0">
+                <Sidebar />
+                <div className="flex-1 min-w-0 flex flex-col">
+                    <Outlet/>
+                </div>
+            </main>
 
             <Footer/>
         </div>

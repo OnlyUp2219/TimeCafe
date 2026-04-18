@@ -1,5 +1,5 @@
 import {useParams, useNavigate} from "react-router-dom";
-import {useMemo, useState} from "react";
+import {useCallback, useMemo, useState} from "react";
 import {
     Avatar,
     Badge,
@@ -15,13 +15,23 @@ import {
     Title3,
     createTableColumn,
     TableCellLayout,
+    Textarea,
+    Dialog,
+    DialogTrigger,
+    DialogSurface,
+    DialogBody,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Field,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular, PeopleSettings20Regular} from "@fluentui/react-icons";
+import {ArrowLeft20Regular, PeopleSettings20Regular, Delete20Regular} from "@fluentui/react-icons";
 import {useGetUserByIdQuery} from "@store/api/adminApi";
 import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
 import {useGetVisitHistoryQuery} from "@store/api/venueApi";
-import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import {useGetProfileByUserIdQuery, useGetAdditionalInfosByUserIdQuery, useCreateAdditionalInfoMutation, useDeleteAdditionalInfoMutation} from "@store/api/profileApi";
+import {useAppSelector} from "@store/hooks";
 import {ProfileStatus, Gender} from "@app-types/profile";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
@@ -125,6 +135,29 @@ export const UserDetailPage = () => {
     );
     const {data: visits = [], isLoading: visitsLoading} = useGetVisitHistoryQuery(id!, {skip: !id});
     const {data: profile} = useGetProfileByUserIdQuery(id!, {skip: !id});
+    const {data: adminNotes = [], isLoading: notesLoading} = useGetAdditionalInfosByUserIdQuery(id!, {skip: !id});
+    const [createNote, {isLoading: creatingNote}] = useCreateAdditionalInfoMutation();
+    const [deleteNote] = useDeleteAdditionalInfoMutation();
+    const adminEmail = useAppSelector((state) => state.auth.email);
+
+    const [addNoteOpen, setAddNoteOpen] = useState(false);
+    const [newNoteText, setNewNoteText] = useState("");
+
+    const handleAddNote = useCallback(async () => {
+        if (!id || !newNoteText.trim()) return;
+        try {
+            await createNote({userId: id, infoText: newNoteText.trim(), createdBy: adminEmail || "admin"}).unwrap();
+            setNewNoteText("");
+            setAddNoteOpen(false);
+        } catch { /* error handled by RTK */ }
+    }, [id, newNoteText, createNote, adminEmail]);
+
+    const handleDeleteNote = useCallback(async (infoId: string) => {
+        if (!id) return;
+        try {
+            await deleteNote({infoId, userId: id}).unwrap();
+        } catch { /* error handled by RTK */ }
+    }, [id, deleteNote]);
 
     const transactions = txData?.transactions ?? [];
     const txTotalPages = txData?.pagination.totalPages ?? 1;
@@ -375,17 +408,56 @@ export const UserDetailPage = () => {
                 <Card size={sizes.card}>
                     <div className="flex items-center justify-between gap-3 mb-3">
                         <Title3>Заметки администратора</Title3>
-                        <Button appearance="outline" size="small">+ Добавить</Button>
+                        <Dialog open={addNoteOpen} onOpenChange={(_e, data) => setAddNoteOpen(data.open)}>
+                            <DialogTrigger disableButtonEnhancement>
+                                <Button appearance="outline" size="small">+ Добавить</Button>
+                            </DialogTrigger>
+                            <DialogSurface>
+                                <DialogBody>
+                                    <DialogTitle>Новая заметка</DialogTitle>
+                                    <DialogContent>
+                                        <Field label="Текст заметки">
+                                            <Textarea
+                                                value={newNoteText}
+                                                onChange={(_e, data) => setNewNoteText(data.value)}
+                                                placeholder="Введите заметку..."
+                                                rows={4}
+                                                style={{width: "100%"}}
+                                            />
+                                        </Field>
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <DialogTrigger disableButtonEnhancement>
+                                            <Button appearance="secondary">Отмена</Button>
+                                        </DialogTrigger>
+                                        <Button appearance="primary" onClick={handleAddNote} disabled={!newNoteText.trim() || creatingNote}>
+                                            {creatingNote ? "Сохранение..." : "Сохранить"}
+                                        </Button>
+                                    </DialogActions>
+                                </DialogBody>
+                            </DialogSurface>
+                        </Dialog>
                     </div>
                     <div className="flex flex-col gap-3">
-                        <div className="rounded-md bg-neutral-100 p-3">
-                            <Body1 block className="mb-1">Постоянный клиент, предпочитает зону у окна. Аллергия на орехи.</Body1>
-                            <Caption1>Добавлено: Админ · 20 мар 2026</Caption1>
-                        </div>
-                        <div className="rounded-md bg-neutral-100 p-3">
-                            <Body1 block className="mb-1">Работает фрилансером, часто приходит на целый день. VIP-статус?</Body1>
-                            <Caption1>Добавлено: Админ · 18 мар 2026</Caption1>
-                        </div>
+                        {notesLoading && <Spinner size="small" />}
+                        {!notesLoading && adminNotes.length === 0 && (
+                            <Body2 style={{color: "var(--colorNeutralForeground3)"}}>Нет заметок</Body2>
+                        )}
+                        {adminNotes.map((info) => (
+                            <div key={info.infoId} className="rounded-md bg-neutral-100 p-3 flex justify-between items-start gap-2">
+                                <div className="min-w-0 flex-1">
+                                    <Body1 block className="mb-1">{info.infoText}</Body1>
+                                    <Caption1>Добавлено: {info.createdBy || "—"} · {formatDateTime(info.createdAt)}</Caption1>
+                                </div>
+                                <Button
+                                    appearance="subtle"
+                                    size="small"
+                                    icon={<Delete20Regular />}
+                                    onClick={() => handleDeleteNote(info.infoId)}
+                                    aria-label="Удалить заметку"
+                                />
+                            </div>
+                        ))}
                     </div>
                 </Card>
             </div>

@@ -1,7 +1,6 @@
 import {useCallback, useMemo, useState} from "react";
 import {
     Badge,
-    Body1,
     Body2,
     Button,
     Card,

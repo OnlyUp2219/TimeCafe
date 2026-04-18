@@ -21,6 +21,7 @@ import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import type {User} from "@app-types/user";
 import {useGetUsersQuery} from "@store/api/adminApi";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useComponentSize} from "@hooks/useComponentSize";
@@ -34,6 +35,51 @@ const getUserStatusBadgeClass = (status: string): string => {
         default:
             return "beige";
     }
+};
+
+const ProfileNameCell = ({ user }: { user: User }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(user.id);
+    const displayName = profile?.firstName || profile?.lastName ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim() : (user.name || "—");
+    return (
+        <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
+            {displayName}
+        </TableCellLayout>
+    );
+};
+
+const ProfilePhoneCell = ({ user }: { user: User }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(user.id);
+    return <TableCellLayout truncate>{profile?.phoneNumber || "—"}</TableCellLayout>;
+};
+
+const profileStatusLabel = (status?: number) => {
+    switch (status) {
+        case 0: return "Ожидает заполнения";
+        case 1: return "Заполнен";
+        case 2: return "Заблокирован";
+        default: return "Неизвестно";
+    }
+};
+
+const profileStatusColor = (status?: number): "warning" | "success" | "danger" => {
+    switch (status) {
+        case 0: return "warning";
+        case 1: return "success";
+        case 2: return "danger";
+        default: return "warning";
+    }
+};
+
+const ProfileStatusCell = ({ user }: { user: User }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(user.id);
+    if (!profile) return <TableCellLayout truncate>—</TableCellLayout>;
+    return (
+        <TableCellLayout truncate>
+            <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
+                {profileStatusLabel(profile.profileStatus)}
+            </Badge>
+        </TableCellLayout>
+    );
 };
 
 export const UsersListPage = () => {
@@ -64,9 +110,11 @@ export const UsersListPage = () => {
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         user: {minWidth: 150, defaultWidth: 220},
-        email: {minWidth: 150, defaultWidth: 250},
+        email: {minWidth: 150, defaultWidth: 200},
+        phone: {minWidth: 120, defaultWidth: 150},
         role: {minWidth: 80, defaultWidth: 120},
-        status: {minWidth: 80, defaultWidth: 120},
+        authStatus: {minWidth: 80, defaultWidth: 120},
+        profileStatus: {minWidth: 120, defaultWidth: 160},
         actions: {minWidth: 90, defaultWidth: 120},
     }), []);
 
@@ -76,11 +124,7 @@ export const UsersListPage = () => {
                 columnId: "user",
                 compare: (a, b) => (a.name ?? "").localeCompare(b.name ?? ""),
                 renderHeaderCell: () => "Пользователь",
-                renderCell: (user) => (
-                    <TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>
-                        {user.name || "—"}
-                    </TableCellLayout>
-                ),
+                renderCell: (user) => <ProfileNameCell user={user} />,
             }),
             createTableColumn<User>({
                 columnId: "email",
@@ -89,6 +133,12 @@ export const UsersListPage = () => {
                 renderCell: (user) => (
                     <TableCellLayout truncate>{user.email}</TableCellLayout>
                 ),
+            }),
+            createTableColumn<User>({
+                columnId: "phone",
+                compare: () => 0,
+                renderHeaderCell: () => "Телефон",
+                renderCell: (user) => <ProfilePhoneCell user={user} />,
             }),
             createTableColumn<User>({
                 columnId: "role",
@@ -101,9 +151,9 @@ export const UsersListPage = () => {
                 ),
             }),
             createTableColumn<User>({
-                columnId: "status",
+                columnId: "authStatus",
                 compare: (a, b) => a.status.localeCompare(b.status),
-                renderHeaderCell: () => "Статус",
+                renderHeaderCell: () => "Статус аккаунта",
                 renderCell: (user) => (
                     <TableCellLayout truncate>
                         <Badge
@@ -115,6 +165,12 @@ export const UsersListPage = () => {
                         </Badge>
                     </TableCellLayout>
                 ),
+            }),
+            createTableColumn<User>({
+                columnId: "profileStatus",
+                compare: () => 0,
+                renderHeaderCell: () => "Статус профиля",
+                renderCell: (user) => <ProfileStatusCell user={user} />,
             }),
             createTableColumn<User>({
                 columnId: "actions",
@@ -181,3 +237,4 @@ export const UsersListPage = () => {
         </div>
     );
 };
+

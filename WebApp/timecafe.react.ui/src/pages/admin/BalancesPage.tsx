@@ -1,5 +1,6 @@
 import {useMemo, useState} from "react";
 import {
+    Avatar,
     Body1,
     Body2,
     Badge,
@@ -7,12 +8,14 @@ import {
     MessageBar,
     MessageBarBody,
     Title2,
+    Title3,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {useGetAdminBalancesQuery} from "@store/api/adminApi";
 import type {AdminBalanceDto} from "@store/api/adminApi";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
@@ -37,6 +40,21 @@ const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "
     return "informative";
 };
 
+const BalanceUserCell = ({userId}: {userId: string}) => {
+    const {data: profile} = useGetProfileByUserIdQuery(userId);
+    const displayName = profile?.firstName || profile?.lastName
+        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
+        : null;
+    return (
+        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
+            <div className="min-w-0">
+                {displayName && <Body1 block truncate>{displayName}</Body1>}
+                <Body2 block className="font-mono text-gray-400">{userId.slice(0, 12)}…</Body2>
+            </div>
+        </TableCellLayout>
+    );
+};
+
 export const BalancesPage = () => {
     const {sizes} = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
@@ -51,6 +69,10 @@ export const BalancesPage = () => {
     const totalCount = data?.pagination.totalCount ?? 0;
     const totalPages = data?.pagination.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
+
+    const totalBalance = useMemo(() => balances.reduce((s, b) => s + b.currentBalance, 0), [balances]);
+    const totalDebt = useMemo(() => balances.reduce((s, b) => s + b.debt, 0), [balances]);
+    const debtorsCount = useMemo(() => balances.filter(b => b.debt > 0).length, [balances]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         user: {minWidth: 180, defaultWidth: 260},
@@ -67,14 +89,7 @@ export const BalancesPage = () => {
             columnId: "user",
             compare: (a, b) => a.userId.localeCompare(b.userId),
             renderHeaderCell: () => "Пользователь",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <div className="min-w-0">
-                        <Body1 block truncate>{b.userId}</Body1>
-                        <Body2 block className="font-mono text-gray-400">{b.userId.slice(0, 8)}…</Body2>
-                    </div>
-                </TableCellLayout>
-            ),
+            renderCell: (b) => <BalanceUserCell userId={b.userId} />,
         }),
         createTableColumn<AdminBalanceDto>({
             columnId: "type",
@@ -135,8 +150,31 @@ export const BalancesPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Балансы</Title2>
-                    <Body2 block>{totalCount} балансов</Body2>
+                    <Body2 block>{totalCount} пользователей</Body2>
                 </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-4 mb-4">
+                <Card size={sizes.card}>
+                    <Body2 block>Всего балансов</Body2>
+                    <Title3>{totalCount}</Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Суммарный баланс (стр.)</Body2>
+                    <Title3 style={{color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
+                        {formatMoney(totalBalance)}
+                    </Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Суммарный долг (стр.)</Body2>
+                    <Title3 style={{color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
+                        {totalDebt > 0 ? formatMoney(totalDebt) : "—"}
+                    </Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Должников (стр.)</Body2>
+                    <Title3>{debtorsCount}</Title3>
+                </Card>
             </div>
 
             {queryError && (

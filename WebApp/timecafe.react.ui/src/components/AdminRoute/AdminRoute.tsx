@@ -47,7 +47,7 @@ export const AdminRoute = ({children}: AdminRouteProps) => {
         };
 
         const checkAuth = async () => {
-            let token = accessToken;
+            let token: string | null = accessToken;
 
             if (!token) {
                 try {

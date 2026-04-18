@@ -3,6 +3,7 @@ import {
     Badge,
     Body1,
     Body2,
+    Button,
     Card,
     Field,
     Input,
@@ -14,7 +15,7 @@ import {
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {useGetTransactionHistoryQuery} from "@store/api/billingApi";
+import {useGetAdminTransactionsQuery} from "@store/api/adminApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
@@ -80,9 +81,8 @@ export const TransactionsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
-    const {data, isLoading, error} = useGetTransactionHistoryQuery(
-        {userId, page: currentPage, pageSize},
-        {skip: !userId}
+    const {data, isLoading, error} = useGetAdminTransactionsQuery(
+        {page: currentPage, pageSize, userId: userId || undefined},
     );
 
     const transactions = data?.transactions ?? [];
@@ -119,8 +119,7 @@ export const TransactionsPage = () => {
             renderCell: (tx) => (
                 <TableCellLayout truncate>
                     <div className="min-w-0">
-                        <Body1 block truncate>{tx.userId}</Body1>
-                        <Body2 block className="font-mono text-gray-400">{tx.userId.slice(0, 8)}…</Body2>
+                        <Body2 block className="font-mono text-gray-400">{tx.userId.slice(0, 12)}…</Body2>
                     </div>
                 </TableCellLayout>
             ),
@@ -182,50 +181,49 @@ export const TransactionsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Транзакции</Title2>
-                    <Body2 block>Все финансовые операции</Body2>
+                    <Body2 block>Все финансовые операции · {totalCount} записей</Body2>
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-4">
+            <div className="grid gap-4 md:grid-cols-4 mb-4">
                 <Card size={sizes.card}>
-                    <Body2 block>Найдено</Body2>
-                    <Title2>{userId ? totalCount : 0}</Title2>
+                    <Body2 block>Всего</Body2>
+                    <Title3>{totalCount}</Title3>
                 </Card>
                 <Card size={sizes.card}>
-                    <Body2 block>Пополнения</Body2>
-                    <Title2>{formatMoney(totalDeposits)}</Title2>
+                    <Body2 block>Пополнения (на стр.)</Body2>
+                    <Title3 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(totalDeposits)}</Title3>
                 </Card>
                 <Card size={sizes.card}>
-                    <Body2 block>Списания</Body2>
-                    <Title2>{formatMoney(totalWithdrawals)}</Title2>
+                    <Body2 block>Списания (на стр.)</Body2>
+                    <Title3 style={{color: "var(--colorPaletteRedForeground1)"}}>{formatMoney(totalWithdrawals)}</Title3>
+                </Card>
+                <Card size={sizes.card}>
+                    <Body2 block>Выполнено (на стр.)</Body2>
+                    <Title3>{completedCount}</Title3>
                 </Card>
             </div>
 
             <div className="flex gap-4 flex-wrap items-end mb-4">
-                <Field label="ID пользователя" size={sizes.field}>
+                <Field label="Фильтр по ID пользователя" size={sizes.field}>
                     <Input
                         size={sizes.input}
                         value={userId}
                         onChange={(e) => { setUserId(e.target.value); setCurrentPage(1); }}
-                        placeholder="Введите userId..."
+                        placeholder="Опционально..."
                         style={{minWidth: 320}}
                     />
                 </Field>
-                <Card size={sizes.card} className="px-4 py-3">
-                    <Body2 block>Выполнено</Body2>
-                    <Title3>{completedCount}</Title3>
-                </Card>
+                {userId && (
+                    <Button appearance="secondary" size={sizes.button} onClick={() => { setUserId(""); setCurrentPage(1); }}>
+                        Сбросить
+                    </Button>
+                )}
             </div>
 
             {errorMessage && (
                 <MessageBar intent="error" className="mb-4">
                     <MessageBarBody>{errorMessage}</MessageBarBody>
-                </MessageBar>
-            )}
-
-            {!userId && (
-                <MessageBar intent="info" className="mb-4">
-                    <MessageBarBody>Введите ID пользователя для просмотра транзакций</MessageBarBody>
                 </MessageBar>
             )}
 
@@ -239,19 +237,17 @@ export const TransactionsPage = () => {
                 />
             </Card>
 
-            {userId && (
-                <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-                    <Body1>Показано {transactions.length} из {totalCount}</Body1>
-                    <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                        pageSize={pageSize}
-                        onPageSizeChange={setPageSize}
-                        totalCount={totalCount}
-                    />
-                </div>
-            )}
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {transactions.length} из {totalCount}</Body1>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
+            </div>
         </div>
     );
 };
