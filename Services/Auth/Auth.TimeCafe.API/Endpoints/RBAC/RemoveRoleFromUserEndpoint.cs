@@ -12,8 +12,19 @@ public class RemoveRoleFromUserEndpoint : ICarterModule
                 [FromServices] ISender sender,
                 [FromRoute] Guid userId,
                 [FromRoute] string roleName,
+                ClaimsPrincipal user,
                 CancellationToken ct) =>
             {
+                if (roleName.Equals(BuildingBlocks.Permissions.Roles.Admin, StringComparison.OrdinalIgnoreCase) ||
+                    roleName.Equals(BuildingBlocks.Permissions.Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!user.HasClaim(c => c.Type == CustomClaimTypes.Permissions && c.Value == Permissions.RbacSuperAdmin))
+                    {
+                        // TODO : формат возвращения не соответствует стандарту. Добавить в архитектуру
+                        return Results.Forbid();
+                    }
+                }
+
                 var command = new RemoveRoleFromUserCommand(userId, roleName);
                 var result = await sender.Send(command, ct);
 

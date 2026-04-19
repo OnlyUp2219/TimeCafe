@@ -12,7 +12,7 @@ public static class SeedData
 
         var adminEmail = admin["Email"] ?? "";
         var adminPassword = admin["Password"] ?? "";
-        const string adminRole = Roles.Admin;
+        const string adminRole = Roles.SuperAdmin;
 
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
             throw new InvalidOperationException("Seed:Admin credentials missing in configuration.");

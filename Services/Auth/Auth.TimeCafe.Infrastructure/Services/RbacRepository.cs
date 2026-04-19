@@ -4,15 +4,18 @@ public class RbacRepository : IRbacRepository
 {
     private readonly ApplicationDbContext _context;
     private readonly RoleManager<IdentityRole<Guid>> _roleManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private readonly HybridCache _cache;
 
     public RbacRepository(
         ApplicationDbContext context,
         RoleManager<IdentityRole<Guid>> roleManager,
+        UserManager<ApplicationUser> userManager,
         HybridCache cache)
     {
         _context = context;
         _roleManager = roleManager;
+        _userManager = userManager;
         _cache = cache;
     }
 
@@ -104,6 +107,9 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> UpdateRoleClaimsAsync(string roleName, List<string> newClaims)
     {
+        if (Roles.IsSystemRole(roleName))
+            return Result.Fail(new SystemRoleModificationError(roleName));
+
         var role = await _roleManager.FindByNameAsync(roleName);
         if (role is null)
             return Result.Fail(new RoleNotFoundError(roleName));
@@ -147,6 +153,9 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> DeleteRoleAsync(string roleName)
     {
+        if (Roles.IsSystemRole(roleName))
+            return Result.Fail(new SystemRoleModificationError(roleName));
+
         var role = await _roleManager.FindByNameAsync(roleName);
         if (role is null)
             return Result.Fail(new RoleNotFoundError(roleName));
@@ -163,6 +172,9 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> UpdateRoleNameAsync(string oldRoleName, string newRoleName)
     {
+        if (Roles.IsSystemRole(oldRoleName))
+            return Result.Fail(new SystemRoleModificationError(oldRoleName));
+
         var role = await _roleManager.FindByNameAsync(oldRoleName);
         if (role is null)
             return Result.Fail(new RoleNotFoundError(oldRoleName));
@@ -185,7 +197,7 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> AssignRoleToUserAsync(Guid userId, string roleName)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null)
             return Result.Fail(new UserNotFoundError(userId));
 
@@ -193,19 +205,14 @@ public class RbacRepository : IRbacRepository
         if (role is null)
             return Result.Fail(new RoleNotFoundError(roleName));
 
-        var alreadyAssigned = await _context.UserRoles
-            .AnyAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
-
+        var alreadyAssigned = await _userManager.IsInRoleAsync(user, roleName);
         if (alreadyAssigned)
             return Result.Fail(new UserAlreadyInRoleError(userId, roleName));
 
-        _context.UserRoles.Add(new IdentityUserRole<Guid>
-        {
-            UserId = userId,
-            RoleId = role.Id
-        });
+        var identityResult = await _userManager.AddToRoleAsync(user, roleName);
+        if (!identityResult.Succeeded)
+            return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await _context.SaveChangesAsync();
         await InvalidatePermissionsCacheByUserAsync(userId);
         await InvalidatePermissionsCacheByRoleAsync(roleName);
 
@@ -214,7 +221,7 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> RemoveRoleFromUserAsync(Guid userId, string roleName)
     {
-        var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+        var user = await _userManager.FindByIdAsync(userId.ToString());
         if (user is null)
             return Result.Fail(new UserNotFoundError(userId));
 
@@ -222,14 +229,13 @@ public class RbacRepository : IRbacRepository
         if (role is null)
             return Result.Fail(new RoleNotFoundError(roleName));
 
-        var userRole = await _context.UserRoles
-            .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == role.Id);
-
-        if (userRole is null)
+        var isAssigned = await _userManager.IsInRoleAsync(user, roleName);
+        if (!isAssigned)
             return Result.Fail(new UserRoleNotAssignedError(userId, roleName));
 
-        _context.UserRoles.Remove(userRole);
-        await _context.SaveChangesAsync();
+        var identityResult = await _userManager.RemoveFromRoleAsync(user, roleName);
+        if (!identityResult.Succeeded)
+            return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
         await InvalidatePermissionsCacheByUserAsync(userId);
         await InvalidatePermissionsCacheByRoleAsync(roleName);
@@ -250,6 +256,7 @@ public class RbacRepository : IRbacRepository
     private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken ct = default)
     {
         await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), ct);
+        await _cache.RemoveByTagAsync($"user_{userId}", ct);
     }
 
     private static List<string> NormalizeClaims(List<string> claims)

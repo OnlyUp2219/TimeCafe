@@ -66,4 +66,5 @@ public static class Permissions
     public const string RbacPermissionRead = "auth.rbac.permission.read";
     public const string RbacUserRoleAssign = "auth.rbac.userrole.assign";
     public const string RbacUserRoleRemove = "auth.rbac.userrole.remove";
+    public const string RbacSuperAdmin = "auth.rbac.superadmin";
 }

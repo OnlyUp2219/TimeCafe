@@ -58,6 +58,7 @@ export const Permissions = {
     RbacPermissionRead: "auth.rbac.permission.read",
     RbacUserRoleAssign: "auth.rbac.userrole.assign",
     RbacUserRoleRemove: "auth.rbac.userrole.remove",
+    RbacSuperAdmin: "auth.rbac.superadmin",
 } as const;
 
 export type Permission = (typeof Permissions)[keyof typeof Permissions];

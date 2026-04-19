@@ -19,7 +19,10 @@ public static class SeedRolesAndPermissionsExtensions
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
-        await EnsureRoleClaimsAsync(roleManager, Roles.Admin, allPermissions);
+        var adminPermissions = allPermissions.Where(p => p != Permissions.RbacSuperAdmin).ToList();
+
+        await EnsureRoleClaimsAsync(roleManager, Roles.Admin, adminPermissions);
+        await EnsureRoleClaimsAsync(roleManager, Roles.SuperAdmin, allPermissions);
 
         var clientPermissions = new List<string>
         {
