@@ -29,6 +29,8 @@ public sealed class GetUserByIdQueryHandler(IUserRepository userRepository)
             Name = user.UserName,
             Role = string.Join(", ", roles),
             Status = status,
+            EmailConfirmed = user.EmailConfirmed,
+            PhoneNumberConfirmed = user.PhoneNumberConfirmed,
         });
     }
 }

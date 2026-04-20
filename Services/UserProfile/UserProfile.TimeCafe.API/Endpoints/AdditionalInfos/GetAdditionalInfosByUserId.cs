@@ -6,11 +6,13 @@ public class GetAdditionalInfosByUserId : ICarterModule
     {
         app.MapGet("/profiles/{userId:guid}/infos", async (
             [FromServices] ISender sender,
-            Guid userId) =>
+            Guid userId,
+            [FromQuery] int? pageNumber,
+            [FromQuery] int? pageSize) =>
         {
-            var query = new GetAdditionalInfosByUserIdQuery(userId);
+            var query = new GetAdditionalInfosByUserIdQuery(userId, pageNumber ?? 1, pageSize ?? 10);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(r.AdditionalInfos));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { items = r.AdditionalInfos, totalCount = r.TotalCount }));
         })
         .WithTags("AdditionalInfos")
         .WithName("GetAdditionalInfosByUserId")

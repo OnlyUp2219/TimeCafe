@@ -23,6 +23,28 @@ public class AdditionalInfoRepository(
             cancellationToken: ct);
     }
 
+    public async Task<(IEnumerable<AdditionalInfo> Items, int TotalCount)> GetPagedAdditionalInfosByUserIdAsync(
+        Guid userId,
+        int pageNumber,
+        int pageSize,
+        CancellationToken? cancellationToken = null)
+    {
+        var ct = cancellationToken ?? CancellationToken.None;
+        
+        var query = _context.AdditionalInfos
+            .AsNoTracking()
+            .Where(i => i.UserId == userId);
+
+        var totalCount = await query.CountAsync(ct);
+        var items = await query
+            .OrderByDescending(i => i.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
     public async Task<AdditionalInfo?> GetAdditionalInfoByIdAsync(
         Guid infoId,
         CancellationToken? cancellationToken = null)

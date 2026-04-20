@@ -15,6 +15,9 @@ public sealed class AssignRoleToUserCommandHandler(IRbacRepository rbacRepositor
 {
     public async Task<Result> Handle(AssignRoleToUserCommand request, CancellationToken cancellationToken)
     {
+        if (request.RoleName.Equals(BuildingBlocks.Permissions.Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase))
+            return Result.Fail(new SuperAdminModificationError());
+
         return await rbacRepository.AssignRoleToUserAsync(request.UserId, request.RoleName);
     }
 }

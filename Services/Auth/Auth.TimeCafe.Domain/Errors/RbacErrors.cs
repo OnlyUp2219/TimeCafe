@@ -1,4 +1,4 @@
-﻿namespace Auth.TimeCafe.Domain.Errors;
+namespace Auth.TimeCafe.Domain.Errors;
 
 public class PermissionsNotFoundError : Error
 {
@@ -97,5 +97,23 @@ public class UserRoleNotAssignedError : Error
         Metadata.Add("ErrorCode", "400");
         Metadata.Add("UserId", userId);
         Metadata.Add("RoleName", roleName);
+    }
+}
+
+public class SuperAdminModificationError : Error
+{
+    public SuperAdminModificationError()
+        : base("Работать с ролью SuperAdmin через интерфейс нельзя. SuperAdmin может быть только один, он создается при инициализации системы. Если возникли неполадки, измените роль напрямую через базу данных.")
+    {
+        Metadata.Add("ErrorCode", "403");
+    }
+}
+
+public class LastRoleRemovalError : Error
+{
+    public LastRoleRemovalError()
+        : base("Нельзя удалить последнюю роль пользователя. Сначала назначьте новую роль, а затем удалите старую.")
+    {
+        Metadata.Add("ErrorCode", "400");
     }
 }

@@ -90,7 +90,6 @@ public class RegisterUserCommandHandler(
         }
         catch (Exception ex)
         {
-            // Compensating action: if anything fails after user creation, delete the user
             if (user is not null)
             {
                 await _userManager.DeleteAsync(user);
