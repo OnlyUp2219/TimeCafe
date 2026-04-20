@@ -21,11 +21,14 @@ import {
 } from "@fluentui/react-icons";
 import { MOBILE_SIDEBAR_BREAKPOINT } from "@shared/layout/breakpoints";
 
+import type {Permission} from "@shared/auth/permissions";
+
 export interface NavItemType {
     id: string;
     label: string;
     path: string;
     icon: React.ReactElement;
+    permission?: Permission;
 }
 
 export interface NavSectionType {

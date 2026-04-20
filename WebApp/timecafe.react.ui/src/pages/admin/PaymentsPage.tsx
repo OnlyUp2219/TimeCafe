@@ -22,6 +22,8 @@ import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
 
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+
 const paymentStatusLabel = (s: number) => {
     switch (s) {
         case 0: return "Ожидание";
@@ -52,7 +54,7 @@ const paymentMethodLabel = (m: number) => {
     }
 };
 
-const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
+const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 

@@ -12,6 +12,7 @@ interface PaginationProps {
     pageSize?: number;
     onPageSizeChange?: (size: number) => void;
     totalCount?: number;
+    size?: "small" | "medium" | "large";
 }
 
 export const Pagination = ({
@@ -22,6 +23,7 @@ export const Pagination = ({
     pageSize,
     onPageSizeChange,
     totalCount,
+    size = "large",
 }: PaginationProps) => {
     const [jumpPage, setJumpPage] = useState("");
 
@@ -74,7 +76,7 @@ export const Pagination = ({
                     key={`page-${page}-${idx}`}
                     appearance={page === currentPage ? "primary" : "outline"}
                     onClick={() => onPageChange(page)}
-                    size="large"
+                    size={size}
                     style={{ minWidth: 0 }}
                 >
                     {page}
@@ -89,7 +91,7 @@ export const Pagination = ({
                 <div className="flex items-center gap-2">
                     <Body1>Строк:</Body1>
                     <Select
-                        size="large"
+                        size={size}
                         value={String(pageSize)}
                         onChange={(_, d) => {
                             onPageSizeChange(Number(d.value));
@@ -110,7 +112,7 @@ export const Pagination = ({
                 icon={<ChevronLeftRegular />}
                 disabled={currentPage <= 1}
                 onClick={() => onPageChange(currentPage - 1)}
-                size="large"
+                size={size}
                 style={{ minWidth: 0 }}
             />
             <div className="flex items-center gap-1">
@@ -120,7 +122,7 @@ export const Pagination = ({
                 icon={<ChevronRightRegular />}
                 disabled={currentPage >= totalPages}
                 onClick={() => onPageChange(currentPage + 1)}
-                size="large"
+                size={size}
                 style={{ minWidth: 0 }}
             />
             <div className="flex items-center gap-2">
@@ -130,10 +132,10 @@ export const Pagination = ({
                     onChange={(e) => setJumpPage(e.target.value)}
                     min={1}
                     max={totalPages}
-                    size="large"
+                    size={size}
                     style={{ width: 72 }}
                 />
-                <Button appearance="secondary" size="large" onClick={handleJump}>
+                <Button appearance="secondary" size={size} onClick={handleJump}>
                     Перейти
                 </Button>
             </div>

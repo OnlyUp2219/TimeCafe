@@ -19,6 +19,7 @@ import {useGetAdditionalInfosByUserIdQuery} from "@store/api/profileApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {Pagination} from "@components/Pagination/Pagination";
 
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
@@ -28,6 +29,8 @@ export const AdditionalInfosPage = () => {
     const [searchParams] = useSearchParams();
     const [userId, setUserId] = useState(searchParams.get("userId") ?? "");
     const [searchUserId, setSearchUserId] = useState(searchParams.get("userId") ?? "");
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 10;
 
     useEffect(() => {
         const uid = searchParams.get("userId");
@@ -37,10 +40,12 @@ export const AdditionalInfosPage = () => {
         }
     }, [searchParams]);
 
-    const {data: infos = [], isLoading, error} = useGetAdditionalInfosByUserIdQuery(
-        searchUserId,
+    const {data: notesData, isLoading, error} = useGetAdditionalInfosByUserIdQuery(
+        {userId: searchUserId, pageNumber: page, pageSize: PAGE_SIZE},
         {skip: !searchUserId}
     );
+    const infos = notesData?.items ?? [];
+    const totalCount = notesData?.totalCount ?? 0;
 
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -99,7 +104,7 @@ export const AdditionalInfosPage = () => {
 
             {infos.length > 0 && (
                 <div className="flex flex-col gap-3">
-                    <Title3>{infos.length} записей</Title3>
+                    <Title3>{totalCount} записей</Title3>
                     {infos.map((info) => (
                         <Card key={info.infoId} size={sizes.card}>
                             <Body1 block>{info.infoText}</Body1>
@@ -113,6 +118,16 @@ export const AdditionalInfosPage = () => {
                             </div>
                         </Card>
                     ))}
+
+                    {totalCount > PAGE_SIZE && (
+                        <div className="mt-4 flex justify-center">
+                            <Pagination
+                                currentPage={page}
+                                totalPages={Math.ceil(totalCount / PAGE_SIZE)}
+                                onPageChange={setPage}
+                            />
+                        </div>
+                    )}
                 </div>
             )}
         </div>

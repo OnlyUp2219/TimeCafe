@@ -150,19 +150,16 @@ export const RoleClaimsPage = () => {
     const [initializedRole, setInitializedRole] = useState<string | null>(null);
 
     useEffect(() => {
-        if (currentClaims.length > 0 && allPermissions.length > 0 && initializedRole !== normalizedRoleName) {
+        if (allPermissions.length > 0 && !claimsLoading && initializedRole !== normalizedRoleName) {
             setSelectedLeaves(new Set(currentClaims));
             setInitializedRole(normalizedRoleName);
-        } else if (currentClaims.length === 0 && allPermissions.length > 0 && initializedRole !== normalizedRoleName) {
-             // Handle case where role has no claims initially
-             setSelectedLeaves(new Set());
-             setInitializedRole(normalizedRoleName);
+            setSaved(false);
         }
-    }, [currentClaims, allPermissions, normalizedRoleName, initializedRole]);
+    }, [currentClaims, allPermissions, normalizedRoleName, initializedRole, claimsLoading]);
 
     const checkedItemsMap = useMemo(() => {
         const map = new Map<TreeItemValue, "checked" | "mixed">();
-        
+
         selectedLeaves.forEach(leaf => map.set(leaf, "checked"));
 
         Object.entries(groupedPermissions).forEach(([service, entities]) => {
@@ -198,13 +195,11 @@ export const RoleClaimsPage = () => {
     const handleCheckedChange = useCallback((_: unknown, data: TreeCheckedChangeData) => {
         setSaved(false);
         const val = String(data.value);
-        // data.checked might be boolean or "mixed" 
-        // In FlatTree, checking an item yields true or "checked", unchecking yields false or "unselected"
-        const isChecking = data.checked === "checked" || data.checked === true;
+        const isChecking = data.checked !== false;
 
         setSelectedLeaves(prev => {
             const next = new Set(prev);
-            
+
             const applyChange = (perm: string) => {
                 if (isChecking) next.add(perm);
                 else next.delete(perm);

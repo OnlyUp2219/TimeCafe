@@ -29,6 +29,7 @@ import {
     Money20Regular,
     PersonAdd20Regular,
 } from "@fluentui/react-icons";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 import blob1Url from "@assets/ssshape_blob1.svg";
 import blob2Url from "@assets/ssshape_blob2.svg";
@@ -240,7 +241,7 @@ export const LandingPage: FC = () => {
                                             <Badge appearance="outline">Demo</Badge>
                                         </div>
                                         <Divider className="my-3"/>
-                                        <Title3>750 ₽</Title3>
+                                        <Title3>750 {CURRENCY_SYMBOL}</Title3>
                                         <Caption1>Доступно для оплаты визитов</Caption1>
                                     </HoverTiltCard>
 
@@ -252,7 +253,7 @@ export const LandingPage: FC = () => {
                                         <Divider className="my-3"/>
                                         <div className="flex items-baseline justify-between">
                                             <Title3>1:42</Title3>
-                                            <Caption1>примерно 155 ₽</Caption1>
+                                            <Caption1>примерно 155 {CURRENCY_SYMBOL}</Caption1>
                                         </div>
                                         <Caption1>Тариф: часовой</Caption1>
                                     </HoverTiltCard>

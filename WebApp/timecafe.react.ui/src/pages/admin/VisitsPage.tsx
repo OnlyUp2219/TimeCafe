@@ -23,6 +23,9 @@ import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
 
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import {NO_DATA} from "@shared/const/placeholders";
+
 const statusLabel = (status: number) => {
     switch (status) {
         case VisitStatus.Active: return "Активен";
@@ -40,14 +43,14 @@ const statusColor = (status: number): "success" | "informative" | "warning" => {
 };
 
 const formatDateTime = (iso: string | null) => {
-    if (!iso) return "—";
+    if (!iso) return NO_DATA;
     const d = new Date(iso);
     return d.toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 };
 
 const formatCost = (cost: number | null) => {
-    if (cost == null) return "—";
-    return `${cost.toFixed(2)} ₽`;
+    if (cost == null) return NO_DATA;
+    return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
 };
 
 export const VisitsPage = () => {
@@ -80,7 +83,7 @@ export const VisitsPage = () => {
             renderHeaderCell: () => "Тариф",
             renderCell: (visit) => (
                 <TableCellLayout truncate>
-                    <Body1>{visit.tariffName || "—"}</Body1>
+                    <Body1>{visit.tariffName || NO_DATA}</Body1>
                 </TableCellLayout>
             ),
         }),

@@ -13,6 +13,7 @@ import {Clock20Regular} from "@fluentui/react-icons";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {formatMoneyByN} from "@utility/formatMoney";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 interface VisitCardProps {
     isActive: boolean;
@@ -55,7 +56,7 @@ export const VisitCard: FC<VisitCardProps> = ({
             <div className="flex flex-col gap-1 text-right">
                 <Caption1>Оценка</Caption1>
                 <Title3>
-                    {isActive && estimateTotal != null ? formatMoneyByN(estimateTotal) : "— ₽"}
+                    {isActive && estimateTotal != null ? formatMoneyByN(estimateTotal) : `— ${CURRENCY_SYMBOL}`}
                 </Title3>
             </div>
         </div>

@@ -25,6 +25,7 @@ import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
 import { useGetBalanceQuery } from "@store/api/billingApi";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import { NO_DATA } from "@shared/const/placeholders";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 
@@ -43,7 +44,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
-        : (user.name || "—");
+        : (user.name || NO_DATA);
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
             {displayName}
@@ -53,7 +54,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
 
 const ProfilePhoneCell = ({ user }: { user: User }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
-    return <TableCellLayout truncate>{profile?.phoneNumber || "—"}</TableCellLayout>;
+    return <TableCellLayout truncate>{profile?.phoneNumber || NO_DATA}</TableCellLayout>;
 };
 
 const profileStatusLabel = (status?: number) => {
@@ -76,7 +77,7 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 
 const ProfileStatusCell = ({ user }: { user: User }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
-    if (!profile) return <TableCellLayout truncate>—</TableCellLayout>;
+    if (!profile) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
         <TableCellLayout truncate>
             <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
@@ -88,8 +89,8 @@ const ProfileStatusCell = ({ user }: { user: User }) => {
 
 const BalanceCell = ({ user }: { user: User }) => {
     const { data: balance, isLoading } = useGetBalanceQuery(user.id);
-    if (isLoading) return <TableCellLayout truncate>—</TableCellLayout>;
-    if (balance === undefined) return <TableCellLayout truncate>—</TableCellLayout>;
+    if (isLoading) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
+    if (balance === undefined) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>;
 };
 

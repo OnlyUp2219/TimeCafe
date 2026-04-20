@@ -1,3 +1,5 @@
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+
 export const formatMoneyByN = (value: number, maximumFractionDigits = 2) => {
     try {
         return new Intl.NumberFormat("ru-RU", {
@@ -6,6 +8,6 @@ export const formatMoneyByN = (value: number, maximumFractionDigits = 2) => {
             maximumFractionDigits,
         }).format(value);
     } catch {
-        return `${value.toFixed(maximumFractionDigits)} ₽`;
+        return `${value.toFixed(maximumFractionDigits)} ${CURRENCY_SYMBOL}`;
     }
 };

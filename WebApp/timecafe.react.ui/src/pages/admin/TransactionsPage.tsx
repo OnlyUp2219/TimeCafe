@@ -24,17 +24,20 @@ import {useComponentSize} from "@hooks/useComponentSize";
 import type {BillingTransaction} from "@app-types/billing";
 import {TransactionType, TransactionSource, TransactionStatus} from "@app-types/billing";
 
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import {NO_DATA} from "@shared/const/placeholders";
+
 const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
-const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
+const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 
 const txTypeLabel = (t: number) => {
     switch (t) {
         case TransactionType.Deposit: return "Пополнение";
         case TransactionType.Withdrawal: return "Списание";
         case TransactionType.Adjustment: return "Корректировка";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -52,7 +55,7 @@ const txSourceLabel = (s: number) => {
         case TransactionSource.Manual: return "Вручную";
         case TransactionSource.Payment: return "Платёж";
         case TransactionSource.Refund: return "Возврат";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -62,7 +65,7 @@ const txStatusLabel = (s: number) => {
         case TransactionStatus.Completed: return "Выполнена";
         case TransactionStatus.Failed: return "Ошибка";
         case TransactionStatus.PartialCompleted: return "Частично";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -172,7 +175,7 @@ export const TransactionsPage = () => {
             columnId: "comment",
             compare: (a, b) => (a.comment ?? "").localeCompare(b.comment ?? ""),
             renderHeaderCell: () => "Комментарий",
-            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || "—"}</TableCellLayout>,
+            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || NO_DATA}</TableCellLayout>,
         }),
     ], []);
 

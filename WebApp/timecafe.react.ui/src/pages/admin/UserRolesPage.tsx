@@ -94,12 +94,14 @@ export const UserRolesPage = () => {
                             {userRoles.map((role, idx) => (
                                 <div key={`${role}-${idx}`} className="flex items-center gap-1">
                                     <Badge appearance="filled">{role}</Badge>
-                                    <Button
-                                        appearance="subtle"
-                                        size="small"
-                                        icon={<Delete20Regular />}
-                                        onClick={() => handleRemove(role)}
-                                    />
+                                    {role !== "SuperAdmin" && (
+                                        <Button
+                                            appearance="subtle"
+                                            size="small"
+                                            icon={<Delete20Regular />}
+                                            onClick={() => handleRemove(role)}
+                                        />
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -110,7 +112,7 @@ export const UserRolesPage = () => {
                     <Title3 className="mb-3">Доступные роли</Title3>
                     <div className="flex flex-wrap gap-2">
                         {allRoles
-                            .filter(r => !userRoles.includes(r.roleName))
+                            .filter(r => !userRoles.includes(r.roleName) && r.roleName !== "SuperAdmin")
                             .map(r => (
                                 <Button
                                     key={r.roleId}
@@ -122,7 +124,7 @@ export const UserRolesPage = () => {
                                     {r.roleName}
                                 </Button>
                             ))}
-                        {allRoles.filter(r => !userRoles.includes(r.roleName)).length === 0 && (
+                        {allRoles.filter(r => !userRoles.includes(r.roleName) && r.roleName !== "SuperAdmin").length === 0 && (
                             <Body2>Все роли уже назначены</Body2>
                         )}
                     </div>

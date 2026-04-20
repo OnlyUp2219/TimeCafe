@@ -20,9 +20,11 @@ import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import {NO_DATA} from "@shared/const/placeholders";
 import {useComponentSize} from "@hooks/useComponentSize";
 
-const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
+const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
@@ -132,7 +134,7 @@ export const BalancesPage = () => {
             renderCell: (b) => (
                 <TableCellLayout truncate>
                     <Body1 style={{color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
-                        {b.debt > 0 ? formatMoney(b.debt) : "—"}
+                        {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
                     </Body1>
                 </TableCellLayout>
             ),
@@ -168,7 +170,7 @@ export const BalancesPage = () => {
                 <Card size={sizes.card}>
                     <Body2 block>Суммарный долг (стр.)</Body2>
                     <Title3 style={{color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
-                        {totalDebt > 0 ? formatMoney(totalDebt) : "—"}
+                        {totalDebt > 0 ? formatMoney(totalDebt) : NO_DATA}
                     </Title3>
                 </Card>
                 <Card size={sizes.card}>

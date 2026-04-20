@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     Badge,
     Body2,
@@ -19,24 +19,35 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Body1,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Add20Regular, Delete20Regular, LockClosed20Regular} from "@fluentui/react-icons";
-import {useNavigate} from "react-router-dom";
-import {useGetRolesQuery, useCreateRoleMutation, useDeleteRoleMutation} from "@store/api/adminApi";
-import type {RoleDto} from "@store/api/adminApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Add20Regular, Delete20Regular, LockClosed20Regular } from "@fluentui/react-icons";
+import { useNavigate } from "react-router-dom";
+import { useGetRolesQuery, useCreateRoleMutation, useDeleteRoleMutation } from "@store/api/adminApi";
+import type { RoleDto } from "@store/api/adminApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 export const RolesPage = () => {
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
-    const {data, isLoading, error} = useGetRolesQuery(undefined, {refetchOnMountOrArgChange: true});
+    const { sizes } = useComponentSize();
+    const { data, isLoading, error } = useGetRolesQuery(undefined, { refetchOnMountOrArgChange: true });
     const roles = data?.roles ?? [];
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+
+    const totalCount = roles.length;
+    const totalPages = Math.ceil(totalCount / pageSize) || 1;
+    const paginatedRoles = useMemo(() => {
+        const start = (currentPage - 1) * pageSize;
+        return roles.slice(start, start + pageSize);
+    }, [roles, currentPage, pageSize]);
 
     const [createRole] = useCreateRoleMutation();
     const [deleteRole] = useDeleteRoleMutation();
@@ -50,7 +61,7 @@ export const RolesPage = () => {
         setSaving(true);
         setMutationError(null);
         try {
-            await createRole({roleName}).unwrap();
+            await createRole({ roleName }).unwrap();
             setDialogOpen(false);
             setRoleName("");
         } catch (err) {
@@ -69,8 +80,8 @@ export const RolesPage = () => {
     }, [deleteRole]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        roleName: {minWidth: 150, defaultWidth: 300, idealWidth: 350},
-        actions: {minWidth: 100, defaultWidth: 120, idealWidth: 150},
+        roleName: { minWidth: 150, defaultWidth: 300, idealWidth: 350 },
+        actions: { minWidth: 100, defaultWidth: 120, idealWidth: 150 },
     }), []);
 
     const columns: TableColumnDefinition<RoleDto>[] = useMemo(() => [
@@ -112,7 +123,7 @@ export const RolesPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Роли</Title2>
-                    <Body2 block>{roles.length} ролей</Body2>
+                    <Body2 block>{totalCount} ролей</Body2>
                 </div>
                 <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
                     Создать роль
@@ -127,7 +138,7 @@ export const RolesPage = () => {
 
             <Card size={sizes.card}>
                 <DataTable
-                    items={roles}
+                    items={paginatedRoles}
                     columns={columns}
                     getRowId={(r) => r.roleId}
                     loading={isLoading}
@@ -135,11 +146,15 @@ export const RolesPage = () => {
                 />
             </Card>
 
-            <div className="flex justify-center mt-4">
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {paginatedRoles.length} из {totalCount}</Body1>
                 <Pagination
-                    currentPage={1}
-                    totalPages={1}
-                    onPageChange={() => {}}
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
                 />
             </div>
 

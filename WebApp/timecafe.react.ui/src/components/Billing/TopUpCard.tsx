@@ -3,6 +3,7 @@ import {Button, Card, Input, Title3} from "@fluentui/react-components";
 import {Money20Regular, Add20Regular} from "@fluentui/react-icons";
 
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 type TopUpCardProps = {
     draftAmountText: string;
@@ -24,7 +25,7 @@ export const TopUpCard = ({
             <Title3 block>Быстрое пополнение</Title3>
             <Input
                 type="number"
-                placeholder="Введите сумму (₽)"
+                placeholder={`Введите сумму (${CURRENCY_SYMBOL})`}
                 contentBefore={<Money20Regular />}
                 className="w-full"
                 value={draftAmountText}

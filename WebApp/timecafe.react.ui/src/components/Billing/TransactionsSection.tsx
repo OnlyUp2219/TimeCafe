@@ -21,6 +21,7 @@ import {formatRub} from "@utility/formatRub";
 
 import {DataTable} from "@components/DataTable";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 interface Transaction {
     id: string;
@@ -61,7 +62,7 @@ const mapIcon = (transaction: BillingTransaction): string | ReactElement => {
         return "↩";
     }
 
-    return "₽";
+    return `${CURRENCY_SYMBOL}`;
 };
 
 const mapTitle = (transaction: BillingTransaction): string => {

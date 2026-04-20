@@ -41,6 +41,7 @@ import {BillingType} from "@app-types/tariff";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
@@ -185,9 +186,9 @@ export const TariffsPage = () => {
             renderCell: (tariff) => (
                 <TableCellLayout truncate>
                     <div>
-                        <Body1 block>{tariff.pricePerMinute} ₽/мин</Body1>
+                        <Body1 block>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</Body1>
                         <Caption1 block style={{color: "var(--colorNeutralForeground3)"}}>
-                            {(tariff.pricePerMinute * 60).toFixed(2)} ₽/час
+                            {(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
                         </Caption1>
                     </div>
                 </TableCellLayout>
@@ -292,7 +293,7 @@ export const TariffsPage = () => {
                             <Field label="Описание">
                                 <Input value={form.description} onChange={(_, d) => setForm(f => ({...f, description: d.value}))} />
                             </Field>
-                            <Field label="Цена за минуту (₽)" required hint={perHour ? `≈ ${perHour} ₽/час` : undefined}>
+                            <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined}>
                                 <Input
                                     type="number"
                                     value={form.pricePerMinute}

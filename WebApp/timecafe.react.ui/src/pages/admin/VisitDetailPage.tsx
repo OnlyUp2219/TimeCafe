@@ -21,15 +21,18 @@ import {useComponentSize} from "@hooks/useComponentSize";
 import {VisitStatus} from "@app-types/visit";
 import {useState} from "react";
 
+import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import {NO_DATA} from "@shared/const/placeholders";
+
 const formatDateTime = (iso: string | null) => {
-    if (!iso) return "—";
+    if (!iso) return NO_DATA;
     return new Date(iso).toLocaleString("ru-RU", {
         day: "2-digit", month: "2-digit", year: "numeric",
         hour: "2-digit", minute: "2-digit", second: "2-digit"
     });
 };
 
-const formatMoney = (v: number | null) => v != null ? `${v.toFixed(2)} ₽` : "—";
+const formatMoney = (v: number | null) => v != null ? `${v.toFixed(2)} ${CURRENCY_SYMBOL}` : NO_DATA;
 
 const statusLabel = (s: number) => s === VisitStatus.Active ? "Активен" : "Завершён";
 const statusColor = (s: number): "success" | "informative" => s === VisitStatus.Active ? "success" : "informative";
@@ -123,7 +126,7 @@ export const VisitDetailPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <Card size={sizes.card}>
                         <Body2 block>Тариф</Body2>
-                        <Title3>{visit.tariffName || "—"}</Title3>
+                        <Title3>{visit.tariffName || NO_DATA}</Title3>
                     </Card>
                     <Card size={sizes.card}>
                         <Body2 block>Вход</Body2>

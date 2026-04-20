@@ -1,62 +1,63 @@
-import {useParams, useNavigate} from "react-router-dom";
-import {useCallback, useMemo, useState} from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useMemo, useState } from "react";
+import { type TableColumnDefinition, type TableColumnSizingOptions, Tooltip } from "@fluentui/react-components";
 import {
     Avatar,
     Badge,
     Body1,
     Body2,
     Button,
-    Card,
     Caption1,
+    Card,
+    createTableColumn,
+    Dialog,
+    DialogActions,
+    DialogBody,
+    DialogContent,
+    DialogSurface,
+    DialogTitle,
+    DialogTrigger,
+    Field,
     MessageBar,
     MessageBarBody,
     Spinner,
-    Title2,
-    Title3,
-    createTableColumn,
     TableCellLayout,
     Textarea,
-    Dialog,
-    DialogTrigger,
-    DialogSurface,
-    DialogBody,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Field,
+    Title2,
+    Title3,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular, PeopleSettings20Regular, Delete20Regular} from "@fluentui/react-icons";
-import {useGetUserByIdQuery} from "@store/api/adminApi";
-import {useGetTransactionHistoryQuery, useGetBalanceQuery} from "@store/api/billingApi";
-import {useGetVisitHistoryQuery} from "@store/api/venueApi";
-import {useGetProfileByUserIdReadOnlyQuery, useGetAdditionalInfosByUserIdQuery, useCreateAdditionalInfoMutation, useDeleteAdditionalInfoMutation} from "@store/api/profileApi";
-import {useAppSelector} from "@store/hooks";
-import {ProfileStatus, Gender} from "@app-types/profile";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import type {BillingTransaction} from "@app-types/billing";
-import {TransactionType, TransactionSource} from "@app-types/billing";
-import type {VisitWithTariff} from "@app-types/visitWithTariff";
-import {VisitStatus} from "@app-types/visit";
+import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
+import { useGetUserByIdQuery } from "@store/api/adminApi";
+import { useGetBalanceQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
+import { useGetVisitHistoryQuery } from "@store/api/venueApi";
+import {
+    useCreateAdditionalInfoMutation,
+    useDeleteAdditionalInfoMutation,
+    useGetAdditionalInfosByUserIdQuery,
+    useGetProfileByUserIdReadOnlyQuery
+} from "@store/api/profileApi";
+import { useAppSelector } from "@store/hooks";
+import { Gender, ProfileStatus } from "@app-types/profile";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { EmptyState } from "@components/EmptyState/EmptyState";
+import { useComponentSize } from "@hooks/useComponentSize";
+import type { BillingTransaction } from "@app-types/billing";
+import { TransactionSource, TransactionType } from "@app-types/billing";
+import type { VisitWithTariff } from "@app-types/visitWithTariff";
+import { VisitStatus } from "@app-types/visit";
+import { Permissions } from "@shared/auth/permissions";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { formatMoney } from "@shared/const/FormatMoney.ts";
+import { txTypeLabel } from "@shared/const/TxTypeLabel.ts";
+
+import { NO_DATA } from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string | null) => {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
-};
-
-const formatMoney = (v: number) => `${v.toFixed(2)} ₽`;
-
-const txTypeLabel = (t: number) => {
-    switch (t) {
-        case TransactionType.Deposit: return "Пополнение";
-        case TransactionType.Withdrawal: return "Списание";
-        case TransactionType.Adjustment: return "Корректировка";
-        default: return "—";
-    }
+    if (!iso) return NO_DATA;
+    return new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 };
 
 const txTypeColor = (t: number): "success" | "danger" | "informative" => {
@@ -73,7 +74,7 @@ const txSourceLabel = (s: number) => {
         case TransactionSource.Manual: return "Вручную";
         case TransactionSource.Payment: return "Платёж";
         case TransactionSource.Refund: return "Возврат";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -118,44 +119,55 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 };
 
 export const UserDetailPage = () => {
-    const {id} = useParams<{id: string}>();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
 
     const [txPage, setTxPage] = useState(1);
     const txPageSize = 10;
 
-    const {data: userData, isLoading: userLoading, error: userError} = useGetUserByIdQuery(id!, {skip: !id, refetchOnMountOrArgChange: true});
+    const { data: userData, isLoading: userLoading, error: userError } = useGetUserByIdQuery(id!, { skip: !id, refetchOnMountOrArgChange: true });
     const user = userData?.user;
 
-    const {data: balance, isLoading: balanceLoading} = useGetBalanceQuery(id!, {skip: !id});
-    const {data: txData, isLoading: txLoading, error: txError} = useGetTransactionHistoryQuery(
-        {userId: id!, page: txPage, pageSize: txPageSize},
-        {skip: !id}
+    const { data: balance, isLoading: balanceLoading } = useGetBalanceQuery(id!, { skip: !id });
+    const { data: txData, isLoading: txLoading, error: txError } = useGetTransactionHistoryQuery(
+        { userId: id!, page: txPage, pageSize: txPageSize },
+        { skip: !id }
     );
-    const {data: visits = [], isLoading: visitsLoading} = useGetVisitHistoryQuery({userId: id!}, {skip: !id});
-    const {data: profile} = useGetProfileByUserIdReadOnlyQuery(id!, {skip: !id});
-    const {data: adminNotes = [], isLoading: notesLoading} = useGetAdditionalInfosByUserIdQuery(id!, {skip: !id});
-    const [createNote, {isLoading: creatingNote}] = useCreateAdditionalInfoMutation();
+    const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery({ userId: id! }, { skip: !id });
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
+    const [notesPage, setNotesPage] = useState(1);
+    const NOTES_PAGE_SIZE = 3;
+    const { data: notesData, isLoading: notesLoading } = useGetAdditionalInfosByUserIdQuery(
+        { userId: id!, pageNumber: notesPage, pageSize: NOTES_PAGE_SIZE },
+        { skip: !id }
+    );
+    const adminNotes = notesData?.items ?? [];
+    const totalNotes = notesData?.totalCount ?? 0;
+    const [createNote, { isLoading: creatingNote }] = useCreateAdditionalInfoMutation();
     const [deleteNote] = useDeleteAdditionalInfoMutation();
     const adminEmail = useAppSelector((state) => state.auth.email);
 
     const [addNoteOpen, setAddNoteOpen] = useState(false);
     const [newNoteText, setNewNoteText] = useState("");
+    const [noteError, setNoteError] = useState<string | null>(null);
 
     const handleAddNote = useCallback(async () => {
         if (!id || !newNoteText.trim()) return;
+        setNoteError(null);
         try {
-            await createNote({userId: id, infoText: newNoteText.trim(), createdBy: adminEmail || "admin"}).unwrap();
+            await createNote({ userId: id, infoText: newNoteText.trim(), createdBy: adminEmail || "admin" }).unwrap();
             setNewNoteText("");
             setAddNoteOpen(false);
-        } catch { /* error handled by RTK */ }
+        } catch (err) {
+            setNoteError(getRtkErrorMessage(err as FetchBaseQueryError) || "Ошибка при сохранении заметки");
+        }
     }, [id, newNoteText, createNote, adminEmail]);
 
     const handleDeleteNote = useCallback(async (infoId: string) => {
         if (!id) return;
         try {
-            await deleteNote({infoId, userId: id}).unwrap();
+            await deleteNote({ infoId, userId: id }).unwrap();
         } catch { /* error handled by RTK */ }
     }, [id, deleteNote]);
 
@@ -172,21 +184,23 @@ export const UserDetailPage = () => {
     }, [profile?.firstName, profile?.lastName, profile?.middleName, user?.email, user?.name]);
 
     const nickname = useMemo(() => {
+        if (user?.name === user?.email) return "";
+        if (user?.name) return `@${user.name}`;
         const emailLogin = user?.email?.split("@")[0]?.trim();
         if (emailLogin) return `@${emailLogin}`;
-        return user?.name?.trim() ? `@${user.name.trim().toLowerCase().replace(/\s+/g, "_")}` : "—";
+        return "";
     }, [user?.email, user?.name]);
 
-    const contactLine = [user?.email, profile?.phoneNumber, nickname].filter(Boolean).join(" · ") || "—";
-    const registrationDate = profile?.birthDate ? formatDateTime(profile.birthDate) : "—";
+    const contactLine = [user?.email, profile?.phoneNumber].filter(Boolean).join(" · ") || NO_DATA;
+    const registrationDate = profile?.birthDate ? formatDateTime(profile.birthDate) : NO_DATA;
 
     const txColumnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        date: {minWidth: 130, defaultWidth: 160},
-        type: {minWidth: 100, defaultWidth: 140},
-        source: {minWidth: 100, defaultWidth: 130},
-        amount: {minWidth: 80, defaultWidth: 120},
-        balance: {minWidth: 80, defaultWidth: 120},
-        comment: {minWidth: 100, defaultWidth: 200},
+        date: { minWidth: 130, defaultWidth: 160 },
+        type: { minWidth: 100, defaultWidth: 140 },
+        source: { minWidth: 100, defaultWidth: 130 },
+        amount: { minWidth: 80, defaultWidth: 120 },
+        balance: { minWidth: 80, defaultWidth: 120 },
+        comment: { minWidth: 100, defaultWidth: 200 },
     }), []);
 
     const txColumns: TableColumnDefinition<BillingTransaction>[] = useMemo(() => [
@@ -234,16 +248,16 @@ export const UserDetailPage = () => {
             columnId: "comment",
             compare: (a, b) => (a.comment ?? "").localeCompare(b.comment ?? ""),
             renderHeaderCell: () => "Комментарий",
-            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || "—"}</TableCellLayout>,
+            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || NO_DATA}</TableCellLayout>,
         }),
     ], []);
 
     const visitColumnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        tariff: {minWidth: 120, defaultWidth: 180},
-        status: {minWidth: 80, defaultWidth: 120},
-        entry: {minWidth: 130, defaultWidth: 160},
-        exit: {minWidth: 130, defaultWidth: 160},
-        cost: {minWidth: 80, defaultWidth: 110},
+        tariff: { minWidth: 120, defaultWidth: 180 },
+        status: { minWidth: 80, defaultWidth: 120 },
+        entry: { minWidth: 130, defaultWidth: 160 },
+        exit: { minWidth: 130, defaultWidth: 160 },
+        cost: { minWidth: 80, defaultWidth: 110 },
     }), []);
 
     const visitColumns: TableColumnDefinition<VisitWithTariff>[] = useMemo(() => [
@@ -251,7 +265,7 @@ export const UserDetailPage = () => {
             columnId: "tariff",
             compare: (a, b) => a.tariffName.localeCompare(b.tariffName),
             renderHeaderCell: () => "Тариф",
-            renderCell: (v) => <TableCellLayout truncate><Body1>{v.tariffName || "—"}</Body1></TableCellLayout>,
+            renderCell: (v) => <TableCellLayout truncate><Body1>{v.tariffName || NO_DATA}</Body1></TableCellLayout>,
         }),
         createTableColumn<VisitWithTariff>({
             columnId: "status",
@@ -279,11 +293,13 @@ export const UserDetailPage = () => {
             columnId: "cost",
             compare: (a, b) => (a.calculatedCost ?? 0) - (b.calculatedCost ?? 0),
             renderHeaderCell: () => "Стоимость",
-            renderCell: (v) => <TableCellLayout truncate>{v.calculatedCost != null ? formatMoney(v.calculatedCost) : "—"}</TableCellLayout>,
+            renderCell: (v) => <TableCellLayout truncate>{v.calculatedCost != null ? formatMoney(v.calculatedCost) : NO_DATA}</TableCellLayout>,
         }),
     ], []);
 
-    if (userLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
+    if (userLoading) {
+        return <div ><Spinner /></div>;
+    }
 
     if (errorMessage) return (
         <MessageBar intent="error">
@@ -303,205 +319,314 @@ export const UserDetailPage = () => {
     );
 
     return (
-        <div>
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
                 <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
                     Назад к списку
                 </Button>
-                <Button appearance="outline" size="small" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
-                    Управление ролями
-                </Button>
+                <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
+                    <Button appearance="outline" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                        Управление ролями
+                    </Button>
+                </HasPermission>
             </div>
 
-            <Card className="mb-6" size={sizes.card}>
-                <div className="flex items-start gap-4 flex-wrap justify-between">
-                    <div className="flex items-start gap-4 flex-wrap min-w-0 flex-1">
+            <Card size={sizes.card}>
+                <div className="flex items-start gap-4 flex-wrap ">
+                    <div className="flex items-start gap-4 flex-1">
                         <Avatar name={displayName} size={72} />
-                        <div className="min-w-0 flex-1">
+                        <div className="flex gap-2 flex-wrap  flex-col">
                             <Title2>{displayName}</Title2>
                             <Body1 block>{contactLine}</Body1>
-                            <Body2 block className="mt-1 text-gray-500">{user.role} · {user.status}</Body2>
-                            <div className="flex gap-2 mt-2 flex-wrap">
-                                <Badge appearance="outline">{nickname}</Badge>
-                                {profile && <Badge appearance="tint" color={profile.emailConfirmed ? "success" : "warning"}>{profile.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
-                                {profile?.phoneNumber && <Badge appearance="tint" color={profile.phoneNumberConfirmed ? "success" : "warning"}>{profile.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
+                            <Body2 block className="text-gray-500 ">{user.role} · {user.status}</Body2>
+                            <div className="flex gap-2 flex-wrap">
+                                {nickname && <Badge appearance="outline">{nickname}</Badge>}
+                                {user && <Badge appearance="tint" color={user.emailConfirmed ? "success" : "warning"}>{user.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
+                                {user && <Badge appearance="tint" color={user.phoneNumberConfirmed ? "success" : "warning"}>{user.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
                                 {profile && <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>{profileStatusLabel(profile.profileStatus)}</Badge>}
                             </div>
-                            <Caption1 block className="mt-1 font-mono text-gray-400">{user.id}</Caption1>
+                            <Caption1 block className="text-gray-400">{user.id}</Caption1>
                         </div>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                        <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
-                            Роли
-                        </Button>
-                        <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}`)}>
-                            Редактировать
-                        </Button>
+                    <div className="flex gap-2">
+                        <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
+                            <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                                Роли
+                            </Button>
+                        </HasPermission>
+                        <HasPermission can={Permissions.UserProfileProfileUpdate}>
+                            <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}`)}>
+                                Редактировать
+                            </Button>
+                        </HasPermission>
                     </div>
                 </div>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-3 mb-6">
-                <Card size={sizes.card}>
-                    <Body2 block>Баланс</Body2>
-                    <Title3>{balanceLoading ? "—" : formatMoney(balance?.currentBalance ?? 0)}</Title3>
-                </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Визитов всего</Body2>
-                    <Title3>{visitsLoading ? "—" : visits.length}</Title3>
-                </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Потрачено</Body2>
-                    <Title3>{balanceLoading ? "—" : formatMoney(balance?.totalSpent ?? 0)}</Title3>
-                </Card>
-            </div>
+            <HasPermission can={Permissions.BillingBalanceRead}>
+                <div className="flex flex-wrap gap-4 justify-between">
+                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                        <Body2 block>Баланс</Body2>
+                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
+                            {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
+                        </Title3>
+                    </Card>
+                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                        <Body2 block>Визитов всего</Body2>
+                        <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
+                    </Card>
+                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                        <Body2 block>Потрачено</Body2>
+                        <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                    </Card>
+                </div>
+            </HasPermission>
 
-            <div className="grid gap-4 lg:grid-cols-[1.3fr_0.9fr] mb-6">
-                <Card size={sizes.card}>
-                    <Title3 className="mb-3">Профиль</Title3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <Body2 block>Имя</Body2>
-                            <Body1 block>{profile?.firstName || "—"}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Фамилия</Body2>
-                            <Body1 block>{profile?.lastName || "—"}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Отчество</Body2>
-                            <Body1 block>{profile?.middleName || "—"}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Пол</Body2>
-                            <Body1 block>{genderLabel(profile?.gender)}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Дата рождения</Body2>
-                            <Body1 block>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : "—"}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Регистрация</Body2>
-                            <Body1 block>{registrationDate}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Email</Body2>
-                            <Body1 block>{profile?.email || user.email}</Body1>
-                        </div>
-                        <div>
-                            <Body2 block>Телефон</Body2>
-                            <Body1 block>{profile?.phoneNumber || "—"}</Body1>
-                        </div>
-                        <div className="sm:col-span-2">
-                            <Body2 block>Статус профиля</Body2>
-                            <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
-                        </div>
-                        {profile?.banReason && (
+            <div className="flex flex-wrap gap-4">
+                <HasPermission
+                    can={Permissions.UserProfileProfileRead}
+                    fallback={
+                        <Card size={sizes.card}>
+                            <Title3 className="mb-3">Профиль</Title3>
+                            <MessageBar intent="warning">
+                                <MessageBarBody>Недостаточно прав для просмотра детального профиля</MessageBarBody>
+                            </MessageBar>
+                        </Card>
+                    }
+                >
+                    <Card className="flex-[1.3] flex-grow basis-[400px]" size={sizes.card}>
+                        <Title3 >Профиль</Title3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <Body2 block>Имя</Body2>
+                                <Body1 block>{profile?.firstName || NO_DATA}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Фамилия</Body2>
+                                <Body1 block>{profile?.lastName || NO_DATA}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Отчество</Body2>
+                                <Body1 block>{profile?.middleName || NO_DATA}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Пол</Body2>
+                                <Body1 block>{genderLabel(profile?.gender)}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Дата рождения</Body2>
+                                <Body1 block>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Регистрация</Body2>
+                                <Body1 block>{registrationDate}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Email</Body2>
+                                <Body1 block>{profile?.email || user.email}</Body1>
+                            </div>
+                            <div>
+                                <Body2 block>Телефон</Body2>
+                                <Body1 block>{profile?.phoneNumber || NO_DATA}</Body1>
+                            </div>
                             <div className="sm:col-span-2">
-                                <Body2 block>Причина блокировки</Body2>
-                                <Body1 block className="text-red-500">{profile.banReason}</Body1>
+                                <Body2 block>Статус профиля</Body2>
+                                <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
                             </div>
-                        )}
-                    </div>
-                </Card>
-
-                <Card size={sizes.card}>
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                        <Title3>Заметки администратора</Title3>
-                        <Dialog open={addNoteOpen} onOpenChange={(_e, data) => setAddNoteOpen(data.open)}>
-                            <DialogTrigger disableButtonEnhancement>
-                                <Button appearance="outline" size="small">+ Добавить</Button>
-                            </DialogTrigger>
-                            <DialogSurface>
-                                <DialogBody>
-                                    <DialogTitle>Новая заметка</DialogTitle>
-                                    <DialogContent>
-                                        <Field label="Текст заметки">
-                                            <Textarea
-                                                value={newNoteText}
-                                                onChange={(_e, data) => setNewNoteText(data.value)}
-                                                placeholder="Введите заметку..."
-                                                rows={4}
-                                                style={{width: "100%"}}
-                                            />
-                                        </Field>
-                                    </DialogContent>
-                                    <DialogActions>
-                                        <DialogTrigger disableButtonEnhancement>
-                                            <Button appearance="secondary">Отмена</Button>
-                                        </DialogTrigger>
-                                        <Button appearance="primary" onClick={handleAddNote} disabled={!newNoteText.trim() || creatingNote}>
-                                            {creatingNote ? "Сохранение..." : "Сохранить"}
-                                        </Button>
-                                    </DialogActions>
-                                </DialogBody>
-                            </DialogSurface>
-                        </Dialog>
-                    </div>
-                    <div className="flex flex-col gap-3">
-                        {notesLoading && <Spinner size="small" />}
-                        {!notesLoading && adminNotes.length === 0 && (
-                            <Body2 style={{color: "var(--colorNeutralForeground3)"}}>Нет заметок</Body2>
-                        )}
-                        {adminNotes.map((info) => (
-                            <div key={info.infoId} className="rounded-md bg-neutral-100 p-3 flex justify-between items-start gap-2">
-                                <div className="min-w-0 flex-1">
-                                    <Body1 block className="mb-1">{info.infoText}</Body1>
-                                    <Caption1>Добавлено: {info.createdBy || "—"} · {formatDateTime(info.createdAt)}</Caption1>
+                            {profile?.banReason && (
+                                <div className="sm:col-span-2">
+                                    <Body2 block>Причина блокировки</Body2>
+                                    <Body1 block className="text-red-500">{profile.banReason}</Body1>
                                 </div>
-                                <Button
-                                    appearance="subtle"
-                                    size="small"
-                                    icon={<Delete20Regular />}
-                                    onClick={() => handleDeleteNote(info.infoId)}
-                                    aria-label="Удалить заметку"
-                                />
+                            )}
+                        </div>
+                    </Card>
+                </HasPermission>
+
+                <HasPermission can={Permissions.UserProfileAdditionalInfoRead}>
+                    <Card className="flex-1 flex-grow basis-[300px] min-h-[360px] flex flex-col" size={sizes.card}>
+                        <div className="flex items-center justify-between gap-3">
+                            <Title3>Заметки</Title3>
+                            <HasPermission can={Permissions.UserProfileAdditionalInfoCreate}>
+                                <Dialog open={addNoteOpen} onOpenChange={(_e, data) => { setAddNoteOpen(data.open); if (!data.open) setNoteError(null); }}>
+                                    <DialogTrigger disableButtonEnhancement>
+                                        <Button appearance="outline" size="small">+ Добавить</Button>
+                                    </DialogTrigger>
+                                    <DialogSurface>
+                                        <DialogBody>
+                                            <DialogTitle>Новая заметка</DialogTitle>
+                                            <DialogContent>
+                                                <Field
+                                                    label="Текст заметки"
+                                                    validationMessage={noteError}
+                                                    validationState={noteError ? "error" : "none"}
+                                                    hint={{
+                                                        children: (
+                                                            <div className="flex justify-end">
+                                                                <Caption1 style={{ color: newNoteText.length >= 2000 ? "var(--colorPaletteRedForeground1)" : "var(--colorNeutralForeground3)" }}>
+                                                                    {newNoteText.length}/2000
+                                                                </Caption1>
+                                                            </div>
+                                                        )
+                                                    }}
+                                                >
+                                                    <Textarea
+                                                        value={newNoteText}
+                                                        onChange={(_e, data) => {
+                                                            if (data.value.length <= 2000) {
+                                                                setNewNoteText(data.value);
+                                                                if (noteError) setNoteError(null);
+                                                            }
+                                                        }}
+                                                        placeholder="Введите текст заметки..."
+                                                        rows={6}
+                                                        style={{ width: "100%" }}
+                                                    />
+                                                </Field>
+                                            </DialogContent>
+                                            <DialogActions>
+                                                <DialogTrigger disableButtonEnhancement>
+                                                    <Button appearance="secondary">Отмена</Button>
+                                                </DialogTrigger>
+                                                <Button appearance="primary" onClick={handleAddNote} disabled={!newNoteText.trim() || creatingNote}>
+                                                    {creatingNote ? "Сохранение..." : "Сохранить"}
+                                                </Button>
+                                            </DialogActions>
+                                        </DialogBody>
+                                    </DialogSurface>
+                                </Dialog>
+                            </HasPermission>
+                        </div>
+
+                        <div className="flex flex-col gap-3 flex-1">
+                            {notesLoading && <Spinner size="small" />}
+                            {!notesLoading && adminNotes.length === 0 && (
+                                <div className="flex-1 flex items-center justify-center">
+                                    <EmptyState
+                                        title="Нет данных"
+                                        description="Добавьте первую заметку для этого пользователя"
+                                    />
+                                </div>
+                            )}
+                            <div className="flex-1">
+                                {adminNotes.map((info) => (
+                                    <Card appearance="filled-alternative" key={info.infoId} className="!flex !flex-row !flex-wrap mb-3 last:mb-0">
+                                        <div className="flex-1">
+                                            <Body1 block className="!line-clamp-4 break-words">{info.infoText}</Body1>
+                                            <Caption1>Добавлено: {info.createdBy || NO_DATA} · {formatDateTime(info.createdAt)}</Caption1>
+                                        </div>
+                                        <div className="flex gap-1 shrink-0">
+                                            <Dialog>
+                                                <DialogTrigger disableButtonEnhancement>
+                                                    <Tooltip content="Просмотреть заметку" relationship="label">
+                                                        <Button
+                                                            appearance="subtle"
+                                                            size="small"
+                                                            icon={<Eye20Regular />}
+                                                            aria-label="Просмотреть заметку"
+                                                        />
+                                                    </Tooltip>
+                                                </DialogTrigger>
+                                                <DialogSurface>
+                                                    <DialogBody>
+                                                        <DialogTitle>Просмотр заметки</DialogTitle>
+                                                        <DialogContent>
+                                                            <div className="whitespace-pre-wrap break-words py-2">
+                                                                <Body1>{info.infoText}</Body1>
+                                                            </div>
+                                                            <div className="mt-4 pt-2 border-t border-neutral-200">
+                                                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                                                    Автор: {info.createdBy || NO_DATA}
+                                                                </Caption1>
+                                                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                                                    Дата: {formatDateTime(info.createdAt)}
+                                                                </Caption1>
+                                                            </div>
+                                                        </DialogContent>
+                                                        <DialogActions>
+                                                            <DialogTrigger disableButtonEnhancement>
+                                                                <Button appearance="secondary">Закрыть</Button>
+                                                            </DialogTrigger>
+                                                        </DialogActions>
+                                                    </DialogBody>
+                                                </DialogSurface>
+                                            </Dialog>
+
+                                            <HasPermission can={Permissions.UserProfileAdditionalInfoDelete}>
+                                                <Tooltip content="Удалить заметку" relationship="label">
+                                                    <Button
+                                                        appearance="subtle"
+                                                        size="small"
+                                                        icon={<Delete20Regular />}
+                                                        onClick={() => handleDeleteNote(info.infoId)}
+                                                        aria-label="Удалить заметку"
+                                                    />
+                                                </Tooltip>
+                                            </HasPermission>
+                                        </div>
+                                    </Card>
+                                ))}
                             </div>
-                        ))}
+
+                            {totalNotes > 0 && (
+                                <div className="mt-auto pt-2 flex justify-end border-t border-neutral-100">
+                                    <Pagination
+                                        currentPage={notesPage}
+                                        totalPages={Math.ceil(totalNotes / NOTES_PAGE_SIZE)}
+                                        onPageChange={setNotesPage}
+                                        size="small"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </Card>
+                </HasPermission>
+            </div>
+
+            <HasPermission can={Permissions.BillingTransactionRead}>
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <Title3>Транзакции</Title3>
+                        <Body2>{txTotalCount} записей</Body2>
                     </div>
-                </Card>
-            </div>
+                    {txErrorMessage && (
+                        <MessageBar intent="error" className="mb-3">
+                            <MessageBarBody>{txErrorMessage}</MessageBarBody>
+                        </MessageBar>
+                    )}
+                    <Card className="overflow-x-auto" size={sizes.card}>
+                        <DataTable
+                            items={transactions}
+                            columns={txColumns}
+                            getRowId={(tx) => tx.transactionId}
+                            loading={txLoading}
+                            columnSizingOptions={txColumnSizingOptions}
+                        />
+                    </Card>
+                    <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                        <Body1>Показано {transactions.length} из {txTotalCount}</Body1>
+                        <Pagination currentPage={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
+                    </div>
+                </div>
+            </HasPermission>
 
-            <div className="mb-6">
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <Title3>Транзакции</Title3>
-                    <Body2>{txTotalCount} записей</Body2>
+            <HasPermission can={Permissions.VenueVisitRead}>
+                <div>
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <Title3>История визитов</Title3>
+                        <Body2>{visits.length} визитов</Body2>
+                    </div>
+                    <Card className="overflow-x-auto" size={sizes.card}>
+                        <DataTable
+                            items={visits}
+                            columns={visitColumns}
+                            getRowId={(v) => v.visitId}
+                            loading={visitsLoading}
+                            columnSizingOptions={visitColumnSizingOptions}
+                        />
+                    </Card>
                 </div>
-                {txErrorMessage && (
-                    <MessageBar intent="error" className="mb-3">
-                        <MessageBarBody>{txErrorMessage}</MessageBarBody>
-                    </MessageBar>
-                )}
-                <Card className="overflow-x-auto" size={sizes.card}>
-                    <DataTable
-                        items={transactions}
-                        columns={txColumns}
-                        getRowId={(tx) => tx.transactionId}
-                        loading={txLoading}
-                        columnSizingOptions={txColumnSizingOptions}
-                    />
-                </Card>
-                <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                    <Body1>Показано {transactions.length} из {txTotalCount}</Body1>
-                    <Pagination currentPage={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
-                </div>
-            </div>
-
-            <div>
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                    <Title3>История визитов</Title3>
-                    <Body2>{visits.length} визитов</Body2>
-                </div>
-                <Card className="overflow-x-auto" size={sizes.card}>
-                    <DataTable
-                        items={visits}
-                        columns={visitColumns}
-                        getRowId={(v) => v.visitId}
-                        loading={visitsLoading}
-                        columnSizingOptions={visitColumnSizingOptions}
-                    />
-                </Card>
-            </div>
+            </HasPermission>
         </div>
     );
 };

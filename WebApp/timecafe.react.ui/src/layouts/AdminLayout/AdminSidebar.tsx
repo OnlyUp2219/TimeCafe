@@ -9,6 +9,8 @@ import {
     SignOut20Regular, Eye20Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
+import { Permissions } from "@shared/auth/permissions";
+import { usePermissions } from "@hooks/usePermissions";
 
 interface AdminSidebarProps {
     isOpen: boolean;
@@ -20,33 +22,44 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
     const dispatch = useAppDispatch();
     const email = useAppSelector((state) => state.auth.email);
 
-    const sections: NavSectionType[] = useMemo(() => [
-        {
-            title: "Основное",
-            items: [
-                { id: "dashboard", label: "Дашборд", path: "/admin/dashboard", icon: <Board20Regular /> },
-                { id: "users", label: "Пользователи", path: "/admin/users", icon: <People20Regular /> },
-                { id: "roles", label: "Роли", path: "/admin/roles", icon: <People20Regular /> },
-                { id: "visits", label: "Визиты", path: "/admin/visits", icon: <Clock20Regular /> },
-            ],
-        },
-        {
-            title: "Управление",
-            items: [
-                { id: "tariffs", label: "Тарифы", path: "/admin/tariffs", icon: <Money20Regular /> },
-                { id: "promotions", label: "Акции", path: "/admin/promotions", icon: <Gift20Regular /> },
-                { id: "themes", label: "Темы оформления", path: "/admin/themes", icon: <Color20Regular /> },
-            ],
-        },
-        {
-            title: "Финансы",
-            items: [
-                { id: "balances", label: "Балансы", path: "/admin/balances", icon: <Money20Regular /> },
-                { id: "transactions", label: "Транзакции", path: "/admin/transactions", icon: <ArrowTrending20Regular /> },
-                { id: "payments", label: "Платежи", path: "/admin/payments", icon: <Payment20Regular /> },
-            ],
-        },
-    ], []);
+    const { has, loaded } = usePermissions();
+
+    const sections: NavSectionType[] = useMemo(() => {
+        const allSections: NavSectionType[] = [
+            {
+                title: "Основное",
+                items: [
+                    { id: "dashboard", label: "Дашборд", path: "/admin/dashboard", icon: <Board20Regular />, permission: Permissions.AccountAdminRead },
+                    { id: "users", label: "Пользователи", path: "/admin/users", icon: <People20Regular />, permission: Permissions.AccountAdminRead },
+                    { id: "roles", label: "Роли", path: "/admin/roles", icon: <People20Regular />, permission: Permissions.RbacRoleRead },
+                    { id: "visits", label: "Визиты", path: "/admin/visits", icon: <Clock20Regular />, permission: Permissions.VenueVisitRead },
+                ],
+            },
+            {
+                title: "Управление",
+                items: [
+                    { id: "tariffs", label: "Тарифы", path: "/admin/tariffs", icon: <Money20Regular />, permission: Permissions.VenueTariffRead },
+                    { id: "promotions", label: "Акции", path: "/admin/promotions", icon: <Gift20Regular />, permission: Permissions.VenuePromotionRead },
+                    { id: "themes", label: "Темы оформления", path: "/admin/themes", icon: <Color20Regular />, permission: Permissions.VenueThemeRead },
+                ],
+            },
+            {
+                title: "Финансы",
+                items: [
+                    { id: "balances", label: "Балансы", path: "/admin/balances", icon: <Money20Regular />, permission: Permissions.BillingBalanceRead },
+                    { id: "transactions", label: "Транзакции", path: "/admin/transactions", icon: <ArrowTrending20Regular />, permission: Permissions.BillingTransactionRead },
+                    { id: "payments", label: "Платежи", path: "/admin/payments", icon: <Payment20Regular />, permission: Permissions.BillingPaymentHistoryRead },
+                ],
+            },
+        ];
+
+        return allSections
+            .map(section => ({
+                ...section,
+                items: section.items.filter(item => !item.permission || has(item.permission))
+            }))
+            .filter(section => section.items.length > 0);
+    }, [has]);
 
     const bottomNav: NavItemType[] = useMemo(() => sections.flatMap((section) => section.items).slice(0, 4), [sections]);
 

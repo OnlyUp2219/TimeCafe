@@ -4,4 +4,6 @@ export type User = {
     name?: string;
     role: string;
     status: string;
+    emailConfirmed?: boolean;
+    phoneNumberConfirmed?: boolean;
 };
