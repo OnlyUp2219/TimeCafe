@@ -30,3 +30,4 @@ global using Microsoft.Extensions.Caching.Hybrid;
 global using Scalar.AspNetCore;
 
 global using Serilog;
+global using FluentResults;

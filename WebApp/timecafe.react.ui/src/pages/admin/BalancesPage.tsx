@@ -21,8 +21,10 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
-import {NO_DATA} from "@shared/const/placeholders";
+import {NO_DATA, NO_ACCESS} from "@shared/const/placeholders";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
@@ -109,9 +111,11 @@ export const BalancesPage = () => {
             renderHeaderCell: () => "Баланс",
             renderCell: (b) => (
                 <TableCellLayout truncate>
-                    <Body1 style={{color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
-                        {formatMoney(b.currentBalance)}
-                    </Body1>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                        <Body1 style={{color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
+                            {formatMoney(b.currentBalance)}
+                        </Body1>
+                    </HasPermission>
                 </TableCellLayout>
             ),
         }),
@@ -119,13 +123,25 @@ export const BalancesPage = () => {
             columnId: "deposited",
             compare: (a, b) => a.totalDeposited - b.totalDeposited,
             renderHeaderCell: () => "Пополнено",
-            renderCell: (b) => <TableCellLayout truncate>{formatMoney(b.totalDeposited)}</TableCellLayout>,
+            renderCell: (b) => (
+                <TableCellLayout truncate>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                        {formatMoney(b.totalDeposited)}
+                    </HasPermission>
+                </TableCellLayout>
+            ),
         }),
         createTableColumn<AdminBalanceDto>({
             columnId: "spent",
             compare: (a, b) => a.totalSpent - b.totalSpent,
             renderHeaderCell: () => "Потрачено",
-            renderCell: (b) => <TableCellLayout truncate>{formatMoney(b.totalSpent)}</TableCellLayout>,
+            renderCell: (b) => (
+                <TableCellLayout truncate>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                        {formatMoney(b.totalSpent)}
+                    </HasPermission>
+                </TableCellLayout>
+            ),
         }),
         createTableColumn<AdminBalanceDto>({
             columnId: "debt",
@@ -133,9 +149,11 @@ export const BalancesPage = () => {
             renderHeaderCell: () => "Долг",
             renderCell: (b) => (
                 <TableCellLayout truncate>
-                    <Body1 style={{color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
-                        {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
-                    </Body1>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                        <Body1 style={{color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
+                            {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
+                        </Body1>
+                    </HasPermission>
                 </TableCellLayout>
             ),
         }),
@@ -163,15 +181,19 @@ export const BalancesPage = () => {
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Суммарный баланс (стр.)</Body2>
-                    <Title3 style={{color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
-                        {formatMoney(totalBalance)}
-                    </Title3>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3 style={{color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
+                            {formatMoney(totalBalance)}
+                        </Title3>
+                    </HasPermission>
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Суммарный долг (стр.)</Body2>
-                    <Title3 style={{color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
-                        {totalDebt > 0 ? formatMoney(totalDebt) : NO_DATA}
-                    </Title3>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3 style={{color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
+                            {totalDebt > 0 ? formatMoney(totalDebt) : NO_DATA}
+                        </Title3>
+                    </HasPermission>
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Должников (стр.)</Body2>

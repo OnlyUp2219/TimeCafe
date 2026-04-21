@@ -37,6 +37,8 @@ import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 const formatDate = (iso: string) => {
     const d = new Date(iso);
@@ -195,11 +197,17 @@ export const PromotionsPage = () => {
             compare: (a, b) => Number(a.isActive) - Number(b.isActive),
             renderHeaderCell: () => "Статус",
             renderCell: (promo) => (
-                <Switch
-                    checked={promo.isActive}
-                    onChange={() => handleToggleActive(promo)}
-                    label={promo.isActive ? "Активна" : "Неактивна"}
-                />
+                <HasPermission anyOf={[Permissions.VenuePromotionActivate, Permissions.VenuePromotionDeactivate]} fallback={
+                    <Badge appearance="tint" color={promo.isActive ? "success" : "warning"}>
+                        {promo.isActive ? "Активна" : "Неактивна"}
+                    </Badge>
+                }>
+                    <Switch
+                        checked={promo.isActive}
+                        onChange={() => handleToggleActive(promo)}
+                        label={promo.isActive ? "Активна" : "Неактивна"}
+                    />
+                </HasPermission>
             ),
         }),
         createTableColumn<Promotion>({
@@ -208,8 +216,12 @@ export const PromotionsPage = () => {
             renderHeaderCell: () => "Действия",
             renderCell: (promo) => (
                 <div className="flex gap-1">
-                    <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
-                    <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                    <HasPermission can={Permissions.VenuePromotionUpdate}>
+                        <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
+                    </HasPermission>
+                    <HasPermission can={Permissions.VenuePromotionDelete}>
+                        <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                    </HasPermission>
                 </div>
             ),
         }),
@@ -222,9 +234,11 @@ export const PromotionsPage = () => {
                     <Title2>Акции</Title2>
                     <Body2 block>{promotions.length} акций</Body2>
                 </div>
-                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                    Добавить акцию
-                </Button>
+                <HasPermission can={Permissions.VenuePromotionCreate}>
+                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                        Добавить акцию
+                    </Button>
+                </HasPermission>
             </div>
 
             {(queryError || mutationError) && (

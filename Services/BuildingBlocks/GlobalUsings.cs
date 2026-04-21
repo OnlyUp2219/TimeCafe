@@ -31,3 +31,6 @@ global using Serilog;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Diagnostics;
 global using FluentResults;
+global using System.Net.Http.Headers;
+global using BuildingBlocks.Options;
+global using Microsoft.AspNetCore.Authentication;

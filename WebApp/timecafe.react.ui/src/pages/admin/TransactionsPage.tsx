@@ -21,11 +21,13 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 import type {BillingTransaction} from "@app-types/billing";
 import {TransactionType, TransactionSource, TransactionStatus} from "@app-types/billing";
 
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
-import {NO_DATA} from "@shared/const/placeholders";
+import {NO_DATA, NO_ACCESS} from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
@@ -159,9 +161,11 @@ export const TransactionsPage = () => {
             renderHeaderCell: () => "Сумма",
             renderCell: (tx) => (
                 <TableCellLayout truncate>
-                    <span className={tx.type === TransactionType.Withdrawal ? "text-red-500" : "text-green-600"}>
-                        {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
-                    </span>
+                    <HasPermission can={Permissions.BillingTransactionRead} fallback={NO_ACCESS}>
+                        <span className={tx.type === TransactionType.Withdrawal ? "text-red-500" : "text-green-600"}>
+                            {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
+                        </span>
+                    </HasPermission>
                 </TableCellLayout>
             ),
         }),
@@ -169,7 +173,13 @@ export const TransactionsPage = () => {
             columnId: "balance",
             compare: (a, b) => a.balanceAfter - b.balanceAfter,
             renderHeaderCell: () => "Баланс после",
-            renderCell: (tx) => <TableCellLayout truncate>{formatMoney(tx.balanceAfter)}</TableCellLayout>,
+            renderCell: (tx) => (
+                <TableCellLayout truncate>
+                    <HasPermission can={Permissions.BillingTransactionRead} fallback={NO_ACCESS}>
+                        {formatMoney(tx.balanceAfter)}
+                    </HasPermission>
+                </TableCellLayout>
+            ),
         }),
         createTableColumn<BillingTransaction>({
             columnId: "comment",
@@ -195,11 +205,15 @@ export const TransactionsPage = () => {
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Пополнения (на стр.)</Body2>
-                    <Title3 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(totalDeposits)}</Title3>
+                    <HasPermission can={Permissions.BillingTransactionRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(totalDeposits)}</Title3>
+                    </HasPermission>
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Списания (на стр.)</Body2>
-                    <Title3 style={{color: "var(--colorPaletteRedForeground1)"}}>{formatMoney(totalWithdrawals)}</Title3>
+                    <HasPermission can={Permissions.BillingTransactionRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3 style={{color: "var(--colorPaletteRedForeground1)"}}>{formatMoney(totalWithdrawals)}</Title3>
+                    </HasPermission>
                 </Card>
                 <Card size={sizes.card}>
                     <Body2 block>Выполнено (на стр.)</Body2>

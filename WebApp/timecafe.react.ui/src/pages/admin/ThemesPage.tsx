@@ -34,6 +34,8 @@ import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 interface ThemeFormState {
     name: string;
@@ -157,8 +159,12 @@ export const ThemesPage = () => {
             renderHeaderCell: () => "Действия",
             renderCell: (theme) => (
                 <div className="flex gap-1">
-                    <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(theme)} />
-                    <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(theme.themeId)} />
+                    <HasPermission can={Permissions.VenueThemeUpdate}>
+                        <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(theme)} />
+                    </HasPermission>
+                    <HasPermission can={Permissions.VenueThemeDelete}>
+                        <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(theme.themeId)} />
+                    </HasPermission>
                 </div>
             ),
         }),
@@ -171,9 +177,11 @@ export const ThemesPage = () => {
                     <Title2>Темы оформления</Title2>
                     <Body2 block>{themes.length} тем</Body2>
                 </div>
-                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                    Добавить тему
-                </Button>
+                <HasPermission can={Permissions.VenueThemeCreate}>
+                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                        Добавить тему
+                    </Button>
+                </HasPermission>
             </div>
 
             {(queryError || mutationError) && (

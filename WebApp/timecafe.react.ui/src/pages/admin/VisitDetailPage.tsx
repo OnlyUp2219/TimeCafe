@@ -20,6 +20,8 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useComponentSize} from "@hooks/useComponentSize";
 import {VisitStatus} from "@app-types/visit";
 import {useState} from "react";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
 import {NO_DATA} from "@shared/const/placeholders";
@@ -91,16 +93,18 @@ export const VisitDetailPage = () => {
 
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <Title2>Визит</Title2>
-                {visit.status === VisitStatus.Active && (
-                    <Button
-                        appearance="primary"
-                        icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
-                        onClick={handleEnd}
-                        disabled={ending}
-                    >
-                        Завершить визит
-                    </Button>
-                )}
+                <HasPermission can={Permissions.VenueVisitEnd}>
+                    {visit.status === VisitStatus.Active && (
+                        <Button
+                            appearance="primary"
+                            icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
+                            onClick={handleEnd}
+                            disabled={ending}
+                        >
+                            Завершить визит
+                        </Button>
+                    )}
+                </HasPermission>
             </div>
 
             {endError && (

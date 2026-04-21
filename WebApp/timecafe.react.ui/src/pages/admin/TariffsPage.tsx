@@ -1,4 +1,4 @@
-import {useCallback, useMemo, useState} from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
     Avatar,
     Badge,
@@ -24,8 +24,8 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular} from "@fluentui/react-icons";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import {
     useGetTariffsPageQuery,
     useCreateTariffMutation,
@@ -34,14 +34,16 @@ import {
     useActivateTariffMutation,
     useDeactivateTariffMutation,
 } from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import type {TariffWithTheme} from "@app-types/tariffWithTheme";
-import {BillingType} from "@app-types/tariff";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { TariffWithTheme } from "@app-types/tariffWithTheme";
+import { BillingType } from "@app-types/tariff";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
@@ -68,12 +70,12 @@ const calcPerHour = (perMinute: string): string => {
 };
 
 export const TariffsPage = () => {
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
-    const {data, isLoading, error, refetch} = useGetTariffsPageQuery(
-        {pageNumber: currentPage, pageSize},
-        {refetchOnMountOrArgChange: true}
+    const { data, isLoading, error, refetch } = useGetTariffsPageQuery(
+        { pageNumber: currentPage, pageSize },
+        { refetchOnMountOrArgChange: true }
     );
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
@@ -124,7 +126,7 @@ export const TariffsPage = () => {
                 isActive: form.isActive,
             };
             if (editingTariff) {
-                await updateTariff({tariffId: editingTariff.tariffId, ...body}).unwrap();
+                await updateTariff({ tariffId: editingTariff.tariffId, ...body }).unwrap();
             } else {
                 await createTariff(body).unwrap();
             }
@@ -157,12 +159,12 @@ export const TariffsPage = () => {
     }, [activateTariff, deactivateTariff]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: {minWidth: 150, defaultWidth: 250, idealWidth: 300},
-        price: {minWidth: 80, defaultWidth: 140, idealWidth: 160},
-        billingType: {minWidth: 100, defaultWidth: 140, idealWidth: 160},
-        theme: {minWidth: 80, defaultWidth: 140, idealWidth: 160},
-        status: {minWidth: 100, defaultWidth: 150, idealWidth: 180},
-        actions: {minWidth: 100, defaultWidth: 120, idealWidth: 140},
+        name: { minWidth: 150, defaultWidth: 250, idealWidth: 300 },
+        price: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
+        billingType: { minWidth: 100, defaultWidth: 140, idealWidth: 160 },
+        theme: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
+        status: { minWidth: 100, defaultWidth: 150, idealWidth: 180 },
+        actions: { minWidth: 140, defaultWidth: 180, idealWidth: 160 },
     }), []);
 
     const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => [
@@ -171,7 +173,16 @@ export const TariffsPage = () => {
             compare: (a, b) => a.name.localeCompare(b.name),
             renderHeaderCell: () => "Тариф",
             renderCell: (tariff) => (
-                <TableCellLayout truncate media={tariff.themeEmoji ? <Avatar name={tariff.themeEmoji} /> : undefined}>
+                <TableCellLayout
+                    truncate
+                    media={
+                        <Avatar
+                            name={tariff.name}
+                            initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
+                            color="neutral"
+                        />
+                    }
+                >
                     <div>
                         <Body1 block>{tariff.name}</Body1>
                         {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
@@ -187,7 +198,7 @@ export const TariffsPage = () => {
                 <TableCellLayout truncate>
                     <div>
                         <Body1 block>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</Body1>
-                        <Caption1 block style={{color: "var(--colorNeutralForeground3)"}}>
+                        <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
                             {(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
                         </Caption1>
                     </div>
@@ -217,11 +228,17 @@ export const TariffsPage = () => {
             compare: (a, b) => Number(a.isActive) - Number(b.isActive),
             renderHeaderCell: () => "Статус",
             renderCell: (tariff) => (
-                <Switch
-                    checked={tariff.isActive}
-                    onChange={() => handleToggleActive(tariff)}
-                    label={tariff.isActive ? "Активен" : "Неактивен"}
-                />
+                <HasPermission anyOf={[Permissions.VenueTariffActivate, Permissions.VenueTariffDeactivate]} fallback={
+                    <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"}>
+                        {tariff.isActive ? "Активен" : "Неактивен"}
+                    </Badge>
+                }>
+                    <Switch
+                        checked={tariff.isActive}
+                        onChange={() => handleToggleActive(tariff)}
+                        label={tariff.isActive ? "Активен" : "Неактивен"}
+                    />
+                </HasPermission>
             ),
         }),
         createTableColumn<TariffWithTheme>({
@@ -230,8 +247,12 @@ export const TariffsPage = () => {
             renderHeaderCell: () => "Действия",
             renderCell: (tariff) => (
                 <div className="flex gap-1">
-                    <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
-                    <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
+                    <HasPermission can={Permissions.VenueTariffUpdate}>
+                        <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
+                    </HasPermission>
+                    <HasPermission can={Permissions.VenueTariffDelete}>
+                        <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
+                    </HasPermission>
                 </div>
             ),
         }),
@@ -248,9 +269,11 @@ export const TariffsPage = () => {
                 </div>
                 <div className="flex gap-2">
                     <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
-                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                        Добавить тариф
-                    </Button>
+                    <HasPermission can={Permissions.VenueTariffCreate}>
+                        <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                            Добавить тариф
+                        </Button>
+                    </HasPermission>
                 </div>
             </div>
 
@@ -288,29 +311,29 @@ export const TariffsPage = () => {
                         <DialogTitle>{editingTariff ? "Редактировать тариф" : "Новый тариф"}</DialogTitle>
                         <DialogContent className="flex flex-col gap-4">
                             <Field label="Название" required>
-                                <Input value={form.name} onChange={(_, d) => setForm(f => ({...f, name: d.value}))} />
+                                <Input value={form.name} onChange={(_, d) => setForm(f => ({ ...f, name: d.value }))} />
                             </Field>
                             <Field label="Описание">
-                                <Input value={form.description} onChange={(_, d) => setForm(f => ({...f, description: d.value}))} />
+                                <Input value={form.description} onChange={(_, d) => setForm(f => ({ ...f, description: d.value }))} />
                             </Field>
                             <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined}>
                                 <Input
                                     type="number"
                                     value={form.pricePerMinute}
-                                    onChange={(_, d) => setForm(f => ({...f, pricePerMinute: d.value}))}
+                                    onChange={(_, d) => setForm(f => ({ ...f, pricePerMinute: d.value }))}
                                 />
                             </Field>
                             <Field label="Тип тарификации">
                                 <div className="flex gap-4">
                                     <Button
                                         appearance={form.billingType === 2 ? "primary" : "secondary"}
-                                        onClick={() => setForm(f => ({...f, billingType: 2}))}
+                                        onClick={() => setForm(f => ({ ...f, billingType: 2 }))}
                                     >
                                         Поминутный
                                     </Button>
                                     <Button
                                         appearance={form.billingType === 1 ? "primary" : "secondary"}
-                                        onClick={() => setForm(f => ({...f, billingType: 1}))}
+                                        onClick={() => setForm(f => ({ ...f, billingType: 1 }))}
                                     >
                                         Почасовой
                                     </Button>
@@ -318,7 +341,7 @@ export const TariffsPage = () => {
                             </Field>
                             <Switch
                                 checked={form.isActive}
-                                onChange={(_, d) => setForm(f => ({...f, isActive: d.checked}))}
+                                onChange={(_, d) => setForm(f => ({ ...f, isActive: d.checked }))}
                                 label="Активен"
                             />
                             {mutationError && (

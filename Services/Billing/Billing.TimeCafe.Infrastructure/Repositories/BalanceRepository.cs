@@ -113,4 +113,12 @@ public class BalanceRepository(
             await _cache.RemoveByTagAsync(CacheTags.Balance(userId), ct);
         }
     }
+
+    public async Task<List<Balance>> GetByUserIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct = default)
+    {
+        return await _context.Balances
+            .AsNoTracking()
+            .Where(b => userIds.Contains(b.UserId))
+            .ToListAsync(ct);
+    }
 }

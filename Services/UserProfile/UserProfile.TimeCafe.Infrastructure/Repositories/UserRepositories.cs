@@ -5,9 +5,8 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken? cancellationToken)
+    public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_All,
             async token => await _context.Profiles
@@ -15,12 +14,11 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync(token),
             tags: [CacheTags.Profiles],
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
     }
 
-    public async Task<IEnumerable<Profile?>> GetProfilesPageAsync(int pageNumber, int pageSize, CancellationToken? cancellationToken)
+    public async Task<IEnumerable<Profile?>> GetProfilesPageAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_Page(pageNumber),
             async token => await _context.Profiles
@@ -31,75 +29,70 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
                 .ToListAsync(token),
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
             tags: [CacheTags.Profiles],
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
     }
 
-    public async Task<int> GetTotalPageAsync(CancellationToken? cancellationToken)
+    public async Task<int> GetTotalPageAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Profiles.CountAsync(cancellationToken ?? CancellationToken.None);
+        return await _context.Profiles.CountAsync(cancellationToken);
     }
 
-    public async Task<Profile?> GetProfileByIdAsync(Guid userId, CancellationToken? cancellationToken)
+    public async Task<Profile?> GetProfileByIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_ById(userId),
             async token => await _context.Profiles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.UserId == userId, token),
             tags: [CacheTags.Profiles, CacheTags.Profile(userId)],
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
     }
 
-    public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken? cancellationToken)
+    public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
         profile.CreatedAt = DateTimeOffset.UtcNow;
         _context.Profiles.Add(profile);
-        await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
 
         return profile;
     }
 
-    public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken? cancellationToken)
+    public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
-        var existingClient = await _context.Profiles.FindAsync(profile.UserId);
+        var existingClient = await _context.Profiles.FindAsync([profile.UserId], cancellationToken);
 
         if (existingClient is null)
             return null;
 
         _context.Entry(existingClient).CurrentValues.SetValues(profile);
-        await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
 
         return profile;
     }
 
-    public async Task DeleteProfileAsync(Guid userId, CancellationToken? cancellationToken)
+    public async Task DeleteProfileAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
-        var client = await _context.Profiles.FindAsync(userId);
+        var client = await _context.Profiles.FindAsync([userId], cancellationToken);
 
         if (client is null)
             return;
 
         _context.Profiles.Remove(client);
-        await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
-        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfos, ct);
-        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfoByUser(userId), ct);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
+        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfos, cancellationToken);
+        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfoByUser(userId), cancellationToken);
     }
 
-    public async Task CreateEmptyAsync(Guid userId, CancellationToken? cancellationToken)
+    public async Task CreateEmptyAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var ct = cancellationToken ?? CancellationToken.None;
         var exist = await _context.Profiles
-            .AnyAsync(u => u.UserId == userId, ct);
+            .AnyAsync(u => u.UserId == userId, cancellationToken);
         if (exist)
             return;
 
@@ -113,8 +106,16 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
             CreatedAt = DateTimeOffset.UtcNow,
         });
 
-        await _context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(cancellationToken);
 
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, ct);
+        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Profile>> GetProfilesByIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
+    {
+        return await _context.Profiles
+            .AsNoTracking()
+            .Where(p => userIds.Contains(p.UserId))
+            .ToListAsync(cancellationToken);
     }
 }

@@ -22,6 +22,8 @@ import {VisitStatus} from "@app-types/visit";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
 import {NO_DATA} from "@shared/const/placeholders";
@@ -136,9 +138,11 @@ export const VisitsPage = () => {
             compare: () => 0,
             renderHeaderCell: () => "Действия",
             renderCell: (visit) => (
-                <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/visits/${visit.visitId}`)}>
-                    Открыть
-                </Button>
+                <HasPermission can={Permissions.VenueVisitRead}>
+                    <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/visits/${visit.visitId}`)}>
+                        Открыть
+                    </Button>
+                </HasPermission>
             ),
         }),
     ], [navigate]);

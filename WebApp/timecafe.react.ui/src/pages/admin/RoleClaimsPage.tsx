@@ -25,6 +25,8 @@ import { useGetRoleClaimsByNameQuery, useUpdateRoleClaimsMutation, useGetPermiss
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
 const SERVICE_LABELS: Record<string, string> = {
     "userprofile": "👤 UserProfile",
@@ -270,15 +272,17 @@ export const RoleClaimsPage = () => {
                                 <span className="text-[var(--colorNeutralForeground3)]">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
                             </Body2>
                         </div>
-                        <Button
-                            appearance="primary"
-                            size={sizes.button}
-                            icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
-                            onClick={handleSave}
-                            disabled={saving}
-                        >
-                            Сохранить
-                        </Button>
+                        <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
+                            <Button
+                                appearance="primary"
+                                size={sizes.button}
+                                icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
+                                onClick={handleSave}
+                                disabled={saving}
+                            >
+                                Сохранить
+                            </Button>
+                        </HasPermission>
                     </div>
 
                     {(claimsError2 || mutationError) && (

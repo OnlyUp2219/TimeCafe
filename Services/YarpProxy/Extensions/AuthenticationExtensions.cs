@@ -1,5 +1,3 @@
-using BuildingBlocks.Options;
-
 namespace YarpProxy.Extensions;
 
 public static class AuthenticationExtensions
@@ -7,6 +5,10 @@ public static class AuthenticationExtensions
     public static IServiceCollection AddAuthenticationConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddValidatedOptions<JwtOptions>(configuration, "Jwt");
+
+        services.AddTransient<IClaimsTransformation, PermissionClaimsEnrichmentTransformer>();
+
+        services.AddAuthorizationBuilder();
 
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
             ?? throw new InvalidOperationException("Jwt configuration section is missing.");

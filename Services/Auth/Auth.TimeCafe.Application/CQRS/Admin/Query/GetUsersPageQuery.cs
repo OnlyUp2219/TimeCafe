@@ -35,7 +35,10 @@ public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : I
                 Email = user.Email!,
                 Name = user.UserName,
                 Role = role,
-                Status = status
+                Status = status,
+                PhoneNumber = user.PhoneNumber,
+                EmailConfirmed = user.EmailConfirmed,
+                PhoneNumberConfirmed = user.PhoneNumberConfirmed
             };
         }).ToList();
 

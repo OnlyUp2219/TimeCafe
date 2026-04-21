@@ -2,8 +2,10 @@ global using BuildingBlocks.Behaviors;
 global using BuildingBlocks.Exceptions;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Validation;
+global using BuildingBlocks.Contracts.CQRS;
 
 global using FluentValidation;
+global using FluentResults;
 
 global using MediatR;
 

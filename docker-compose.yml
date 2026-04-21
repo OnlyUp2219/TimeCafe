@@ -309,6 +309,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
       - ASPNETCORE_URLS=http://+:8010
+      - ConnectionStrings__AuthConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
       - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
       - Jwt__SigningKey=${JWT_SECRET}

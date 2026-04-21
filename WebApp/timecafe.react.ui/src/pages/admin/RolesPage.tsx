@@ -31,6 +31,8 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
 export const RolesPage = () => {
     const navigate = useNavigate();
@@ -101,18 +103,22 @@ export const RolesPage = () => {
             renderHeaderCell: () => "Действия",
             renderCell: (r) => (
                 <div className="flex gap-1">
-                    <Button
-                        appearance="subtle"
-                        icon={<LockClosed20Regular />}
-                        onClick={() => navigate(`/admin/roles/${r.roleName}/claims`)}
-                        title="Управление правами"
-                    />
-                    <Button
-                        appearance="subtle"
-                        icon={<Delete20Regular />}
-                        onClick={() => handleDelete(r.roleName)}
-                        title="Удалить роль"
-                    />
+                    <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
+                        <Button
+                            appearance="subtle"
+                            icon={<LockClosed20Regular />}
+                            onClick={() => navigate(`/admin/roles/${r.roleName}/claims`)}
+                            title="Управление правами"
+                        />
+                    </HasPermission>
+                    <HasPermission can={Permissions.RbacRoleDelete}>
+                        <Button
+                            appearance="subtle"
+                            icon={<Delete20Regular />}
+                            onClick={() => handleDelete(r.roleName)}
+                            title="Удалить роль"
+                        />
+                    </HasPermission>
                 </div>
             ),
         }),
@@ -125,9 +131,11 @@ export const RolesPage = () => {
                     <Title2>Роли</Title2>
                     <Body2 block>{totalCount} ролей</Body2>
                 </div>
-                <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
-                    Создать роль
-                </Button>
+                <HasPermission can={Permissions.RbacRoleCreate}>
+                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
+                        Создать роль
+                    </Button>
+                </HasPermission>
             </div>
 
             {(queryError || mutationError) && (

@@ -6,4 +6,16 @@ export type User = {
     status: string;
     emailConfirmed?: boolean;
     phoneNumberConfirmed?: boolean;
+    phoneNumber?: string;
+    profile?: {
+        firstName: string;
+        lastName: string;
+        middleName?: string;
+        photoUrl?: string;
+        profileStatus: number;
+    } | null;
+    balance?: {
+        currentBalance: number;
+        debt: number;
+    } | null;
 };

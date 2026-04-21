@@ -7,6 +7,7 @@ public class AdminUserResponse
     public string? Name { get; set; }
     public string Role { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
     public bool EmailConfirmed { get; set; }
     public bool PhoneNumberConfirmed { get; set; }
 }

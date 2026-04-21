@@ -2,7 +2,7 @@ import {useCallback, useEffect} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {selectPermissions, selectPermissionsLoaded, setPermissions, clearPermissions} from "@store/permissionsSlice";
 import {useLazyGetMyPermissionsQuery} from "@store/api/authApi";
-import type {Permission} from "@shared/auth/permissions";
+import {Permissions, type Permission} from "@shared/auth/permissions";
 
 export const usePermissions = () => {
     const dispatch = useAppDispatch();
@@ -24,20 +24,22 @@ export const usePermissions = () => {
         }
     }, [accessToken, loaded, fetchPermissions, dispatch]);
 
+    const isSuperAdmin = permissions.includes(Permissions.RbacSuperAdmin);
+
     const has = useCallback(
-        (permission: Permission) => permissions.includes(permission),
-        [permissions],
+        (permission: Permission) => isSuperAdmin || permissions.includes(permission),
+        [isSuperAdmin, permissions],
     );
 
     const hasAny = useCallback(
-        (perms: Permission[]) => perms.some((p) => permissions.includes(p)),
-        [permissions],
+        (perms: Permission[]) => isSuperAdmin || perms.some((p) => permissions.includes(p)),
+        [isSuperAdmin, permissions],
     );
 
     const hasAll = useCallback(
-        (perms: Permission[]) => perms.every((p) => permissions.includes(p)),
-        [permissions],
+        (perms: Permission[]) => isSuperAdmin || perms.every((p) => permissions.includes(p)),
+        [isSuperAdmin, permissions],
     );
 
-    return {permissions, loaded, has, hasAny, hasAll};
+    return {permissions, loaded, has, hasAny, hasAll, isSuperAdmin};
 };

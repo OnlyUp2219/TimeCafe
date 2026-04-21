@@ -23,6 +23,8 @@ import {
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
 export const UserRolesPage = () => {
     const {id} = useParams<{id: string}>();
@@ -95,12 +97,14 @@ export const UserRolesPage = () => {
                                 <div key={`${role}-${idx}`} className="flex items-center gap-1">
                                     <Badge appearance="filled">{role}</Badge>
                                     {role !== "SuperAdmin" && (
-                                        <Button
-                                            appearance="subtle"
-                                            size="small"
-                                            icon={<Delete20Regular />}
-                                            onClick={() => handleRemove(role)}
-                                        />
+                                        <HasPermission can={Permissions.RbacUserRoleRemove}>
+                                            <Button
+                                                appearance="subtle"
+                                                size="small"
+                                                icon={<Delete20Regular />}
+                                                onClick={() => handleRemove(role)}
+                                            />
+                                        </HasPermission>
                                     )}
                                 </div>
                             ))}
@@ -114,15 +118,17 @@ export const UserRolesPage = () => {
                         {allRoles
                             .filter(r => !userRoles.includes(r.roleName) && r.roleName !== "SuperAdmin")
                             .map(r => (
-                                <Button
-                                    key={r.roleId}
-                                    appearance="outline"
-                                    size="small"
-                                    icon={<Add20Regular />}
-                                    onClick={() => handleAssign(r.roleName)}
-                                >
-                                    {r.roleName}
-                                </Button>
+                                <HasPermission can={Permissions.RbacUserRoleAssign}>
+                                    <Button
+                                        key={r.roleId}
+                                        appearance="outline"
+                                        size="small"
+                                        icon={<Add20Regular />}
+                                        onClick={() => handleAssign(r.roleName)}
+                                    >
+                                        {r.roleName}
+                                    </Button>
+                                </HasPermission>
                             ))}
                         {allRoles.filter(r => !userRoles.includes(r.roleName) && r.roleName !== "SuperAdmin").length === 0 && (
                             <Body2>Все роли уже назначены</Body2>

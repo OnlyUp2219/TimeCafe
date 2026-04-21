@@ -18,6 +18,7 @@
 		<PackageReference Include="FluentValidation" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="FluentResults" />
+		<PackageReference Include="Yarp.ReverseProxy" />
 
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" PrivateAssets="All" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />

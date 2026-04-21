@@ -53,7 +53,7 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { formatMoney } from "@shared/const/FormatMoney.ts";
 import { txTypeLabel } from "@shared/const/TxTypeLabel.ts";
 
-import { NO_DATA } from "@shared/const/placeholders";
+import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
@@ -363,24 +363,28 @@ export const UserDetailPage = () => {
                 </div>
             </Card>
 
-            <HasPermission can={Permissions.BillingBalanceRead}>
-                <div className="flex flex-wrap gap-4 justify-between">
+            <div className="flex flex-wrap gap-4 justify-between">
                     <Card size={sizes.card} className="flex-1 min-w-[200px]">
                         <Body2 block>Баланс</Body2>
-                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
-                            {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
-                        </Title3>
+                        <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                            <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
+                                {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
+                            </Title3>
+                        </HasPermission>
                     </Card>
                     <Card size={sizes.card} className="flex-1 min-w-[200px]">
                         <Body2 block>Визитов всего</Body2>
-                        <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
+                        <HasPermission can={Permissions.VenueVisitRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                            <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
+                        </HasPermission>
                     </Card>
                     <Card size={sizes.card} className="flex-1 min-w-[200px]">
                         <Body2 block>Потрачено</Body2>
-                        <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                        <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                            <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                        </HasPermission>
                     </Card>
                 </div>
-            </HasPermission>
 
             <div className="flex flex-wrap gap-4">
                 <HasPermission

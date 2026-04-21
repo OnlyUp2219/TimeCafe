@@ -72,6 +72,14 @@ export const adminApi = createApi({
             providesTags: ["Users"],
         }),
 
+        getUsersComposite: builder.query<GetUsersResponse, GetUsersArgs>({
+            query: ({page, size, search, status}) => ({
+                url: "/api/admin/users-composite",
+                params: {page, size, search, status},
+            }),
+            providesTags: ["Users"],
+        }),
+
         getRoleClaimsByName: builder.query<{roleClaim: {roleName: string; claims: string[]}}, string>({
             query: (roleName) => `/auth/rbac/role-claims/${roleName}`,
             providesTags: (_result, _error, roleName) => [{type: "Users", id: `claims-${roleName}`}],
@@ -179,6 +187,7 @@ export const adminApi = createApi({
 
 export const {
     useGetUsersQuery,
+    useGetUsersCompositeQuery,
     useGetRolesQuery,
     useCreateRoleMutation,
     useDeleteRoleMutation,

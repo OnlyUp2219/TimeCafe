@@ -12,6 +12,9 @@
 		<PackageReference Include="Scalar.AspNetCore" />
 		<PackageReference Include="Scalar.AspNetCore.Microsoft" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+		<PackageReference Include="Carter" />
+		<PackageReference Include="FluentResults" />
+		<PackageReference Include="MediatR" />
 		
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.Google" />

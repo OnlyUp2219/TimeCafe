@@ -19,13 +19,13 @@ import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/
 import { Eye20Regular } from "@fluentui/react-icons";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 import type { User } from "@app-types/user";
-import { useGetUsersQuery } from "@store/api/adminApi";
-import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
-import { useGetBalanceQuery } from "@store/api/billingApi";
+import { useGetUsersCompositeQuery } from "@store/api/adminApi";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import { NO_DATA } from "@shared/const/placeholders";
+import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 
@@ -41,20 +41,25 @@ const getUserStatusBadgeClass = (status: string): string => {
 };
 
 const ProfileNameCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
+    const profile = user.profile;
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : (user.name || NO_DATA);
     return (
-        <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
-            {displayName}
-        </TableCellLayout>
+        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}>
+            <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
+                {displayName}
+            </TableCellLayout>
+        </HasPermission>
     );
 };
 
 const ProfilePhoneCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
-    return <TableCellLayout truncate>{profile?.phoneNumber || NO_DATA}</TableCellLayout>;
+    return (
+        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
+            <TableCellLayout truncate>{user.phoneNumber || NO_DATA}</TableCellLayout>
+        </HasPermission>
+    );
 };
 
 const profileStatusLabel = (status?: number) => {
@@ -76,22 +81,27 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 };
 
 const ProfileStatusCell = ({ user }: { user: User }) => {
-    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(user.id);
+    const profile = user.profile;
     if (!profile) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
-        <TableCellLayout truncate>
-            <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
-                {profileStatusLabel(profile.profileStatus)}
-            </Badge>
-        </TableCellLayout>
+        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
+            <TableCellLayout truncate>
+                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
+                    {profileStatusLabel(profile.profileStatus)}
+                </Badge>
+            </TableCellLayout>
+        </HasPermission>
     );
 };
 
 const BalanceCell = ({ user }: { user: User }) => {
-    const { data: balance, isLoading } = useGetBalanceQuery(user.id);
-    if (isLoading) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
-    if (balance === undefined) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
-    return <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>;
+    const balance = user.balance;
+    if (balance === undefined || balance === null) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
+    return (
+        <HasPermission can={Permissions.BillingBalanceRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
+            <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>
+        </HasPermission>
+    );
 };
 
 export const UsersListPage = () => {
@@ -102,7 +112,7 @@ export const UsersListPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
-    const { data, isLoading, error } = useGetUsersQuery({
+    const { data, isLoading, error } = useGetUsersCompositeQuery({
         page: currentPage,
         size: pageSize,
         search: search || undefined,
@@ -256,4 +266,3 @@ export const UsersListPage = () => {
         </div>
     );
 };
-

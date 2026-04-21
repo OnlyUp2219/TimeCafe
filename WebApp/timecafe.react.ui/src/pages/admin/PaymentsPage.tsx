@@ -21,7 +21,10 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {HasPermission} from "@components/Guard/HasPermission";
+import {Permissions} from "@shared/auth/permissions";
 
+import {NO_ACCESS} from "@shared/const/placeholders";
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
 const paymentStatusLabel = (s: number) => {
@@ -100,7 +103,9 @@ export const PaymentsPage = () => {
             renderHeaderCell: () => "Сумма",
             renderCell: (p) => (
                 <TableCellLayout truncate>
-                    <Body1 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(p.amount)}</Body1>
+                    <HasPermission can={Permissions.BillingPaymentRead} fallback={NO_ACCESS}>
+                        <Body1 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(p.amount)}</Body1>
+                    </HasPermission>
                 </TableCellLayout>
             ),
         }),
