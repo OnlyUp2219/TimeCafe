@@ -23,6 +23,8 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Dropdown,
+    Option,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
@@ -33,6 +35,7 @@ import {
     useDeleteTariffMutation,
     useActivateTariffMutation,
     useDeactivateTariffMutation,
+    useGetAllThemesQuery,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -52,6 +55,7 @@ interface TariffFormState {
     description: string;
     pricePerMinute: string;
     billingType: 1 | 2;
+    themeId: string;
     isActive: boolean;
 }
 
@@ -60,6 +64,7 @@ const emptyForm: TariffFormState = {
     description: "",
     pricePerMinute: "",
     billingType: 2,
+    themeId: "",
     isActive: true,
 };
 
@@ -77,6 +82,7 @@ export const TariffsPage = () => {
         { pageNumber: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
+    const { data: themes = [], isLoading: themesLoading } = useGetAllThemesQuery();
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -108,6 +114,7 @@ export const TariffsPage = () => {
             description: t.description ?? "",
             pricePerMinute: String(t.pricePerMinute),
             billingType: t.billingType,
+            themeId: t.themeId ?? "",
             isActive: t.isActive,
         });
         setMutationError(null);
@@ -123,6 +130,7 @@ export const TariffsPage = () => {
                 description: form.description || undefined,
                 pricePerMinute: parseFloat(form.pricePerMinute) || 0,
                 billingType: form.billingType,
+                themeId: form.themeId || undefined,
                 isActive: form.isActive,
             };
             if (editingTariff) {
@@ -260,6 +268,18 @@ export const TariffsPage = () => {
 
     const perHour = calcPerHour(form.pricePerMinute);
 
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Spinner label="Загрузка тарифов..." /></div>;
+    }
+
+    if (queryError) {
+        return (
+            <MessageBar intent="error" className="mb-4">
+                <MessageBarBody>{queryError}</MessageBarBody>
+            </MessageBar>
+        );
+    }
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -277,9 +297,9 @@ export const TariffsPage = () => {
                 </div>
             </div>
 
-            {(queryError || mutationError) && (
+            {mutationError && (
                 <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError || mutationError}</MessageBarBody>
+                    <MessageBarBody>{mutationError}</MessageBarBody>
                 </MessageBar>
             )}
 
@@ -338,6 +358,24 @@ export const TariffsPage = () => {
                                         Почасовой
                                     </Button>
                                 </div>
+                            </Field>
+                            <Field label="Тема оформления">
+                                <Dropdown
+                                    placeholder="Выберите тему"
+                                    value={themes.find(t => t.themeId === form.themeId)?.name ?? (form.themeId === "" ? "Без темы" : "")}
+                                    selectedOptions={form.themeId ? [form.themeId] : []}
+                                    onOptionSelect={(_, data) => setForm(f => ({ ...f, themeId: data.optionValue ?? "" }))}
+                                    disabled={themesLoading}
+                                >
+                                    <Option key="none" value="" text="Без темы">
+                                        Без темы
+                                    </Option>
+                                    {themes.map((theme) => (
+                                        <Option key={theme.themeId} value={theme.themeId} text={theme.name}>
+                                            {theme.emoji} {theme.name}
+                                        </Option>
+                                    ))}
+                                </Dropdown>
                             </Field>
                             <Switch
                                 checked={form.isActive}

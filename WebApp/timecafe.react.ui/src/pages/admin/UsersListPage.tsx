@@ -11,10 +11,12 @@ import {
     Input,
     MessageBar,
     MessageBarBody,
+    Spinner,
     Title2,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
+import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Eye20Regular } from "@fluentui/react-icons";
 import { DataTable } from "@components/DataTable/DataTable";
@@ -28,6 +30,7 @@ import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
 
 const getUserStatusBadgeClass = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -46,8 +49,19 @@ const ProfileNameCell = ({ user }: { user: User }) => {
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : (user.name || NO_DATA);
     return (
-        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}>
-            <TableCellLayout truncate media={<Avatar name={displayName || user.email} />}>
+        <HasPermission 
+            can={Permissions.UserProfileProfileRead} 
+            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}
+        >
+            <TableCellLayout 
+                truncate 
+                media={
+                    <SecureAvatar 
+                        name={displayName || user.email} 
+                        photoUrl={profile?.photoUrl} 
+                    />
+                }
+            >
                 {displayName}
             </TableCellLayout>
         </HasPermission>
@@ -107,6 +121,7 @@ const BalanceCell = ({ user }: { user: User }) => {
 export const UsersListPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -142,78 +157,103 @@ export const UsersListPage = () => {
     }), []);
 
     const columns: TableColumnDefinition<User>[] = useMemo(
-        () => [
-            createTableColumn<User>({
-                columnId: "user",
-                compare: (a, b) => (a.name ?? "").localeCompare(b.name ?? ""),
-                renderHeaderCell: () => "Пользователь",
-                renderCell: (user) => <ProfileNameCell user={user} />,
-            }),
-            createTableColumn<User>({
-                columnId: "email",
-                compare: (a, b) => a.email.localeCompare(b.email),
-                renderHeaderCell: () => "Email",
-                renderCell: (user) => (
-                    <TableCellLayout truncate>{user.email}</TableCellLayout>
-                ),
-            }),
-            createTableColumn<User>({
-                columnId: "phone",
-                compare: () => 0,
-                renderHeaderCell: () => "Телефон",
-                renderCell: (user) => <ProfilePhoneCell user={user} />,
-            }),
-            createTableColumn<User>({
-                columnId: "role",
-                compare: (a, b) => a.role.localeCompare(b.role),
-                renderHeaderCell: () => "Роль",
-                renderCell: (user) => (
-                    <TableCellLayout truncate>
-                        <Badge appearance="outline">{user.role}</Badge>
-                    </TableCellLayout>
-                ),
-            }),
-            createTableColumn<User>({
-                columnId: "authStatus",
-                compare: (a, b) => a.status.localeCompare(b.status),
-                renderHeaderCell: () => "Статус аккаунта",
-                renderCell: (user) => (
-                    <TableCellLayout truncate>
-                        <Badge
-                            appearance="tint"
-                            shape="rounded"
-                            className={getUserStatusBadgeClass(user.status)}
-                        >
-                            {user.status}
-                        </Badge>
-                    </TableCellLayout>
-                ),
-            }),
-            createTableColumn<User>({
-                columnId: "profileStatus",
-                compare: () => 0,
-                renderHeaderCell: () => "Статус профиля",
-                renderCell: (user) => <ProfileStatusCell user={user} />,
-            }),
-            createTableColumn<User>({
-                columnId: "balance",
-                compare: () => 0,
-                renderHeaderCell: () => "Баланс",
-                renderCell: (user) => <BalanceCell user={user} />,
-            }),
-            createTableColumn<User>({
-                columnId: "actions",
-                compare: () => 0,
-                renderHeaderCell: () => "Действия",
-                renderCell: (user) => (
-                    <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)}>
-                        Открыть
-                    </Button>
-                ),
-            }),
-        ],
-        [sizes, navigate]
+        () => {
+            const allColumns: (TableColumnDefinition<User> & { permission?: string })[] = [
+                createTableColumn<User>({
+                    columnId: "user",
+                    compare: (a, b) => (a.name ?? "").localeCompare(b.name ?? ""),
+                    renderHeaderCell: () => "Пользователь",
+                    renderCell: (user) => <ProfileNameCell user={user} />,
+                }),
+                createTableColumn<User>({
+                    columnId: "email",
+                    compare: (a, b) => a.email.localeCompare(b.email),
+                    renderHeaderCell: () => "Email",
+                    renderCell: (user) => (
+                        <TableCellLayout truncate>{user.email}</TableCellLayout>
+                    ),
+                }),
+                {
+                    ...createTableColumn<User>({
+                        columnId: "phone",
+                        compare: () => 0,
+                        renderHeaderCell: () => "Телефон",
+                        renderCell: (user) => <ProfilePhoneCell user={user} />,
+                    }),
+                    permission: Permissions.UserProfileProfileRead
+                },
+                createTableColumn<User>({
+                    columnId: "role",
+                    compare: (a, b) => a.role.localeCompare(b.role),
+                    renderHeaderCell: () => "Роль",
+                    renderCell: (user) => (
+                        <TableCellLayout truncate>
+                            <Badge appearance="outline">{user.role}</Badge>
+                        </TableCellLayout>
+                    ),
+                }),
+                createTableColumn<User>({
+                    columnId: "authStatus",
+                    compare: (a, b) => a.status.localeCompare(b.status),
+                    renderHeaderCell: () => "Статус аккаунта",
+                    renderCell: (user) => (
+                        <TableCellLayout truncate>
+                            <Badge
+                                appearance="tint"
+                                shape="rounded"
+                                className={getUserStatusBadgeClass(user.status)}
+                            >
+                                {user.status}
+                            </Badge>
+                        </TableCellLayout>
+                    ),
+                }),
+                {
+                    ...createTableColumn<User>({
+                        columnId: "profileStatus",
+                        compare: () => 0,
+                        renderHeaderCell: () => "Статус профиля",
+                        renderCell: (user) => <ProfileStatusCell user={user} />,
+                    }),
+                    permission: Permissions.UserProfileProfileRead
+                },
+                {
+                    ...createTableColumn<User>({
+                        columnId: "balance",
+                        compare: () => 0,
+                        renderHeaderCell: () => "Баланс",
+                        renderCell: (user) => <BalanceCell user={user} />,
+                    }),
+                    permission: Permissions.BillingBalanceRead
+                },
+                createTableColumn<User>({
+                    columnId: "actions",
+                    compare: () => 0,
+                    renderHeaderCell: () => "Действия",
+                    renderCell: (user) => (
+                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)}>
+                            Открыть
+                        </Button>
+                    ),
+                }),
+            ];
+
+            return allColumns.filter(col => !col.permission || has(col.permission as any));
+        },
+        [sizes, navigate, has]
     );
+
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Spinner label="Загрузка пользователей..." /></div>;
+    }
+
+    if (errorMessage) {
+        return (
+            <MessageBar intent="error" className="mb-4">
+                <MessageBarBody>{errorMessage}</MessageBarBody>
+            </MessageBar>
+        );
+    }
 
     return (
         <div>
@@ -223,12 +263,6 @@ export const UsersListPage = () => {
                     <Body2 block>{totalCount} зарегистрированных пользователей</Body2>
                 </div>
             </div>
-
-            {errorMessage && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{errorMessage}</MessageBarBody>
-                </MessageBar>
-            )}
 
             <div className="flex gap-4 flex-wrap items-end mb-4">
                 <Field label="Поиск по email" size={sizes.field}>

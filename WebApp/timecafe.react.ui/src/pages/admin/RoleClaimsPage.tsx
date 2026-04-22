@@ -249,7 +249,36 @@ export const RoleClaimsPage = () => {
 
     const claimsError2 = claimsError ? getRtkErrorMessage(claimsError as FetchBaseQueryError) : null;
 
-    if (claimsLoading || permsLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
+    if (claimsLoading || permsLoading) {
+        return <div className="flex justify-center p-20"><Spinner label="Загрузка прав..." /></div>;
+    }
+
+    if (claimsError2) {
+        return (
+            <div className="p-8">
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/roles")} className="mb-4">
+                    Назад к ролям
+                </Button>
+                <MessageBar intent="error">
+                    <MessageBarBody>{claimsError2}</MessageBarBody>
+                </MessageBar>
+            </div>
+        );
+    }
+
+    if (!normalizedRoleName) {
+        return (
+            <div className="p-8">
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/roles")} className="mb-4">
+                    Назад к ролям
+                </Button>
+                <Card size={sizes.card}>
+                    <Title2>Роль не указана</Title2>
+                    <Body2 block>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -257,84 +286,75 @@ export const RoleClaimsPage = () => {
                 Назад к ролям
             </Button>
 
-            {!normalizedRoleName ? (
-                <Card size={sizes.card}>
-                    <Title2>Роль не указана</Title2>
-                    <Body2 block>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
-                </Card>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                <div>
+                    <Title2>Permissions роли</Title2>
+                    <Body2 block className="flex items-center gap-2 mt-1">
+                        <Badge appearance="filled" size="large">{normalizedRoleName}</Badge>
+                        <span className="text-[var(--colorNeutralForeground3)]">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
+                    </Body2>
+                </div>
+                <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
+                    <Button
+                        appearance="primary"
+                        size={sizes.button}
+                        icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
+                        onClick={handleSave}
+                        disabled={saving}
+                    >
+                        Сохранить
+                    </Button>
+                </HasPermission>
+            </div>
+
+            {mutationError && (
+                <MessageBar intent="error" className="mb-4">
+                    <MessageBarBody>{mutationError}</MessageBarBody>
+                </MessageBar>
+            )}
+
+            {saved && (
+                <MessageBar intent="success" className="mb-4">
+                    <MessageBarBody>Permissions сохранены</MessageBarBody>
+                </MessageBar>
+            )}
+
+            {allPermissions.length === 0 ? (
+                <Body2>Нет доступных permissions</Body2>
             ) : (
-                <>
-                    <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                        <div>
-                            <Title2>Permissions роли</Title2>
-                            <Body2 block className="flex items-center gap-2 mt-1">
-                                <Badge appearance="filled" size="large">{normalizedRoleName}</Badge>
-                                <span className="text-[var(--colorNeutralForeground3)]">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
-                            </Body2>
-                        </div>
-                        <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
-                            <Button
-                                appearance="primary"
-                                size={sizes.button}
-                                icon={saving ? <Spinner size="tiny" /> : <Save20Regular />}
-                                onClick={handleSave}
-                                disabled={saving}
-                            >
-                                Сохранить
-                            </Button>
-                        </HasPermission>
-                    </div>
+                <FlatTree {...flatTree.getTreeProps()} aria-label="Permissions">
+                    {Array.from(flatTree.items(), (item) => {
+                        const { content, service, entity, ...treeItemProps } = item.getTreeItemProps() as any;
 
-                    {(claimsError2 || mutationError) && (
-                        <MessageBar intent="error" className="mb-4">
-                            <MessageBarBody>{claimsError2 || mutationError}</MessageBarBody>
-                        </MessageBar>
-                    )}
+                        let badgeCount = 0;
+                        if (service && !entity) {
+                            const servicePerms = Object.values(groupedPermissions[service]).flat();
+                            badgeCount = servicePerms.filter(p => selectedLeaves.has(p)).length;
+                        } else if (service && entity) {
+                            const entityPerms = groupedPermissions[service][entity];
+                            badgeCount = entityPerms.filter(p => selectedLeaves.has(p)).length;
+                        }
 
-                    {saved && (
-                        <MessageBar intent="success" className="mb-4">
-                            <MessageBarBody>Permissions сохранены</MessageBarBody>
-                        </MessageBar>
-                    )}
-
-                    {allPermissions.length === 0 ? (
-                        <Body2>Нет доступных permissions</Body2>
-                    ) : (
-                        <FlatTree {...flatTree.getTreeProps()} aria-label="Permissions">
-                            {Array.from(flatTree.items(), (item) => {
-                                const { content, service, entity, ...treeItemProps } = item.getTreeItemProps() as any;
-
-                                let badgeCount = 0;
-                                if (service && !entity) {
-                                    const servicePerms = Object.values(groupedPermissions[service]).flat();
-                                    badgeCount = servicePerms.filter(p => selectedLeaves.has(p)).length;
-                                } else if (service && entity) {
-                                    const entityPerms = groupedPermissions[service][entity];
-                                    badgeCount = entityPerms.filter(p => selectedLeaves.has(p)).length;
-                                }
-
-                                return (
-                                    <FlatTreeItem {...treeItemProps} key={item.value}>
-                                        <TreeItemLayout
-                                            aside={
-                                                badgeCount > 0 ? (
-                                                    <CounterBadge
-                                                        count={badgeCount}
-                                                        color="brand"
-                                                        size="small"
-                                                        overflowCount={99}
-                                                    />
-                                                ) : undefined
-                                            }
-                                        >
-                                            {content}
-                                        </TreeItemLayout>
-                                    </FlatTreeItem>
-                                );
-                            })}
-                        </FlatTree>
-                    )}
-                </>
+                        return (
+                            <FlatTreeItem {...treeItemProps} key={item.value}>
+                                <TreeItemLayout
+                                    aside={
+                                        badgeCount > 0 ? (
+                                            <CounterBadge
+                                                count={badgeCount}
+                                                color="brand"
+                                                size="small"
+                                                overflowCount={99}
+                                            />
+                                        ) : undefined
+                                    }
+                                >
+                                    {content}
+                                </TreeItemLayout>
+                            </FlatTreeItem>
+                        );
+                    })}
+                </FlatTree>
             )}
         </div>
     );

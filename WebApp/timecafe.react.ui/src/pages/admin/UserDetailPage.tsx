@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useCallback, useMemo, useState } from "react";
 import { type TableColumnDefinition, type TableColumnSizingOptions, Tooltip } from "@fluentui/react-components";
 import {
-    Avatar,
     Badge,
     Body1,
     Body2,
@@ -26,6 +25,7 @@ import {
     Title2,
     Title3,
 } from "@fluentui/react-components";
+import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
 import { useGetUserByIdQuery } from "@store/api/adminApi";
 import { useGetBalanceQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
@@ -334,7 +334,11 @@ export const UserDetailPage = () => {
             <Card size={sizes.card}>
                 <div className="flex items-start gap-4 flex-wrap ">
                     <div className="flex items-start gap-4 flex-1">
-                        <Avatar name={displayName} size={72} />
+                        <SecureAvatar 
+                            name={displayName} 
+                            size={72} 
+                            photoUrl={profile?.photoUrl} 
+                        />
                         <div className="flex gap-2 flex-wrap  flex-col">
                             <Title2>{displayName}</Title2>
                             <Body1 block>{contactLine}</Body1>
@@ -352,11 +356,6 @@ export const UserDetailPage = () => {
                         <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
                             <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
                                 Роли
-                            </Button>
-                        </HasPermission>
-                        <HasPermission can={Permissions.UserProfileProfileUpdate}>
-                            <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}`)}>
-                                Редактировать
                             </Button>
                         </HasPermission>
                     </div>

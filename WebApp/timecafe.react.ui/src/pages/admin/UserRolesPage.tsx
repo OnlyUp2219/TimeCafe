@@ -62,7 +62,9 @@ export const UserRolesPage = () => {
         }
     }, [id, removeRole]);
 
-    if (userLoading || rolesLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
+    if (userLoading || rolesLoading) {
+        return <div className="flex justify-center p-20"><Spinner label="Загрузка ролей пользователя..." /></div>;
+    }
 
     return (
         <div>

@@ -3,6 +3,8 @@ import {
     Body2,
     Button,
     Card,
+    CardHeader,
+    CardFooter,
     Caption1,
     Divider,
     Tag,
@@ -11,10 +13,11 @@ import {
     Tooltip,
     tokens,
 } from "@fluentui/react-components";
-import type {FC} from "react";
-import {useMemo} from "react";
-import {BillingType as BillingTypeEnum, type Tariff} from "@app-types/tariff";
-import {formatMoneyByN} from "@utility/formatMoney";
+import type { FC } from "react";
+import { useMemo } from "react";
+import { BillingType as BillingTypeEnum, type Tariff } from "@app-types/tariff";
+import { formatMoneyByN } from "@utility/formatMoney";
+import { parseThemeConfig, getThemeStyles, getPatternStyles } from "@utility/themeStyles";
 
 type Props = {
     tariff: Tariff;
@@ -22,93 +25,100 @@ type Props = {
     onSelect?: (tariffId: string) => void;
 };
 
-export const TariffCard: FC<Props> = ({tariff, selected = false, onSelect}) => {
+export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) => {
 
-    const accent = useMemo(() => {
-        if (tariff.accent === "green") return tokens.colorPaletteLightGreenBackground2;
-        if (tariff.accent === "pink") return tokens.colorPaletteMagentaBackground2;
-        if (tariff.accent === "purple") return tokens.colorPalettePurpleBackground2;
-        return tokens.colorBrandBackground2;
-    }, [tariff.accent]);
+    const themeStyles = useMemo(() => {
+        // @ts-ignore
+        const config = parseThemeConfig(tariff.themeColors || tariff.colors);
+        return getThemeStyles(config);
+    }, [tariff]);
+
+    const patternStyles = useMemo(() => {
+        // @ts-ignore
+        const config = parseThemeConfig(tariff.themeColors || tariff.colors);
+        return getPatternStyles(config);
+    }, [tariff]);
 
     const rateLabel = tariff.billingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный";
     const unitLabel = tariff.billingType === BillingTypeEnum.Hourly ? "/ час" : "/ мин";
     const rateValue = tariff.billingType === BillingTypeEnum.Hourly ? tariff.pricePerMinute * 60 : tariff.pricePerMinute;
 
-
     return (
         <Card
-            className="sm:w-[360px] sm:max-w-[82vw]"
+            className="sm:w-[360px] sm:max-w-[82vw] transition-all duration-300"
             style={{
-                border: `1px solid ${selected ? tokens.colorBrandStroke1 : tokens.colorNeutralStroke1}`,
+                ...themeStyles,
+                border: `1px solid ${selected ? tokens.colorBrandStroke1 : "transparent"}`,
                 boxShadow: selected ? tokens.shadow16 : tokens.shadow8,
-                backgroundImage: `radial-gradient(720px 320px at 20% 0%, ${accent} 0%, transparent 60%), linear-gradient(180deg, ${tokens.colorNeutralBackground1} 0%, ${tokens.colorNeutralBackground2} 100%)`,
+                position: "relative",
+                overflow: "hidden"
             }}
         >
-            <div className="flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-3">
-                    <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <Title3 truncate wrap={false} block>
-                                {tariff.name}
-                            </Title3>
-                            {tariff.recommended && (
-                                <Tag className="!hidden sm:!block" appearance="brand" size="small">
-                                    Рекомендуем
-                                </Tag>
-                            )}
-                            {!tariff.isActive && (
-                                <Tag appearance="outline" size="small">
-                                    Неактивен
-                                </Tag>
-                            )}
-                        </div>
-                        <Body2 className="!line-clamp-2 min-h-[2.75rem]">
-                            {tariff.description}
-                        </Body2>
-                    </div>
-
-                    <div>
-                        {selected ? (
-                            <Badge appearance="tint" size="large">
-                                Выбран
-                            </Badge>
-                        ) : (
-                            <Badge appearance="ghost" size="large">
-                                Тариф
-                            </Badge>
+            <div style={patternStyles} />
+            <CardHeader
+                className="relative z-10"
+                image={tariff.themeEmoji && <span className="text-3xl">{tariff.themeEmoji}</span>}
+                header={
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <Title3 truncate wrap={false} block style={{ color: themeStyles.color }}>
+                            {tariff.name}
+                        </Title3>
+                        {tariff.recommended && (
+                            <Tag appearance="brand" size="small">
+                                Рекомендуем
+                            </Tag>
+                        )}
+                        {!tariff.isActive && (
+                            <Tag appearance="outline" size="small">
+                                Неактивен
+                            </Tag>
                         )}
                     </div>
-                </div>
+                }
+                description={
+                    <Body2 className="!line-clamp-2 min-h-[2.75rem]" style={{ color: themeStyles.color, opacity: 0.8 }}>
+                        {tariff.description}
+                    </Body2>
+                }
+                action={
+                    selected ? (
+                        <Badge appearance="tint" size="large">
+                            Выбран
+                        </Badge>
+                    ) : (
+                        <Badge appearance="ghost" size="large" style={{ color: themeStyles.color }}>
+                            Тариф
+                        </Badge>
+                    )
+                }
+            />
 
-                <Divider appearance="brand" className="divider grow-0"/>
+            <Divider style={{ opacity: 0.3 }} className="relative z-10" />
 
-                <div className="flex flex-wrap gap-x-10">
-                    <div className="flex flex-col gap-1">
-                        <Caption1>{rateLabel}</Caption1>
-                        <Title3 block>
-                            {formatMoneyByN(rateValue)} {unitLabel}
-                        </Title3>
-                    </div>
-                </div>
-
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        appearance={selected ? "primary" : "secondary"}
-                        onClick={() => onSelect?.(tariff.tariffId)}
-                        disabled={!tariff.isActive}
-                    >
-                        {selected ? "Выбран" : "Выбрать"}
-                    </Button>
-                    <Tooltip content="Детали (скоро)" relationship="label">
-                        <span>
-                            <Button appearance="secondary" disabled>
-                                <Text truncate wrap={false}>Детали (скоро)</Text>
-                            </Button>
-                        </span>
-                    </Tooltip>
-                </div>
+            <div className="flex flex-col gap-1 px-3 relative z-10">
+                <Caption1 style={{ color: themeStyles.color, opacity: 0.7 }}>{rateLabel}</Caption1>
+                <Title3 block style={{ color: themeStyles.color }}>
+                    {formatMoneyByN(rateValue)} {unitLabel}
+                </Title3>
             </div>
+
+            <CardFooter className="mt-2 relative z-10">
+                <Button
+                    appearance={selected ? "primary" : "secondary"}
+                    style={!selected ? { backgroundColor: "rgba(255,255,255,0.1)", color: themeStyles.color, backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.2)" } : {}}
+                    onClick={() => onSelect?.(tariff.tariffId)}
+                    disabled={!tariff.isActive}
+                >
+                    {selected ? "Выбран" : "Выбрать"}
+                </Button>
+                <Tooltip content="Детали (скоро)" relationship="label">
+                    <span>
+                        <Button appearance="secondary" disabled style={{ backgroundColor: "rgba(255,255,255,0.05)", color: themeStyles.color, border: "none" }}>
+                            <Text truncate wrap={false}>Детали</Text>
+                        </Button>
+                    </span>
+                </Tooltip>
+            </CardFooter>
         </Card>
     );
 };

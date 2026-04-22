@@ -11,6 +11,7 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Spinner,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {Eye20Regular} from "@fluentui/react-icons";
@@ -147,6 +148,18 @@ export const VisitsPage = () => {
         }),
     ], [navigate]);
 
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Spinner label="Загрузка визитов..." /></div>;
+    }
+
+    if (queryError) {
+        return (
+            <MessageBar intent="error" className="mb-4">
+                <MessageBarBody>{queryError}</MessageBarBody>
+            </MessageBar>
+        );
+    }
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -155,12 +168,6 @@ export const VisitsPage = () => {
                     <Body2 block>{totalCount} визитов</Body2>
                 </div>
             </div>
-
-            {queryError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError}</MessageBarBody>
-                </MessageBar>
-            )}
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable

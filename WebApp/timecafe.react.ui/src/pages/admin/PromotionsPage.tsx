@@ -227,6 +227,18 @@ export const PromotionsPage = () => {
         }),
     ], [sizes, handleToggleActive, openEdit, handleDelete]);
 
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Spinner label="Загрузка акций..." /></div>;
+    }
+
+    if (queryError) {
+        return (
+            <MessageBar intent="error" className="mb-4">
+                <MessageBarBody>{queryError}</MessageBarBody>
+            </MessageBar>
+        );
+    }
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -241,9 +253,9 @@ export const PromotionsPage = () => {
                 </HasPermission>
             </div>
 
-            {(queryError || mutationError) && (
+            {mutationError && (
                 <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError || mutationError}</MessageBarBody>
+                    <MessageBarBody>{mutationError}</MessageBarBody>
                 </MessageBar>
             )}
 

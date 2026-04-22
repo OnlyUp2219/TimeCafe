@@ -124,6 +124,18 @@ export const RolesPage = () => {
         }),
     ], [handleDelete, navigate]);
 
+    if (isLoading) {
+        return <div className="flex justify-center p-12"><Spinner label="Загрузка ролей..." /></div>;
+    }
+
+    if (queryError) {
+        return (
+            <MessageBar intent="error" className="mb-4">
+                <MessageBarBody>{queryError}</MessageBarBody>
+            </MessageBar>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
@@ -138,9 +150,9 @@ export const RolesPage = () => {
                 </HasPermission>
             </div>
 
-            {(queryError || mutationError) && (
+            {mutationError && (
                 <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError || mutationError}</MessageBarBody>
+                    <MessageBarBody>{mutationError}</MessageBarBody>
                 </MessageBar>
             )}
 
