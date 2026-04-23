@@ -17,7 +17,7 @@ import type { FC } from "react";
 import { useMemo } from "react";
 import { BillingType as BillingTypeEnum, type Tariff } from "@app-types/tariff";
 import { formatMoneyByN } from "@utility/formatMoney";
-import { parseThemeConfig, getThemeStyles, getPatternStyles } from "@utility/themeStyles";
+import { parseThemeConfig, getThemeStyles, getPatternLayerStyles } from "@utility/themeStyles";
 
 type Props = {
     tariff: Tariff;
@@ -27,17 +27,8 @@ type Props = {
 
 export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) => {
 
-    const themeStyles = useMemo(() => {
-        // @ts-ignore
-        const config = parseThemeConfig(tariff.themeColors || tariff.colors);
-        return getThemeStyles(config);
-    }, [tariff]);
-
-    const patternStyles = useMemo(() => {
-        // @ts-ignore
-        const config = parseThemeConfig(tariff.themeColors || tariff.colors);
-        return getPatternStyles(config);
-    }, [tariff]);
+    const config = useMemo(() => parseThemeConfig(tariff.themeColors || tariff.colors), [tariff]);
+    const themeStyles = useMemo(() => getThemeStyles(config), [config]);
 
     const rateLabel = tariff.billingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный";
     const unitLabel = tariff.billingType === BillingTypeEnum.Hourly ? "/ час" : "/ мин";
@@ -54,7 +45,9 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) =>
                 overflow: "hidden"
             }}
         >
-            <div style={patternStyles} />
+            {(config.patterns || []).map((layer, idx) => (
+                <div key={idx} style={getPatternLayerStyles(layer)} />
+            ))}
             <CardHeader
                 className="relative z-10"
                 image={tariff.themeEmoji && <span className="text-3xl">{tariff.themeEmoji}</span>}

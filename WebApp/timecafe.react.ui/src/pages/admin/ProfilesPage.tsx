@@ -20,6 +20,8 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {usePermissions} from "@hooks/usePermissions";
+import {Permissions} from "@shared/auth/permissions";
 
 const statusLabel = (s: number) => {
     switch (s) {
@@ -49,6 +51,7 @@ const genderLabel = (g: number) => {
 
 export const ProfilesPage = () => {
     const {sizes} = useComponentSize();
+    const {has} = usePermissions();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
@@ -70,46 +73,50 @@ export const ProfilesPage = () => {
         status: {minWidth: 100, defaultWidth: 140, idealWidth: 180},
     }), []);
 
-    const columns: TableColumnDefinition<Profile>[] = useMemo(() => [
-        createTableColumn<Profile>({
-            columnId: "name",
-            compare: (a, b) => a.lastName.localeCompare(b.lastName),
-            renderHeaderCell: () => "Имя",
-            renderCell: (p) => (
-                <TableCellLayout truncate media={<Avatar name={`${p.firstName} ${p.lastName}`} image={p.photoUrl ? {src: p.photoUrl} : undefined} />}>
-                    <Body1>{p.lastName} {p.firstName} {p.middleName ?? ""}</Body1>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<Profile>({
-            columnId: "email",
-            compare: (a, b) => (a.email ?? "").localeCompare(b.email ?? ""),
-            renderHeaderCell: () => "Email",
-            renderCell: (p) => <TableCellLayout truncate>{p.email || "—"}</TableCellLayout>,
-        }),
-        createTableColumn<Profile>({
-            columnId: "gender",
-            compare: (a, b) => a.gender - b.gender,
-            renderHeaderCell: () => "Пол",
-            renderCell: (p) => <TableCellLayout truncate>{genderLabel(p.gender)}</TableCellLayout>,
-        }),
-        createTableColumn<Profile>({
-            columnId: "birthDate",
-            compare: (a, b) => (a.birthDate ?? "").localeCompare(b.birthDate ?? ""),
-            renderHeaderCell: () => "Дата рождения",
-            renderCell: (p) => <TableCellLayout truncate>{p.birthDate ? new Date(p.birthDate).toLocaleDateString("ru-RU") : "—"}</TableCellLayout>,
-        }),
-        createTableColumn<Profile>({
-            columnId: "status",
-            compare: (a, b) => a.profileStatus - b.profileStatus,
-            renderHeaderCell: () => "Статус",
-            renderCell: (p) => (
-                <TableCellLayout truncate>
-                    <Badge appearance="tint" color={statusColor(p.profileStatus)}>{statusLabel(p.profileStatus)}</Badge>
-                </TableCellLayout>
-            ),
-        }),
-    ], []);
+    const columns: TableColumnDefinition<Profile>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<Profile> & { permission?: string })[] = [
+            createTableColumn<Profile>({
+                columnId: "name",
+                compare: (a, b) => a.lastName.localeCompare(b.lastName),
+                renderHeaderCell: () => "Имя",
+                renderCell: (p) => (
+                    <TableCellLayout truncate media={<Avatar name={`${p.firstName} ${p.lastName}`} image={p.photoUrl ? {src: p.photoUrl} : undefined} />}>
+                        <Body1>{p.lastName} {p.firstName} {p.middleName ?? ""}</Body1>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<Profile>({
+                columnId: "email",
+                compare: (a, b) => (a.email ?? "").localeCompare(b.email ?? ""),
+                renderHeaderCell: () => "Email",
+                renderCell: (p) => <TableCellLayout truncate>{p.email || "—"}</TableCellLayout>,
+            }),
+            createTableColumn<Profile>({
+                columnId: "gender",
+                compare: (a, b) => a.gender - b.gender,
+                renderHeaderCell: () => "Пол",
+                renderCell: (p) => <TableCellLayout truncate>{genderLabel(p.gender)}</TableCellLayout>,
+            }),
+            createTableColumn<Profile>({
+                columnId: "birthDate",
+                compare: (a, b) => (a.birthDate ?? "").localeCompare(b.birthDate ?? ""),
+                renderHeaderCell: () => "Дата рождения",
+                renderCell: (p) => <TableCellLayout truncate>{p.birthDate ? new Date(p.birthDate).toLocaleDateString("ru-RU") : "—"}</TableCellLayout>,
+            }),
+            createTableColumn<Profile>({
+                columnId: "status",
+                compare: (a, b) => a.profileStatus - b.profileStatus,
+                renderHeaderCell: () => "Статус",
+                renderCell: (p) => (
+                    <TableCellLayout truncate>
+                        <Badge appearance="tint" color={statusColor(p.profileStatus)}>{statusLabel(p.profileStatus)}</Badge>
+                    </TableCellLayout>
+                ),
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [has]);
 
     return (
         <div>

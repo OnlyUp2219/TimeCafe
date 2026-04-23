@@ -18,4 +18,6 @@ export type Tariff = {
 
     themeName?: string;
     themeEmoji?: string | null;
+    themeColors?: string | null;
+    colors?: string | null;
 };

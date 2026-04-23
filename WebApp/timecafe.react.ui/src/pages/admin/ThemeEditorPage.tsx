@@ -27,8 +27,22 @@ import {
     PopoverSurface,
     PopoverTrigger,
     Tooltip,
+    Textarea,
+    Switch,
+    TabList,
+    Tab,
+    Overflow,
+    OverflowItem,
+    useOverflowMenu,
+    useIsOverflowItemVisible,
+    Menu,
+    MenuTrigger,
+    MenuPopover,
+    MenuList,
+    MenuItem,
+    MenuButton,
 } from "@fluentui/react-components";
-import { ArrowLeft20Regular, Color20Regular, Add20Regular, Delete20Regular } from "@fluentui/react-icons";
+import { ArrowLeft20Regular, Color20Regular, Add20Regular, Delete20Regular, MoreHorizontal20Regular } from "@fluentui/react-icons";
 import { tinycolor } from "@ctrl/tinycolor";
 import {
     useGetAllThemesQuery,
@@ -38,15 +52,15 @@ import {
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { EmojiPicker } from "@components/EmojiPicker/EmojiPicker";
-import { parseThemeConfig, getThemeStyles, getPatternStyles, type ThemeConfig } from "@utility/themeStyles";
+import { parseThemeConfig, getThemeStyles, getPatternLayerStyles, type ThemeConfig, type PatternLayer } from "@utility/themeStyles";
 
 const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
     const color = useMemo(() => tinycolor(value).toHsv(), [value]);
 
     const handleColorChange = (_: any, data: { color: any }) => {
         const tc = tinycolor(data.color);
-        const newColor = (data.color.a ?? 1) < 1 
-            ? tc.toHex8String() 
+        const newColor = (data.color.a ?? 1) < 1
+            ? tc.toHex8String()
             : tc.toHexString();
         onChange(newColor);
     };
@@ -84,12 +98,12 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
                             </div>
                         </FluentColorPicker>
                         <div className="flex gap-2 items-center">
-                           <Input 
-                             size="small" 
-                             value={displayValue} 
-                             onChange={(_, d) => onChange(d.value)}
-                             className="grow font-mono uppercase"
-                           />
+                            <Input
+                                size="large"
+                                value={displayValue}
+                                onChange={(_, d) => onChange(d.value)}
+                                className="grow font-mono uppercase text-lg"
+                            />
                         </div>
                     </div>
                 </PopoverSurface>
@@ -101,7 +115,6 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
 
 const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { config: ThemeConfig; emoji: string; name: string; textColor: string, className: string }) => {
     const styles = useMemo(() => getThemeStyles(config), [config]);
-    const pStyles = useMemo(() => getPatternStyles(config), [config]);
 
     return (
         <Card
@@ -111,13 +124,16 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
                 minHeight: "240px",
             }}
         >
-            <div style={pStyles} />
+            <div className="absolute inset-0 bg-black/10 z-0" />
+            {(config.patterns || []).map((layer, idx) => (
+                <div key={idx} style={getPatternLayerStyles(layer)} />
+            ))}
             <CardHeader
                 className="relative z-10"
                 image={<span style={{ fontSize: "36px" }}>{emoji}</span>}
                 header={<Title2 style={{ color: textColor }}>{name || "Название тарифа"}</Title2>}
                 description={
-                    <Body2 style={{ color: textColor, opacity: 0.8 }}>
+                    <Body2 style={{ color: textColor, opacity: 0.8 }} size={400}>
                         Здесь будет описание вашего тарифа. Используйте яркие темы для привлечения внимания гостей!
                     </Body2>
                 }
@@ -126,12 +142,15 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
             <Divider style={{ color: textColor, opacity: 0.3 }} className="relative z-10" />
 
             <div className="flex flex-col gap-1 px-3 relative z-10">
-                <Caption1 style={{ color: textColor, opacity: 0.7 }}>Стандартный</Caption1>
+                <Caption1 style={{ color: textColor, opacity: 0.7 }} size={300}>Стандартный</Caption1>
                 <Title2 style={{ color: textColor }}>15.00 ₽ / мин</Title2>
             </div>
 
             <CardFooter className="relative z-10">
-                <Button appearance="primary" style={{ backgroundColor: "rgba(255,255,255,0.2)", color: textColor, }}>
+                <Button 
+                    appearance="primary" 
+                    style={{ backgroundColor: "rgba(255,255,255,0.2)", color: textColor }}
+                >
                     Выбрать тариф
                 </Button>
             </CardFooter>
@@ -139,26 +158,55 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
     );
 });
 
+
+const OverflowMenu = ({ onTabSelect, patterns }: { onTabSelect: (id: string) => void; patterns: PatternLayer[] }) => {
+    const { ref, isOverflowing, overflowCount } = useOverflowMenu<HTMLButtonElement>();
+
+    if (!isOverflowing) return null;
+
+    return (
+        <Menu hasIcons>
+            <MenuTrigger disableButtonEnhancement>
+                <Button
+                    ref={ref}
+                    appearance="transparent"
+                    role="tab"
+                    size="large"
+                    icon={<MoreHorizontal20Regular />}
+                >
+                    +{overflowCount}
+                </Button>
+            </MenuTrigger>
+            <MenuPopover>
+                <MenuList>
+                    {patterns.map((layer, i) => (
+                        <OverflowMenuItem key={i} id={i.toString()} name={`Слой #${i + 1}`} onClick={() => onTabSelect(i.toString())} layer={layer} />
+                    ))}
+                </MenuList>
+            </MenuPopover>
+        </Menu>
+    );
+};
+
+const OverflowMenuItem = ({ id, name, onClick, layer }: { id: string; name: string; onClick: () => void; layer: PatternLayer }) => {
+    const isVisible = useIsOverflowItemVisible(id);
+    if (isVisible) return null;
+    return <MenuItem onClick={onClick} icon={<MiniPreview layer={layer} />}>{name}</MenuItem>;
+};
+
 const emptyConfig: ThemeConfig = {
     type: "gradient",
     colors: ["#1a1a2e", "#16213e"],
     angle: 135,
     textColor: "#ffffff",
     blur: 0,
-    pattern: "none",
-    patternColor: "#ffffff33",
-    patternScale: 1,
-    patternAngle: 0,
-    patternSkewX: 0,
-    patternSkewY: 0,
-    patternTranslateX: 0,
-    patternTranslateY: 0,
-    patternOpacity: 0.5,
+    patterns: [],
 };
 
 export const ThemeEditorPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const [selectedTab, setSelectedTab] = useState<string>("0");
     const { data: themes = [], isLoading: loadingThemes } = useGetAllThemesQuery();
     const [createTheme, { isLoading: creating }] = useCreateThemeMutation();
     const [updateTheme, { isLoading: updating }] = useUpdateThemeMutation();
@@ -205,7 +253,7 @@ export const ThemeEditorPage = () => {
         }
     };
 
-    if (id && loadingThemes) return <Spinner size="huge" label="Загрузка темы..." className="p-20" />;
+    if (id && loadingThemes) return <Spinner size="huge" label="Загрузка темы..." />;
 
     return (
         <div className="flex flex-col gap-4">
@@ -243,7 +291,7 @@ export const ThemeEditorPage = () => {
                 </div>
 
             </div>
-            <Divider/>
+            <Divider />
             {error && (
                 <MessageBar intent="error" >
                     <MessageBarBody>{error}</MessageBarBody>
@@ -272,198 +320,327 @@ export const ThemeEditorPage = () => {
                         </div>
 
 
-                            <Subtitle1 >Базовый стиль</Subtitle1>
-                            <div className="flex gap-4" flex-wrap>
-                                <Field label="Тип заливки" size="large">
-                                    <Dropdown
-                                        size="large"
-                                        value={form.config.type === "gradient" ? "Градиент" : form.config.type === "mesh" ? "Мэш" : "Сплошной"}
-                                        selectedOptions={[form.config.type]}
-                                        onOptionSelect={(_, d) => setForm(f => ({
-                                            ...f,
-                                            config: { ...f.config, type: d.optionValue as any }
-                                        }))}
-                                    >
-                                        <Option value="solid" text="Сплошной">Сплошной</Option>
-                                        <Option value="gradient" text="Градиент">Градиент</Option>
-                                        <Option value="mesh" text="Мэш (fffuel)">Мэш (fffuel)</Option>
-                                    </Dropdown>
-                                </Field>
-                                <Field label="Цвет текста" size="large">
-                                    <ColorPicker
-                                        value={form.config.textColor}
-                                        onChange={(val) => setForm(f => ({ ...f, config: { ...f.config, textColor: val } }))}
-                                    />
-                                </Field>
-                            </div>
-
-                            <div>
-                                <Field label="Цвета палитры"  size="large">
-                                    <div className="flex flex-wrap gap-4 items-center">
-                                        {form.config.colors.map((c, i) => (
-                                            <Card size="large" key={i} className="flex !flex-row ">
-                                                <ColorPicker
-                                                    value={c}
-                                                    onChange={(val) => setForm(f => {
-                                                        const newColors = [...f.config.colors];
-                                                        newColors[i] = val;
-                                                        return { ...f, config: { ...f.config, colors: newColors } };
-                                                    })}
-                                                />
-                                                {form.config.colors.length > 1 && (
-                                                    <Tooltip content="Удалить" relationship="label">
-                                                        <Button
-                                                            appearance="secondary"
-                                                            icon={<Delete20Regular className="text-red-500" />}
-                                                            onClick={() => setForm(f => ({
-                                                                ...f,
-                                                                config: { ...f.config, colors: f.config.colors.filter((_, idx) => idx !== i) }
-                                                            }))}
-                                                        />
-                                                    </Tooltip>
-                                                )}
-                                            </Card>
-                                        ))}
-                                        {form.config.colors.length < 5 && (
-                                            <Tooltip content="Добавить новый цвет" relationship="label">
-                                                <Button
-                                                    appearance="outline"
-                                                    size="large"
-                                                    icon={<Add20Regular />}
-                                                    onClick={() => setForm(f => ({
-                                                        ...f,
-                                                        config: { ...f.config, colors: [...f.config.colors, "#ffffff"] }
-                                                    }))}
-                                                >
-                                                    Добавить цвет
-                                                </Button>
-                                            </Tooltip>
-                                        )}
-                                    </div>
-                                </Field>
-                            </div>
-
-                            <div className="flex flex-col gap-4 ">
-                                {form.config.type === "gradient" && (
-                                    <Field label={`Угол градиента: ${form.config.angle}°`} size="large">
-                                        <Slider
-                                            min={0}
-                                            max={360}
-                                            step={45}
-                                            value={form.config.angle}
-                                            onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, angle: d.value } }))}
-                                        />
-                                    </Field>
-                                )}
-                                <Field label={`Размытие (Blur): ${form.config.blur}px`} size="large">
-                                    <Slider
-                                        min={0}
-                                        max={20}
-                                        value={form.config.blur}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, blur: d.value } }))}
-                                    />
-                                </Field>
-                            </div>
-
-                        <Divider />
-
-                        <Subtitle1>Параметры узора</Subtitle1>
-                        <div className="flex flex-col gap-4">
-                            <Field label="Тип узора" size="large">
+                        <Subtitle1 >Базовый стиль</Subtitle1>
+                        <div className="flex flex-wrap gap-4">
+                            <Field label="Тип заливки" size="large">
                                 <Dropdown
                                     size="large"
-                                    value={form.config.pattern === "dots" ? "Точки" : form.config.pattern === "lines" ? "Линии" : form.config.pattern === "noise" ? "Шум" : "Нет"}
-                                    selectedOptions={[form.config.pattern || "none"]}
+                                    value={form.config.type === "gradient" ? "Градиент" : form.config.type === "mesh" ? "Мэш" : "Сплошной"}
+                                    selectedOptions={[form.config.type]}
                                     onOptionSelect={(_, d) => setForm(f => ({
                                         ...f,
-                                        config: { ...f.config, pattern: d.optionValue as any }
+                                        config: { ...f.config, type: d.optionValue as any }
                                     }))}
                                 >
-                                    <Option value="none" text="Нет">Нет</Option>
-                                    <Option value="dots" text="Точки">Точки</Option>
-                                    <Option value="lines" text="Линии">Линии</Option>
-                                    <Option value="noise" text="Шум">Шум</Option>
+                                    <Option value="solid" text="Сплошной">Сплошной</Option>
+                                    <Option value="gradient" text="Градиент">Градиент</Option>
+                                    <Option value="mesh" text="Мэш (fffuel)">Мэш (fffuel)</Option>
                                 </Dropdown>
                             </Field>
-                            {form.config.pattern && form.config.pattern !== "none" && form.config.pattern !== "noise" && (
-                                <Field label="Цвет узора" size="large">
-                                    <ColorPicker
-                                        value={form.config.patternColor || "#ffffff"}
-                                        onChange={(val) => setForm(f => ({ ...f, config: { ...f.config, patternColor: val } }))}
+                            <Field label="Цвет текста" size="large">
+                                <ColorPicker
+                                    value={form.config.textColor}
+                                    onChange={(val) => setForm(f => ({ ...f, config: { ...f.config, textColor: val } }))}
+                                />
+                            </Field>
+                        </div>
+
+                        <div>
+                            <Field label="Цвета палитры" size="large">
+                                <div className="flex flex-wrap gap-4 items-center">
+                                    {form.config.colors.map((c, i) => (
+                                        <Card size="large" key={i} className="flex !flex-row ">
+                                            <ColorPicker
+                                                value={c}
+                                                onChange={(val) => setForm(f => {
+                                                    const newColors = [...f.config.colors];
+                                                    newColors[i] = val;
+                                                    return { ...f, config: { ...f.config, colors: newColors } };
+                                                })}
+                                            />
+                                            {form.config.colors.length > 1 && (
+                                                <Tooltip content="Удалить" relationship="label">
+                                                    <Button
+                                                        appearance="secondary"
+                                                        icon={<Delete20Regular className="text-red-500" />}
+                                                        onClick={() => setForm(f => ({
+                                                            ...f,
+                                                            config: { ...f.config, colors: f.config.colors.filter((_, idx) => idx !== i) }
+                                                        }))}
+                                                    />
+                                                </Tooltip>
+                                            )}
+                                        </Card>
+                                    ))}
+                                    {form.config.colors.length < 5 && (
+                                        <Tooltip content="Добавить новый цвет" relationship="label">
+                                            <Button
+                                                appearance="outline"
+                                                size="large"
+                                                icon={<Add20Regular />}
+                                                onClick={() => setForm(f => ({
+                                                    ...f,
+                                                    config: { ...f.config, colors: [...f.config.colors, "#ffffff"] }
+                                                }))}
+                                            >
+                                                Добавить цвет
+                                            </Button>
+                                        </Tooltip>
+                                    )}
+                                </div>
+                            </Field>
+                        </div>
+
+                        <div className="flex flex-col gap-4 ">
+                            {form.config.type === "gradient" && (
+                                <Field label={`Угол градиента: ${form.config.angle}°`} size="large">
+                                    <Slider
+                                        min={0}
+                                        max={360}
+                                        step={45}
+                                        value={form.config.angle}
+                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, angle: d.value } }))}
                                     />
                                 </Field>
                             )}
+                            <Field label={`Размытие (Blur): ${form.config.blur}px`} size="large">
+                                <Slider
+                                    min={0}
+                                    max={20}
+                                    value={form.config.blur}
+                                    onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, blur: d.value } }))}
+                                />
+                            </Field>
                         </div>
 
-                        {form.config.pattern && form.config.pattern !== "none" && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Field size="large" label={`Масштаб: ${form.config.patternScale?.toFixed(1) || "1.0"}`}>
-                                    <Slider
-                                        min={0.1}
-                                        max={5}
-                                        step={0.1}
-                                        value={form.config.patternScale || 1}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternScale: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Угол: ${form.config.patternAngle || 0}°`}>
-                                    <Slider
-                                        min={-180}
-                                        max={180}
+                        <Divider />
 
-                                        value={form.config.patternAngle || 0}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternAngle: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Наклон X: ${form.config.patternSkewX || 0}°`}>
-                                    <Slider
-                                        min={-45}
-                                        max={45}
-                                        value={form.config.patternSkewX || 0}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternSkewX: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Наклон Y: ${form.config.patternSkewY || 0}°`}>
-                                    <Slider
-                                        min={-45}
-                                        max={45}
-                                        value={form.config.patternSkewY || 0}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternSkewY: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Смещение X: ${form.config.patternTranslateX || 0}px`}>
-                                    <Slider
-                                        min={-100}
-                                        max={100}
-                                        value={form.config.patternTranslateX || 0}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternTranslateX: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Смещение Y: ${form.config.patternTranslateY || 0}px`}>
-                                    <Slider
-                                        min={-100}
-                                        max={100}
-                                        value={form.config.patternTranslateY || 0}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternTranslateY: d.value } }))}
-                                    />
-                                </Field>
-                                <Field size="large" label={`Прозрачность: ${((form.config.patternOpacity || 0.5) * 100).toFixed(0)}%`} className="col-span-2">
-                                    <Slider
-                                        min={0}
-                                        max={1}
-                                        step={0.05}
-                                        value={form.config.patternOpacity || 0.5}
-                                        onChange={(_, d) => setForm(f => ({ ...f, config: { ...f.config, patternOpacity: d.value } }))}
-                                    />
-                                </Field>
-                            </div>
-                        )}
+                        <Subtitle1>Слои узоров</Subtitle1>
+                        <div className="flex flex-col gap-4">
+                            {(form.config.patterns || []).length > 0 && (
+                                <Overflow padding={40}>
+                                    <div className="flex flex-nowrap min-w-0 overflow-hidden items-center">
+                                        <TabList
+                                            size="large"
+                                            selectedValue={selectedTab}
+                                            onTabSelect={(_, d) => setSelectedTab(d.value as string)}
+                                        >
+                                            {(form.config.patterns || []).map((layer, idx) => (
+                                                <OverflowItem key={idx} id={idx.toString()}>
+                                                    <Tab
+                                                        value={idx.toString()}
+                                                    >
+                                                        Слой #{idx + 1}
+                                                    </Tab>
+                                                </OverflowItem>
+                                            ))}
+                                        </TabList>
+                                        <OverflowMenu patterns={form.config.patterns || []} onTabSelect={setSelectedTab} />
+                                    </div>
+                                </Overflow>
+                            )}
+
+                            {(form.config.patterns || []).map((layer, idx) => (
+                                idx.toString() === selectedTab && (
+                                    <Card key={idx} appearance="filled-alternative" >
+                                        <div className="absolute top-2 right-2 flex gap-2">
+                                            <Popover>
+                                                <PopoverTrigger disableButtonEnhancement>
+                                                    <Button size="large" appearance="subtle" icon={<Delete20Regular className="text-red-500" />} />
+                                                </PopoverTrigger>
+                                                <PopoverSurface>
+                                                    <div className="flex flex-col gap-2">
+                                                        <Body2>Удалить этот слой?</Body2>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                appearance="primary"
+                                                                onClick={() => {
+                                                                    const newPatterns = form.config.patterns?.filter((_, i) => i !== idx) || [];
+                                                                    setForm(f => ({
+                                                                        ...f,
+                                                                        config: { ...f.config, patterns: newPatterns }
+                                                                    }));
+                                                                    setSelectedTab("0");
+                                                                }}
+                                                            >
+                                                                Да, удалить
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </PopoverSurface>
+                                            </Popover>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <Field label="Тип узора" size="large">
+                                                <Dropdown
+                                                    size="large"
+                                                    value={layer.type === "dots" ? "Точки" : layer.type === "lines" ? "Линии" : layer.type === "noise" ? "Шум" : layer.type === "custom-svg" ? "Своя SVG" : "Нет"}
+                                                    selectedOptions={[layer.type]}
+                                                    onOptionSelect={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], type: d.optionValue as any };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                >
+                                                    <Option value="none">Нет</Option>
+                                                    <Option value="dots">Точки</Option>
+                                                    <Option value="lines">Линии</Option>
+                                                    <Option value="noise">Шум</Option>
+                                                    <Option value="custom-svg">Своя SVG</Option>
+                                                </Dropdown>
+                                            </Field>
+
+                                            {layer.type === "custom-svg" && (
+                                                <Field 
+                                                    label="Ваш SVG (код)" 
+                                                    className="col-span-2" 
+                                                    size="large"
+                                                    validationState={layer.customSvg && !layer.customSvg.trim().toLowerCase().startsWith("<svg") ? "error" : "none"}
+                                                    validationMessage={layer.customSvg && !layer.customSvg.trim().toLowerCase().startsWith("<svg") ? "Код должен начинаться с <svg" : undefined}
+                                                >
+                                                    <Textarea
+                                                        size="large"
+                                                        value={layer.customSvg || ""}
+                                                        onChange={(_, d) => {
+                                                            const newPatterns = [...(form.config.patterns || [])];
+                                                            newPatterns[idx] = { ...newPatterns[idx], customSvg: d.value };
+                                                            setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                        }}
+                                                        resize="vertical"
+                                                        textarea={{ className: "font-mono text-xs h-32" }}
+                                                    />
+                                                </Field>
+                                            )}
+
+                                            <div className="flex gap-6 flex-wrap col-span-2">
+                                                {layer.type === "custom-svg" && (
+                                                    <>
+                                                        <Switch
+                                                            label="Зациклить"
+                                                            checked={layer.repeat ?? false}
+                                                            onChange={(_, d) => {
+                                                                const newPatterns = [...(form.config.patterns || [])];
+                                                                newPatterns[idx] = { ...newPatterns[idx], repeat: d.checked };
+                                                                setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                            }}
+                                                        />
+                                                        <Switch
+                                                            label="Ориг. цвет"
+                                                            checked={layer.originalColor ?? false}
+                                                            onChange={(_, d) => {
+                                                                const newPatterns = [...(form.config.patterns || [])];
+                                                                newPatterns[idx] = { ...newPatterns[idx], originalColor: d.checked };
+                                                                setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                            }}
+                                                        />
+                                                    </>
+                                                )}
+                                                {layer.type !== "none" && layer.type !== "noise" && !layer.originalColor && (
+                                                    <Field label="Цвет" size="large">
+                                                        <ColorPicker
+                                                            value={layer.color || "#ffffff33"}
+                                                            onChange={(val) => {
+                                                                const newPatterns = [...(form.config.patterns || [])];
+                                                                newPatterns[idx] = { ...newPatterns[idx], color: val };
+                                                                setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                            }}
+                                                        />
+                                                    </Field>
+                                                )}
+                                            </div>
+
+                                            <Field label={`Масштаб: ${layer.scale?.toFixed(1) || "1.0"}`} size="large">
+                                                <Slider
+                                                    min={0.1} max={10} step={0.1}
+                                                    value={layer.scale || 1}
+                                                    onChange={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], scale: d.value };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                />
+                                            </Field>
+                                            <Field label={`Угол: ${layer.angle || 0}°`} size="large">
+                                                <Slider
+                                                    min={-180} max={180}
+                                                    value={layer.angle || 0}
+                                                    onChange={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], angle: d.value };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                />
+                                            </Field>
+                                            <Field label={`Смещение X: ${layer.translateX || 0}px`} size="large">
+                                                <Slider
+                                                    min={-200} max={200}
+                                                    value={layer.translateX || 0}
+                                                    onChange={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], translateX: d.value };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                />
+                                            </Field>
+                                            <Field label={`Смещение Y: ${layer.translateY || 0}px`} size="large">
+                                                <Slider
+                                                    min={-200} max={200}
+                                                    value={layer.translateY || 0}
+                                                    onChange={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], translateY: d.value };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                />
+                                            </Field>
+                                            <Field label={`Прозрачность: ${((layer.opacity ?? 0.5) * 100).toFixed(0)}%`} className="col-span-2" size="large">
+                                                <Slider
+                                                    min={0} max={1} step={0.05}
+                                                    value={layer.opacity ?? 0.5}
+                                                    onChange={(_, d) => {
+                                                        const newPatterns = [...(form.config.patterns || [])];
+                                                        newPatterns[idx] = { ...newPatterns[idx], opacity: d.value };
+                                                        setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
+                                                    }}
+                                                />
+                                            </Field>
+                                            <div className="col-span-1 md:col-span-2">
+                                                <LayerPreview layer={layer} />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )
+                            ))}
+
+                            <Button
+                                appearance="outline"
+                                size="large"
+                                icon={<Add20Regular />}
+                                disabled={(form.config.patterns || []).length >= 20}
+                                onClick={() => {
+                                    const patterns = form.config.patterns || [];
+                                    if (patterns.length >= 20) return;
+                                    const nextIdx = patterns.length;
+                                    setForm(f => ({
+                                        ...f,
+                                        config: {
+                                            ...f.config,
+                                            patterns: [...patterns, { type: "dots", scale: 1, opacity: 0.2, color: "#ffffff33" }]
+                                        }
+                                    }));
+                                    setSelectedTab(nextIdx.toString());
+                                }}
+                            >
+                                Добавить слой узора
+                            </Button>
+                        </div>
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-4 flex-1  pl-2 pr-2" style={{ backgroundColor: "var(--colorNeutralBackground2)" }}>
                     <div className="flex flex-col">
-                        <Body2  className="uppercase text-slate-400">Предпросмотр</Body2>
+                        <Body2 className="uppercase text-slate-400">Предпросмотр</Body2>
                         <Body2 className="text-slate-500">Живой результат</Body2>
                     </div>
 

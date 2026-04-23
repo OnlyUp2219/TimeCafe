@@ -57,9 +57,8 @@
     <File Path="docker-compose.override.yml" />
     <File Path="docker-compose.yml" />
   </Folder>
-  <Project Path="docker-compose.dcproj">
+  <Project Path="docker-compose.dcproj" Id="2f3a3c4e-8f2a-4cf3-9f4a-0b4e7b6d9c21">
     <Platform Project="AnyCPU" />
     <Build />
-    <Deploy />
   </Project>
 </Solution>

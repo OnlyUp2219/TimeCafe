@@ -17,7 +17,6 @@
 		
 		<PackageReference Include="FluentResults" />
 		<PackageReference Include="FluentResults.Extensions.AspNetCore" />
-		<PackageReference Include="FluentResults.Extensions.FluentAssertions" />
 		
 		<PackageReference Include="MassTransit" />
 		

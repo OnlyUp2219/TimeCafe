@@ -44,6 +44,7 @@ import { BillingType } from "@app-types/tariff";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
@@ -76,6 +77,7 @@ const calcPerHour = (perMinute: string): string => {
 
 export const TariffsPage = () => {
     const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const { data, isLoading, error, refetch } = useGetTariffsPageQuery(
@@ -175,96 +177,100 @@ export const TariffsPage = () => {
         actions: { minWidth: 140, defaultWidth: 180, idealWidth: 160 },
     }), []);
 
-    const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => [
-        createTableColumn<TariffWithTheme>({
-            columnId: "name",
-            compare: (a, b) => a.name.localeCompare(b.name),
-            renderHeaderCell: () => "Тариф",
-            renderCell: (tariff) => (
-                <TableCellLayout
-                    truncate
-                    media={
-                        <Avatar
-                            name={tariff.name}
-                            initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
-                            color="neutral"
+    const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<TariffWithTheme> & { permission?: string })[] = [
+            createTableColumn<TariffWithTheme>({
+                columnId: "name",
+                compare: (a, b) => a.name.localeCompare(b.name),
+                renderHeaderCell: () => "Тариф",
+                renderCell: (tariff) => (
+                    <TableCellLayout
+                        truncate
+                        media={
+                            <Avatar
+                                name={tariff.name}
+                                initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
+                                color="neutral"
+                            />
+                        }
+                    >
+                        <div>
+                            <Body1 block>{tariff.name}</Body1>
+                            {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
+                        </div>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<TariffWithTheme>({
+                columnId: "price",
+                compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
+                renderHeaderCell: () => "Цена",
+                renderCell: (tariff) => (
+                    <TableCellLayout truncate>
+                        <div>
+                            <Body1 block>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</Body1>
+                            <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                {(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
+                            </Caption1>
+                        </div>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<TariffWithTheme>({
+                columnId: "billingType",
+                compare: (a, b) => a.billingType - b.billingType,
+                renderHeaderCell: () => "Тип",
+                renderCell: (tariff) => (
+                    <TableCellLayout truncate>
+                        <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<TariffWithTheme>({
+                columnId: "theme",
+                compare: (a, b) => (a.themeName ?? "").localeCompare(b.themeName ?? ""),
+                renderHeaderCell: () => "Тема",
+                renderCell: (tariff) => (
+                    <TableCellLayout truncate>{tariff.themeName || "—"}</TableCellLayout>
+                ),
+            }),
+            createTableColumn<TariffWithTheme>({
+                columnId: "status",
+                compare: (a, b) => Number(a.isActive) - Number(b.isActive),
+                renderHeaderCell: () => "Статус",
+                renderCell: (tariff) => (
+                    <HasPermission anyOf={[Permissions.VenueTariffActivate, Permissions.VenueTariffDeactivate]} fallback={
+                        <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"}>
+                            {tariff.isActive ? "Активен" : "Неактивен"}
+                        </Badge>
+                    }>
+                        <Switch
+                            checked={tariff.isActive}
+                            onChange={() => handleToggleActive(tariff)}
+                            label={tariff.isActive ? "Активен" : "Неактивен"}
                         />
-                    }
-                >
-                    <div>
-                        <Body1 block>{tariff.name}</Body1>
-                        {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
-                    </div>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<TariffWithTheme>({
-            columnId: "price",
-            compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
-            renderHeaderCell: () => "Цена",
-            renderCell: (tariff) => (
-                <TableCellLayout truncate>
-                    <div>
-                        <Body1 block>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</Body1>
-                        <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
-                            {(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
-                        </Caption1>
-                    </div>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<TariffWithTheme>({
-            columnId: "billingType",
-            compare: (a, b) => a.billingType - b.billingType,
-            renderHeaderCell: () => "Тип",
-            renderCell: (tariff) => (
-                <TableCellLayout truncate>
-                    <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<TariffWithTheme>({
-            columnId: "theme",
-            compare: (a, b) => (a.themeName ?? "").localeCompare(b.themeName ?? ""),
-            renderHeaderCell: () => "Тема",
-            renderCell: (tariff) => (
-                <TableCellLayout truncate>{tariff.themeName || "—"}</TableCellLayout>
-            ),
-        }),
-        createTableColumn<TariffWithTheme>({
-            columnId: "status",
-            compare: (a, b) => Number(a.isActive) - Number(b.isActive),
-            renderHeaderCell: () => "Статус",
-            renderCell: (tariff) => (
-                <HasPermission anyOf={[Permissions.VenueTariffActivate, Permissions.VenueTariffDeactivate]} fallback={
-                    <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"}>
-                        {tariff.isActive ? "Активен" : "Неактивен"}
-                    </Badge>
-                }>
-                    <Switch
-                        checked={tariff.isActive}
-                        onChange={() => handleToggleActive(tariff)}
-                        label={tariff.isActive ? "Активен" : "Неактивен"}
-                    />
-                </HasPermission>
-            ),
-        }),
-        createTableColumn<TariffWithTheme>({
-            columnId: "actions",
-            compare: () => 0,
-            renderHeaderCell: () => "Действия",
-            renderCell: (tariff) => (
-                <div className="flex gap-1">
-                    <HasPermission can={Permissions.VenueTariffUpdate}>
-                        <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
                     </HasPermission>
-                    <HasPermission can={Permissions.VenueTariffDelete}>
-                        <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
-                    </HasPermission>
-                </div>
-            ),
-        }),
-    ], [sizes, handleToggleActive, openEdit, handleDelete]);
+                ),
+            }),
+            createTableColumn<TariffWithTheme>({
+                columnId: "actions",
+                compare: () => 0,
+                renderHeaderCell: () => "Действия",
+                renderCell: (tariff) => (
+                    <div className="flex gap-1">
+                        <HasPermission can={Permissions.VenueTariffUpdate}>
+                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
+                        </HasPermission>
+                        <HasPermission can={Permissions.VenueTariffDelete}>
+                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
+                        </HasPermission>
+                    </div>
+                ),
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [sizes, handleToggleActive, openEdit, handleDelete, has]);
 
     const perHour = calcPerHour(form.pricePerMinute);
 

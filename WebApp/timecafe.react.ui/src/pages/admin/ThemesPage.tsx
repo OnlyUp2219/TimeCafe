@@ -23,7 +23,7 @@ import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
-import { parseThemeConfig, getThemeStyles, getPatternStyles } from "@utility/themeStyles";
+import { parseThemeConfig, getThemeStyles, getPatternLayerStyles } from "@utility/themeStyles";
 
 export const ThemesPage = () => {
     const navigate = useNavigate();
@@ -104,7 +104,6 @@ export const ThemesPage = () => {
                 {themes.map((theme) => {
                     const config = parseThemeConfig(theme.colors);
                     const styles = getThemeStyles(config);
-                    const pStyles = getPatternStyles(config);
                     return (
                         <Card
                             key={theme.themeId}
@@ -112,7 +111,9 @@ export const ThemesPage = () => {
                             style={{ ...styles }}
                             appearance="filled"
                         >
-                            <div style={pStyles} />
+                            {(config.patterns || []).map((layer, idx) => (
+                                <div key={idx} style={getPatternLayerStyles(layer)} />
+                            ))}
                             <CardHeader
                                 className="relative z-10"
                                 image={<span className="text-3xl">{theme.emoji}</span>}

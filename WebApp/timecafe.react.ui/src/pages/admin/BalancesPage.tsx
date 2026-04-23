@@ -23,12 +23,14 @@ import {Pagination} from "@components/Pagination/Pagination";
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
 import {NO_DATA, NO_ACCESS} from "@shared/const/placeholders";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {usePermissions} from "@hooks/usePermissions";
 import {HasPermission} from "@components/Guard/HasPermission";
 import {Permissions} from "@shared/auth/permissions";
 
 const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+
 
 const getBalanceType = (balance: AdminBalanceDto) => {
     if (balance.debt > 0) return "Долг";
@@ -44,16 +46,17 @@ const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "
     return "informative";
 };
 
-const BalanceUserCell = ({userId}: {userId: string}) => {
+const AdminUserCell = ({userId}: {userId: string}) => {
     const {data: profile} = useGetProfileByUserIdQuery(userId);
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
-        : null;
+        : profile?.email || null;
+
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
-            <div className="min-w-0">
-                {displayName && <Body1 block truncate>{displayName}</Body1>}
-                <Body2 block className="font-mono text-gray-400">{userId.slice(0, 12)}…</Body2>
+            <div className="flex flex-col min-w-0">
+                <Body1 block truncate>{displayName || userId}</Body1>
+                <Caption1 block className="font-mono text-gray-400" style={{ fontSize: '10px' }}>{userId}</Caption1>
             </div>
         </TableCellLayout>
     );
@@ -61,6 +64,7 @@ const BalanceUserCell = ({userId}: {userId: string}) => {
 
 export const BalancesPage = () => {
     const {sizes} = useComponentSize();
+    const {has} = usePermissions();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
 
@@ -88,82 +92,101 @@ export const BalancesPage = () => {
         updated: {minWidth: 130, defaultWidth: 170, idealWidth: 200},
     }), []);
 
-    const columns: TableColumnDefinition<AdminBalanceDto>[] = useMemo(() => [
-        createTableColumn<AdminBalanceDto>({
-            columnId: "user",
-            compare: (a, b) => a.userId.localeCompare(b.userId),
-            renderHeaderCell: () => "Пользователь",
-            renderCell: (b) => <BalanceUserCell userId={b.userId} />,
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "type",
-            compare: (a, b) => getBalanceType(a).localeCompare(getBalanceType(b)),
-            renderHeaderCell: () => "Тип",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <Badge appearance="tint" color={getBalanceTypeColor(b)}>{getBalanceType(b)}</Badge>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "current",
-            compare: (a, b) => a.currentBalance - b.currentBalance,
-            renderHeaderCell: () => "Баланс",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                        <Body1 style={{color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
-                            {formatMoney(b.currentBalance)}
-                        </Body1>
-                    </HasPermission>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "deposited",
-            compare: (a, b) => a.totalDeposited - b.totalDeposited,
-            renderHeaderCell: () => "Пополнено",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                        {formatMoney(b.totalDeposited)}
-                    </HasPermission>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "spent",
-            compare: (a, b) => a.totalSpent - b.totalSpent,
-            renderHeaderCell: () => "Потрачено",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                        {formatMoney(b.totalSpent)}
-                    </HasPermission>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "debt",
-            compare: (a, b) => a.debt - b.debt,
-            renderHeaderCell: () => "Долг",
-            renderCell: (b) => (
-                <TableCellLayout truncate>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                        <Body1 style={{color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
-                            {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
-                        </Body1>
-                    </HasPermission>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminBalanceDto>({
-            columnId: "updated",
-            compare: (a, b) => new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime(),
-            renderHeaderCell: () => "Обновлён",
-            renderCell: (b) => <TableCellLayout truncate>{formatDate(b.lastUpdated)}</TableCellLayout>,
-        }),
-    ], []);
+    const columns: TableColumnDefinition<AdminBalanceDto>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<AdminBalanceDto> & { permission?: string })[] = [
+            {
+                ...createTableColumn<AdminBalanceDto>({
+                    columnId: "user",
+                    compare: (a, b) => a.userId.localeCompare(b.userId),
+                    renderHeaderCell: () => "Пользователь",
+                    renderCell: (b) => <AdminUserCell userId={b.userId} />,
+                }),
+                permission: Permissions.UserProfileProfileRead
+            },
+            createTableColumn<AdminBalanceDto>({
+                columnId: "type",
+                compare: (a, b) => getBalanceType(a).localeCompare(getBalanceType(b)),
+                renderHeaderCell: () => "Тип",
+                renderCell: (b) => (
+                    <TableCellLayout truncate>
+                        <Badge appearance="tint" color={getBalanceTypeColor(b)}>{getBalanceType(b)}</Badge>
+                    </TableCellLayout>
+                ),
+            }),
+            {
+                ...createTableColumn<AdminBalanceDto>({
+                    columnId: "current",
+                    compare: (a, b) => a.currentBalance - b.currentBalance,
+                    renderHeaderCell: () => "Баланс",
+                    renderCell: (b) => (
+                        <TableCellLayout truncate>
+                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                                <Body1 style={{ color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)" }}>
+                                    {formatMoney(b.currentBalance)}
+                                </Body1>
+                            </HasPermission>
+                        </TableCellLayout>
+                    ),
+                }),
+                permission: Permissions.BillingBalanceRead
+            },
+            {
+                ...createTableColumn<AdminBalanceDto>({
+                    columnId: "deposited",
+                    compare: (a, b) => a.totalDeposited - b.totalDeposited,
+                    renderHeaderCell: () => "Пополнено",
+                    renderCell: (b) => (
+                        <TableCellLayout truncate>
+                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                                {formatMoney(b.totalDeposited)}
+                            </HasPermission>
+                        </TableCellLayout>
+                    ),
+                }),
+                permission: Permissions.BillingBalanceRead
+            },
+            {
+                ...createTableColumn<AdminBalanceDto>({
+                    columnId: "spent",
+                    compare: (a, b) => a.totalSpent - b.totalSpent,
+                    renderHeaderCell: () => "Потрачено",
+                    renderCell: (b) => (
+                        <TableCellLayout truncate>
+                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                                {formatMoney(b.totalSpent)}
+                            </HasPermission>
+                        </TableCellLayout>
+                    ),
+                }),
+                permission: Permissions.BillingBalanceRead
+            },
+            {
+                ...createTableColumn<AdminBalanceDto>({
+                    columnId: "debt",
+                    compare: (a, b) => a.debt - b.debt,
+                    renderHeaderCell: () => "Долг",
+                    renderCell: (b) => (
+                        <TableCellLayout truncate>
+                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
+                                <Body1 style={{ color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined }}>
+                                    {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
+                                </Body1>
+                            </HasPermission>
+                        </TableCellLayout>
+                    ),
+                }),
+                permission: Permissions.BillingBalanceRead
+            },
+            createTableColumn<AdminBalanceDto>({
+                columnId: "updated",
+                compare: (a, b) => new Date(a.lastUpdated).getTime() - new Date(b.lastUpdated).getTime(),
+                renderHeaderCell: () => "Обновлён",
+                renderCell: (b) => <TableCellLayout truncate>{formatDate(b.lastUpdated)}</TableCellLayout>,
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [has]);
 
     return (
         <div>

@@ -37,6 +37,7 @@ import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {usePermissions} from "@hooks/usePermissions";
 import {HasPermission} from "@components/Guard/HasPermission";
 import {Permissions} from "@shared/auth/permissions";
 
@@ -67,6 +68,7 @@ const emptyForm: PromotionFormState = {
 
 export const PromotionsPage = () => {
     const {sizes} = useComponentSize();
+    const {has} = usePermissions();
     const {data: promotions = [], isLoading, error} = useGetAllPromotionsQuery();
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -156,76 +158,80 @@ export const PromotionsPage = () => {
         actions: {minWidth: 90, defaultWidth: 100},
     }), []);
 
-    const columns: TableColumnDefinition<Promotion>[] = useMemo(() => [
-        createTableColumn<Promotion>({
-            columnId: "name",
-            compare: (a, b) => a.name.localeCompare(b.name),
-            renderHeaderCell: () => "Акция",
-            renderCell: (promo) => (
-                <TableCellLayout truncate>
-                    <div>
-                        <Body1 block>{promo.name}</Body1>
-                        {promo.description && <Body2 block className="text-gray-500">{promo.description}</Body2>}
+    const columns: TableColumnDefinition<Promotion>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<Promotion> & { permission?: string })[] = [
+            createTableColumn<Promotion>({
+                columnId: "name",
+                compare: (a, b) => a.name.localeCompare(b.name),
+                renderHeaderCell: () => "Акция",
+                renderCell: (promo) => (
+                    <TableCellLayout truncate>
+                        <div>
+                            <Body1 block>{promo.name}</Body1>
+                            {promo.description && <Body2 block className="text-gray-500">{promo.description}</Body2>}
+                        </div>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "discount",
+                compare: (a, b) => (a.discountPercent ?? 0) - (b.discountPercent ?? 0),
+                renderHeaderCell: () => "Скидка",
+                renderCell: (promo) => (
+                    <TableCellLayout truncate>
+                        {promo.discountPercent != null
+                            ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
+                            : "—"}
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "period",
+                compare: (a, b) => a.validFrom.localeCompare(b.validFrom),
+                renderHeaderCell: () => "Период",
+                renderCell: (promo) => (
+                    <TableCellLayout truncate>
+                        {formatDate(promo.validFrom)} — {formatDate(promo.validTo)}
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "status",
+                compare: (a, b) => Number(a.isActive) - Number(b.isActive),
+                renderHeaderCell: () => "Статус",
+                renderCell: (promo) => (
+                    <HasPermission anyOf={[Permissions.VenuePromotionActivate, Permissions.VenuePromotionDeactivate]} fallback={
+                        <Badge appearance="tint" color={promo.isActive ? "success" : "warning"}>
+                            {promo.isActive ? "Активна" : "Неактивна"}
+                        </Badge>
+                    }>
+                        <Switch
+                            checked={promo.isActive}
+                            onChange={() => handleToggleActive(promo)}
+                            label={promo.isActive ? "Активна" : "Неактивна"}
+                        />
+                    </HasPermission>
+                ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "actions",
+                compare: () => 0,
+                renderHeaderCell: () => "Действия",
+                renderCell: (promo) => (
+                    <div className="flex gap-1">
+                        <HasPermission can={Permissions.VenuePromotionUpdate}>
+                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
+                        </HasPermission>
+                        <HasPermission can={Permissions.VenuePromotionDelete}>
+                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                        </HasPermission>
                     </div>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<Promotion>({
-            columnId: "discount",
-            compare: (a, b) => (a.discountPercent ?? 0) - (b.discountPercent ?? 0),
-            renderHeaderCell: () => "Скидка",
-            renderCell: (promo) => (
-                <TableCellLayout truncate>
-                    {promo.discountPercent != null
-                        ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
-                        : "—"}
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<Promotion>({
-            columnId: "period",
-            compare: (a, b) => a.validFrom.localeCompare(b.validFrom),
-            renderHeaderCell: () => "Период",
-            renderCell: (promo) => (
-                <TableCellLayout truncate>
-                    {formatDate(promo.validFrom)} — {formatDate(promo.validTo)}
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<Promotion>({
-            columnId: "status",
-            compare: (a, b) => Number(a.isActive) - Number(b.isActive),
-            renderHeaderCell: () => "Статус",
-            renderCell: (promo) => (
-                <HasPermission anyOf={[Permissions.VenuePromotionActivate, Permissions.VenuePromotionDeactivate]} fallback={
-                    <Badge appearance="tint" color={promo.isActive ? "success" : "warning"}>
-                        {promo.isActive ? "Активна" : "Неактивна"}
-                    </Badge>
-                }>
-                    <Switch
-                        checked={promo.isActive}
-                        onChange={() => handleToggleActive(promo)}
-                        label={promo.isActive ? "Активна" : "Неактивна"}
-                    />
-                </HasPermission>
-            ),
-        }),
-        createTableColumn<Promotion>({
-            columnId: "actions",
-            compare: () => 0,
-            renderHeaderCell: () => "Действия",
-            renderCell: (promo) => (
-                <div className="flex gap-1">
-                    <HasPermission can={Permissions.VenuePromotionUpdate}>
-                        <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
-                    </HasPermission>
-                    <HasPermission can={Permissions.VenuePromotionDelete}>
-                        <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
-                    </HasPermission>
-                </div>
-            ),
-        }),
-    ], [sizes, handleToggleActive, openEdit, handleDelete]);
+                ),
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [sizes, handleToggleActive, openEdit, handleDelete, has]);
 
     if (isLoading) {
         return <div className="flex justify-center p-12"><Spinner label="Загрузка акций..." /></div>;

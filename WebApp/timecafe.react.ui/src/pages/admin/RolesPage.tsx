@@ -31,12 +31,14 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 
 export const RolesPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const { data, isLoading, error } = useGetRolesQuery(undefined, { refetchOnMountOrArgChange: true });
     const roles = data?.roles ?? [];
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
@@ -86,43 +88,47 @@ export const RolesPage = () => {
         actions: { minWidth: 100, defaultWidth: 120, idealWidth: 150 },
     }), []);
 
-    const columns: TableColumnDefinition<RoleDto>[] = useMemo(() => [
-        createTableColumn<RoleDto>({
-            columnId: "roleName",
-            compare: (a, b) => a.roleName.localeCompare(b.roleName),
-            renderHeaderCell: () => "Роль",
-            renderCell: (r) => (
-                <TableCellLayout truncate>
-                    <Badge appearance="outline">{r.roleName}</Badge>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<RoleDto>({
-            columnId: "actions",
-            compare: () => 0,
-            renderHeaderCell: () => "Действия",
-            renderCell: (r) => (
-                <div className="flex gap-1">
-                    <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
-                        <Button
-                            appearance="subtle"
-                            icon={<LockClosed20Regular />}
-                            onClick={() => navigate(`/admin/roles/${r.roleName}/claims`)}
-                            title="Управление правами"
-                        />
-                    </HasPermission>
-                    <HasPermission can={Permissions.RbacRoleDelete}>
-                        <Button
-                            appearance="subtle"
-                            icon={<Delete20Regular />}
-                            onClick={() => handleDelete(r.roleName)}
-                            title="Удалить роль"
-                        />
-                    </HasPermission>
-                </div>
-            ),
-        }),
-    ], [handleDelete, navigate]);
+    const columns: TableColumnDefinition<RoleDto>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<RoleDto> & { permission?: string })[] = [
+            createTableColumn<RoleDto>({
+                columnId: "roleName",
+                compare: (a, b) => a.roleName.localeCompare(b.roleName),
+                renderHeaderCell: () => "Роль",
+                renderCell: (r) => (
+                    <TableCellLayout truncate>
+                        <Badge appearance="outline">{r.roleName}</Badge>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<RoleDto>({
+                columnId: "actions",
+                compare: () => 0,
+                renderHeaderCell: () => "Действия",
+                renderCell: (r) => (
+                    <div className="flex gap-1">
+                        <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
+                            <Button
+                                appearance="subtle"
+                                icon={<LockClosed20Regular />}
+                                onClick={() => navigate(`/admin/roles/${r.roleName}/claims`)}
+                                title="Управление правами"
+                            />
+                        </HasPermission>
+                        <HasPermission can={Permissions.RbacRoleDelete}>
+                            <Button
+                                appearance="subtle"
+                                icon={<Delete20Regular />}
+                                onClick={() => handleDelete(r.roleName)}
+                                title="Удалить роль"
+                            />
+                        </HasPermission>
+                    </div>
+                ),
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [handleDelete, navigate, has]);
 
     if (isLoading) {
         return <div className="flex justify-center p-12"><Spinner label="Загрузка ролей..." /></div>;

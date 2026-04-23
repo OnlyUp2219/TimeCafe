@@ -1,5 +1,6 @@
 import {useMemo, useState} from "react";
 import {
+    Avatar,
     Badge,
     Body1,
     Body2,
@@ -16,11 +17,13 @@ import {
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {useGetAdminPaymentsQuery} from "@store/api/adminApi";
 import type {AdminPaymentDto} from "@store/api/adminApi";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
 import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {usePermissions} from "@hooks/usePermissions";
 import {HasPermission} from "@components/Guard/HasPermission";
 import {Permissions} from "@shared/auth/permissions";
 
@@ -61,8 +64,25 @@ const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
+const AdminUserCell = ({userId}: {userId: string}) => {
+    const {data: profile} = useGetProfileByUserIdQuery(userId);
+    const displayName = profile?.firstName || profile?.lastName
+        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
+        : profile?.email || null;
+
+    return (
+        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
+            <div className="flex flex-col min-w-0">
+                <Body1 block truncate>{displayName || userId}</Body1>
+                <Caption1 block className="font-mono text-gray-400" style={{ fontSize: '10px' }}>{userId}</Caption1>
+            </div>
+        </TableCellLayout>
+    );
+};
+
 export const PaymentsPage = () => {
     const {sizes} = useComponentSize();
+    const {has} = usePermissions();
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [userIdFilter, setUserIdFilter] = useState("");
@@ -86,62 +106,65 @@ export const PaymentsPage = () => {
         createdAt: {minWidth: 130, defaultWidth: 160, idealWidth: 180},
     }), []);
 
-    const columns: TableColumnDefinition<AdminPaymentDto>[] = useMemo(() => [
-        createTableColumn<AdminPaymentDto>({
-            columnId: "userId",
-            compare: (a, b) => a.userId.localeCompare(b.userId),
-            renderHeaderCell: () => "Пользователь",
-            renderCell: (p) => (
-                <TableCellLayout truncate>
-                    <Caption1 className="font-mono">{p.userId.slice(0, 8)}…</Caption1>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminPaymentDto>({
-            columnId: "amount",
-            compare: (a, b) => a.amount - b.amount,
-            renderHeaderCell: () => "Сумма",
-            renderCell: (p) => (
-                <TableCellLayout truncate>
-                    <HasPermission can={Permissions.BillingPaymentRead} fallback={NO_ACCESS}>
-                        <Body1 style={{color: "var(--colorPaletteGreenForeground1)"}}>{formatMoney(p.amount)}</Body1>
-                    </HasPermission>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminPaymentDto>({
-            columnId: "method",
-            compare: (a, b) => a.paymentMethod - b.paymentMethod,
-            renderHeaderCell: () => "Метод",
-            renderCell: (p) => <TableCellLayout truncate>{paymentMethodLabel(p.paymentMethod)}</TableCellLayout>,
-        }),
-        createTableColumn<AdminPaymentDto>({
-            columnId: "status",
-            compare: (a, b) => a.status - b.status,
-            renderHeaderCell: () => "Статус",
-            renderCell: (p) => (
-                <TableCellLayout truncate>
-                    <Badge appearance="tint" color={paymentStatusColor(p.status)}>{paymentStatusLabel(p.status)}</Badge>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminPaymentDto>({
-            columnId: "externalId",
-            compare: (a, b) => (a.externalPaymentId ?? "").localeCompare(b.externalPaymentId ?? ""),
-            renderHeaderCell: () => "External ID",
-            renderCell: (p) => (
-                <TableCellLayout truncate>
-                    <Caption1 className="font-mono">{p.externalPaymentId ? p.externalPaymentId.slice(0, 16) + "…" : "—"}</Caption1>
-                </TableCellLayout>
-            ),
-        }),
-        createTableColumn<AdminPaymentDto>({
-            columnId: "createdAt",
-            compare: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-            renderHeaderCell: () => "Создан",
-            renderCell: (p) => <TableCellLayout truncate>{formatDate(p.createdAt)}</TableCellLayout>,
-        }),
-    ], []);
+    const columns: TableColumnDefinition<AdminPaymentDto>[] = useMemo(() => {
+        const allColumns: (TableColumnDefinition<AdminPaymentDto> & { permission?: string })[] = [
+            createTableColumn<AdminPaymentDto>({
+                columnId: "userId",
+                compare: (a, b) => a.userId.localeCompare(b.userId),
+                renderHeaderCell: () => "Пользователь",
+                renderCell: (p) => <AdminUserCell userId={p.userId} />,
+            }),
+            {
+                ...createTableColumn<AdminPaymentDto>({
+                    columnId: "amount",
+                    compare: (a, b) => a.amount - b.amount,
+                    renderHeaderCell: () => "Сумма",
+                    renderCell: (p) => (
+                        <TableCellLayout truncate>
+                            <HasPermission can={Permissions.BillingPaymentRead} fallback={NO_ACCESS}>
+                                <Body1 style={{ color: "var(--colorPaletteGreenForeground1)" }}>{formatMoney(p.amount)}</Body1>
+                            </HasPermission>
+                        </TableCellLayout>
+                    ),
+                }),
+                permission: Permissions.BillingPaymentRead
+            },
+            createTableColumn<AdminPaymentDto>({
+                columnId: "method",
+                compare: (a, b) => a.paymentMethod - b.paymentMethod,
+                renderHeaderCell: () => "Метод",
+                renderCell: (p) => <TableCellLayout truncate>{paymentMethodLabel(p.paymentMethod)}</TableCellLayout>,
+            }),
+            createTableColumn<AdminPaymentDto>({
+                columnId: "status",
+                compare: (a, b) => a.status - b.status,
+                renderHeaderCell: () => "Статус",
+                renderCell: (p) => (
+                    <TableCellLayout truncate>
+                        <Badge appearance="tint" color={paymentStatusColor(p.status)}>{paymentStatusLabel(p.status)}</Badge>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<AdminPaymentDto>({
+                columnId: "externalId",
+                compare: (a, b) => (a.externalPaymentId ?? "").localeCompare(b.externalPaymentId ?? ""),
+                renderHeaderCell: () => "External ID",
+                renderCell: (p) => (
+                    <TableCellLayout truncate>
+                        <Caption1 className="font-mono">{p.externalPaymentId ? p.externalPaymentId.slice(0, 16) + "…" : "—"}</Caption1>
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<AdminPaymentDto>({
+                columnId: "createdAt",
+                compare: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                renderHeaderCell: () => "Создан",
+                renderCell: (p) => <TableCellLayout truncate>{formatDate(p.createdAt)}</TableCellLayout>,
+            }),
+        ];
+
+        return allColumns.filter(col => !col.permission || has(col.permission as any));
+    }, [has]);
 
     return (
         <div>
