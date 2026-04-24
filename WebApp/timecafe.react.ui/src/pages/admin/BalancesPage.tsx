@@ -5,6 +5,7 @@ import {
     Body2,
     Badge,
     Card,
+    Caption1,
     MessageBar,
     MessageBarBody,
     Title2,
@@ -31,6 +32,21 @@ const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
+const AdminUserCell = ({userId}: {userId: string}) => {
+    const {data: profile} = useGetProfileByUserIdQuery(userId);
+    const displayName = profile?.firstName || profile?.lastName
+        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
+        : profile?.email || null;
+
+    return (
+        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
+            <div className="flex flex-col min-w-0">
+                <Body1 block truncate>{displayName || userId}</Body1>
+                <Caption1 block className="font-mono text-gray-400" style={{ fontSize: '10px' }}>{userId}</Caption1>
+            </div>
+        </TableCellLayout>
+    );
+};
 
 const getBalanceType = (balance: AdminBalanceDto) => {
     if (balance.debt > 0) return "Долг";

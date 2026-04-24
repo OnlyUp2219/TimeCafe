@@ -113,7 +113,7 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
     [Fact]
     public async Task Endpoint_CreateRole_Should_Return201_AndRoleShouldExist_WhenUserHasRbacCreatePermission()
     {
-        var token = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+        var token = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacRoleCreate, Permissions.RbacRoleRead]);
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         var roleName = $"managed_{Guid.NewGuid():N}";
@@ -135,7 +135,7 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
     [Fact]
     public async Task Endpoint_AssignRoleToUser_Should_GrantPermission_WhenCacheAlreadyContainsDeniedSnapshot()
     {
-        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacUserRoleAssign, Permissions.RbacRoleRead]);
 
         var assignableRole = $"assignable_{Guid.NewGuid():N}";
         await EnsureRoleWithPermissionsAsync(assignableRole, [Permissions.RbacRoleRead]);
@@ -158,10 +158,17 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
     [Fact]
     public async Task Endpoint_RemoveRoleFromUser_Should_RevokePermission_WithSameToken()
     {
-        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacUserRoleRemove, Permissions.RbacRoleRead, Permissions.RbacSuperAdmin]);
 
         var removableRole = $"removable_{Guid.NewGuid():N}";
         var (userId, userToken) = await CreateUserAndLoginAsync(removableRole, [Permissions.RbacRoleRead]);
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var user = await userManager.FindByIdAsync(userId.ToString());
+            await userManager.AddToRoleAsync(user!, Roles.Client);
+        }
 
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
         var allowedBeforeRemove = await Client.GetAsync(RbacRolesEndpoint);
@@ -179,7 +186,7 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
     [Fact]
     public async Task Endpoint_UpdateRoleClaims_Should_InvalidateRoleTagCache_ForAssignedUsers()
     {
-        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin);
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacRoleClaimsUpdate, Permissions.RbacRoleRead]);
 
         var mutableRole = $"mutable_{Guid.NewGuid():N}";
         var (_, userToken) = await CreateUserAndLoginAsync(mutableRole, [Permissions.RbacRoleRead]);
@@ -198,5 +205,42 @@ public class RbacEndpointsTests(IntegrationApiFactory factory) : BaseEndpointTes
         Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", userToken);
         var deniedAfterUpdate = await Client.GetAsync(RbacRolesEndpoint);
         deniedAfterUpdate.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_AssignSuperAdmin_Should_Return403_WhenUserIsNotSuperAdmin()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacUserRoleAssign]);
+        var (targetUserId, _) = await CreateUserAndLoginAsync(Roles.Client);
+
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var response = await Client.PostAsync($"/auth/rbac/users/{targetUserId}/roles/{Roles.SuperAdmin}", null);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_UpdateSuperAdminClaims_Should_Return403_BecauseItIsSystemRole()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacRoleClaimsUpdate, Permissions.RbacSuperAdmin]);
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+
+        var response = await Client.PutAsJsonAsync($"/auth/rbac/role-claims/{Roles.SuperAdmin}", new
+        {
+            claims = new[] { Permissions.RbacSuperAdmin }
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Endpoint_DeleteSystemRole_Should_Return403()
+    {
+        var adminToken = await CreateUserWithRoleAndLoginAsync(Roles.Admin, [Permissions.RbacRoleDelete, Permissions.RbacSuperAdmin]);
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+
+        var response = await Client.DeleteAsync($"/auth/rbac/roles/{Roles.Admin}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 }
