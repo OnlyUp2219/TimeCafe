@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record DeactivatePromotionCommand(Guid PromotionId) : IRequest<DeactivatePromotionResult>;
-
-public record DeactivatePromotionResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeactivatePromotionResult PromotionNotFound() =>
-        new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);
-
-    public static DeactivatePromotionResult DeactivateFailed() =>
-        new(false, Code: "DeactivatePromotionFailed", Message: "Не удалось деактивировать акцию", StatusCode: 500);
-
-    public static DeactivatePromotionResult DeactivateSuccess() =>
-        new(true, Message: "Акция успешно деактивирована");
-}
+public record DeactivatePromotionCommand(Guid PromotionId) : ICommand;
 
 public class DeactivatePromotionCommandValidator : AbstractValidator<DeactivatePromotionCommand>
 {
@@ -27,28 +10,29 @@ public class DeactivatePromotionCommandValidator : AbstractValidator<DeactivateP
     }
 }
 
-public class DeactivatePromotionCommandHandler(IPromotionRepository repository) : IRequestHandler<DeactivatePromotionCommand, DeactivatePromotionResult>
+public class DeactivatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<DeactivatePromotionCommand>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<DeactivatePromotionResult> Handle(DeactivatePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeactivatePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
-                return DeactivatePromotionResult.PromotionNotFound();
+                return Result.Fail(new PromotionNotFoundError());
 
             var result = await _repository.DeactivateAsync(request.PromotionId);
 
             if (!result)
-                return DeactivatePromotionResult.DeactivateFailed();
+                return Result.Fail(new DeactivateFailedError());
 
-            return DeactivatePromotionResult.DeactivateSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeactivatePromotionResult.DeactivateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

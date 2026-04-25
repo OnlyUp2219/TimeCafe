@@ -9,7 +9,7 @@ public class GetAllThemes : ICarterModule
         {
             var query = new GetAllThemesQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { themes = r.Themes }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Themes")
         .WithName("GetAllThemes")
@@ -19,3 +19,4 @@ public class GetAllThemes : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueThemeRead));
     }
 }
+

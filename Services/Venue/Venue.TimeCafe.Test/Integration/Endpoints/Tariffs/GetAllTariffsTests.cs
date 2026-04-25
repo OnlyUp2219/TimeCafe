@@ -16,7 +16,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
         }
@@ -37,7 +37,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().Be(0);
         }
@@ -60,7 +60,7 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffs = json.GetProperty("tariffs");
+            var tariffs = json;
             var foundTariff = tariffs.EnumerateArray().FirstOrDefault(t => t.GetProperty("name").GetString() == TestData.NewTariffs.NewTariff2Name);
 
             foundTariff.ValueKind.Should().NotBe(JsonValueKind.Undefined);
@@ -75,3 +75,17 @@ public class GetAllTariffsTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

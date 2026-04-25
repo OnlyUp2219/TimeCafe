@@ -88,3 +88,4 @@ public class UpdateAsyncTests : BaseCqrsTest
         fromDb.CalculatedCost.Should().Be(TestData.VisitUpdateData.UpdatedCalculatedCost);
     }
 }
+

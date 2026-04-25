@@ -1,5 +1,3 @@
-using BuildingBlocks.Permissions;
-
 namespace Auth.TimeCafe.API.Endpoints.Account;
 
 public class GetMyPermissionsEndpoint : ICarterModule

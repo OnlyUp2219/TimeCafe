@@ -116,3 +116,4 @@ public class GetAllAsyncTests : BaseCqrsTest
         result.Should().Contain(t => !t.IsActive);
     }
 }
+

@@ -14,9 +14,9 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("promotion", out var promotionJson).Should().BeTrue();
-            promotionJson.GetProperty("promotionId").GetGuid().Should().Be(promotion.PromotionId);
-            promotionJson.GetProperty("name").GetString().Should().Be(TestData.ExistingPromotions.Promotion1Name);
+
+            json.GetProperty("promotionId").GetGuid().Should().Be(promotion.PromotionId);
+            json.GetProperty("name").GetString().Should().Be(TestData.ExistingPromotions.Promotion1Name);
         }
         catch (Exception)
         {
@@ -82,12 +82,12 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var promotionJson = json.GetProperty("promotion");
-            promotionJson.GetProperty("promotionId").GetGuid().Should().Be(promotion.PromotionId);
-            promotionJson.GetProperty("name").GetString().Should().Be(TestData.ExistingPromotions.Promotion3Name);
-            promotionJson.GetProperty("discountPercent").GetDecimal().Should().Be(TestData.ExistingPromotions.Promotion3DiscountPercent);
-            promotionJson.TryGetProperty("validFrom", out _).Should().BeTrue();
-            promotionJson.TryGetProperty("validTo", out _).Should().BeTrue();
+
+            json.GetProperty("promotionId").GetGuid().Should().Be(promotion.PromotionId);
+            json.GetProperty("name").GetString().Should().Be(TestData.ExistingPromotions.Promotion3Name);
+            json.GetProperty("discountPercent").GetDecimal().Should().Be(TestData.ExistingPromotions.Promotion3DiscountPercent);
+            json.TryGetProperty("validFrom", out _).Should().BeTrue();
+            json.TryGetProperty("validTo", out _).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -96,3 +96,16 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

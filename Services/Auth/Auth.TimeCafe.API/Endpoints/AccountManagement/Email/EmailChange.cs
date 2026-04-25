@@ -1,7 +1,3 @@
-using Auth.TimeCafe.Application.CQRS.Account.Commands;
-
-using System.Security.Claims;
-
 namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
 
 public record ChangeEmailRequest(

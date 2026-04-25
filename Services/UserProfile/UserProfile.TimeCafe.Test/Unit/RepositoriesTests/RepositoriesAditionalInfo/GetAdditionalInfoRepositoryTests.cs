@@ -69,3 +69,4 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
         result.Should().BeEmpty();
     }
 }
+

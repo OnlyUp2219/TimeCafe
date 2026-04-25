@@ -17,7 +17,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("themes", out var themes).Should().BeTrue();
+            var themes = json;
             themes.ValueKind.Should().Be(JsonValueKind.Array);
             themes.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
 
@@ -45,7 +45,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("themes", out var themes).Should().BeTrue();
+            var themes = json;
             themes.ValueKind.Should().Be(JsonValueKind.Array);
             themes.GetArrayLength().Should().Be(0);
         }
@@ -68,7 +68,7 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var themes = json.GetProperty("themes");
+            var themes = json;
             var foundTheme = themes.EnumerateArray().FirstOrDefault(t => t.GetProperty("name").GetString() == "Специальная тема");
 
             foundTheme.ValueKind.Should().NotBe(JsonValueKind.Undefined);
@@ -82,3 +82,18 @@ public class GetAllThemesTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

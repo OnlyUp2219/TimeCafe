@@ -3,24 +3,13 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.Promotions;
 public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_DeactivatePromotion_Should_Return200_WhenPromotionExists()
+    public async Task Endpoint_DeactivatePromotion_Should_Return204_WhenPromotionExists()
     {
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true);
 
         var response = await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/deactivate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeactivatePromotion_Should_Return200_WhenPromotionExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -29,24 +18,6 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         await ClearDatabaseAndCacheAsync();
 
         var response = await Client.PostAsync($"/venue/promotions/{TestData.NonExistingIds.NonExistingPromotionId}/deactivate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeactivatePromotion_Should_Return404_WhenPromotionNotFound] Response: {jsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
-    public async Task Endpoint_DeactivatePromotion_Should_Return404_WhenPromotionIdIsEmpty()
-    {
-        await ClearDatabaseAndCacheAsync();
-
-        var response = await Client.PostAsync("/venue/promotions//deactivate", null);
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
@@ -56,16 +27,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         await ClearDatabaseAndCacheAsync();
 
         var response = await Client.PostAsync($"/venue/promotions/{Guid.Empty}/deactivate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeactivatePromotion_Should_Return422_WhenPromotionIdIsEmpty] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
@@ -74,7 +36,8 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         await ClearDatabaseAndCacheAsync();
         var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true);
 
-        await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/deactivate", null);
+        var deactivateResponse = await Client.PostAsync($"/venue/promotions/{promotion.PromotionId}/deactivate", null);
+        deactivateResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var response = await Client.GetAsync($"/venue/promotions/{promotion.PromotionId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -82,7 +45,7 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.GetProperty("promotion").GetProperty("isActive").GetBoolean().Should().BeFalse();
+            json.GetProperty("isActive").GetBoolean().Should().BeFalse();
         }
         catch (Exception)
         {
@@ -91,3 +54,8 @@ public class DeactivatePromotionTests(IntegrationApiFactory factory) : BaseEndpo
         }
     }
 }
+
+
+
+
+

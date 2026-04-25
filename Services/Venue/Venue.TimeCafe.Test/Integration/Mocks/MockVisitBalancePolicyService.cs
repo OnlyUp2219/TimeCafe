@@ -13,3 +13,10 @@ public class MockVisitBalancePolicyService : IVisitBalancePolicyService
         return Task.FromResult(new VisitBalanceCheckResult(true));
     }
 }
+
+
+
+
+
+
+

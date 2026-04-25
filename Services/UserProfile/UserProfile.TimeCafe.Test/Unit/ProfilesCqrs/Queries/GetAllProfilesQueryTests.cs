@@ -21,10 +21,9 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Profiles.Should().NotBeNull();
-        result.Profiles!.Should().HaveCount(3);
-        result.Message.Should().Contain("Получено профилей: 3");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Should().HaveCount(3);
     }
 
     [Fact]
@@ -38,14 +37,13 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Profiles.Should().NotBeNull();
-        result.Profiles!.Should().BeEmpty();
-        result.Message.Should().Contain("Получено профилей: 0");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task Handler_GetAllProfiles_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_GetAllProfiles_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -53,14 +51,10 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         var handler = new GetAllProfilesQueryHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(query, CancellationToken.None));
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetAllProfilesFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось получить профили");
+        result.IsFailed.Should().BeTrue();
     }
 }
+

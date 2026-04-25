@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record ActivateTariffCommand(Guid TariffId) : IRequest<ActivateTariffResult>;
-
-public record ActivateTariffResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static ActivateTariffResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-
-    public static ActivateTariffResult ActivateFailed() =>
-        new(false, Code: "ActivateTariffFailed", Message: "Не удалось активировать тариф", StatusCode: 500);
-
-    public static ActivateTariffResult ActivateSuccess() =>
-        new(true, Message: "Тариф успешно активирован");
-}
+public record ActivateTariffCommand(Guid TariffId) : ICommand;
 
 public class ActivateTariffCommandValidator : AbstractValidator<ActivateTariffCommand>
 {
@@ -27,28 +10,29 @@ public class ActivateTariffCommandValidator : AbstractValidator<ActivateTariffCo
     }
 }
 
-public class ActivateTariffCommandHandler(ITariffRepository repository) : IRequestHandler<ActivateTariffCommand, ActivateTariffResult>
+public class ActivateTariffCommandHandler(ITariffRepository repository) : ICommandHandler<ActivateTariffCommand>
 {
     private readonly ITariffRepository _repository = repository;
 
-    public async Task<ActivateTariffResult> Handle(ActivateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ActivateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
-                return ActivateTariffResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             var result = await _repository.ActivateAsync(request.TariffId);
 
             if (!result)
-                return ActivateTariffResult.ActivateFailed();
+                return Result.Fail(new ActivateFailedError());
 
-            return ActivateTariffResult.ActivateSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(ActivateTariffResult.ActivateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

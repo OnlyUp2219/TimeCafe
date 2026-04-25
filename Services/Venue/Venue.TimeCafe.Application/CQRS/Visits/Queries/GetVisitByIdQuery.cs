@@ -1,24 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetVisitByIdQuery(Guid VisitId) : IRequest<GetVisitByIdResult>;
-
-public record GetVisitByIdResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    VisitWithTariffDto? Visit = null) : ICqrsResult
-{
-    public static GetVisitByIdResult VisitNotFound() =>
-        new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
-
-    public static GetVisitByIdResult GetFailed() =>
-        new(false, Code: "GetVisitFailed", Message: "Не удалось получить посещение", StatusCode: 500);
-
-    public static GetVisitByIdResult GetSuccess(VisitWithTariffDto visit) =>
-        new(true, Visit: visit);
-}
+public record GetVisitByIdQuery(Guid VisitId) : IQuery<VisitWithTariffDto>;
 
 public class GetVisitByIdQueryValidator : AbstractValidator<GetVisitByIdQuery>
 {
@@ -28,24 +10,25 @@ public class GetVisitByIdQueryValidator : AbstractValidator<GetVisitByIdQuery>
     }
 }
 
-public class GetVisitByIdQueryHandler(IVisitRepository repository) : IRequestHandler<GetVisitByIdQuery, GetVisitByIdResult>
+public class GetVisitByIdQueryHandler(IVisitRepository repository) : IQueryHandler<GetVisitByIdQuery, VisitWithTariffDto>
 {
     private readonly IVisitRepository _repository = repository;
 
-    public async Task<GetVisitByIdResult> Handle(GetVisitByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<VisitWithTariffDto>> Handle(GetVisitByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var visit = await _repository.GetByIdAsync(request.VisitId);
 
             if (visit == null)
-                return GetVisitByIdResult.VisitNotFound();
+                return Result.Fail(new VisitNotFoundError());
 
-            return GetVisitByIdResult.GetSuccess(visit);
+            return Result.Ok(visit);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetVisitByIdResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

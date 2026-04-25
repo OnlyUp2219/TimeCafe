@@ -78,3 +78,4 @@ public class VisitBalancePolicyService(IHttpClientFactory httpClientFactory, ILo
         public decimal Debt { get; set; }
     }
 }
+

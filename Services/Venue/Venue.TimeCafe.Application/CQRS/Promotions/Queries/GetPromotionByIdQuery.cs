@@ -1,24 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
-public record GetPromotionByIdQuery(Guid PromotionId) : IRequest<GetPromotionByIdResult>;
-
-public record GetPromotionByIdResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Promotion? Promotion = null) : ICqrsResult
-{
-    public static GetPromotionByIdResult PromotionNotFound() =>
-        new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);
-
-    public static GetPromotionByIdResult GetFailed() =>
-        new(false, Code: "GetPromotionFailed", Message: "Не удалось получить акцию", StatusCode: 500);
-
-    public static GetPromotionByIdResult GetSuccess(Promotion promotion) =>
-        new(true, Promotion: promotion);
-}
+public record GetPromotionByIdQuery(Guid PromotionId) : IQuery<Promotion>;
 
 public class GetPromotionByIdQueryValidator : AbstractValidator<GetPromotionByIdQuery>
 {
@@ -28,24 +10,25 @@ public class GetPromotionByIdQueryValidator : AbstractValidator<GetPromotionById
     }
 }
 
-public class GetPromotionByIdQueryHandler(IPromotionRepository repository) : IRequestHandler<GetPromotionByIdQuery, GetPromotionByIdResult>
+public class GetPromotionByIdQueryHandler(IPromotionRepository repository) : IQueryHandler<GetPromotionByIdQuery, Promotion>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<GetPromotionByIdResult> Handle(GetPromotionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<Promotion>> Handle(GetPromotionByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var promotion = await _repository.GetByIdAsync(request.PromotionId);
 
             if (promotion == null)
-                return GetPromotionByIdResult.PromotionNotFound();
+                return Result.Fail(new PromotionNotFoundError());
 
-            return GetPromotionByIdResult.GetSuccess(promotion);
+            return Result.Ok(promotion);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetPromotionByIdResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

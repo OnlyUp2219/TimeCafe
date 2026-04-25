@@ -10,14 +10,15 @@ public class DeleteAdditionalInfo : ICarterModule
         {
             var command = new DeleteAdditionalInfoCommand(infoId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("AdditionalInfos")
         .WithName("DeleteAdditionalInfo")
         .WithSummary("Удалить запись доп. информации")
         .WithDescription("Удаляет запись дополнительной информации по идентификатору.")
-        .Produces(200)
+        .Produces(204)
         .Produces(404)
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoDelete));
     }
 }
+

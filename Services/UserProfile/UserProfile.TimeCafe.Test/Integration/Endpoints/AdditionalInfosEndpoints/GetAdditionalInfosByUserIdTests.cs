@@ -25,8 +25,9 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = json.EnumerateArray().ToList();
+            json.TryGetProperty("infos", out var infos).Should().BeTrue();
+            infos.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = infos.EnumerateArray().ToList();
             items.Should().HaveCount(2);
             items[0].TryGetProperty("infoText", out var text1).Should().BeTrue();
             items[1].TryGetProperty("infoText", out var text2).Should().BeTrue();
@@ -54,8 +55,9 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = json.EnumerateArray().ToList();
+            json.TryGetProperty("infos", out var infos).Should().BeTrue();
+            infos.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = infos.EnumerateArray().ToList();
             items.Should().BeEmpty();
         }
         catch (Exception)
@@ -69,7 +71,7 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
     public async Task Endpoint_GetAdditionalInfosByUserId_Should_Return404_WhenProfileNotFound()
     {
         // Arrange
-        var nonExistentUserId = NonExistingUsers.UserId1;
+        var nonExistentUserId = TestData.NonExistingUsers.UserId1;
 
         // Act
         var response = await Client.GetAsync($"/userprofile/profiles/{nonExistentUserId}/infos");

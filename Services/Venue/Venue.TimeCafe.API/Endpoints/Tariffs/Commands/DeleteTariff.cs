@@ -10,7 +10,7 @@ public class DeleteTariff : ICarterModule
         {
             var command = new DeleteTariffCommand(tariffId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Tariffs")
         .WithName("DeleteTariff")
@@ -21,4 +21,5 @@ public class DeleteTariff : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffDelete));
     }
 }
+
 

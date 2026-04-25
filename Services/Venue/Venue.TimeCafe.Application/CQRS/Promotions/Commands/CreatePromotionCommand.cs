@@ -6,22 +6,9 @@ public record CreatePromotionCommand(
     decimal? DiscountPercent,
     DateTimeOffset ValidFrom,
     DateTimeOffset ValidTo,
-    bool IsActive = true) : IRequest<CreatePromotionResult>;
-
-public record CreatePromotionResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Promotion? Promotion = null) : ICqrsResult
-{
-    public static CreatePromotionResult CreateFailed() =>
-        new(false, Code: "CreatePromotionFailed", Message: "Не удалось создать акцию", StatusCode: 500);
-
-    public static CreatePromotionResult CreateSuccess(Promotion promotion) =>
-        new(true, Message: "Акция успешно создана", StatusCode: 201, Promotion: promotion);
-}
+    PromotionType Type,
+    Guid? TariffId = null,
+    bool IsActive = true) : ICommand<Promotion>;
 
 public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotionCommand>
 {
@@ -38,35 +25,40 @@ public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotion
     }
 }
 
-public class CreatePromotionCommandHandler(IPromotionRepository repository) : IRequestHandler<CreatePromotionCommand, CreatePromotionResult>
+public class CreatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<CreatePromotionCommand, Promotion>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<CreatePromotionResult> Handle(CreatePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Promotion>> Handle(CreatePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var promotion = new Promotion
-            {
-                Name = request.Name,
-                Description = request.Description,
-                DiscountPercent = request.DiscountPercent,
-                ValidFrom = request.ValidFrom,
-                ValidTo = request.ValidTo,
-                IsActive = request.IsActive,
-                CreatedAt = DateTimeOffset.UtcNow
-            };
+            var promotionResult = Promotion.Create(
+                promotionId: null,
+                name: request.Name,
+                description: request.Description,
+                validFrom: request.ValidFrom,
+                validTo: request.ValidTo,
+                isActive: request.IsActive,
+                type: request.Type,
+                tariffId: request.TariffId,
+                DiscountPercent: request.DiscountPercent
+            );
 
-            var created = await _repository.CreateAsync(promotion);
+            if (promotionResult.IsFailed)
+                return Result.Fail(promotionResult.Errors);
+
+            var created = await _repository.CreateAsync(promotionResult.Value);
 
             if (created == null)
-                return CreatePromotionResult.CreateFailed();
+                return Result.Fail(new Error("Не удалось сохранить акцию в БД").WithMetadata("ErrorCode", "500"));
 
-            return CreatePromotionResult.CreateSuccess(created);
+            return Result.Ok(created);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(CreatePromotionResult.CreateFailed(), ex);
+            return Result.Fail(new Error("Не удалось создать акцию").CausedBy(ex).WithMetadata("ErrorCode", "500"));
         }
     }
 }
+

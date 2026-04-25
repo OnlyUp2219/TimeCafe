@@ -10,7 +10,7 @@ public class GetVisitById : ICarterModule
         {
             var query = new GetVisitByIdQuery(visitId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visit = r.Visit }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Visits")
         .WithName("GetVisitById")
@@ -21,3 +21,4 @@ public class GetVisitById : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }
+

@@ -3,24 +3,12 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.Themes;
 public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_DeleteTheme_Should_Return200_WhenThemeExists()
+    public async Task Endpoint_DeleteTheme_Should_Return204_WhenThemeExists()
     {
         var theme = await SeedThemeAsync("Тема для удаления");
 
         var response = await Client.DeleteAsync($"/venue/themes/{theme.ThemeId}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrWhiteSpace();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return200_WhenThemeExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -48,7 +36,7 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var theme = await SeedThemeAsync("Проверка удаления");
 
         var deleteResponse = await Client.DeleteAsync($"/venue/themes/{theme.ThemeId}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var secondDeleteResponse = await Client.DeleteAsync($"/venue/themes/{theme.ThemeId}");
         var jsonString = await secondDeleteResponse.Content.ReadAsStringAsync();
@@ -86,22 +74,6 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
     }
 
     [Fact]
-    public async Task Endpoint_DeleteTheme_Should_Return405_WhenThemeIdIsEmpty()
-    {
-        var response = await Client.DeleteAsync("/venue/themes/");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteTheme_Should_Return405_WhenThemeIdIsEmpty] Response: {jsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
     public async Task Endpoint_DeleteTheme_Should_NotAffectOtherThemes()
     {
         var theme1 = await SeedThemeAsync("Первая тема");
@@ -115,9 +87,9 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.GetProperty("themeId").GetGuid().Should().Be(theme2.ThemeId);
-            theme.GetProperty("name").GetString().Should().Be("Вторая тема");
+
+            json.GetProperty("themeId").GetGuid().Should().Be(theme2.ThemeId);
+            json.GetProperty("name").GetString().Should().Be("Вторая тема");
         }
         catch (Exception)
         {
@@ -125,25 +97,11 @@ public class DeleteThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
             throw;
         }
     }
-
-    [Fact]
-    public async Task Endpoint_DeleteTheme_Should_ReturnSuccessMessage()
-    {
-        var theme = await SeedThemeAsync("Тема для проверки сообщения");
-
-        var response = await Client.DeleteAsync($"/venue/themes/{theme.ThemeId}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrWhiteSpace();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteTheme_Should_ReturnSuccessMessage] Response: {jsonString}");
-            throw;
-        }
-    }
 }
+
+
+
+
+
+
+

@@ -14,8 +14,8 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-            json.TryGetProperty("visit", out _).Should().BeTrue();
+
+
             json.TryGetProperty("calculatedCost", out _).Should().BeTrue();
         }
         catch (Exception)
@@ -84,3 +84,16 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

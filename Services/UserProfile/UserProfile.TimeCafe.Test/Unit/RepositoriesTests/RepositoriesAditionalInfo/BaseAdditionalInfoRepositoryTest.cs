@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditionalInfo;
 
@@ -64,3 +63,4 @@ public abstract class BaseAdditionalInfoRepositoryTest : IDisposable
         _disposed = true;
     }
 }
+

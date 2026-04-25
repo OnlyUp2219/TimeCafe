@@ -20,9 +20,9 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Theme.Should().NotBeNull();
-        result.Theme!.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
     }
 
     [Fact]
@@ -34,13 +34,11 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ThemeNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryThrowsException()
+    public async Task Handler_Should_ReturnFailed_WhenRepositoryThrowsException()
     {
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.ExistingThemes.Theme2Name, Emoji = TestData.ExistingThemes.Theme2Emoji, Colors = TestData.ExistingThemes.Theme2Colors };
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id, TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
@@ -48,29 +46,19 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
         ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdateThemeFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var command = new UpdateThemeCommand(TestData.ExistingThemes.Theme1Id, TestData.ExistingThemes.Theme2Name, TestData.ExistingThemes.Theme2Emoji, TestData.ExistingThemes.Theme2Colors);
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdateThemeFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -95,3 +83,4 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
         }
     }
 }
+

@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record DeactivateTariffCommand(Guid TariffId) : IRequest<DeactivateTariffResult>;
-
-public record DeactivateTariffResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeactivateTariffResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-
-    public static DeactivateTariffResult DeactivateFailed() =>
-        new(false, Code: "DeactivateTariffFailed", Message: "Не удалось деактивировать тариф", StatusCode: 500);
-
-    public static DeactivateTariffResult DeactivateSuccess() =>
-        new(true, Message: "Тариф успешно деактивирован");
-}
+public record DeactivateTariffCommand(Guid TariffId) : ICommand;
 
 public class DeactivateTariffCommandValidator : AbstractValidator<DeactivateTariffCommand>
 {
@@ -27,28 +10,29 @@ public class DeactivateTariffCommandValidator : AbstractValidator<DeactivateTari
     }
 }
 
-public class DeactivateTariffCommandHandler(ITariffRepository repository) : IRequestHandler<DeactivateTariffCommand, DeactivateTariffResult>
+public class DeactivateTariffCommandHandler(ITariffRepository repository) : ICommandHandler<DeactivateTariffCommand>
 {
     private readonly ITariffRepository _repository = repository;
 
-    public async Task<DeactivateTariffResult> Handle(DeactivateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeactivateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
-                return DeactivateTariffResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             var result = await _repository.DeactivateAsync(request.TariffId);
 
             if (!result)
-                return DeactivateTariffResult.DeactivateFailed();
+                return Result.Fail(new DeactivateFailedError());
 
-            return DeactivateTariffResult.DeactivateSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeactivateTariffResult.DeactivateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

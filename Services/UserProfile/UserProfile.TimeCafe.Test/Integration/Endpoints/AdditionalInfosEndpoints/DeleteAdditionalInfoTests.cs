@@ -12,7 +12,7 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         var response = await Client.DeleteAsync($"/userprofile/infos/{infoId}");
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -28,6 +28,7 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         var json = JsonDocument.Parse(jsonString).RootElement;
+
         if (json.TryGetProperty("code", out var code))
             code.GetString()!.Should().Be("AdditionalInfoNotFound");
     }
@@ -42,3 +43,12 @@ public class DeleteAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 }
+
+
+
+
+
+
+
+
+

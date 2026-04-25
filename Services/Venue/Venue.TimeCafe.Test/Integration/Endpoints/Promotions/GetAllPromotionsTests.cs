@@ -16,7 +16,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("promotions", out var promotions).Should().BeTrue();
+            var promotions = json;
             promotions.ValueKind.Should().Be(JsonValueKind.Array);
             promotions.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
         }
@@ -38,7 +38,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("promotions", out var promotions).Should().BeTrue();
+            var promotions = json;
             promotions.ValueKind.Should().Be(JsonValueKind.Array);
             promotions.GetArrayLength().Should().Be(0);
         }
@@ -61,7 +61,7 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var promotions = json.GetProperty("promotions");
+            var promotions = json;
             var foundPromotion = promotions.EnumerateArray().FirstOrDefault(p => p.GetProperty("name").GetString() == TestData.NewPromotions.NewPromotion1Name);
 
             foundPromotion.ValueKind.Should().NotBe(JsonValueKind.Undefined);
@@ -76,3 +76,17 @@ public class GetAllPromotionsTests(IntegrationApiFactory factory) : BaseEndpoint
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

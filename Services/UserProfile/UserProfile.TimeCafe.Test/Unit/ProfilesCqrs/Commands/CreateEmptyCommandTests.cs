@@ -14,10 +14,7 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().Be(201);
-        result.Message.Should().Be("Пустой профиль создан");
-
+        result.IsSuccess.Should().BeTrue();
         var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().NotBeNull();
         profile!.UserId.Should().Be(userId);
@@ -37,14 +34,11 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileAlreadyExists");
-        result.StatusCode.Should().Be(409);
-        result.Message.Should().Be("Профиль уже существует");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_CreateEmpty_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_CreateEmpty_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -53,15 +47,11 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         var handler = new CreateEmptyCommandHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(command, CancellationToken.None));
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateEmptyFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось создать профиль");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Fact]
@@ -99,3 +89,5 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         // Keeping this as a placeholder showing the change
     }
 }
+
+

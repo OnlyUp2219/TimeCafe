@@ -6,25 +6,7 @@ public record CreateTariffCommand(
     decimal PricePerMinute,
     BillingType BillingType,
     Guid? ThemeId,
-    bool IsActive = true) : IRequest<CreateTariffResult>;
-
-public record CreateTariffResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Tariff? Tariff = null) : ICqrsResult
-{
-    public static CreateTariffResult ThemeNotFound() =>
-        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
-
-    public static CreateTariffResult CreateFailed() =>
-        new(false, Code: "CreateTariffFailed", Message: "Не удалось создать тариф", StatusCode: 500);
-
-    public static CreateTariffResult CreateSuccess(Tariff tariff) =>
-        new(true, Message: "Тариф успешно создан", StatusCode: 201, Tariff: tariff);
-}
+    bool IsActive = true) : ICommand<Tariff>;
 
 public class CreateTariffCommandValidator : AbstractValidator<CreateTariffCommand>
 {
@@ -43,12 +25,12 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
     }
 }
 
-public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository) : IRequestHandler<CreateTariffCommand, CreateTariffResult>
+public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository) : ICommandHandler<CreateTariffCommand, Tariff>
 {
     private readonly ITariffRepository _repository = repository;
     private readonly IThemeRepository _themeRepository = themeRepository;
 
-    public async Task<CreateTariffResult> Handle(CreateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Tariff>> Handle(CreateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -56,7 +38,7 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
             {
                 var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
                 if (themeExists == null)
-                    return CreateTariffResult.ThemeNotFound();
+                    return Result.Fail(new ThemeNotFoundError());
             }
 
             var tariff = new Tariff
@@ -72,13 +54,14 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
             var created = await _repository.CreateAsync(tariff);
 
             if (created == null)
-                return CreateTariffResult.CreateFailed();
+                return Result.Fail(new CreateFailedError());
 
-            return CreateTariffResult.CreateSuccess(created);
+            return Result.Ok(created);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(CreateTariffResult.CreateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

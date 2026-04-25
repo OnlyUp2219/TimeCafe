@@ -84,3 +84,4 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
         countAfter.Should().Be(1);
     }
 }
+

@@ -85,3 +85,4 @@ public class GetActiveAsyncTests : BaseCqrsTest
         secondResult.Should().HaveCount(1);
     }
 }
+

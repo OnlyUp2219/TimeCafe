@@ -24,10 +24,10 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Tariffs.Should().NotBeNull();
-        result.Tariffs.Should().HaveCount(2);
-        result.TotalCount.Should().Be(15);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Tariffs.Should().HaveCount(2);
+        result.Value.TotalCount.Should().Be(15);
     }
 
     [Fact]
@@ -41,26 +41,21 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Tariffs.Should().NotBeNull();
-        result.Tariffs.Should().BeEmpty();
-        result.TotalCount.Should().Be(5);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Tariffs.Should().BeEmpty();
+        result.Value.TotalCount.Should().Be(5);
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var query = new GetTariffsPageQuery(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize);
 
         TariffRepositoryMock.Setup(r => r.GetPagedAsync(TestData.DefaultValues.FirstPage, TestData.DefaultValues.DefaultPageSize, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetTariffsPageFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -85,3 +80,4 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
         }
     }
 }
+

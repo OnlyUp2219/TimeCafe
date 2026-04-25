@@ -9,7 +9,7 @@ public class GetTotalPages : ICarterModule
         {
             var query = new GetTotalPagesQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { totalCount = r.TotalCount }));
+            return result.ToHttpResult(r => TypedResults.Ok(new { totalCount = r }));
         })
         .WithTags("Profiles")
         .WithName("GetTotalPages")

@@ -9,7 +9,7 @@ public class GetActiveTariffs : ICarterModule
         {
             var query = new GetActiveTariffsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Tariffs")
         .WithName("GetActiveTariffs")
@@ -19,3 +19,4 @@ public class GetActiveTariffs : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }
+

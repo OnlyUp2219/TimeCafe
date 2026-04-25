@@ -163,3 +163,4 @@ public class GetActiveByDateAsyncTests : BaseCqrsTest
         resultEnd.Should().HaveCount(1);
     }
 }
+

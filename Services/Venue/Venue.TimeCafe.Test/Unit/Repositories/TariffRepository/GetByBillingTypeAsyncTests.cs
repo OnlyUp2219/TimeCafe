@@ -84,3 +84,4 @@ public class GetByBillingTypeAsyncTests : BaseCqrsTest
         result[2].PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
     }
 }
+

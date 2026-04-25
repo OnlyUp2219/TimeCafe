@@ -24,6 +24,8 @@ public static class MassTransitExtensions
                 o.UseBusOutbox();
             });
 
+            x.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>();
+
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -47,6 +49,11 @@ public static class MassTransitExtensions
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
                 cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
+                cfg.ReceiveEndpoint("venue-user-discount-updated", e =>
+                {
+                    e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>(context);
+                });
+
                 cfg.ConfigureEndpoints(context);
             });
         });
@@ -56,3 +63,4 @@ public static class MassTransitExtensions
         return services;
     }
 }
+

@@ -9,7 +9,7 @@ public class GetAllPromotions : ICarterModule
         {
             var query = new GetAllPromotionsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Promotions")
         .WithName("GetAllPromotions")
@@ -19,3 +19,4 @@ public class GetAllPromotions : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }
+

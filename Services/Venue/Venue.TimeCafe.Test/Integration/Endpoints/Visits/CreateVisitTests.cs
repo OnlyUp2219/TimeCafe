@@ -19,9 +19,9 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-            json.TryGetProperty("visit", out var visit).Should().BeTrue();
-            visit.GetProperty("userId").GetString().Should().Be(TestData.DefaultValues.DefaultUserId.ToString());
+
+
+            json.GetProperty("userId").GetString().Should().Be(TestData.DefaultValues.DefaultUserId.ToString());
         }
         catch (Exception)
         {
@@ -94,8 +94,8 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var visit = json.GetProperty("visit");
-            visit.GetProperty("visitId").GetGuid().Should().NotBeEmpty();
+            var visit = json;
+            json.GetProperty("visitId").GetGuid().Should().NotBeEmpty();
         }
         catch (Exception)
         {
@@ -104,3 +104,16 @@ public class CreateVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

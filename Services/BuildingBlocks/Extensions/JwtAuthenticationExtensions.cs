@@ -1,5 +1,3 @@
-using BuildingBlocks.Options;
-
 namespace BuildingBlocks.Extensions;
 
 public static class JwtAuthenticationExtensions

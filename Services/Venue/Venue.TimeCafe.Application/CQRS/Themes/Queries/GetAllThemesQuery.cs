@@ -1,21 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
-public record GetAllThemesQuery() : IRequest<GetAllThemesResult>;
-
-public record GetAllThemesResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    IEnumerable<Theme>? Themes = null) : ICqrsResult
-{
-    public static GetAllThemesResult GetFailed() =>
-        new(false, Code: "GetThemesFailed", Message: "Не удалось получить темы", StatusCode: 500);
-
-    public static GetAllThemesResult GetSuccess(IEnumerable<Theme> themes) =>
-        new(true, Themes: themes);
-}
+public record GetAllThemesQuery() : IQuery<IEnumerable<Theme>>;
 
 public class GetAllThemesQueryValidator : AbstractValidator<GetAllThemesQuery>
 {
@@ -24,20 +9,21 @@ public class GetAllThemesQueryValidator : AbstractValidator<GetAllThemesQuery>
     }
 }
 
-public class GetAllThemesQueryHandler(IThemeRepository repository) : IRequestHandler<GetAllThemesQuery, GetAllThemesResult>
+public class GetAllThemesQueryHandler(IThemeRepository repository) : IQueryHandler<GetAllThemesQuery, IEnumerable<Theme>>
 {
     private readonly IThemeRepository _repository = repository;
 
-    public async Task<GetAllThemesResult> Handle(GetAllThemesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Theme>>> Handle(GetAllThemesQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var themes = await _repository.GetAllAsync();
-            return GetAllThemesResult.GetSuccess(themes);
+            return Result.Ok(themes);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetAllThemesResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

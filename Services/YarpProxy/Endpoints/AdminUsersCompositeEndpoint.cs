@@ -16,8 +16,10 @@ public class AdminUsersCompositeEndpoint : ICarterModule
             var billingClient = httpClientFactory.CreateClient("Billing");
 
             var authUrl = $"/auth/admin/users?page={page}&size={size}";
-            if (!string.IsNullOrEmpty(search)) authUrl += $"&search={search}";
-            if (!string.IsNullOrEmpty(status)) authUrl += $"&status={status}";
+            if (!string.IsNullOrEmpty(search))
+                authUrl += $"&search={search}";
+            if (!string.IsNullOrEmpty(status))
+                authUrl += $"&status={status}";
 
             var authResponse = await authClient.GetFromJsonAsync<AuthUsersResponse>(authUrl);
             if (authResponse == null || authResponse.Users == null)
@@ -77,7 +79,7 @@ public class AdminUsersCompositeEndpoint : ICarterModule
     private record AuthUsersResponse(List<AuthUserDto> Users, PaginationDto Pagination);
     private record AuthUserDto(Guid Id, string Email, string? Name, string Role, string Status, bool EmailConfirmed, bool PhoneNumberConfirmed, string? PhoneNumber);
     private record PaginationDto(int CurrentPage, int PageSize, int TotalCount, int TotalPages);
-    
+
     private record ProfileDto(Guid UserId, string FirstName, string LastName, string? MiddleName, string? PhotoUrl, int ProfileStatus);
     private record BalanceDto(Guid UserId, decimal CurrentBalance, decimal Debt);
 }

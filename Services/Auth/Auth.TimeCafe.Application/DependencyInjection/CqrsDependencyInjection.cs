@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace Auth.TimeCafe.Application.DependencyInjection;
 
 public static class CqrsDependencyInjection

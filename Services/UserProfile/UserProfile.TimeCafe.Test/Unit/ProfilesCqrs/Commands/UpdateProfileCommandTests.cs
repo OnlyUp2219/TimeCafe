@@ -23,11 +23,10 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Message.Should().Be("Профиль успешно обновлён");
-        result.Profile.Should().NotBeNull();
-        result.Profile!.FirstName.Should().Be(UpdateData.UpdatedFirstName);
-        result.Profile.LastName.Should().Be(UpdateData.UpdatedLastName);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.FirstName.Should().Be(UpdateData.UpdatedFirstName);
+        result.Value.LastName.Should().Be(UpdateData.UpdatedLastName);
     }
 
     [Fact]
@@ -48,14 +47,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_UpdateProfile_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_UpdateProfile_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.Parse(ExistingUsers.User2Id);
@@ -67,15 +63,11 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         var handler = new UpdateProfileCommandHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(command, CancellationToken.None));
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdateProfileFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось обновить профиль");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Fact]
@@ -129,3 +121,5 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         result.Errors.Count.Should().Be(2);
     }
 }
+
+

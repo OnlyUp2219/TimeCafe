@@ -27,3 +27,4 @@ public class TariffProfile : Profile
             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive));
     }
 }
+

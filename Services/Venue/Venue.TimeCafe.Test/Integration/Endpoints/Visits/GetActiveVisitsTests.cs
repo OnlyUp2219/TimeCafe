@@ -1,9 +1,9 @@
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Visits;
 
-public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
+public class GetactiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_GetActiveVisits_Should_Return200_WhenActiveVisitsExist()
+    public async Task Endpoint_GetactiveVisits_Should_Return200_WhenactiveVisitsExist()
     {
         await ClearDatabaseAndCacheAsync();
         await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
@@ -16,19 +16,19 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visits", out var visits).Should().BeTrue();
+            var visits = json;
             visits.ValueKind.Should().Be(JsonValueKind.Array);
             visits.GetArrayLength().Should().BeGreaterThanOrEqualTo(2);
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisits_Should_Return200_WhenActiveVisitsExist] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisits_Should_Return200_WhenactiveVisitsExist] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_GetActiveVisits_Should_Return200_WhenNoActiveVisitsExist()
+    public async Task Endpoint_GetactiveVisits_Should_Return200_WhenNoactiveVisitsExist()
     {
         await ClearDatabaseAndCacheAsync();
         await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId, isActive: false);
@@ -39,19 +39,19 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visits", out var visits).Should().BeTrue();
+            var visits = json;
             visits.ValueKind.Should().Be(JsonValueKind.Array);
             visits.GetArrayLength().Should().Be(0);
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisits_Should_Return200_WhenNoActiveVisitsExist] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisits_Should_Return200_WhenNoactiveVisitsExist] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_GetActiveVisits_Should_OnlyReturnActiveVisits_WhenCalled()
+    public async Task Endpoint_GetactiveVisits_Should_OnlyReturnactiveVisits_WhenCalled()
     {
         await ClearDatabaseAndCacheAsync();
         await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId, isActive: true);
@@ -63,7 +63,7 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var visits = json.GetProperty("visits");
+            var visits = json;
             foreach (var visit in visits.EnumerateArray())
             {
                 visit.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.Active);
@@ -71,8 +71,22 @@ public class GetActiveVisitsTests(IntegrationApiFactory factory) : BaseEndpointT
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisits_Should_OnlyReturnActiveVisits_WhenCalled] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisits_Should_OnlyReturnactiveVisits_WhenCalled] Response: {jsonString}");
             throw;
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

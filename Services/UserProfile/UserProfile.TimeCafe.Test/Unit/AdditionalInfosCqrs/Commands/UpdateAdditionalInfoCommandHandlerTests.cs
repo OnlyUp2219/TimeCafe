@@ -21,9 +21,9 @@ public class UpdateAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.AdditionalInfo.Should().NotBeNull();
-        result.AdditionalInfo!.InfoText.Should().Be(TestInfoTexts.UpdatedInfo);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.InfoText.Should().Be(TestInfoTexts.UpdatedInfo);
         repoMock.Verify(r => r.UpdateAdditionalInfoAsync(It.Is<AdditionalInfo>(a => a.InfoId == infoId), It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -71,7 +71,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("AdditionalInfoNotFound");
+        result.IsFailed.Should().BeTrue();
     }
 }
+

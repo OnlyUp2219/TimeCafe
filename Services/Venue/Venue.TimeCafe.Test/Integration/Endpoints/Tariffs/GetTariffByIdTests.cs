@@ -16,9 +16,9 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariff", out var tariffJson).Should().BeTrue();
-            tariffJson.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
-            tariffJson.GetProperty("name").GetString().Should().Be(name);
+
+            json.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
+            json.GetProperty("name").GetString().Should().Be(name);
         }
         catch (Exception)
         {
@@ -77,11 +77,11 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffJson = json.GetProperty("tariff");
-            tariffJson.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
-            tariffJson.GetProperty("name").GetString().Should().Be(detailName);
-            tariffJson.GetProperty("pricePerMinute").GetDecimal().Should().Be(25m);
-            tariffJson.TryGetProperty("themeId", out _).Should().BeTrue();
+
+            json.GetProperty("tariffId").GetString().Should().Be(tariff.TariffId.ToString());
+            json.GetProperty("name").GetString().Should().Be(detailName);
+            json.GetProperty("pricePerMinute").GetDecimal().Should().Be(25m);
+            json.TryGetProperty("themeId", out _).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -90,3 +90,16 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -5,3 +5,4 @@ public enum BillingType
     Hourly = 1,
     PerMinute = 2
 }
+

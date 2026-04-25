@@ -17,3 +17,4 @@ public class TariffWithThemeDto
     public string? ThemeColors { get; set; }
 
 }
+

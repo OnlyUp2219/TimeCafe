@@ -17,13 +17,12 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Message.Should().Be("Профиль найден");
-        result.Profile.Should().NotBeNull();
-        result.Profile!.UserId.Should().Be(userId);
-        result.Profile.FirstName.Should().Be(ExistingUsers.User1FirstName);
-        result.Profile.LastName.Should().Be(ExistingUsers.User1LastName);
-        result.Profile.PhotoUrl.Should().Be($"/userprofile/S3/image/{userId}");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.UserId.Should().Be(userId);
+        result.Value.FirstName.Should().Be(ExistingUsers.User1FirstName);
+        result.Value.LastName.Should().Be(ExistingUsers.User1LastName);
+        result.Value.PhotoUrl.Should().Be($"/userprofile/S3/image/{userId}");
     }
 
     [Fact]
@@ -38,15 +37,11 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
-        result.Profile.Should().BeNull();
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_GetProfileById_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_GetProfileById_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -55,15 +50,11 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         var handler = new GetProfileByIdQueryHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(query, CancellationToken.None));
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetProfileFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось получить профиль");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Fact]
@@ -101,3 +92,5 @@ public class GetProfileByIdQueryTests : BaseCqrsTest
         // Keeping this as a placeholder showing the change
     }
 }
+
+

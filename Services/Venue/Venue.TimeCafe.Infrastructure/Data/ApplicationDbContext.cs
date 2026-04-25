@@ -1,5 +1,3 @@
-using MassTransit;
-
 namespace Venue.TimeCafe.Infrastructure.Data;
 
 public class ApplicationDbContext : DbContext
@@ -12,6 +10,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Theme> Themes { get; set; }
     public DbSet<Visit> Visits { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
+    public DbSet<UserLoyalty> UserLoyalties { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,3 +21,4 @@ public class ApplicationDbContext : DbContext
         modelBuilder.AddTransactionalOutboxEntities();
     }
 }
+

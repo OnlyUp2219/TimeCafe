@@ -21,10 +21,10 @@ public static class MassTransitExtensions
         _ = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
         services.AddMassTransit(x =>
-        { 
+        {
             x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
             {
-                o.UsePostgres(); 
+                o.UsePostgres();
 
                 o.UseBusOutbox();
             });

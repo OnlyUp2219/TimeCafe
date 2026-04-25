@@ -1,23 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 
-public record GetProfilePhotoQuery(Guid UserId) : IRequest<GetProfilePhotoResult>;
-
-public record GetProfilePhotoResult(bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Stream? Stream = null,
-    string? ContentType = null) : ICqrsResult
-{
-    public static GetProfilePhotoResult NotFound() =>
-        new(false, Code: "PhotoNotFound", Message: "Фото не найдено", StatusCode: 404);
-    public static GetProfilePhotoResult Ok(Stream stream, string contentType) =>
-        new(true, StatusCode: 200,
-        Stream: stream, ContentType: contentType);
-    public static GetProfilePhotoResult Failed() =>
-        new(false, Code: "PhotoGetFailed", Message: "Ошибка получения фото", StatusCode: 500);
-}
+public record GetProfilePhotoQuery(Guid UserId) : IQuery<PhotoStreamDto>;
 
 public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQuery>
 {
@@ -27,22 +10,22 @@ public class GetProfilePhotoQueryValidator : AbstractValidator<GetProfilePhotoQu
     }
 }
 
-public class GetProfilePhotoQueryHandler(IProfilePhotoStorage storage) : IRequestHandler<GetProfilePhotoQuery, GetProfilePhotoResult>
+public class GetProfilePhotoQueryHandler(IProfilePhotoStorage storage) : IQueryHandler<GetProfilePhotoQuery, PhotoStreamDto>
 {
     private readonly IProfilePhotoStorage _storage = storage;
-    public async Task<GetProfilePhotoResult> Handle(GetProfilePhotoQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PhotoStreamDto>> Handle(GetProfilePhotoQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var data = await _storage.GetAsync(request.UserId, cancellationToken);
             if (data is null)
-                return GetProfilePhotoResult.NotFound();
+                return Result.Fail(new PhotoNotFoundError());
 
-            return GetProfilePhotoResult.Ok(data.Stream, data.ContentType);
+            return Result.Ok(data);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetProfilePhotoResult.Failed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

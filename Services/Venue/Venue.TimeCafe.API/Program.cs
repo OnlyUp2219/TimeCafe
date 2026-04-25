@@ -20,6 +20,7 @@ builder.Services.AddRabbitMqMessaging(builder.Configuration);
 builder.Services.AddRedis(builder.Configuration);
 
 builder.Services.AddValidatedOptions<BillingApiOptions>(builder.Configuration, "Services:Billing");
+builder.Services.Configure<Venue.TimeCafe.Application.Options.VenuePricingOptions>(builder.Configuration.GetSection("VenuePricing"));
 
 // HttpClient
 builder.Services.AddTransient<AuthorizationDelegatingHandler>();
@@ -79,5 +80,6 @@ public partial class Program
 {
     protected Program() { }
 }
+
 
 

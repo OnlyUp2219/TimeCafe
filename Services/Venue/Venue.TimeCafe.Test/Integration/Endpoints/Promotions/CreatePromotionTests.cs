@@ -10,7 +10,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.NewPromotions.NewPromotion1Name,
             description = TestData.NewPromotions.NewPromotion1Description,
-            discountPercent = TestData.NewPromotions.NewPromotion1DiscountPercent,
+            DiscountPercent = TestData.NewPromotions.NewPromotion1DiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -22,9 +22,9 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-            json.TryGetProperty("promotion", out var promotion).Should().BeTrue();
-            promotion.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion1Name);
+
+
+            json.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion1Name);
         }
         catch (Exception)
         {
@@ -43,7 +43,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = invalidName,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -71,7 +71,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = longName,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -101,7 +101,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = invalidDiscount,
+            DiscountPercent = invalidDiscount,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -128,7 +128,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidToDate(),
             validTo = TestData.DateTimeData.GetValidFromDate(),
             isActive = true
@@ -155,7 +155,7 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.NewPromotions.NewPromotion2Name,
             description = TestData.NewPromotions.NewPromotion2Description,
-            discountPercent = TestData.NewPromotions.NewPromotion2DiscountPercent,
+            DiscountPercent = TestData.NewPromotions.NewPromotion2DiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -167,9 +167,9 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var promotion = json.GetProperty("promotion");
-            promotion.GetProperty("promotionId").GetGuid().Should().NotBeEmpty();
-            promotion.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion2Name);
+            var promotion = json;
+            json.GetProperty("promotionId").GetGuid().Should().NotBeEmpty();
+            json.GetProperty("name").GetString().Should().Be(TestData.NewPromotions.NewPromotion2Name);
         }
         catch (Exception)
         {
@@ -178,3 +178,16 @@ public class CreatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

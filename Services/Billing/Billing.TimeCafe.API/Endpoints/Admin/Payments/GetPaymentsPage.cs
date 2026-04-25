@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Application.CQRS.Payments.Queries;
-
 namespace Billing.TimeCafe.API.Endpoints.Admin.Payments;
 
 public class GetPaymentsPageEndpoint : ICarterModule

@@ -1,21 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record CreateThemeCommand(string Name, string? Emoji, string? Colors) : IRequest<CreateThemeResult>;
-
-public record CreateThemeResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Theme? Theme = null) : ICqrsResult
-{
-    public static CreateThemeResult CreateFailed() =>
-        new(false, Code: "CreateThemeFailed", Message: "Не удалось создать тему", StatusCode: 500);
-
-    public static CreateThemeResult CreateSuccess(Theme theme) =>
-        new(true, Message: "Тема успешно создана", StatusCode: 201, Theme: theme);
-}
+public record CreateThemeCommand(string Name, string? Emoji, string? Colors) : ICommand<Theme>;
 
 public class CreateThemeCommandValidator : AbstractValidator<CreateThemeCommand>
 {
@@ -28,11 +13,11 @@ public class CreateThemeCommandValidator : AbstractValidator<CreateThemeCommand>
     }
 }
 
-public class CreateThemeCommandHandler(IThemeRepository repository) : IRequestHandler<CreateThemeCommand, CreateThemeResult>
+public class CreateThemeCommandHandler(IThemeRepository repository) : ICommandHandler<CreateThemeCommand, Theme>
 {
     private readonly IThemeRepository _repository = repository;
 
-    public async Task<CreateThemeResult> Handle(CreateThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(CreateThemeCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -46,13 +31,14 @@ public class CreateThemeCommandHandler(IThemeRepository repository) : IRequestHa
             var created = await _repository.CreateAsync(theme);
 
             if (created == null)
-                return CreateThemeResult.CreateFailed();
+                return Result.Fail(new CreateFailedError());
 
-            return CreateThemeResult.CreateSuccess(created);
+            return Result.Ok(created);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(CreateThemeResult.CreateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

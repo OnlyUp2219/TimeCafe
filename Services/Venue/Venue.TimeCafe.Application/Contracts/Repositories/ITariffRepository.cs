@@ -15,3 +15,4 @@ public interface ITariffRepository
     Task<bool> ActivateAsync(Guid tariffId, CancellationToken ct = default);
     Task<bool> DeactivateAsync(Guid tariffId, CancellationToken ct = default);
 }
+

@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace YarpProxy.Extensions;
 
 public static class CqrsDependencyInjection

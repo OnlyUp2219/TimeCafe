@@ -13,3 +13,4 @@ public interface IPromotionRepository
     Task<bool> ActivateAsync(Guid promotionId, CancellationToken ct = default);
     Task<bool> DeactivateAsync(Guid promotionId, CancellationToken ct = default);
 }
+

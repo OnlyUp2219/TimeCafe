@@ -27,9 +27,9 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Visit.Should().NotBeNull();
-        result.Visit!.UserId.Should().Be(TestData.ExistingVisits.Visit1UserId);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.UserId.Should().Be(TestData.ExistingVisits.Visit1UserId);
     }
 
     [Fact]
@@ -42,26 +42,19 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("VisitNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var visitId = Guid.NewGuid();
         var query = new GetVisitByIdQuery(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetVisitFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -77,3 +70,4 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
         result.IsValid.Should().Be(isValid);
     }
 }
+

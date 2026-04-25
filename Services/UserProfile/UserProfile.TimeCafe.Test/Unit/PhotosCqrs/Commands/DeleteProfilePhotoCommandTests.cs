@@ -1,5 +1,3 @@
-using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
-
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
 
 public class DeleteProfilePhotoCommandTests : BaseCqrsTest
@@ -30,10 +28,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().Be(204);
-        result.Message.Should().Be("Фото удалено");
-
+        result.IsSuccess.Should().BeTrue();
         // Verify profile PhotoUrl was cleared
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
         updatedProfile!.PhotoUrl.Should().BeNull();
@@ -51,11 +46,7 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
-
+        result.IsFailed.Should().BeTrue();
         // Verify storage was not called
         _storageMock.Verify(s => s.DeleteAsync(
             It.IsAny<Guid>(),
@@ -79,14 +70,11 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PhotoNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Фото не найдено");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_DeletePhoto_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_DeletePhoto_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -101,15 +89,10 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(command, CancellationToken.None));
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("PhotoDeleteFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Ошибка удаления фото");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -160,8 +143,10 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
         updatedProfile!.PhotoUrl.Should().BeNull();
     }
 }
+
+

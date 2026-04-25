@@ -1,28 +1,8 @@
-using UserProfile.TimeCafe.Application.Helpers;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfilesPageQuery(int PageNumber, int PageSize) : IRequest<GetProfilesPageResult>;
+public record GetProfilesPageQuery(int PageNumber, int PageSize) : IQuery<GetProfilesPageResponse>;
 
-public record GetProfilesPageResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    IEnumerable<Profile>? Profiles = null,
-    int? PageNumber = null,
-    int? PageSize = null,
-    int? TotalCount = null) : ICqrsResult
-{
-    public static GetProfilesPageResult GetFailed() =>
-        new(false, Code: "GetProfilesPageFailed", Message: "Не удалось получить страницу профилей", StatusCode: 500);
-
-    public static GetProfilesPageResult GetSuccess(IEnumerable<Profile> profiles, int pageNumber, int pageSize, int totalCount) =>
-        new(true, Message: $"Получено профилей: {profiles.Count()}",
-            Profiles: profiles, PageNumber: pageNumber, PageSize: pageSize, TotalCount: totalCount);
-}
-
+public record GetProfilesPageResponse(IEnumerable<Profile> Profiles, int PageNumber, int PageSize, int TotalCount);
 public class GetProfilesPageQueryValidator : AbstractValidator<GetProfilesPageQuery>
 {
     public GetProfilesPageQueryValidator()
@@ -33,11 +13,11 @@ public class GetProfilesPageQueryValidator : AbstractValidator<GetProfilesPageQu
     }
 }
 
-public class GetProfilesPageQueryHandler(IUserRepositories repositories) : IRequestHandler<GetProfilesPageQuery, GetProfilesPageResult>
+public class GetProfilesPageQueryHandler(IUserRepositories repositories) : IQueryHandler<GetProfilesPageQuery, GetProfilesPageResponse>
 {
     private readonly IUserRepositories _repositories = repositories;
 
-    public async Task<GetProfilesPageResult> Handle(GetProfilesPageQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetProfilesPageResponse>> Handle(GetProfilesPageQuery request, CancellationToken cancellationToken)
     {
         try
         {
@@ -46,11 +26,11 @@ public class GetProfilesPageQueryHandler(IUserRepositories repositories) : IRequ
             var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
 
             var responseProfiles = ProfilePhotoUrlMapper.WithApiUrl(nonNullProfiles);
-            return GetProfilesPageResult.GetSuccess(responseProfiles, request.PageNumber, request.PageSize, totalCount);
+            return Result.Ok(new GetProfilesPageResponse(responseProfiles, request.PageNumber, request.PageSize, totalCount));
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetProfilesPageResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

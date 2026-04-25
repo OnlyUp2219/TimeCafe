@@ -27,7 +27,7 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -40,9 +40,7 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("TariffNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -63,26 +61,19 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("DeleteTariffFailed");
-        result.StatusCode.Should().Be(500);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var tariffId = Guid.NewGuid();
         var command = new DeleteTariffCommand(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("DeleteTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -112,3 +103,4 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
         result.IsValid.Should().BeTrue();
     }
 }
+

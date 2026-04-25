@@ -131,9 +131,11 @@ public class RegistrationTests(IntegrationApiFactory factory) : BaseEndpointTest
 
             var found = errors.EnumerateArray().Any(e =>
             {
-                if (!e.TryGetProperty("message", out var msg)) return false;
+                if (!e.TryGetProperty("message", out var msg))
+                    return false;
                 var m = msg.GetString();
-                if (string.IsNullOrEmpty(m)) return false;
+                if (string.IsNullOrEmpty(m))
+                    return false;
                 return keywords.Any(k => m.Contains(k, StringComparison.OrdinalIgnoreCase));
             });
 

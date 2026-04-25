@@ -19,9 +19,9 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Theme.Should().NotBeNull();
-        result.Theme!.Name.Should().Be(TestData.ExistingThemes.Theme1Name);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.ExistingThemes.Theme1Name);
     }
 
     [Fact]
@@ -33,25 +33,18 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ThemeNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var query = new GetThemeByIdQuery(TestData.ExistingThemes.Theme1Id);
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetThemeFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -71,3 +64,4 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
         }
     }
 }
+

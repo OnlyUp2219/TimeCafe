@@ -18,9 +18,8 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.TotalCount.Should().Be(42);
-        result.Message.Should().Contain("Всего профилей: 42");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(42);
     }
 
     [Fact]
@@ -34,13 +33,12 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.TotalCount.Should().Be(0);
-        result.Message.Should().Contain("Всего профилей: 0");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0);
     }
 
     [Fact]
-    public async Task Handler_GetTotalPages_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_GetTotalPages_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -48,14 +46,12 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         var handler = new GetTotalPagesQueryHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(query, CancellationToken.None));
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetTotalPagesFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось получить общее количество");
+        result.IsFailed.Should().BeTrue();
+
     }
 }
+
+

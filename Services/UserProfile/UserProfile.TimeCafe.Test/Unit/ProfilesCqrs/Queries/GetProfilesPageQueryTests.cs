@@ -18,12 +18,12 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Profiles.Should().NotBeNull();
-        result.Profiles!.Should().HaveCount(10);
-        result.PageNumber.Should().Be(1);
-        result.PageSize.Should().Be(10);
-        result.TotalCount.Should().Be(25);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Profiles.Should().HaveCount(10);
+        result.Value.PageNumber.Should().Be(1);
+        result.Value.PageSize.Should().Be(10);
+        result.Value.TotalCount.Should().Be(25);
     }
 
     [Fact]
@@ -42,16 +42,16 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Profiles.Should().NotBeNull();
-        result.Profiles!.Should().HaveCount(5);
-        result.PageNumber.Should().Be(2);
-        result.PageSize.Should().Be(10);
-        result.TotalCount.Should().Be(15);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Profiles.Should().HaveCount(5);
+        result.Value.PageNumber.Should().Be(2);
+        result.Value.PageSize.Should().Be(10);
+        result.Value.TotalCount.Should().Be(15);
     }
 
     [Fact]
-    public async Task Handler_GetProfilesPage_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_GetProfilesPage_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -59,15 +59,10 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         var handler = new GetProfilesPageQueryHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(query, CancellationToken.None));
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetProfilesPageFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось получить страницу профилей");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -117,3 +112,4 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         result.IsValid.Should().BeTrue();
     }
 }
+

@@ -102,3 +102,4 @@ public class UpdateAsyncTests : BaseCqrsTest
         fromDb.PricePerMinute.Should().Be(TestData.ExistingTariffs.Tariff3PricePerMinute);
     }
 }
+

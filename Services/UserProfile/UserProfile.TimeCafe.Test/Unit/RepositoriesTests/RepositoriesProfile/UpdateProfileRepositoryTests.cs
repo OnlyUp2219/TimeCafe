@@ -67,3 +67,4 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
         result!.FirstName.Should().Be("UpdatedJane");
     }
 }
+

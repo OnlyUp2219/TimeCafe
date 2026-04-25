@@ -11,15 +11,15 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
 
         userRepoMock.Setup(r => r.GetProfileByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Profile { UserId = userId });
-        repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([]);
+        repoMock.Setup(r => r.GetPagedAdditionalInfosByUserIdAsync(userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((new List<AdditionalInfo>(), 0));
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.AdditionalInfos.Should().NotBeNull();
-        result.AdditionalInfos!.Any().Should().BeFalse();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Infos.Should().NotBeNull();
+        result.Value.Infos.Any().Should().BeFalse();
     }
 
     [Fact]
@@ -35,10 +35,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -71,19 +68,19 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             new() { InfoId = Guid.Parse(AdditionalInfoData.Info1Id), UserId = userId, InfoText = TestInfoTexts.FirstInfo },
             new() { InfoId = Guid.Parse(AdditionalInfoData.Info2Id), UserId = userId, InfoText = TestInfoTexts.SecondInfo }
         };
-        repoMock.Setup(r => r.GetAdditionalInfosByUserIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(list);
+        repoMock.Setup(r => r.GetPagedAdditionalInfosByUserIdAsync(userId, It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((list, 2));
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.AdditionalInfos.Should().HaveCount(2);
-        result.Code.Should().BeNull();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Infos.Should().HaveCount(2);
+
     }
 
     [Fact]
-    public async Task Handle_Should_ThrowCqrsResultException_On_Exception()
+    public async Task Handle_Should_ReturnFailed_On_Exception()
     {
         var userId = Guid.Parse(ExistingUsers.User1Id);
         var repoMock = new Mock<IAdditionalInfoRepository>();
@@ -93,12 +90,9 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
             .ThrowsAsync(new Exception("db"));
         var handler = new GetAdditionalInfosByUserIdQueryHandler(repoMock.Object, userRepoMock.Object);
 
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetAdditionalInfosFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId), CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 }
+
+

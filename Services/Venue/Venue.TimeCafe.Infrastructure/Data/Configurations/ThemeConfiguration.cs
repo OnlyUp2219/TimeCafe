@@ -27,3 +27,4 @@ public class ThemeConfiguration : IEntityTypeConfiguration<Theme>
             .IsUnique();
     }
 }
+

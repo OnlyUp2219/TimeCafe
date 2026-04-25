@@ -3,73 +3,35 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.Tariffs;
 public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_ActivateTariff_Should_Return200_WhenTariffExists()
+    public async Task Endpoint_ActivateTariff_Should_Return204_WhenTariffExists()
     {
-        await ClearDatabaseAndCacheAsync();
-        var name = TestData.NewTariffs.NewTariff1Name;
-        var price = TestData.NewTariffs.NewTariff1Price;
-        var tariff = await SeedTariffAsync(name, price, isActive: false);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price, isActive: false);
 
         var response = await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/activate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_ActivateTariff_Should_Return200_WhenTariffExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
     public async Task Endpoint_ActivateTariff_Should_Return404_WhenTariffNotFound()
     {
-        await ClearDatabaseAndCacheAsync();
-
-        var response = await Client.PostAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}/activate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_ActivateTariff_Should_Return404_WhenTariffNotFound] Response: {jsonString}");
-            throw;
-        }
+        var response = await Client.PostAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffId}/activate", null);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
     public async Task Endpoint_ActivateTariff_Should_Return422_WhenTariffIdIsEmpty()
     {
-        await ClearDatabaseAndCacheAsync();
-
         var response = await Client.PostAsync($"/venue/tariffs/{Guid.Empty}/activate", null);
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_ActivateTariff_Should_Return422_WhenTariffIdIsEmpty] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 
     [Fact]
     public async Task Endpoint_ActivateTariff_Should_ActuallyActivateTariff_WhenCalled()
     {
-        await ClearDatabaseAndCacheAsync();
-        var name2 = TestData.NewTariffs.NewTariff2Name;
-        var price2 = TestData.NewTariffs.NewTariff2Price;
-        var tariff = await SeedTariffAsync(name2, price2, isActive: false);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price, isActive: false);
 
-        await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/activate", null);
+        var activateResponse = await Client.PostAsync($"/venue/tariffs/{tariff.TariffId}/activate", null);
+        activateResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var response = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
@@ -77,15 +39,7 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffJson = json;
-            if (json.TryGetProperty("tariff", out var t))
-                tariffJson = t;
-            bool isActive = false;
-            if (tariffJson.TryGetProperty("isActive", out var a))
-                isActive = a.GetBoolean();
-            else if (tariffJson.TryGetProperty("tariffIsActive", out var ai))
-                isActive = ai.GetBoolean();
-            isActive.Should().BeTrue();
+            json.GetProperty("isActive").GetBoolean().Should().BeTrue();
         }
         catch (Exception)
         {
@@ -94,3 +48,8 @@ public class ActivateTariffTests(IntegrationApiFactory factory) : BaseEndpointTe
         }
     }
 }
+
+
+
+
+

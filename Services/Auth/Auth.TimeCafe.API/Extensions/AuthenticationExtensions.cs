@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Caching.Hybrid;
 using BuildingBlocks.Options;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Auth.TimeCafe.API.Extensions;
 

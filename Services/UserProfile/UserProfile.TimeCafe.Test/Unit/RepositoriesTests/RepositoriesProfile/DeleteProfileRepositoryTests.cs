@@ -62,3 +62,4 @@ public class DeleteProfileRepositoryTests : BaseRepositoryTest
         profile3.Should().NotBeNull();
     }
 }
+

@@ -10,7 +10,7 @@ public class CreateEmptyProfile : ICarterModule
         {
             var command = new CreateEmptyCommand(userId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message }, statusCode: r.StatusCode ?? 201));
+            return result.ToHttpResult(() => TypedResults.Created($"/profiles/{userId}", new { message = "Профиль создан" }));
         })
         .WithTags("Profiles")
         .WithName("CreateEmptyProfile")

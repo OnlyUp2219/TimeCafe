@@ -1,21 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record HasActiveVisitQuery(Guid UserId) : IRequest<HasActiveVisitResult>;
-
-public record HasActiveVisitResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    bool HasActiveVisit = false) : ICqrsResult
-{
-    public static HasActiveVisitResult CheckFailed() =>
-        new(false, Code: "CheckActiveVisitFailed", Message: "Не удалось проверить активное посещение", StatusCode: 500);
-
-    public static HasActiveVisitResult CheckSuccess(bool hasActiveVisit) =>
-        new(true, HasActiveVisit: hasActiveVisit);
-}
+public record HasActiveVisitQuery(Guid UserId) : IQuery<bool>;
 
 public class HasActiveVisitQueryValidator : AbstractValidator<HasActiveVisitQuery>
 {
@@ -25,20 +10,21 @@ public class HasActiveVisitQueryValidator : AbstractValidator<HasActiveVisitQuer
     }
 }
 
-public class HasActiveVisitQueryHandler(IVisitRepository repository) : IRequestHandler<HasActiveVisitQuery, HasActiveVisitResult>
+public class HasActiveVisitQueryHandler(IVisitRepository repository) : IQueryHandler<HasActiveVisitQuery, bool>
 {
     private readonly IVisitRepository _repository = repository;
 
-    public async Task<HasActiveVisitResult> Handle(HasActiveVisitQuery request, CancellationToken cancellationToken)
+    public async Task<Result<bool>> Handle(HasActiveVisitQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var hasActiveVisit = await _repository.HasActiveVisitAsync(request.UserId);
-            return HasActiveVisitResult.CheckSuccess(hasActiveVisit);
+            return Result.Ok(hasActiveVisit);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(HasActiveVisitResult.CheckFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

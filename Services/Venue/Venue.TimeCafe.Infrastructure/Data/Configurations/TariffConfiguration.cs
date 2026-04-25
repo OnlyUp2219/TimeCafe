@@ -50,3 +50,4 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
         builder.HasIndex(t => new { t.BillingType, t.IsActive, t.PricePerMinute });
     }
 }
+

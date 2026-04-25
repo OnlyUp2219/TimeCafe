@@ -26,7 +26,7 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
     }
 
     [Fact]
-    public async Task Endpoint_HasActiveVisit_Should_ReturnFalse_WhenUserHasNoActiveVisit()
+    public async Task Endpoint_HasActiveVisit_Should_ReturnFalse_WhenUserHasNoactiveVisit()
     {
         await ClearDatabaseAndCacheAsync();
         var userId = TestData.NewVisits.NewVisit1UserId;
@@ -43,7 +43,7 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_HasActiveVisit_Should_ReturnFalse_WhenUserHasNoActiveVisit] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_HasActiveVisit_Should_ReturnFalse_WhenUserHasNoactiveVisit] Response: {jsonString}");
             throw;
         }
     }
@@ -69,3 +69,15 @@ public class HasActiveVisitTests(IntegrationApiFactory factory) : BaseEndpointTe
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+

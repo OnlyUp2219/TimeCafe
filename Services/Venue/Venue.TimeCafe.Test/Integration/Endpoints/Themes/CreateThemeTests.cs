@@ -17,13 +17,13 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrWhiteSpace();
 
-            json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.ValueKind.Should().Be(JsonValueKind.Object);
-            theme.GetProperty("name").GetString().Should().Be(TestData.NewThemes.NewTheme1Name);
-            theme.GetProperty("emoji").GetString().Should().Be(TestData.NewThemes.NewTheme1Emoji);
+
+
+
+            json.ValueKind.Should().Be(JsonValueKind.Object);
+            json.GetProperty("name").GetString().Should().Be(TestData.NewThemes.NewTheme1Name);
+            json.GetProperty("emoji").GetString().Should().Be(TestData.NewThemes.NewTheme1Emoji);
         }
         catch (Exception)
         {
@@ -101,8 +101,8 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.GetProperty("name").GetString().Should().Be(TestData.DefaultValues.DefaultThemeName);
+
+            json.GetProperty("name").GetString().Should().Be(TestData.DefaultValues.DefaultThemeName);
         }
         catch (Exception)
         {
@@ -127,8 +127,8 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("theme", out var theme).Should().BeTrue();
-            theme.GetProperty("name").GetString().Should().HaveLength(100);
+
+            json.GetProperty("name").GetString().Should().HaveLength(100);
         }
         catch (Exception)
         {
@@ -152,8 +152,8 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var theme = json.GetProperty("theme");
-            theme.TryGetProperty("themeId", out var themeId).Should().BeTrue();
+            var theme = json;
+            json.TryGetProperty("themeId", out var themeId).Should().BeTrue();
             themeId.GetGuid().Should().NotBe(Guid.Empty);
         }
         catch (Exception)
@@ -163,3 +163,17 @@ public class CreateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

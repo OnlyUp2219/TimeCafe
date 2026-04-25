@@ -116,3 +116,4 @@ public partial class ArchitectureRulesTests
     [GeneratedRegex("\\[(FromServices|FromRoute|FromBody|FromQuery|FromHeader|FromForm)\\b", RegexOptions.IgnoreCase, "ru-RU")]
     private static partial Regex MyRegex();
 }
+

@@ -10,7 +10,7 @@ public class DeletePromotion : ICarterModule
         {
             var command = new DeletePromotionCommand(promotionId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Promotions")
         .WithName("DeletePromotion")
@@ -21,3 +21,4 @@ public class DeletePromotion : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionDelete));
     }
 }
+

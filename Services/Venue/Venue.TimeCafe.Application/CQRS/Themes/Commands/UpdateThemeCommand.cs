@@ -1,24 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record UpdateThemeCommand(Guid ThemeId, string Name, string? Emoji, string? Colors) : IRequest<UpdateThemeResult>;
-
-public record UpdateThemeResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Theme? Theme = null) : ICqrsResult
-{
-    public static UpdateThemeResult ThemeNotFound() =>
-        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
-
-    public static UpdateThemeResult UpdateFailed() =>
-        new(false, Code: "UpdateThemeFailed", Message: "Не удалось обновить тему", StatusCode: 500);
-
-    public static UpdateThemeResult UpdateSuccess(Theme theme) =>
-        new(true, Message: "Тема успешно обновлена", Theme: theme);
-}
+public record UpdateThemeCommand(Guid ThemeId, string Name, string? Emoji, string? Colors) : ICommand<Theme>;
 
 public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
 {
@@ -53,17 +35,17 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
     }
 }
 
-public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHandler<UpdateThemeCommand, UpdateThemeResult>
+public class UpdateThemeCommandHandler(IThemeRepository repository) : ICommandHandler<UpdateThemeCommand, Theme>
 {
     private readonly IThemeRepository _repository = repository;
 
-    public async Task<UpdateThemeResult> Handle(UpdateThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(UpdateThemeCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.ThemeId);
             if (existing == null)
-                return UpdateThemeResult.ThemeNotFound();
+                return Result.Fail(new ThemeNotFoundError());
 
             var theme = Theme.Update(
                 existingTheme: existing,
@@ -74,13 +56,14 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : IRequestHa
             var updated = await _repository.UpdateAsync(theme);
 
             if (updated == null)
-                return UpdateThemeResult.UpdateFailed();
+                return Result.Fail(new UpdateFailedError());
 
-            return UpdateThemeResult.UpdateSuccess(updated);
+            return Result.Ok(updated);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UpdateThemeResult.UpdateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

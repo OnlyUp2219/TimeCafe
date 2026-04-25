@@ -1,21 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
-public record GetAllTariffsQuery() : IRequest<GetAllTariffsResult>;
-
-public record GetAllTariffsResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    IEnumerable<TariffWithThemeDto>? Tariffs = null) : ICqrsResult
-{
-    public static GetAllTariffsResult GetFailed() =>
-        new(false, Code: "GetTariffsFailed", Message: "Не удалось получить тарифы", StatusCode: 500);
-
-    public static GetAllTariffsResult GetSuccess(IEnumerable<TariffWithThemeDto> tariffs) =>
-        new(true, Tariffs: tariffs);
-}
+public record GetAllTariffsQuery() : IQuery<IEnumerable<TariffWithThemeDto>>;
 
 public class GetAllTariffsQueryValidator : AbstractValidator<GetAllTariffsQuery>
 {
@@ -24,20 +9,21 @@ public class GetAllTariffsQueryValidator : AbstractValidator<GetAllTariffsQuery>
     }
 }
 
-public class GetAllTariffsQueryHandler(ITariffRepository repository) : IRequestHandler<GetAllTariffsQuery, GetAllTariffsResult>
+public class GetAllTariffsQueryHandler(ITariffRepository repository) : IQueryHandler<GetAllTariffsQuery, IEnumerable<TariffWithThemeDto>>
 {
     private readonly ITariffRepository _repository = repository;
 
-    public async Task<GetAllTariffsResult> Handle(GetAllTariffsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TariffWithThemeDto>>> Handle(GetAllTariffsQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var tariffs = await _repository.GetAllAsync();
-            return GetAllTariffsResult.GetSuccess(tariffs);
+            return Result.Ok(tariffs);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetAllTariffsResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

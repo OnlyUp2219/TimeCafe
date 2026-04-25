@@ -81,3 +81,4 @@ public class CreateProfileRepositoryTests : BaseRepositoryTest
         allAfter.Should().HaveCount(allBefore.Count() + 1);
     }
 }
+

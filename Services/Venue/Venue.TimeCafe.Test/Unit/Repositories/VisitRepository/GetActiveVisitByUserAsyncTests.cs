@@ -90,3 +90,4 @@ public class GetActiveVisitByUserAsyncTests : BaseCqrsTest
         result.Status.Should().Be(VisitStatus.Active);
     }
 }
+

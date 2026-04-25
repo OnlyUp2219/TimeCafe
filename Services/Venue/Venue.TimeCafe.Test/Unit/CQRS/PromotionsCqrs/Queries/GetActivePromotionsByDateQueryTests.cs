@@ -24,9 +24,9 @@ public class GetActivePromotionsByDateQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Promotions.Should().NotBeNull();
-        result.Promotions.Should().HaveCount(2);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().HaveCount(2);
     }
 
     [Fact]
@@ -40,25 +40,21 @@ public class GetActivePromotionsByDateQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Promotions.Should().NotBeNull();
-        result.Promotions.Should().BeEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var date = DateTimeOffset.UtcNow;
         var query = new GetActivePromotionsByDateQuery(date);
 
         PromotionRepositoryMock.Setup(r => r.GetActiveByDateAsync(date, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetActivePromotionsByDateFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 }
+

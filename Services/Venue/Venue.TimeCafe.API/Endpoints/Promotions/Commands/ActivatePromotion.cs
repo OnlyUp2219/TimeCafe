@@ -10,7 +10,7 @@ public class ActivatePromotion : ICarterModule
         {
             var command = new ActivatePromotionCommand(promotionId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Promotions")
         .WithName("ActivatePromotion")
@@ -21,3 +21,4 @@ public class ActivatePromotion : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionActivate));
     }
 }
+

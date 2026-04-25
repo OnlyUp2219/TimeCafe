@@ -73,3 +73,4 @@ public class DeactivateAsyncTests : BaseCqrsTest
         fromDb!.IsActive.Should().BeFalse();
     }
 }
+

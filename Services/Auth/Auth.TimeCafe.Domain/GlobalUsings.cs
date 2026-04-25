@@ -1,6 +1,4 @@
-global using Auth.TimeCafe.Domain.Models;
-
-global using Microsoft.AspNetCore.Identity;
-
 global using System;
+global using Auth.TimeCafe.Domain.Models;
 global using FluentResults;
+global using Microsoft.AspNetCore.Identity;

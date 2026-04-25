@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Options;
-
-using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;
@@ -51,13 +49,8 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().Be(201);
-        result.Message.Should().Be("Фото загружено");
-        result.Key.Should().Be($"profiles/{userId}/photo");
-        result.Url.Should().Be($"/userprofile/S3/image/{userId}");
-        result.Size.Should().Be(PhotoTestData.ValidPhotoSize);
-        result.ContentType.Should().Be(PhotoTestData.JpegContentType);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be($"/userprofile/S3/image/{userId}");
 
         // Verify profile was updated
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
@@ -77,11 +70,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
-
+        result.IsFailed.Should().BeTrue();
         // Verify storage was not called
         _storageMock.Verify(s => s.UploadAsync(
             It.IsAny<Guid>(),
@@ -114,10 +103,7 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("UploadFailed");
-        result.StatusCode.Should().Be(500);
-        result.Message.Should().Be("Не удалось загрузить фото");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -232,8 +218,10 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
         var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
         updatedProfile!.PhotoUrl.Should().Be("profiles/new-photo");
     }
 }
+
+

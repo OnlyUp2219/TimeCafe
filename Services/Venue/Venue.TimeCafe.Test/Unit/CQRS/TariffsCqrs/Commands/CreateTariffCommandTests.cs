@@ -34,14 +34,13 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be(TestData.NewTariffs.NewTariff1Name);
-        result.StatusCode.Should().Be(201);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.NewTariffs.NewTariff1Name);
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryFails()
+    public async Task Handler_Should_ReturnFailed_WhenRepositoryFails()
     {
         var command = new CreateTariffCommand(
             TestData.NewTariffs.NewTariff1Name,
@@ -53,17 +52,12 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("Database error"));
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var command = new CreateTariffCommand(
             TestData.NewTariffs.NewTariff1Name,
@@ -75,13 +69,8 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -104,3 +93,4 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
         }
     }
 }
+

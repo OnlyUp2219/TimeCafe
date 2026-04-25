@@ -84,3 +84,4 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
         result.Should().Be(0);
     }
 }
+

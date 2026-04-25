@@ -130,3 +130,4 @@ public class CreateAsyncTests : BaseCqrsTest
         result.DiscountPercent.Should().Be(discount);
     }
 }
+

@@ -10,14 +10,15 @@ public class DeleteProfile : ICarterModule
         {
             var command = new DeleteProfileCommand(userId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Profiles")
         .WithName("DeleteProfile")
         .WithSummary("Удалить профиль")
         .WithDescription("Удаляет профиль пользователя по UserId.")
-        .Produces(200)
+        .Produces(204)
         .Produces(404)
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileDelete));
     }
 }
+

@@ -75,3 +75,4 @@ public class HasActiveVisitAsyncTests : BaseCqrsTest
         resultNonexistent.Should().BeFalse();
     }
 }
+

@@ -16,7 +16,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().BeGreaterThanOrEqualTo(2);
         }
@@ -39,7 +39,7 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().Be(0);
         }
@@ -63,12 +63,13 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
-            foreach (var tariff in tariffs.EnumerateArray())
-            {
+            var tariffs = json;
+            foreach (var tariff in tariffs.EnumerateArray()) {
                 int billing = -1;
-                if (tariff.TryGetProperty("billingType", out var b)) billing = b.GetInt32();
-                if (tariff.TryGetProperty("tariffBillingType", out var tb)) billing = tb.GetInt32();
+                if (tariff.TryGetProperty("billingType", out var b))
+                    billing = b.GetInt32();
+                if (tariff.TryGetProperty("tariffBillingType", out var tb))
+                    billing = tb.GetInt32();
                 billing.Should().Be(2);
             }
         }
@@ -79,3 +80,16 @@ public class GetTariffsByBillingTypeTests(IntegrationApiFactory factory) : BaseE
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

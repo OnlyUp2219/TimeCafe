@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record DeletePromotionCommand(Guid PromotionId) : IRequest<DeletePromotionResult>;
-
-public record DeletePromotionResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeletePromotionResult PromotionNotFound() =>
-        new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);
-
-    public static DeletePromotionResult DeleteFailed() =>
-        new(false, Code: "DeletePromotionFailed", Message: "Не удалось удалить акцию", StatusCode: 500);
-
-    public static DeletePromotionResult DeleteSuccess() =>
-        new(true, Message: "Акция успешно удалена");
-}
+public record DeletePromotionCommand(Guid PromotionId) : ICommand;
 
 public class DeletePromotionCommandValidator : AbstractValidator<DeletePromotionCommand>
 {
@@ -27,28 +10,29 @@ public class DeletePromotionCommandValidator : AbstractValidator<DeletePromotion
     }
 }
 
-public class DeletePromotionCommandHandler(IPromotionRepository repository) : IRequestHandler<DeletePromotionCommand, DeletePromotionResult>
+public class DeletePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<DeletePromotionCommand>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<DeletePromotionResult> Handle(DeletePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeletePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
-                return DeletePromotionResult.PromotionNotFound();
+                return Result.Fail(new PromotionNotFoundError());
 
             var result = await _repository.DeleteAsync(request.PromotionId);
 
             if (!result)
-                return DeletePromotionResult.DeleteFailed();
+                return Result.Fail(new DeleteFailedError());
 
-            return DeletePromotionResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeletePromotionResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

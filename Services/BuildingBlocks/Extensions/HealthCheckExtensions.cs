@@ -1,9 +1,8 @@
-using Microsoft.AspNetCore.Builder;
+using System.Net.Sockets;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Npgsql;
 using StackExchange.Redis;
-using System.Net.Sockets;
 
 namespace BuildingBlocks.Extensions;
 

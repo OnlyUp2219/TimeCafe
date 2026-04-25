@@ -1,24 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
-public record GetThemeByIdQuery(Guid ThemeId) : IRequest<GetThemeByIdResult>;
-
-public record GetThemeByIdResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Theme? Theme = null) : ICqrsResult
-{
-    public static GetThemeByIdResult ThemeNotFound() =>
-        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
-
-    public static GetThemeByIdResult GetFailed() =>
-        new(false, Code: "GetThemeFailed", Message: "Не удалось получить тему", StatusCode: 500);
-
-    public static GetThemeByIdResult GetSuccess(Theme theme) =>
-        new(true, Theme: theme);
-}
+public record GetThemeByIdQuery(Guid ThemeId) : IQuery<Theme>;
 
 public class GetThemeByIdQueryValidator : AbstractValidator<GetThemeByIdQuery>
 {
@@ -28,24 +10,25 @@ public class GetThemeByIdQueryValidator : AbstractValidator<GetThemeByIdQuery>
     }
 }
 
-public class GetThemeByIdQueryHandler(IThemeRepository repository) : IRequestHandler<GetThemeByIdQuery, GetThemeByIdResult>
+public class GetThemeByIdQueryHandler(IThemeRepository repository) : IQueryHandler<GetThemeByIdQuery, Theme>
 {
     private readonly IThemeRepository _repository = repository;
 
-    public async Task<GetThemeByIdResult> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var theme = await _repository.GetByIdAsync(request.ThemeId);
 
             if (theme == null)
-                return GetThemeByIdResult.ThemeNotFound();
+                return Result.Fail(new ThemeNotFoundError());
 
-            return GetThemeByIdResult.GetSuccess(theme);
+            return Result.Ok(theme);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetThemeByIdResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

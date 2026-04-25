@@ -1,37 +1,27 @@
 global using Amazon.S3;
-
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 global using BuildingBlocks.Permissions;
-
 global using Carter;
-
 global using MassTransit;
-
 global using MediatR;
-
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.Extensions.Caching.Hybrid;
 global using Microsoft.Extensions.Options;
-
 global using Scalar.AspNetCore;
-
 global using Serilog;
-
 global using UserProfile.TimeCafe.API.Extensions;
-global using UserProfile.TimeCafe.Application;
-global using UserProfile.TimeCafe.Application.DependencyInjection;
 global using UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 global using UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 global using UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 global using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 global using UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 global using UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
+global using UserProfile.TimeCafe.Application.DependencyInjection;
 global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.Enums;
+global using UserProfile.TimeCafe.Domain.Errors;
 global using UserProfile.TimeCafe.Domain.Models;
 global using UserProfile.TimeCafe.Infrastructure;
 global using UserProfile.TimeCafe.Infrastructure.Data;
 global using UserProfile.TimeCafe.Infrastructure.Services;
-global using FluentResults;

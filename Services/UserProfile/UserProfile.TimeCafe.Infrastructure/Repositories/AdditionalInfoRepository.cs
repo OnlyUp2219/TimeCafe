@@ -30,7 +30,7 @@ public class AdditionalInfoRepository(
         CancellationToken? cancellationToken = null)
     {
         var ct = cancellationToken ?? CancellationToken.None;
-        
+
         var query = _context.AdditionalInfos
             .AsNoTracking()
             .Where(i => i.UserId == userId);

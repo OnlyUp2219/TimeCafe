@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace Billing.TimeCafe.Application.DependencyInjection;
 
 public static class CqrsDependencyInjection

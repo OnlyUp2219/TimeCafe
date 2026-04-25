@@ -3,37 +3,25 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.Tariffs;
 public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_DeleteTariff_Should_Return200_WhenTariffExists()
+    public async Task Endpoint_DeleteTariff_Should_Return204_WhenTariffExists()
     {
-        await ClearDatabaseAndCacheAsync();
-        var name = TestData.NewTariffs.NewTariff1Name;
-        var tariff = await SeedTariffAsync(name, TestData.NewTariffs.NewTariff1Price);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
 
         var response = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteTariff_Should_Return200_WhenTariffExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
     public async Task Endpoint_DeleteTariff_Should_Return404_WhenTariffNotFound()
     {
-        await ClearDatabaseAndCacheAsync();
-
-        var response = await Client.DeleteAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffIdString}");
+        var response = await Client.DeleteAsync($"/venue/tariffs/{TestData.NonExistingIds.NonExistingTariffId}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("TariffNotFound");
         }
         catch (Exception)
         {
@@ -43,24 +31,25 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Fact]
-    public async Task Endpoint_DeleteTariff_Should_ActuallyRemoveFromDatabase_WhenDeleted()
+    public async Task Endpoint_DeleteTariff_Should_ActuallyRemoveTariffFromDatabase()
     {
-        await ClearDatabaseAndCacheAsync();
-        var delName = TestData.NewTariffs.NewTariff2Name;
-        var tariff = await SeedTariffAsync(delName, TestData.NewTariffs.NewTariff2Price);
+        var tariff = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
 
         var deleteResponse = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var getResponse = await Client.GetAsync($"/venue/tariffs/{tariff.TariffId}");
-        var jsonString = await getResponse.Content.ReadAsStringAsync();
+        var secondDeleteResponse = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
+        var jsonString = await secondDeleteResponse.Content.ReadAsStringAsync();
         try
         {
-            getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            secondDeleteResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("TariffNotFound");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_DeleteTariff_Should_ActuallyRemoveFromDatabase_WhenDeleted] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_DeleteTariff_Should_ActuallyRemoveTariffFromDatabase] Response: {jsonString}");
             throw;
         }
     }
@@ -68,13 +57,14 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     [Fact]
     public async Task Endpoint_DeleteTariff_Should_Return422_WhenTariffIdIsEmpty()
     {
-        await ClearDatabaseAndCacheAsync();
-
         var response = await Client.DeleteAsync($"/venue/tariffs/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            json.TryGetProperty("code", out var code).Should().BeTrue();
+            code.GetString().Should().Be("ValidationError");
         }
         catch (Exception)
         {
@@ -84,9 +74,24 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Fact]
+    public async Task Endpoint_DeleteTariff_Should_Return405_WhenTariffIdIsEmpty()
+    {
+        var response = await Client.DeleteAsync("/venue/tariffs/");
+        var jsonString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_DeleteTariff_Should_Return405_WhenTariffIdIsEmpty] Response: {jsonString}");
+            throw;
+        }
+    }
+
+    [Fact]
     public async Task Endpoint_DeleteTariff_Should_NotAffectOtherTariffs_WhenOneIsDeleted()
     {
-        await ClearDatabaseAndCacheAsync();
         var tariff1 = await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
         var tariff2 = await SeedTariffAsync(TestData.NewTariffs.NewTariff2Name, TestData.NewTariffs.NewTariff2Price);
 
@@ -98,15 +103,8 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariffJson = json;
-            if (json.TryGetProperty("tariff", out var t))
-                tariffJson = t;
-            string? nameValue = null;
-            if (tariffJson.TryGetProperty("name", out var n))
-                nameValue = n.GetString();
-            if (tariffJson.TryGetProperty("tariffName", out var tn))
-                nameValue = tn.GetString();
-            nameValue.Should().Be(TestData.NewTariffs.NewTariff2Name);
+            json.GetProperty("tariffId").GetGuid().Should().Be(tariff2.TariffId);
+            json.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
         }
         catch (Exception)
         {
@@ -114,27 +112,11 @@ public class DeleteTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
             throw;
         }
     }
-
-    [Fact]
-    public async Task Endpoint_DeleteTariff_Should_ReturnSuccessMessage_WhenTariffDeleted()
-    {
-        await ClearDatabaseAndCacheAsync();
-        var msgName = TestData.NewTariffs.NewTariff1Name;
-        var tariff = await SeedTariffAsync(msgName, TestData.NewTariffs.NewTariff1Price);
-
-        var response = await Client.DeleteAsync($"/venue/tariffs/{tariff.TariffId}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrEmpty();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteTariff_Should_ReturnSuccessMessage_WhenTariffDeleted] Response: {jsonString}");
-            throw;
-        }
-    }
 }
+
+
+
+
+
+
+

@@ -15,10 +15,10 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         // Assert
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString()!.Should().Contain("удалён");
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+
+
 
             await SeedProfileAsync(userId, TestData.ExistingUsers.User3FirstName,
                                  TestData.ExistingUsers.User3LastName,
@@ -46,6 +46,7 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             var json = JsonDocument.Parse(jsonString).RootElement;
+
             if (json.TryGetProperty("code", out var code))
                 code.GetString()!.Should().Be("ProfileNotFound");
         }
@@ -75,3 +76,12 @@ public class DeleteProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
     }
 }
+
+
+
+
+
+
+
+
+

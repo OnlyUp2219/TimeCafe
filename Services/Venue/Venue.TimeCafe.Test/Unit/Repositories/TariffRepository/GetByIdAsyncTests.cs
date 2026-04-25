@@ -69,3 +69,4 @@ public class GetByIdAsyncTests : BaseCqrsTest
         result!.ThemeId.Should().Be(theme.ThemeId);
     }
 }
+

@@ -1,6 +1,3 @@
-
-using Billing.TimeCafe.Test.TestData;
-
 namespace Billing.TimeCafe.Test.Integration.Repository.Balance;
 
 public class CreateAsyncTests : BaseBalanceRepositoryTest
@@ -183,7 +180,8 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
         result2.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
         result1.UserId.Should().Be(result2.UserId);
 
-        using var dbScope = CreateScope(); var db = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        using var dbScope = CreateScope();
+        var db = dbScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var count = db.Balances.Count(b => b.UserId == userId);
         count.Should().Be(1);
     }

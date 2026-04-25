@@ -1,24 +1,6 @@
-using UserProfile.TimeCafe.Application.Helpers;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetAllProfilesQuery() : IRequest<GetAllProfilesResult>;
-
-public record GetAllProfilesResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    IEnumerable<Profile>? Profiles = null) : ICqrsResult
-{
-    public static GetAllProfilesResult GetFailed() =>
-        new(false, Code: "GetAllProfilesFailed", Message: "Не удалось получить профили", StatusCode: 500);
-
-    public static GetAllProfilesResult GetSuccess(IEnumerable<Profile> profiles) =>
-        new(true, Message: $"Получено профилей: {profiles.Count()}", Profiles: profiles);
-}
-
+public record GetAllProfilesQuery() : IQuery<IEnumerable<Profile>>;
 public class GetAllProfilesQueryValidator : AbstractValidator<GetAllProfilesQuery>
 {
     public GetAllProfilesQueryValidator()
@@ -27,22 +9,22 @@ public class GetAllProfilesQueryValidator : AbstractValidator<GetAllProfilesQuer
     }
 }
 
-public class GetAllProfilesQueryHandler(IUserRepositories userRepositories) : IRequestHandler<GetAllProfilesQuery, GetAllProfilesResult>
+public class GetAllProfilesQueryHandler(IUserRepositories userRepositories) : IQueryHandler<GetAllProfilesQuery, IEnumerable<Profile>>
 {
     private readonly IUserRepositories _userRepositories = userRepositories;
 
-    public async Task<GetAllProfilesResult> Handle(GetAllProfilesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Profile>>> Handle(GetAllProfilesQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var profiles = await _userRepositories.GetAllProfilesAsync(cancellationToken);
             var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
             var responseProfiles = ProfilePhotoUrlMapper.WithApiUrl(nonNullProfiles);
-            return GetAllProfilesResult.GetSuccess(responseProfiles);
+            return Result.Ok<IEnumerable<Profile>>(responseProfiles);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetAllProfilesResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

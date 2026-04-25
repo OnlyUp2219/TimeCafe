@@ -1,29 +1,6 @@
-using UserProfile.TimeCafe.Application.Helpers;
-using UserProfile.TimeCafe.Domain.DTOs;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
-public record UploadProfilePhotoCommand(Guid UserId, Stream Data, string ContentType, string FileName, long Size) : IRequest<UploadProfilePhotoResult>;
-
-public record UploadProfilePhotoResult(
-    bool Success,
-    string? Code = null,
-    List<ErrorItem>? Errors = null,
-    string? Message = null,
-    int? StatusCode = null,
-    string? Key = null,
-    string? Url = null,
-    long? Size = null,
-    string? ContentType = null) : ICqrsResult
-{
-    public static UploadProfilePhotoResult Ok(string key, string url, long size, string contentType) =>
-        new(true, Message: "Фото загружено", StatusCode: 201, Key: key, Url: url,
-Size: size, ContentType: contentType);
-    public static UploadProfilePhotoResult Failed() =>
-        new(false, Code: "UploadFailed", Message: "Не удалось загрузить фото", StatusCode: 500);
-    public static UploadProfilePhotoResult ProfileNotFound() =>
-        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-}
+public record UploadProfilePhotoCommand(Guid UserId, Stream Data, string ContentType, string FileName, long Size) : ICommand<string>;
 
 public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfilePhotoCommand>
 {
@@ -47,20 +24,20 @@ public class UploadProfilePhotoCommandHandler(
     IProfilePhotoStorage storage,
     IUserRepositories userRepository,
     IPhotoModerationService moderationService,
-    ILogger<UploadProfilePhotoCommandHandler> logger) : IRequestHandler<UploadProfilePhotoCommand, UploadProfilePhotoResult>
+    ILogger<UploadProfilePhotoCommandHandler> logger) : ICommandHandler<UploadProfilePhotoCommand, string>
 {
     private readonly IProfilePhotoStorage _storage = storage;
     private readonly IUserRepositories _userRepository = userRepository;
     private readonly IPhotoModerationService _moderationService = moderationService;
     private readonly ILogger<UploadProfilePhotoCommandHandler> _logger = logger;
 
-    public async Task<UploadProfilePhotoResult> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (profile is null)
-                return UploadProfilePhotoResult.ProfileNotFound();
+                return Result.Fail(new ProfileNotFoundError());
 
             var uploadStream = new MemoryStream();
             try
@@ -80,11 +57,7 @@ public class UploadProfilePhotoCommandHandler(
                         moderationResult.Reason,
                         moderationResult.Scores != null ? string.Join(", ", moderationResult.Scores.Select(s => $"{s.Key}={s.Value:F2}")) : "N/A");
 
-                    return new UploadProfilePhotoResult(
-                        false,
-                        Code: "PhotoRejected",
-                        Message: $"Фото отклонено: {moderationResult.Reason}",
-                        StatusCode: 400);
+                    return Result.Fail(new Error($"Фото отклонено: {moderationResult.Reason}").WithMetadata("ErrorCode", "400").WithMetadata("Code", "PhotoRejected"));
                 }
 
                 _logger.LogInformation(
@@ -97,13 +70,13 @@ public class UploadProfilePhotoCommandHandler(
                 var result = await _storage.UploadAsync(request.UserId, uploadStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Size is null || result.ContentType is null)
-                    return UploadProfilePhotoResult.Failed();
+                    return Result.Fail(new FailedError());
 
                 profile.PhotoUrl = result.Key;
                 await _userRepository.UpdateProfileAsync(profile, cancellationToken);
 
                 var responseUrl = ProfilePhotoUrlMapper.BuildApiUrl(request.UserId);
-                return UploadProfilePhotoResult.Ok(result.Key, responseUrl, result.Size.Value, result.ContentType);
+                return Result.Ok(responseUrl);
             }
             finally
             {
@@ -112,7 +85,7 @@ public class UploadProfilePhotoCommandHandler(
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UploadProfilePhotoResult.Failed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

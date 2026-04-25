@@ -11,7 +11,7 @@ public class GetPhotoProfile : ICarterModule
         {
             var query = new GetProfilePhotoQuery(userId);
             var result = await sender.Send(query, ct);
-            return result.ToHttpResult(r => Results.File(r.Stream!, r.ContentType, enableRangeProcessing: true));
+            return result.ToHttpResult(r => TypedResults.Stream(r.Stream, r.ContentType));
         })
         .WithTags("ProfilePhoto")
         .WithName("GetProfilePhoto")
@@ -22,3 +22,4 @@ public class GetPhotoProfile : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfilePhotoRead));
     }
 }
+

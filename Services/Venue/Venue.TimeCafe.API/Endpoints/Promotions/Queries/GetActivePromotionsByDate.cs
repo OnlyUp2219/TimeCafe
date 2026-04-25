@@ -10,7 +10,7 @@ public class GetActivePromotionsByDate : ICarterModule
         {
             var query = new GetActivePromotionsByDateQuery(date);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Promotions")
         .WithName("GetActivePromotionsByDate")
@@ -20,3 +20,4 @@ public class GetActivePromotionsByDate : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }
+

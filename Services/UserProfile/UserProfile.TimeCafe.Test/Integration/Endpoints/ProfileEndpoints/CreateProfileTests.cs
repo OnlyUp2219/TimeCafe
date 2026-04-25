@@ -18,11 +18,11 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString()!.Should().NotBeNullOrWhiteSpace();
-            json.TryGetProperty("profile", out var profile).Should().BeTrue();
-            profile.ValueKind.Should().Be(JsonValueKind.Object);
-            Guid.Parse(profile.GetProperty("userId").GetString()!).Should().Be(userId);
+
+
+
+            json.ValueKind.Should().Be(JsonValueKind.Object);
+            Guid.Parse(json.GetProperty("userId").GetString()!).Should().Be(userId);
         }
         catch (Exception)
         {
@@ -59,3 +59,11 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         }
     }
 }
+
+
+
+
+
+
+
+

@@ -1,5 +1,3 @@
-using Billing.TimeCafe.Application.CQRS.Balances.Queries;
-
 namespace Billing.TimeCafe.API.Endpoints.Admin.Balances;
 
 public class GetBalancesPageEndpoint : ICarterModule

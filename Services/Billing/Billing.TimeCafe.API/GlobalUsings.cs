@@ -20,14 +20,9 @@ global using Carter;
 global using MassTransit;
 
 global using MediatR;
-
-global using Microsoft.AspNetCore.Authentication;
-global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.Extensions.Caching.Hybrid;
 
 global using Scalar.AspNetCore;
 
 global using Serilog;
-global using FluentResults;

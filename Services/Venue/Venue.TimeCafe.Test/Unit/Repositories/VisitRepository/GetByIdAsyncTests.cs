@@ -86,3 +86,4 @@ public class GetByIdAsyncTests : BaseCqrsTest
         result.EntryTime.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
     }
 }
+

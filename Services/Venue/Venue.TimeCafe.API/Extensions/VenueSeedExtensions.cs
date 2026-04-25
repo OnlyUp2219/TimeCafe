@@ -182,3 +182,4 @@ public static class VenueSeedExtensions
         await dbContext.SaveChangesAsync();
     }
 }
+

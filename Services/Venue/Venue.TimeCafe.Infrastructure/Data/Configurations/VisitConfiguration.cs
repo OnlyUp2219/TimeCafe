@@ -42,3 +42,4 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .IsUnique();
     }
 }
+

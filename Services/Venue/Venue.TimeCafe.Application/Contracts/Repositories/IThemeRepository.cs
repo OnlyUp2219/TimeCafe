@@ -9,3 +9,4 @@ public interface IThemeRepository
     Task<Theme> UpdateAsync(Theme theme, CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid themeId, CancellationToken ct = default);
 }
+

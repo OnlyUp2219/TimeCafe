@@ -15,3 +15,4 @@ public interface IVisitRepository
     Task SaveChangesAsync(CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid visitId, CancellationToken ct = default);
 }
+

@@ -64,3 +64,4 @@ public class AdditionalInfoBuilder
 
     public CreateAdditionalInfoCommand BuildCommand() => new(_userId, _infoText, _createdBy);
 }
+

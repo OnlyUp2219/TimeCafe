@@ -21,3 +21,4 @@ public class GetProfilesByIds : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileRead));
     }
 }
+

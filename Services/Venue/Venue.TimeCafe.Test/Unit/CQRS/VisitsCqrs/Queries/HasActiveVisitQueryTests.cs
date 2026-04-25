@@ -19,8 +19,8 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.HasActiveVisit.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeTrue();
     }
 
     [Fact]
@@ -33,25 +33,20 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.HasActiveVisit.Should().BeFalse();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().BeFalse();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var query = new HasActiveVisitQuery(userId);
 
         VisitRepositoryMock.Setup(r => r.HasActiveVisitAsync(userId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CheckActiveVisitFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -67,3 +62,4 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
         result.IsValid.Should().Be(isValid);
     }
 }
+

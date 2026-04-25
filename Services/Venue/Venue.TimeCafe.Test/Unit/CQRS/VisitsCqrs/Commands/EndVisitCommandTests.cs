@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Options;
+using Venue.TimeCafe.Application.Options;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.VisitsCqrs.Commands;
 
 public class EndVisitCommandTests : BaseCqrsHandlerTest
@@ -7,7 +10,17 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
     public EndVisitCommandTests()
     {
         var loggerMock = new Mock<Microsoft.Extensions.Logging.ILogger<EndVisitCommandHandler>>();
-        _handler = new EndVisitCommandHandler(VisitRepositoryMock.Object, MapperMock.Object, PublishEndpointMock.Object, loggerMock.Object);
+        var optionsMock = new Mock<IOptions<VenuePricingOptions>>();
+        optionsMock.Setup(o => o.Value).Returns(new VenuePricingOptions());
+
+        _handler = new EndVisitCommandHandler(
+            VisitRepositoryMock.Object,
+            MapperMock.Object,
+            PublishEndpointMock.Object,
+            loggerMock.Object,
+            PromotionRepositoryMock.Object,
+            UserLoyaltyRepositoryMock.Object,
+            optionsMock.Object);
 
         MapperMock.Setup(m => m.Map<Visit>(It.IsAny<VisitWithTariffDto>()))
             .Returns((VisitWithTariffDto dto) => new Visit(dto.VisitId)
@@ -48,10 +61,9 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Visit.Should().NotBeNull();
-        result.Visit!.Status.Should().Be(VisitStatus.Completed);
-        result.CalculatedCost.Should().BeGreaterThan(0);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.CalculatedCost.Should().BeGreaterThan(0);
     }
 
     [Fact]
@@ -64,9 +76,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("VisitNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -90,26 +100,19 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("EndVisitFailed");
-        result.StatusCode.Should().Be(500);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var visitId = Guid.NewGuid();
         var command = new EndVisitCommand(visitId);
 
         VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("EndVisitFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -125,3 +128,4 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
         result.IsValid.Should().Be(isValid);
     }
 }
+

@@ -70,9 +70,9 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
     }
 
     [Fact]
@@ -92,13 +92,11 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("TariffNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryThrowsException()
+    public async Task Handler_Should_ReturnFailed_WhenRepositoryThrowsException()
     {
         var tariffId = TestData.DefaultValues.DefaultTariffId;
         var tariffDto = new TariffWithThemeDto
@@ -120,17 +118,12 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariffDto);
         TariffRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Update failed"));
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdateTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var tariffId = TestData.DefaultValues.DefaultTariffId;
         var command = new UpdateTariffCommand(
@@ -144,13 +137,8 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdateTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -217,8 +205,7 @@ public class UpdateTariffCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ThemeNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 }
+

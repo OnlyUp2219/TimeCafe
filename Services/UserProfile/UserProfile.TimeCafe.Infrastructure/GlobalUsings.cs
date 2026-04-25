@@ -1,16 +1,12 @@
+global using System.Text.Json;
 global using BuildingBlocks.Events;
-
 global using MassTransit;
-
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Microsoft.Extensions.Caching.Hybrid;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
-
-global using System.Text.Json;
-
 global using UserProfile.TimeCafe.Domain.Constants;
 global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.DTOs;

@@ -36,14 +36,15 @@ public class UpdateProfile : ICarterModule
             };
             var command = new UpdateProfileCommand(profile);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, profile = r.Profile }));
+            return result.ToHttpResult(_ => TypedResults.NoContent());
         })
         .WithTags("Profiles")
         .WithName("UpdateProfile")
         .WithSummary("Обновить профиль")
         .WithDescription("Обновляет существующий профиль пользователя.")
-        .Produces(200)
+        .Produces(204)
         .Produces(404)
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileUpdate));
     }
 }
+

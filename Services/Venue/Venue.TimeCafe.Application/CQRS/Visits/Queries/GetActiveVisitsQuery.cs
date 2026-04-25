@@ -1,21 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
-public record GetActiveVisitsQuery() : IRequest<GetActiveVisitsResult>;
-
-public record GetActiveVisitsResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    IEnumerable<VisitWithTariffDto>? Visits = null) : ICqrsResult
-{
-    public static GetActiveVisitsResult GetFailed() =>
-        new(false, Code: "GetActiveVisitsFailed", Message: "Не удалось получить активные посещения", StatusCode: 500);
-
-    public static GetActiveVisitsResult GetSuccess(IEnumerable<VisitWithTariffDto> visits) =>
-        new(true, Visits: visits);
-}
+public record GetActiveVisitsQuery() : IQuery<IEnumerable<VisitWithTariffDto>>;
 
 public class GetActiveVisitsQueryValidator : AbstractValidator<GetActiveVisitsQuery>
 {
@@ -25,20 +10,21 @@ public class GetActiveVisitsQueryValidator : AbstractValidator<GetActiveVisitsQu
 }
 
 
-public class GetActiveVisitsQueryHandler(IVisitRepository repository) : IRequestHandler<GetActiveVisitsQuery, GetActiveVisitsResult>
+public class GetActiveVisitsQueryHandler(IVisitRepository repository) : IQueryHandler<GetActiveVisitsQuery, IEnumerable<VisitWithTariffDto>>
 {
     private readonly IVisitRepository _repository = repository;
 
-    public async Task<GetActiveVisitsResult> Handle(GetActiveVisitsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<VisitWithTariffDto>>> Handle(GetActiveVisitsQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var visits = await _repository.GetActiveVisitsAsync();
-            return GetActiveVisitsResult.GetSuccess(visits);
+            return Result.Ok(visits);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetActiveVisitsResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

@@ -1,10 +1,9 @@
+using System.Reflection;
+using System.Security.Claims;
+using System.Text.Encodings.Web;
+using BuildingBlocks.Permissions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using BuildingBlocks.Permissions;
-
-using System.Security.Claims;
-using System.Reflection;
-using System.Text.Encodings.Web;
 
 namespace Venue.TimeCafe.Test.Integration.Helpers;
 
@@ -46,3 +45,10 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }
+
+
+
+
+
+
+

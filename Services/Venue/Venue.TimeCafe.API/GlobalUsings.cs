@@ -10,7 +10,6 @@ global using MediatR;
 
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
-global using Microsoft.Extensions.Caching.Hybrid;
 
 global using Scalar.AspNetCore;
 
@@ -31,3 +30,4 @@ global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure;
 global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.HttpHandlers;
+

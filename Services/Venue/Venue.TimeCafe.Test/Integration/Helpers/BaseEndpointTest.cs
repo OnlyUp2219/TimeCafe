@@ -67,7 +67,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
     protected async Task<Promotion> SeedPromotionAsync(
         string name = "Test Promotion",
-        int discountPercentage = 10,
+        int DiscountPercentage = 10,
         bool isActive = true,
         DateTimeOffset? validFrom = null,
         DateTimeOffset? validTo = null)
@@ -79,7 +79,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         {
             Name = name,
             Description = "Test Description",
-            DiscountPercent = discountPercentage,
+            DiscountPercent = DiscountPercentage,
             ValidFrom = validFrom ?? DateTimeOffset.UtcNow,
             ValidTo = validTo ?? DateTimeOffset.UtcNow.AddDays(30),
             IsActive = isActive,
@@ -137,3 +137,11 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return visit;
     }
 }
+
+
+
+
+
+
+
+

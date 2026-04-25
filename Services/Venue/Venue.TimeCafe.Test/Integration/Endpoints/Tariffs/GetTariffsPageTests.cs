@@ -16,8 +16,8 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             json.TryGetProperty("totalCount", out var totalCount).Should().BeTrue();
+            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             totalCount.GetInt32().Should().BeGreaterThanOrEqualTo(3);
         }
@@ -39,8 +39,8 @@ public class GetTariffsPageTests(IntegrationApiFactory factory) : BaseEndpointTe
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             json.TryGetProperty("totalCount", out var totalCount).Should().BeTrue();
+            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().Be(0);
             totalCount.GetInt32().Should().Be(0);

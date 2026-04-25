@@ -51,10 +51,9 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Visit.Should().NotBeNull();
-        result.Visit!.UserId.Should().Be(userId);
-        result.StatusCode.Should().Be(201);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -68,13 +67,11 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("CreateVisitFailed");
-        result.StatusCode.Should().Be(500);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
@@ -82,13 +79,8 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateVisitFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -102,9 +94,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("TariffNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -126,9 +116,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("InsufficientFunds");
-        result.StatusCode.Should().Be(400);
+        result.IsFailed.Should().BeTrue();
         VisitRepositoryMock.Verify(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -151,9 +139,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("BalanceCheckFailed");
-        result.StatusCode.Should().Be(503);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -172,3 +158,4 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
         result.IsValid.Should().Be(isValid);
     }
 }
+

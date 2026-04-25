@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Commands;
 
-public record DeleteThemeCommand(Guid ThemeId) : IRequest<DeleteThemeResult>;
-
-public record DeleteThemeResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeleteThemeResult ThemeNotFound() =>
-        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
-
-    public static DeleteThemeResult DeleteFailed() =>
-        new(false, Code: "DeleteThemeFailed", Message: "Не удалось удалить тему", StatusCode: 500);
-
-    public static DeleteThemeResult DeleteSuccess() =>
-        new(true, Message: "Тема успешно удалена");
-}
+public record DeleteThemeCommand(Guid ThemeId) : ICommand;
 
 public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
 {
@@ -27,28 +10,29 @@ public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
     }
 }
 
-public class DeleteThemeCommandHandler(IThemeRepository repository) : IRequestHandler<DeleteThemeCommand, DeleteThemeResult>
+public class DeleteThemeCommandHandler(IThemeRepository repository) : ICommandHandler<DeleteThemeCommand>
 {
     private readonly IThemeRepository _repository = repository;
 
-    public async Task<DeleteThemeResult> Handle(DeleteThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteThemeCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.ThemeId);
             if (existing == null)
-                return DeleteThemeResult.ThemeNotFound();
+                return Result.Fail(new ThemeNotFoundError());
 
             var result = await _repository.DeleteAsync(request.ThemeId);
 
             if (!result)
-                return DeleteThemeResult.DeleteFailed();
+                return Result.Fail(new DeleteFailedError());
 
-            return DeleteThemeResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeleteThemeResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

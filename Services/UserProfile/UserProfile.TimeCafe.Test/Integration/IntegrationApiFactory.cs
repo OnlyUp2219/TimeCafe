@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
 using Testcontainers.RabbitMq;
@@ -161,3 +160,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         }
     }
 }
+
+
+
+

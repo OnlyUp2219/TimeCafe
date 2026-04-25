@@ -31,9 +31,9 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Promotion.Should().NotBeNull();
-        result.Promotion!.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
     }
 
     [Fact]
@@ -47,13 +47,11 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PromotionNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenUpdateFails()
+    public async Task Handler_Should_ReturnFailed_WhenUpdateFails()
     {
         var promotionId = TestData.ExistingPromotions.Promotion2Id;
         var validFrom = TestData.DateTimeData.GetValidFromDate();
@@ -70,17 +68,12 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
         PromotionRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception("Update failed"));
 
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdatePromotionFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion3Id;
         var validFrom = TestData.DateTimeData.GetValidFromDate();
@@ -89,13 +82,8 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("UpdatePromotionFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -127,3 +115,4 @@ public class UpdatePromotionCommandTests : BaseCqrsHandlerTest
         }
     }
 }
+

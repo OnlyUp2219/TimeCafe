@@ -19,12 +19,12 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("info", out var info).Should().BeTrue();
-            info.TryGetProperty("infoId", out var infoId).Should().BeTrue();
+
+            json.TryGetProperty("infoId", out var infoId).Should().BeTrue();
             infoId.GetString().Should().NotBeNullOrEmpty();
-            info.TryGetProperty("infoText", out var text).Should().BeTrue();
+            json.TryGetProperty("infoText", out var text).Should().BeTrue();
             text.GetString()!.Should().Be(TestData.TestInfoTexts.NewInfo);
-            info.TryGetProperty("userId", out var uid).Should().BeTrue();
+            json.TryGetProperty("userId", out var uid).Should().BeTrue();
             uid.GetString()!.Should().Be(userId.ToString());
         }
         catch (Exception)
@@ -79,3 +79,11 @@ public class CreateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         }
     }
 }
+
+
+
+
+
+
+
+

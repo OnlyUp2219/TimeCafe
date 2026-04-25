@@ -1,26 +1,6 @@
-using UserProfile.TimeCafe.Application.Helpers;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 //TODO: rewrite dto
-public record UpdateProfileCommand(Profile User) : IRequest<UpdateProfileResult>;
-
-public record UpdateProfileResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Profile? Profile = null) : ICqrsResult
-{
-    public static UpdateProfileResult ProfileNotFound() =>
-        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-
-    public static UpdateProfileResult UpdateFailed() =>
-        new(false, Code: "UpdateProfileFailed", Message: "Не удалось обновить профиль", StatusCode: 500);
-
-    public static UpdateProfileResult UpdateSuccess(Profile profile) =>
-        new(true, Message: "Профиль успешно обновлён", Profile: profile);
-}
+public record UpdateProfileCommand(Profile User) : ICommand<Profile>;
 
 public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileCommand>
 {
@@ -43,17 +23,17 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
     }
 }
 
-public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequestHandler<UpdateProfileCommand, UpdateProfileResult>
+public class UpdateProfileCommandHandler(IUserRepositories repositories) : ICommandHandler<UpdateProfileCommand, Profile>
 {
     private readonly IUserRepositories _repositories = repositories;
 
-    public async Task<UpdateProfileResult> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Profile>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repositories.GetProfileByIdAsync(request.User.UserId, cancellationToken);
             if (existing == null)
-                return UpdateProfileResult.ProfileNotFound();
+                return Result.Fail(new ProfileNotFoundError());
 
             request.User.PhotoUrl = existing.PhotoUrl;
 
@@ -74,14 +54,14 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IRequ
             var updated = await _repositories.UpdateProfileAsync(request.User, cancellationToken);
 
             if (updated == null)
-                return UpdateProfileResult.UpdateFailed();
+                return Result.Fail(new UpdateFailedError());
 
             var responseProfile = ProfilePhotoUrlMapper.WithApiUrl(updated);
-            return UpdateProfileResult.UpdateSuccess(responseProfile);
+            return Result.Ok(responseProfile);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UpdateProfileResult.UpdateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

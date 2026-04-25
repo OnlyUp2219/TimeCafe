@@ -4,31 +4,31 @@ public sealed record GetRoleClaimsByNameQuery(string RoleName) : IQuery<RoleClai
 
 public sealed class GetRoleClaimsByNameQueryValidator : AbstractValidator<GetRoleClaimsByNameQuery>
 {
-	public GetRoleClaimsByNameQueryValidator()
-	{
-		RuleFor(x => x.RoleName)
-			.NotEmpty().WithMessage("Роль не найдена");
-	}
+    public GetRoleClaimsByNameQueryValidator()
+    {
+        RuleFor(x => x.RoleName)
+            .NotEmpty().WithMessage("Роль не найдена");
+    }
 }
 
 public sealed class GetRoleClaimsByNameQueryHandler(IRbacRepository rbacRepository)
-	: IQueryHandler<GetRoleClaimsByNameQuery, RoleClaimsResponse>
+    : IQueryHandler<GetRoleClaimsByNameQuery, RoleClaimsResponse>
 {
-	private readonly IRbacRepository _rbacRepository = rbacRepository;
+    private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-	public async Task<Result<RoleClaimsResponse>> Handle(GetRoleClaimsByNameQuery request, CancellationToken cancellationToken)
-	{
-		var roleClaims = await _rbacRepository.GetRoleClaimsAsync();
+    public async Task<Result<RoleClaimsResponse>> Handle(GetRoleClaimsByNameQuery request, CancellationToken cancellationToken)
+    {
+        var roleClaims = await _rbacRepository.GetRoleClaimsAsync();
 
-		if (roleClaims is null || roleClaims.Count == 0)
-			return Result.Fail<RoleClaimsResponse>(new RoleClaimsNotFoundError());
+        if (roleClaims is null || roleClaims.Count == 0)
+            return Result.Fail<RoleClaimsResponse>(new RoleClaimsNotFoundError());
 
-		var roleClaim = roleClaims.FirstOrDefault(r =>
-			string.Equals(r.RoleName, request.RoleName, StringComparison.OrdinalIgnoreCase));
+        var roleClaim = roleClaims.FirstOrDefault(r =>
+            string.Equals(r.RoleName, request.RoleName, StringComparison.OrdinalIgnoreCase));
 
-		if (roleClaim is null)
-			return Result.Fail<RoleClaimsResponse>(new RoleNotFoundError(request.RoleName));
+        if (roleClaim is null)
+            return Result.Fail<RoleClaimsResponse>(new RoleNotFoundError(request.RoleName));
 
-		return Result.Ok(roleClaim);
-	}
+        return Result.Ok(roleClaim);
+    }
 }

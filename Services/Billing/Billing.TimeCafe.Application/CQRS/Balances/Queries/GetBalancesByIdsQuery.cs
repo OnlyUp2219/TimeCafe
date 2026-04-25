@@ -1,5 +1,3 @@
-using BuildingBlocks.Contracts.CQRS;
-
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
 public record GetBalancesByIdsQuery(IEnumerable<Guid> UserIds) : IQuery<List<Balance>>;

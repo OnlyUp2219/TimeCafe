@@ -1,7 +1,6 @@
 using System.Net;
 using Amazon.S3;
 using Amazon.S3.Model;
-using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Infrastructure.Services;
 

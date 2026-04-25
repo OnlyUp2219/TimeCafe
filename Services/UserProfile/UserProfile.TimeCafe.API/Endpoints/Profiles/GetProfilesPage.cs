@@ -11,14 +11,7 @@ public class GetProfilesPage : ICarterModule
         {
             var query = new GetProfilesPageQuery(pageNumber, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new
-            {
-                message = r.Message,
-                profiles = r.Profiles,
-                pageNumber = r.PageNumber,
-                pageSize = r.PageSize,
-                totalCount = r.TotalCount
-            }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Profiles")
         .WithName("GetProfilesPage")
@@ -28,3 +21,4 @@ public class GetProfilesPage : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileRead));
     }
 }
+

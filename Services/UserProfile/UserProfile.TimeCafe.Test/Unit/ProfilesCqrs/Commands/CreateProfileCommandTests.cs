@@ -14,14 +14,12 @@ public class CreateProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().Be(201);
-        result.Message.Should().Be("Профиль успешно создан");
-        result.Profile.Should().NotBeNull();
-        result.Profile!.UserId.Should().Be(userId);
-        result.Profile.FirstName.Should().Be(ExistingUsers.User1FirstName);
-        result.Profile.LastName.Should().Be(ExistingUsers.User1LastName);
-        result.Profile.Gender.Should().Be(ExistingUsers.User1Gender);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.UserId.Should().Be(userId);
+        result.Value.FirstName.Should().Be(ExistingUsers.User1FirstName);
+        result.Value.LastName.Should().Be(ExistingUsers.User1LastName);
+        result.Value.Gender.Should().Be(ExistingUsers.User1Gender);
     }
 
     [Fact]
@@ -37,14 +35,11 @@ public class CreateProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileAlreadyExists");
-        result.StatusCode.Should().Be(409);
-        result.Message.Should().Be("Профиль для пользователя уже существует");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_CreateProfile_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_CreateProfile_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         await Context.DisposeAsync();
@@ -53,15 +48,11 @@ public class CreateProfileCommandTests : BaseCqrsTest
         var handler = new CreateProfileCommandHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(command, CancellationToken.None));
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateProfileFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось создать профиль");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Theory]
@@ -113,7 +104,9 @@ public class CreateProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Profile!.ProfileStatus.Should().Be(ProfileStatus.Pending);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.ProfileStatus.Should().Be(ProfileStatus.Pending);
     }
 }
+
+

@@ -1,24 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record UpdatePromotionCommand(Guid PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive) : IRequest<UpdatePromotionResult>;
-
-public record UpdatePromotionResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Promotion? Promotion = null) : ICqrsResult
-{
-    public static UpdatePromotionResult PromotionNotFound() =>
-        new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);
-
-    public static UpdatePromotionResult UpdateFailed() =>
-        new(false, Code: "UpdatePromotionFailed", Message: "Не удалось обновить акцию", StatusCode: 500);
-
-    public static UpdatePromotionResult UpdateSuccess(Promotion promotion) =>
-        new(true, Message: "Акция успешно обновлена", Promotion: promotion);
-}
+public record UpdatePromotionCommand(Guid PromotionId, string Name, string Description, decimal? DiscountPercent, DateTimeOffset ValidFrom, DateTimeOffset ValidTo, bool IsActive, PromotionType? Type = null, Guid? TariffId = null) : ICommand<Promotion>;
 
 public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotionCommand>
 {
@@ -36,38 +18,46 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
     }
 }
 
-public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IRequestHandler<UpdatePromotionCommand, UpdatePromotionResult>
+public class UpdatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<UpdatePromotionCommand, Promotion>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<UpdatePromotionResult> Handle(UpdatePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Promotion>> Handle(UpdatePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
-                return UpdatePromotionResult.PromotionNotFound();
+                return Result.Fail(new Error("Акция не найдена").WithMetadata("ErrorCode", "404"));
 
-            var promotion = Promotion.Update(
+            var promotionResult = Promotion.Update(
                 existingPromotion: existing,
                 name: request.Name,
                 description: request.Description,
-                discountPercent: request.DiscountPercent,
+                DiscountPercent: request.DiscountPercent,
                 validFrom: request.ValidFrom,
                 validTo: request.ValidTo,
-                isActive: request.IsActive
+                isActive: request.IsActive,
+                type: request.Type,
+                tariffId: request.TariffId
                 );
+
+            if (promotionResult.IsFailed)
+                return Result.Fail(promotionResult.Errors);
+
+            var promotion = promotionResult.Value;
 
             var updated = await _repository.UpdateAsync(promotion);
 
             if (updated == null)
-                return UpdatePromotionResult.UpdateFailed();
+                return Result.Fail(new Error("Не удалось обновить акцию").WithMetadata("ErrorCode", "500"));
 
-            return UpdatePromotionResult.UpdateSuccess(updated);
+            return Result.Ok(updated);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UpdatePromotionResult.UpdateFailed(), ex);
+            return Result.Fail(new Error("Не удалось обновить акцию").CausedBy(ex).WithMetadata("ErrorCode", "500"));
         }
     }
 }
+

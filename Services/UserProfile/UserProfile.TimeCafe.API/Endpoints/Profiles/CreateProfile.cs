@@ -20,7 +20,7 @@ public class CreateProfile : ICarterModule
         {
             var command = new CreateProfileCommand(request.UserId, request.FirstName, request.LastName, request.Gender);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, profile = r.Profile }, statusCode: r.StatusCode ?? 201));
+            return result.ToHttpResult(r => TypedResults.Created($"/profiles/{r.UserId}", r));
         })
         .WithTags("Profiles")
         .WithName("CreateProfile")
@@ -30,3 +30,4 @@ public class CreateProfile : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileCreate));
     }
 }
+

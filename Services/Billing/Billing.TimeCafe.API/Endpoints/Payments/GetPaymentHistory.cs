@@ -1,6 +1,3 @@
-
-using Billing.TimeCafe.Application.CQRS.Payments.Queries;
-
 namespace Billing.TimeCafe.API.Endpoints.Payments;
 
 public class GetPaymentHistory : ICarterModule

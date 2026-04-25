@@ -11,7 +11,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
-            discountPercent = promotion.DiscountPercent,
+            DiscountPercent = promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
             validTo = promotion.ValidTo,
             isActive = promotion.IsActive
@@ -23,9 +23,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-            json.TryGetProperty("promotion", out var promotionJson).Should().BeTrue();
-            promotionJson.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
+            json.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
         }
         catch (Exception)
         {
@@ -42,7 +40,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -70,7 +68,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
-            discountPercent = promotion.DiscountPercent,
+            DiscountPercent = promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
             validTo = promotion.ValidTo,
             isActive = promotion.IsActive
@@ -82,9 +80,8 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var updatedPromotion = json.GetProperty("promotion");
-            updatedPromotion.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
-            updatedPromotion.GetProperty("discountPercent").GetDecimal().Should().Be(promotion.DiscountPercent);
+            json.GetProperty("name").GetString().Should().Be(TestData.UpdateData.UpdatedPromotionName);
+            json.GetProperty("discountPercent").GetDecimal().Should().Be(promotion.DiscountPercent);
         }
         catch (Exception)
         {
@@ -104,7 +101,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = invalidName,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -131,7 +128,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.ExistingPromotions.Promotion1Name,
             description = TestData.DefaultValues.DefaultPromotionDescription,
-            discountPercent = TestData.DefaultValues.DefaultDiscountPercent,
+            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
             validFrom = TestData.DateTimeData.GetValidFromDate(),
             validTo = TestData.DateTimeData.GetValidToDate(),
             isActive = true
@@ -150,3 +147,11 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         }
     }
 }
+
+
+
+
+
+
+
+

@@ -4,22 +4,22 @@ public sealed record GetRoleClaimsQuery() : IQuery<List<RoleClaimsResponse>>;
 
 public sealed class GetRoleClaimsQueryValidator : AbstractValidator<GetRoleClaimsQuery>
 {
-	public GetRoleClaimsQueryValidator()
-	{
-	}
+    public GetRoleClaimsQueryValidator()
+    {
+    }
 }
 
 public sealed class GetRoleClaimsQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetRoleClaimsQuery, List<RoleClaimsResponse>>
 {
-	private readonly IRbacRepository _rbacRepository = rbacRepository;
+    private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-	public async Task<Result<List<RoleClaimsResponse>>> Handle(GetRoleClaimsQuery request, CancellationToken cancellationToken)
-	{
-		var roleClaims = await _rbacRepository.GetRoleClaimsAsync();
+    public async Task<Result<List<RoleClaimsResponse>>> Handle(GetRoleClaimsQuery request, CancellationToken cancellationToken)
+    {
+        var roleClaims = await _rbacRepository.GetRoleClaimsAsync();
 
-		if (roleClaims is null || roleClaims.Count == 0)
-			return Result.Fail<List<RoleClaimsResponse>>(new RoleClaimsNotFoundError());
+        if (roleClaims is null || roleClaims.Count == 0)
+            return Result.Fail<List<RoleClaimsResponse>>(new RoleClaimsNotFoundError());
 
-		return Result.Ok(roleClaims);
-	}
+        return Result.Ok(roleClaims);
+    }
 }

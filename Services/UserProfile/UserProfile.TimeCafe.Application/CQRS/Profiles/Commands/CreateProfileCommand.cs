@@ -1,24 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record CreateProfileCommand(Guid UserId, string FirstName, string LastName, Gender Gender) : IRequest<CreateProfileResult>;
-
-public record CreateProfileResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Profile? Profile = null) : ICqrsResult
-{
-    public static CreateProfileResult ProfileAlreadyExists() =>
-        new(false, Code: "ProfileAlreadyExists", Message: "Профиль для пользователя уже существует", StatusCode: 409);
-
-    public static CreateProfileResult CreateFailed() =>
-        new(false, Code: "CreateProfileFailed", Message: "Не удалось создать профиль", StatusCode: 500);
-
-    public static CreateProfileResult CreateSuccess(Profile profile) =>
-        new(true, Message: "Профиль успешно создан", StatusCode: 201, Profile: profile);
-}
+public record CreateProfileCommand(Guid UserId, string FirstName, string LastName, Gender Gender) : ICommand<Profile>;
 
 public class CreateProfileCommandValidator : AbstractValidator<CreateProfileCommand>
 {
@@ -32,17 +14,17 @@ public class CreateProfileCommandValidator : AbstractValidator<CreateProfileComm
     }
 }
 
-public class CreateProfileCommandHandler(IUserRepositories repository) : IRequestHandler<CreateProfileCommand, CreateProfileResult>
+public class CreateProfileCommandHandler(IUserRepositories repository) : ICommandHandler<CreateProfileCommand, Profile>
 {
     private readonly IUserRepositories _repository = repository;
 
-    public async Task<CreateProfileResult> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Profile>> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (existing != null)
-                return CreateProfileResult.ProfileAlreadyExists();
+                return Result.Fail(new ProfileAlreadyExistsError());
 
             var profile = new Profile
             {
@@ -57,13 +39,13 @@ public class CreateProfileCommandHandler(IUserRepositories repository) : IReques
             var created = await _repository.CreateProfileAsync(profile, cancellationToken);
 
             if (created == null)
-                return CreateProfileResult.CreateFailed();
+                return Result.Fail(new CreateFailedError());
 
-            return CreateProfileResult.CreateSuccess(created);
+            return Result.Ok(created);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(CreateProfileResult.CreateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

@@ -110,3 +110,4 @@ public class CreateAsyncTests : BaseCqrsTest
         fromDb.Should().NotBeNull();
     }
 }
+

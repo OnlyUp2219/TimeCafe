@@ -26,8 +26,7 @@ public class UpdateVisit : ICarterModule
         {
             var command = new UpdateVisitCommand(visitId, request.UserId, request.TariffId, request.EntryTime, request.ExitTime, request.CalculatedCost, request.Status);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r =>
-                Results.Ok(new { message = r.Message, visit = r.Visit }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Visits")
         .WithName("UpdateVisit")
@@ -38,3 +37,4 @@ public class UpdateVisit : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitUpdate));
     }
 }
+

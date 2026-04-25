@@ -1,8 +1,3 @@
-using System.Text;
-using Auth.TimeCafe.Domain.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.WebUtilities;
-
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Email;
 
 public record ConfirmEmailChangeCommand(string UserId, string NewEmail, string Token) : IRequest<ConfirmEmailChangeResult>;

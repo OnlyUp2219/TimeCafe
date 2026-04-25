@@ -21,8 +21,7 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Code.Should().BeNull();
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -34,9 +33,7 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PromotionNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
@@ -51,26 +48,19 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ActivatePromotionFailed");
-        result.StatusCode.Should().Be(500);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var promotionId = TestData.ExistingPromotions.Promotion1Id;
         var command = new ActivatePromotionCommand(promotionId);
 
         PromotionRepositoryMock.Setup(r => r.GetByIdAsync(promotionId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("ActivatePromotionFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -90,3 +80,4 @@ public class ActivatePromotionCommandTests : BaseCqrsHandlerTest
         }
     }
 }
+

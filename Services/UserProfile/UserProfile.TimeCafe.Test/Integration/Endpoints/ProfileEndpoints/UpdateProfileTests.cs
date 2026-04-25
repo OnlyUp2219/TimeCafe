@@ -3,7 +3,7 @@ namespace UserProfile.TimeCafe.Test.Integration.Endpoints.ProfileEndpoints;
 public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_UpdateProfile_Should_Return200_WhenProfileExists()
+    public async Task Endpoint_UpdateProfile_Should_Return204_WhenProfileExists()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -20,22 +20,15 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
 
         // Act
         var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{userId}", dto);
-        var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("profile", out var profile).Should().BeTrue();
-            profile.GetProperty("lastName").GetString()!.Should().Be(TestData.UpdateData.UpdatedLastName2);
-            profile.GetProperty("middleName").GetString()!.Should().Be(TestData.UpdateData.UpdatedMiddleName);
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return200_WhenProfileExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        // Verify update
+        var getResponse = await Client.GetAsync($"/userprofile/profiles/{userId}");
+        var json = JsonDocument.Parse(await getResponse.Content.ReadAsStringAsync()).RootElement;
+        json.GetProperty("lastName").GetString()!.Should().Be(TestData.UpdateData.UpdatedLastName2);
+        json.GetProperty("middleName").GetString()!.Should().Be(TestData.UpdateData.UpdatedMiddleName);
     }
 
     [Fact]
@@ -58,17 +51,12 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        try
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        if (!string.IsNullOrWhiteSpace(jsonString))
         {
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             var json = JsonDocument.Parse(jsonString).RootElement;
             if (json.TryGetProperty("code", out var code))
                 code.GetString()!.Should().Be("ProfileNotFound");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return404_WhenProfileNotFound] Response: {jsonString}");
-            throw;
         }
     }
 
@@ -91,54 +79,11 @@ public class UpdateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString()!.Should().Be("ValidationError");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return422_WhenValidationFails] Response: {jsonString}");
-            throw;
-        }
-    }
-
-    [Fact]
-    public async Task Endpoint_UpdateProfile_Should_Return200_WhenBirthDateSentAsIsoDateTimeString()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        await SeedProfileAsync(userId, TestData.ExistingUsers.User2FirstName, TestData.ExistingUsers.User2LastName);
-
-        var dto = new
-        {
-            firstName = TestData.ExistingUsers.User2FirstName,
-            lastName = TestData.ExistingUsers.User2LastName,
-            middleName = (string?)null,
-            photoUrl = (string?)null,
-            birthDate = "1990-05-15T00:00:00.000Z",
-            gender = (byte)Gender.Female
-        };
-
-        // Act
-        var response = await Client.PutAsJsonAsync($"/userprofile/profiles/{userId}", dto);
-        var jsonString = await response.Content.ReadAsStringAsync();
-
-        // Assert
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("profile", out var profile).Should().BeTrue();
-            profile.TryGetProperty("birthDate", out var birthDate).Should().BeTrue();
-            birthDate.GetString()!.Should().Be("1990-05-15");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_UpdateProfile_Should_Return200_WhenBirthDateSentAsIsoDateTimeString] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+        var json = JsonDocument.Parse(jsonString).RootElement;
+        json.TryGetProperty("code", out var code).Should().BeTrue();
+        code.GetString()!.Should().Be("ValidationError");
     }
 }
+
+

@@ -16,3 +16,4 @@ public class CreateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
         db!.InfoText.Should().Be("New cached removal");
     }
 }
+

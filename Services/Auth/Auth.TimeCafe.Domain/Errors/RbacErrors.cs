@@ -53,7 +53,7 @@ public class RoleExistError : Error
         : base($"Роль '{roleName}' уже существует")
     {
         Metadata.Add("ErrorCode", "400");
-        Metadata.Add("RoleName", roleName); 
+        Metadata.Add("RoleName", roleName);
     }
 }
 
@@ -62,7 +62,7 @@ public class SystemRoleModificationError : Error
     public SystemRoleModificationError(string roleName)
         : base($"Роль '{roleName}' является системной и не может быть изменена или удалена.")
     {
-        Metadata.Add("ErrorCode", "403"); 
+        Metadata.Add("ErrorCode", "403");
         Metadata.Add("Type", "SystemResource");
         Metadata.Add("RoleName", roleName);
     }

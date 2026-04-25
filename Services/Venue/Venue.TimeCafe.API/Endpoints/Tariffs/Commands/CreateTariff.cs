@@ -24,7 +24,7 @@ public class CreateTariff : ICarterModule
         {
             var command = new CreateTariffCommand(request.Name, request.Description, request.PricePerMinute, (BillingType)request.BillingType, request.ThemeId, request.IsActive);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, tariff = r.Tariff }, statusCode: 201));
+            return result.ToHttpResult(r => TypedResults.Created($"/tariffs/{r.TariffId}", r));
         })
         .WithTags("Tariffs")
         .WithName("CreateTariff")
@@ -34,3 +34,4 @@ public class CreateTariff : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffCreate));
     }
 }
+

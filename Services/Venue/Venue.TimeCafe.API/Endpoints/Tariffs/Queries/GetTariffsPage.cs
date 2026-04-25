@@ -11,7 +11,7 @@ public class GetTariffsPage : ICarterModule
         {
             var query = new GetTariffsPageQuery(pageNumber <= 0 ? 1 : pageNumber, pageSize <= 0 ? 20 : pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { tariffs = r.Tariffs, totalCount = r.TotalCount }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Tariffs")
         .WithName("GetTariffsPage")
@@ -21,3 +21,4 @@ public class GetTariffsPage : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffRead));
     }
 }
+

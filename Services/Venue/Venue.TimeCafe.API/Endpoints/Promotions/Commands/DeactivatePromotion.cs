@@ -10,7 +10,7 @@ public class DeactivatePromotion : ICarterModule
         {
             var command = new DeactivatePromotionCommand(promotionId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Promotions")
         .WithName("DeactivatePromotion")
@@ -21,3 +21,4 @@ public class DeactivatePromotion : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionDeactivate));
     }
 }
+

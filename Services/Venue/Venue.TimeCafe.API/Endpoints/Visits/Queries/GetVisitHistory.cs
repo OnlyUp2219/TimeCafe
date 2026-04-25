@@ -12,7 +12,7 @@ public class GetVisitHistory : ICarterModule
         {
             var query = new GetVisitHistoryQuery(userId, pageNumber, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visits = r.Visits }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Visits")
         .WithName("GetVisitHistory")
@@ -22,3 +22,4 @@ public class GetVisitHistory : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }
+

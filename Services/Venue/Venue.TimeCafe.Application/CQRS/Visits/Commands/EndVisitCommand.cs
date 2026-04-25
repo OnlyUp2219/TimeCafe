@@ -1,25 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record EndVisitCommand(Guid VisitId) : IRequest<EndVisitResult>;
-
-public record EndVisitResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Visit? Visit = null,
-    decimal? CalculatedCost = null) : ICqrsResult
-{
-    public static EndVisitResult VisitNotFound() =>
-        new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
-
-    public static EndVisitResult EndFailed() =>
-        new(false, Code: "EndVisitFailed", Message: "Не удалось завершить посещение", StatusCode: 500);
-
-    public static EndVisitResult EndSuccess(Visit visit, decimal calculatedCost) =>
-        new(true, Message: "Посещение успешно завершено", Visit: visit, CalculatedCost: calculatedCost);
-}
+public record EndVisitCommand(Guid VisitId) : ICommand<EndVisitResponse>;
 
 public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
 {
@@ -29,22 +10,39 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
     }
 }
 
-public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper, IPublishEndpoint publishEndpoint, ILogger<EndVisitCommandHandler> logger) : IRequestHandler<EndVisitCommand, EndVisitResult>
+public class EndVisitCommandHandler(
+    IVisitRepository repository,
+    IMapper mapper,
+    IPublishEndpoint publishEndpoint,
+    ILogger<EndVisitCommandHandler> logger,
+    IPromotionRepository promotionRepository,
+    IUserLoyaltyRepository userLoyaltyRepository,
+    IOptions<VenuePricingOptions> options) : ICommandHandler<EndVisitCommand, EndVisitResponse>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     private readonly ILogger<EndVisitCommandHandler> _logger = logger;
+    private readonly IPromotionRepository _promotionRepository = promotionRepository;
+    private readonly IUserLoyaltyRepository _userLoyaltyRepository = userLoyaltyRepository;
+    private readonly VenuePricingOptions _options = options.Value;
 
-    public async Task<EndVisitResult> Handle(EndVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result<EndVisitResponse>> Handle(EndVisitCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
-                return EndVisitResult.VisitNotFound();
+                return Result.Fail(new VisitNotFoundError());
 
             var exitTime = DateTimeOffset.UtcNow;
+            var activePromotions = await _promotionRepository.GetActiveByDateAsync(exitTime, cancellationToken);
+            var globalDiscount = activePromotions.Where(p => p.Type == PromotionType.Global).Max(p => p.DiscountPercent) ?? 0m;
+            var tariffDiscount = activePromotions.Where(p => p.Type == PromotionType.TariffSpecific && p.TariffId == existing.TariffId).Max(p => p.DiscountPercent) ?? 0m;
+
+            var userLoyalty = await _userLoyaltyRepository.GetByUserIdAsync(existing.UserId, cancellationToken);
+            var personalDiscount = userLoyalty?.PersonalDiscountPercent ?? 0m;
+
             var visit = Visit.Update(
                 existingVisit: _mapper.Map<Visit>(existing),
                 exitTime: exitTime,
@@ -52,12 +50,16 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
                     tariffBillingType: existing.TariffBillingType,
                     tariffPricePerMinute: existing.TariffPricePerMinute,
                     exitTime: exitTime,
-                    entryTime: existing.EntryTime),
+                    entryTime: existing.EntryTime,
+                    maxDiscountPercent: _options.MaxTotalDiscountPercent,
+                    globalDiscount: globalDiscount,
+                    tariffDiscount: tariffDiscount,
+                    personalDiscount: personalDiscount),
                 status: VisitStatus.Completed);
 
             var updated = await _repository.UpdateAsync(visit, saveChanges: false, cancellationToken);
             if (updated == null)
-                return EndVisitResult.EndFailed();
+                return Result.Fail(new EndVisitFailedError());
 
             await _publishEndpoint.Publish(new VisitCompletedEvent
             {
@@ -69,12 +71,13 @@ public class EndVisitCommandHandler(IVisitRepository repository, IMapper mapper,
 
             await _repository.SaveChangesAsync(cancellationToken);
 
-            return EndVisitResult.EndSuccess(updated, visit.CalculatedCost ?? 0);
+            return Result.Ok(new EndVisitResponse(updated, visit.CalculatedCost ?? 0));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Ошибка при завершении визита {VisitId}", request.VisitId);
-            throw new CqrsResultException(EndVisitResult.EndFailed(), ex);
+            return Result.Fail(new EndVisitFailedError().CausedBy(ex));
         }
     }
 }
+

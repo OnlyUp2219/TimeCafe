@@ -331,3 +331,11 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 }
+
+
+
+
+
+
+
+

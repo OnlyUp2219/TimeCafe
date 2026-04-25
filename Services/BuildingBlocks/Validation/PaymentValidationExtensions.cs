@@ -16,7 +16,8 @@ public static class PaymentValidationExtensions
         return ruleBuilder
             .Must(url =>
             {
-                if (string.IsNullOrWhiteSpace(url)) return true;
+                if (string.IsNullOrWhiteSpace(url))
+                    return true;
                 var urlToValidate = url.Replace("{CHECKOUT_SESSION_ID}", "placeholder");
                 return Uri.IsWellFormedUriString(urlToValidate, UriKind.Absolute);
             })

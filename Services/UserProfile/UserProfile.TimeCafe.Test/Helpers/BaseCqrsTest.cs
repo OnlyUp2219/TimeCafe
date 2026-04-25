@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Hybrid;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace UserProfile.TimeCafe.Test.Helpers;
 
@@ -96,3 +95,4 @@ public abstract class BaseCqrsTest : IDisposable
         _disposed = true;
     }
 }
+

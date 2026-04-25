@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record DeleteVisitCommand(Guid VisitId) : IRequest<DeleteVisitResult>;
-
-public record DeleteVisitResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeleteVisitResult VisitNotFound() =>
-        new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
-
-    public static DeleteVisitResult DeleteFailed() =>
-        new(false, Code: "DeleteVisitFailed", Message: "Не удалось удалить посещение", StatusCode: 500);
-
-    public static DeleteVisitResult DeleteSuccess() =>
-        new(true, Message: "Посещение успешно удалено");
-}
+public record DeleteVisitCommand(Guid VisitId) : ICommand;
 
 public class DeleteVisitCommandValidator : AbstractValidator<DeleteVisitCommand>
 {
@@ -27,28 +10,29 @@ public class DeleteVisitCommandValidator : AbstractValidator<DeleteVisitCommand>
     }
 }
 
-public class DeleteVisitCommandHandler(IVisitRepository repository) : IRequestHandler<DeleteVisitCommand, DeleteVisitResult>
+public class DeleteVisitCommandHandler(IVisitRepository repository) : ICommandHandler<DeleteVisitCommand>
 {
     private readonly IVisitRepository _repository = repository;
 
-    public async Task<DeleteVisitResult> Handle(DeleteVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteVisitCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
-                return DeleteVisitResult.VisitNotFound();
+                return Result.Fail(new VisitNotFoundError());
 
             var result = await _repository.DeleteAsync(request.VisitId);
 
             if (!result)
-                return DeleteVisitResult.DeleteFailed();
+                return Result.Fail(new DeleteFailedError());
 
-            return DeleteVisitResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeleteVisitResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

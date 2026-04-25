@@ -1,27 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record UpdateTariffCommand(Guid TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, Guid? ThemeId, bool IsActive) : IRequest<UpdateTariffResult>;
-
-public record UpdateTariffResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Tariff? Tariff = null) : ICqrsResult
-{
-    public static UpdateTariffResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-
-    public static UpdateTariffResult ThemeNotFound() =>
-        new(false, Code: "ThemeNotFound", Message: "Тема не найдена", StatusCode: 404);
-
-    public static UpdateTariffResult UpdateFailed() =>
-        new(false, Code: "UpdateTariffFailed", Message: "Не удалось обновить тариф", StatusCode: 500);
-
-    public static UpdateTariffResult UpdateSuccess(Tariff tariff) =>
-        new(true, Message: "Тариф успешно обновлён", Tariff: tariff);
-}
+public record UpdateTariffCommand(Guid TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, Guid? ThemeId, bool IsActive) : ICommand<Tariff>;
 
 public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffCommand>
 {
@@ -45,19 +24,19 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 
 
 // Todo : Patch commands
-public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository, IMapper mapper) : IRequestHandler<UpdateTariffCommand, UpdateTariffResult>
+public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository, IMapper mapper) : ICommandHandler<UpdateTariffCommand, Tariff>
 {
     private readonly ITariffRepository _repository = repository;
     private readonly IThemeRepository _themeRepository = themeRepository;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<UpdateTariffResult> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Tariff>> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
-                return UpdateTariffResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             var tariff = _mapper.Map<Tariff>(existing);
             _mapper.Map(request, tariff);
@@ -66,19 +45,20 @@ public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepo
             {
                 var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
                 if (themeExists == null)
-                    return UpdateTariffResult.ThemeNotFound();
+                    return Result.Fail(new ThemeNotFoundError());
             }
 
             var updated = await _repository.UpdateAsync(tariff);
 
             if (updated == null)
-                return UpdateTariffResult.UpdateFailed();
+                return Result.Fail(new UpdateFailedError());
 
-            return UpdateTariffResult.UpdateSuccess(updated);
+            return Result.Ok(updated);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UpdateTariffResult.UpdateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

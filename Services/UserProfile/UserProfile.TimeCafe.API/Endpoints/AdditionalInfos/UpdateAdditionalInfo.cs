@@ -19,14 +19,15 @@ public class UpdateAdditionalInfo : ICarterModule
         {
             var command = new UpdateAdditionalInfoCommand(infoId, request.UserId, request.InfoText, request.CreatedBy);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, info = r.AdditionalInfo }));
+            return result.ToHttpResult(_ => TypedResults.NoContent());
         })
         .WithTags("AdditionalInfos")
         .WithName("UpdateAdditionalInfo")
         .WithSummary("Обновить запись доп. информации")
         .WithDescription("Обновляет существующую запись дополнительной информации.")
-        .Produces(200)
+        .Produces(204)
         .Produces(404)
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoUpdate));
     }
 }
+

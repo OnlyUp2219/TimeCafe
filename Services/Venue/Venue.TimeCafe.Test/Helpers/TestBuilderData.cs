@@ -53,31 +53,38 @@ public class PromotionBuilder
     private Guid _id = Guid.NewGuid();
     private string _name = TestData.DefaultValues.DefaultPromotionName;
     private string _description = TestData.DefaultValues.DefaultPromotionDescription;
-    private decimal? _discountPercent = TestData.DefaultValues.DefaultDiscountPercent;
+    private decimal? _DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent;
     private DateTimeOffset _validFrom = DateTimeOffset.UtcNow.AddDays(-1);
     private DateTimeOffset _validTo = DateTimeOffset.UtcNow.AddDays(30);
     private bool _isActive = true;
 
+    private PromotionType _type = PromotionType.Global;
+    private Guid? _tariffId;
+
     public PromotionBuilder WithId(Guid id) { _id = id; return this; }
     public PromotionBuilder WithName(string name) { _name = name; return this; }
     public PromotionBuilder WithDescription(string desc) { _description = desc; return this; }
-    public PromotionBuilder WithDiscount(decimal? pct) { _discountPercent = pct; return this; }
+    public PromotionBuilder WithDiscount(decimal? pct) { _DiscountPercent = pct; return this; }
     public PromotionBuilder WithValidRange(DateTimeOffset from, DateTimeOffset to) { _validFrom = from; _validTo = to; return this; }
     public PromotionBuilder AsInactive() { _isActive = false; return this; }
+    public PromotionBuilder WithType(PromotionType type) { _type = type; return this; }
+    public PromotionBuilder WithTariffId(Guid? tariffId) { _tariffId = tariffId; return this; }
 
     public Promotion Build() => new()
     {
         PromotionId = _id,
         Name = _name,
         Description = _description,
-        DiscountPercent = _discountPercent,
+        DiscountPercent = _DiscountPercent,
         ValidFrom = _validFrom,
         ValidTo = _validTo,
         IsActive = _isActive,
+        Type = _type,
+        TariffId = _tariffId,
         CreatedAt = DateTimeOffset.UtcNow
     };
 
-    public CreatePromotionCommand BuildCommand() => new(_name, _description, _discountPercent, _validFrom, _validTo, _isActive);
+    public CreatePromotionCommand BuildCommand() => new(_name, _description, _DiscountPercent, _validFrom, _validTo, _type, _tariffId, _isActive);
 }
 
 public class TariffBuilder
@@ -136,3 +143,4 @@ public class ThemeBuilder
 
     public CreateThemeCommand BuildCommand() => new(_name, _emoji, _colors);
 }
+

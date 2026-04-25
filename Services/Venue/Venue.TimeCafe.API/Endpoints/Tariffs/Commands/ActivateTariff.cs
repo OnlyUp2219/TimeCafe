@@ -10,7 +10,7 @@ public class ActivateTariff : ICarterModule
         {
             var command = new ActivateTariffCommand(tariffId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Tariffs")
         .WithName("ActivateTariff")
@@ -21,4 +21,5 @@ public class ActivateTariff : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffActivate));
     }
 }
+
 

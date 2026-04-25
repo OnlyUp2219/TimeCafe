@@ -113,3 +113,4 @@ public class GetVisitHistoryByUserAsyncTests : BaseCqrsTest
         result.Should().Contain(v => v.Status == VisitStatus.Completed);
     }
 }
+

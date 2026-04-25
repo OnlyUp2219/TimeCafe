@@ -15,8 +15,8 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visit", out var visitJson).Should().BeTrue();
-            visitJson.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
+
+            json.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
         }
         catch (Exception)
         {
@@ -75,10 +75,10 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var visitJson = json.GetProperty("visit");
-            visitJson.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
-            visitJson.GetProperty("userId").GetString().Should().Be(userId.ToString());
-            visitJson.TryGetProperty("entryTime", out _).Should().BeTrue();
+
+            json.GetProperty("visitId").GetString().Should().Be(visit.VisitId.ToString());
+            json.GetProperty("userId").GetString().Should().Be(userId.ToString());
+            json.TryGetProperty("entryTime", out _).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -87,3 +87,16 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

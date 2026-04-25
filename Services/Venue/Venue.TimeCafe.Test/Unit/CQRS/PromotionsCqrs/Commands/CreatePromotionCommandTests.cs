@@ -14,7 +14,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
     {
         var validFrom = TestData.DateTimeData.GetValidFromDate();
         var validTo = TestData.DateTimeData.GetValidToDate();
-        var command = new CreatePromotionCommand(TestData.NewPromotions.NewPromotion1Name, TestData.NewPromotions.NewPromotion1Description, TestData.NewPromotions.NewPromotion1DiscountPercent, validFrom, validTo, true);
+        var command = new CreatePromotionCommand(TestData.NewPromotions.NewPromotion1Name, TestData.NewPromotions.NewPromotion1Description, TestData.NewPromotions.NewPromotion1DiscountPercent, validFrom, validTo, PromotionType.Global);
         var promotion = new Promotion
         {
             Name = TestData.NewPromotions.NewPromotion1Name,
@@ -22,53 +22,43 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
             DiscountPercent = TestData.NewPromotions.NewPromotion1DiscountPercent,
             ValidFrom = validFrom,
             ValidTo = validTo,
-            IsActive = true
+            IsActive = true,
+            Type = PromotionType.Global
         };
 
         PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Promotion.Should().NotBeNull();
-        result.Promotion!.Name.Should().Be(TestData.NewPromotions.NewPromotion1Name);
-        result.StatusCode.Should().Be(201);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.NewPromotions.NewPromotion1Name);
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenRepositoryFails()
+    public async Task Handler_Should_ReturnFailed_WhenRepositoryFails()
     {
         var validFrom = TestData.DateTimeData.GetValidFromDate();
         var validTo = TestData.DateTimeData.GetValidToDate();
-        var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo);
+        var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo, PromotionType.Global);
 
         PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());
 
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreatePromotionFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var validFrom = TestData.DateTimeData.GetValidFromDate();
         var validTo = TestData.DateTimeData.GetValidToDate();
-        var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo);
+        var command = new CreatePromotionCommand(TestData.DefaultValues.DefaultPromotionName, TestData.DefaultValues.DefaultPromotionDescription, TestData.DefaultValues.DefaultDiscountPercent, validFrom, validTo, PromotionType.Global);
 
         PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => _handler.Handle(command, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreatePromotionFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(command, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -87,7 +77,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
         var validFrom = DateTimeOffset.UtcNow;
         var validTo = validDates ? validFrom.AddDays(30) : validFrom.AddDays(-1);
         var discount = discountDouble == -999.0 ? null : (decimal?)discountDouble;
-        var command = new CreatePromotionCommand(name!, description!, discount, validFrom, validTo);
+        var command = new CreatePromotionCommand(name!, description!, discount, validFrom, validTo, PromotionType.Global);
         var validator = new CreatePromotionCommandValidator();
 
         var result = await validator.ValidateAsync(command);
@@ -99,3 +89,4 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
         }
     }
 }
+

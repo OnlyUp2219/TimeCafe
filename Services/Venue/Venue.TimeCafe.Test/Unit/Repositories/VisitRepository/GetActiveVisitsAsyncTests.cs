@@ -99,3 +99,4 @@ public class GetActiveVisitsAsyncTests : BaseCqrsTest
         result[0].TariffName.Should().Be(TestData.ExistingTariffs.Tariff3Name);
     }
 }
+

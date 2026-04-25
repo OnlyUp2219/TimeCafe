@@ -17,7 +17,7 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visits", out var visits).Should().BeTrue();
+            var visits = json;
             visits.ValueKind.Should().Be(JsonValueKind.Array);
             visits.GetArrayLength().Should().BeGreaterThanOrEqualTo(3);
         }
@@ -39,7 +39,7 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visits", out var visits).Should().BeTrue();
+            var visits = json;
             visits.ValueKind.Should().Be(JsonValueKind.Array);
             visits.GetArrayLength().Should().Be(0);
         }
@@ -66,7 +66,7 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var visits = json.GetProperty("visits");
+            var visits = json;
             visits.GetArrayLength().Should().BeLessThanOrEqualTo(2);
         }
         catch (Exception)
@@ -76,3 +76,16 @@ public class GetVisitHistoryTests(IntegrationApiFactory factory) : BaseEndpointT
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

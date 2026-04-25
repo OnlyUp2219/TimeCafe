@@ -24,3 +24,4 @@ public class Tariff
 
     public virtual ICollection<Visit> Visits { get; set; } = [];
 }
+

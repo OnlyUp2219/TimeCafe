@@ -1,5 +1,3 @@
-using Auth.TimeCafe.Application.CQRS.Admin.Query;
-
 namespace Auth.TimeCafe.Test.Unit.Admin.Queries;
 
 public class GetUserByIdQueryValidatorTests

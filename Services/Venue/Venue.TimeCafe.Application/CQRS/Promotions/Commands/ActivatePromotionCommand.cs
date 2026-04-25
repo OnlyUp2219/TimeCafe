@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Promotions.Commands;
 
-public record ActivatePromotionCommand(Guid PromotionId) : IRequest<ActivatePromotionResult>;
-
-public record ActivatePromotionResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static ActivatePromotionResult PromotionNotFound() =>
-        new(false, Code: "PromotionNotFound", Message: "Акция не найдена", StatusCode: 404);
-
-    public static ActivatePromotionResult ActivateFailed() =>
-        new(false, Code: "ActivatePromotionFailed", Message: "Не удалось активировать акцию", StatusCode: 500);
-
-    public static ActivatePromotionResult ActivateSuccess() =>
-        new(true, Message: "Акция успешно активирована");
-}
+public record ActivatePromotionCommand(Guid PromotionId) : ICommand;
 
 public class ActivatePromotionCommandValidator : AbstractValidator<ActivatePromotionCommand>
 {
@@ -27,28 +10,29 @@ public class ActivatePromotionCommandValidator : AbstractValidator<ActivatePromo
     }
 }
 
-public class ActivatePromotionCommandHandler(IPromotionRepository repository) : IRequestHandler<ActivatePromotionCommand, ActivatePromotionResult>
+public class ActivatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<ActivatePromotionCommand>
 {
     private readonly IPromotionRepository _repository = repository;
 
-    public async Task<ActivatePromotionResult> Handle(ActivatePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ActivatePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
-                return ActivatePromotionResult.PromotionNotFound();
+                return Result.Fail(new PromotionNotFoundError());
 
             var result = await _repository.ActivateAsync(request.PromotionId);
 
             if (!result)
-                return ActivatePromotionResult.ActivateFailed();
+                return Result.Fail(new ActivateFailedError());
 
-            return ActivatePromotionResult.ActivateSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(ActivatePromotionResult.ActivateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

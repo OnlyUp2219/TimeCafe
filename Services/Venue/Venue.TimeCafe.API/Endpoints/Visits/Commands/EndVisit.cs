@@ -10,7 +10,7 @@ public class EndVisit : ICarterModule
         {
             var command = new EndVisitCommand(visitId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, visit = r.Visit, calculatedCost = r.CalculatedCost }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Visits")
         .WithName("EndVisit")
@@ -21,3 +21,4 @@ public class EndVisit : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitEnd));
     }
 }
+

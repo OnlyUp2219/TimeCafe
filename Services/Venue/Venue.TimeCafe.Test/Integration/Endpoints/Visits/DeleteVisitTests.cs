@@ -3,24 +3,13 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.Visits;
 public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_DeleteVisit_Should_Return200_WhenVisitExists()
+    public async Task Endpoint_DeleteVisit_Should_Return204_WhenVisitExists()
     {
         await ClearDatabaseAndCacheAsync();
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit1UserId);
 
         var response = await Client.DeleteAsync($"/venue/visits/{visit.VisitId}");
-        var jsonString = await response.Content.ReadAsStringAsync();
-        try
-        {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-        }
-        catch (Exception)
-        {
-            Console.WriteLine($"[Endpoint_DeleteVisit_Should_Return200_WhenVisitExists] Response: {jsonString}");
-            throw;
-        }
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]
@@ -48,7 +37,7 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var visit = await SeedVisitAsync(TestData.NewVisits.NewVisit2UserId);
 
         var deleteResponse = await Client.DeleteAsync($"/venue/visits/{visit.VisitId}");
-        deleteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
         var getResponse = await Client.GetAsync($"/venue/visits/{visit.VisitId}");
         var jsonString = await getResponse.Content.ReadAsStringAsync();
@@ -95,6 +84,8 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         try
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            json.GetProperty("visitId").GetGuid().Should().Be(visit2.VisitId);
         }
         catch (Exception)
         {
@@ -103,3 +94,10 @@ public class DeleteVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 }
+
+
+
+
+
+
+

@@ -10,7 +10,7 @@ public class DeleteVisit : ICarterModule
         {
             var command = new DeleteVisitCommand(visitId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Visits")
         .WithName("DeleteVisit")
@@ -21,3 +21,4 @@ public class DeleteVisit : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitDelete));
     }
 }
+

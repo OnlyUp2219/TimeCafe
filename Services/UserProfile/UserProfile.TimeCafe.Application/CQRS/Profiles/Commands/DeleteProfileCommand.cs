@@ -1,23 +1,6 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Commands;
 
-public record DeleteProfileCommand(Guid UserId) : IRequest<DeleteProfileResult>;
-
-public record DeleteProfileResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeleteProfileResult ProfileNotFound() =>
-        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-
-    public static DeleteProfileResult DeleteFailed() =>
-        new(false, Code: "DeleteProfileFailed", Message: "Не удалось удалить профиль", StatusCode: 500);
-
-    public static DeleteProfileResult DeleteSuccess() =>
-        new(true, Message: "Профиль успешно удалён");
-}
+public record DeleteProfileCommand(Guid UserId) : ICommand;
 
 public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileCommand>
 {
@@ -28,24 +11,24 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     }
 }
 
-public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : IRequestHandler<DeleteProfileCommand, DeleteProfileResult>
+public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : ICommandHandler<DeleteProfileCommand>
 {
     private readonly IUserRepositories _userRepositories = userRepositories;
 
-    public async Task<DeleteProfileResult> Handle(DeleteProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteProfileCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _userRepositories.GetProfileByIdAsync(request.UserId, cancellationToken);
             if (existing == null)
-                return DeleteProfileResult.ProfileNotFound();
+                return Result.Fail(new ProfileNotFoundError());
 
             await _userRepositories.DeleteProfileAsync(request.UserId, cancellationToken);
-            return DeleteProfileResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeleteProfileResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

@@ -1,6 +1,3 @@
-
-using Billing.TimeCafe.Test.TestData;
-
 namespace Billing.TimeCafe.Test.Integration.Repository.Balance;
 
 public class ConcurrencyTests : BaseBalanceRepositoryTest

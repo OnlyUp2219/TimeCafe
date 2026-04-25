@@ -1,27 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record UpdateVisitCommand(Guid VisitId, Guid UserId, Guid TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : IRequest<UpdateVisitResult>;
-
-public record UpdateVisitResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResult
-{
-    public static UpdateVisitResult VisitNotFound() =>
-        new(false, Code: "VisitNotFound", Message: "Посещение не найдено", StatusCode: 404);
-
-    public static UpdateVisitResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-
-    public static UpdateVisitResult UpdateFailed() =>
-        new(false, Code: "UpdateVisitFailed", Message: "Не удалось обновить посещение", StatusCode: 500);
-
-    public static UpdateVisitResult UpdateSuccess(Visit visit) =>
-        new(true, Message: "Посещение успешно обновлено", Visit: visit);
-}
+public record UpdateVisitCommand(Guid VisitId, Guid UserId, Guid TariffId, DateTimeOffset EntryTime, DateTimeOffset? ExitTime, decimal? CalculatedCost, VisitStatus Status) : ICommand;
 
 public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
 {
@@ -44,37 +23,38 @@ public class UpdateVisitCommandValidator : AbstractValidator<UpdateVisitCommand>
     }
 }
 
-public class UpdateVisitCommandHandler(IVisitRepository repository, ITariffRepository tariffRepository, IMapper mapper) : IRequestHandler<UpdateVisitCommand, UpdateVisitResult>
+public class UpdateVisitCommandHandler(IVisitRepository repository, ITariffRepository tariffRepository, IMapper mapper) : ICommandHandler<UpdateVisitCommand>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly ITariffRepository _tariffRepository = tariffRepository;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<UpdateVisitResult> Handle(UpdateVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateVisitCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.VisitId);
             if (existing == null)
-                return UpdateVisitResult.VisitNotFound();
+                return Result.Fail(new VisitNotFoundError());
 
             var visit = _mapper.Map<Visit>(existing);
             _mapper.Map(request, visit);
 
             var tariff = await _tariffRepository.GetByIdAsync(request.TariffId);
             if (tariff == null)
-                return UpdateVisitResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             var updated = await _repository.UpdateAsync(visit);
 
             if (updated == null)
-                return UpdateVisitResult.UpdateFailed();
+                return Result.Fail(new UpdateFailedError());
 
-            return UpdateVisitResult.UpdateSuccess(updated);
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(UpdateVisitResult.UpdateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

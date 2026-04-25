@@ -12,7 +12,7 @@ public class GetAdditionalInfosByUserId : ICarterModule
         {
             var query = new GetAdditionalInfosByUserIdQuery(userId, pageNumber ?? 1, pageSize ?? 10);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { items = r.AdditionalInfos, totalCount = r.TotalCount }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("AdditionalInfos")
         .WithName("GetAdditionalInfosByUserId")
@@ -22,3 +22,4 @@ public class GetAdditionalInfosByUserId : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoRead));
     }
 }
+

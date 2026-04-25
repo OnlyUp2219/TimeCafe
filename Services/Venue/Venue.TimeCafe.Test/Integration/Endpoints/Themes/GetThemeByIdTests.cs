@@ -13,9 +13,9 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("theme", out var returnedTheme).Should().BeTrue();
-            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
-            returnedTheme.GetProperty("name").GetString().Should().Be("Тестовая тема");
+
+            json.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
+            json.GetProperty("name").GetString().Should().Be("Тестовая тема");
         }
         catch (Exception)
         {
@@ -35,8 +35,8 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             var json = JsonDocument.Parse(jsonString).RootElement;
             if (json.TryGetProperty("code", out var code))
                 code.GetString().Should().Be("ThemeNotFound");
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrWhiteSpace();
+
+            json.GetProperty("message").GetString().Should().NotBeNullOrWhiteSpace();
         }
         catch (Exception)
         {
@@ -73,7 +73,7 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("themes", out var themes).Should().BeTrue();
+            json.ValueKind.Should().Be(JsonValueKind.Array);
         }
         catch (Exception)
         {
@@ -94,10 +94,10 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var returnedTheme = json.GetProperty("theme");
 
-            returnedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
-            returnedTheme.GetProperty("name").GetString().Should().Be("Полная тема");
+
+            json.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
+            json.GetProperty("name").GetString().Should().Be("Полная тема");
         }
         catch (Exception)
         {
@@ -106,3 +106,17 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

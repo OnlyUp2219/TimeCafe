@@ -16,7 +16,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             var activeTariffs = tariffs.EnumerateArray().Where(t => t.TryGetProperty("isActive", out var a) && a.GetBoolean() || t.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean()).ToList();
             activeTariffs.Should().HaveCountGreaterThanOrEqualTo(2);
@@ -41,7 +41,7 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
+            var tariffs = json;
             tariffs.ValueKind.Should().Be(JsonValueKind.Array);
             tariffs.GetArrayLength().Should().Be(0);
         }
@@ -65,9 +65,8 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("tariffs", out var tariffs).Should().BeTrue();
-            foreach (var tariff in tariffs.EnumerateArray())
-            {
+            var tariffs = json;
+            foreach (var tariff in tariffs.EnumerateArray()) {
                 var isActive = tariff.TryGetProperty("isActive", out var a) && a.GetBoolean() || tariff.TryGetProperty("tariffIsActive", out var ai) && ai.GetBoolean();
                 isActive.Should().BeTrue();
             }
@@ -79,3 +78,16 @@ public class GetActiveTariffsTests(IntegrationApiFactory factory) : BaseEndpoint
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

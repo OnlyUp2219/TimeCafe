@@ -106,3 +106,4 @@ public class UpdateAsyncTests : BaseCqrsTest
         result.ValidTo.Should().BeCloseTo(newValidTo, TimeSpan.FromSeconds(1));
     }
 }
+

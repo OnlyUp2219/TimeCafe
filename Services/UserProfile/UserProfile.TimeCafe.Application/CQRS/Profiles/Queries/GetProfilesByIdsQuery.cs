@@ -1,6 +1,3 @@
-using BuildingBlocks.Contracts.CQRS;
-using UserProfile.TimeCafe.Application.Helpers;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
 public record GetProfilesByIdsQuery(IEnumerable<Guid> UserIds) : IQuery<List<Profile>>;
@@ -14,7 +11,7 @@ public class GetProfilesByIdsQueryHandler(IUserRepositories repository) : IQuery
         try
         {
             var profiles = await _repository.GetProfilesByIdsAsync(request.UserIds, cancellationToken);
-            
+
             var mappedProfiles = profiles
                 .Select(ProfilePhotoUrlMapper.WithApiUrl)
                 .ToList();
@@ -25,5 +22,14 @@ public class GetProfilesByIdsQueryHandler(IUserRepositories repository) : IQuery
         {
             return Result.Fail(new Error("Не удалось получить профили").CausedBy(ex));
         }
+    }
+}
+
+public class GetProfilesByIdsQueryValidator : AbstractValidator<GetProfilesByIdsQuery>
+{
+    public GetProfilesByIdsQueryValidator()
+    {
+        RuleFor(x => x.UserIds)
+            .NotEmpty().WithMessage("Список идентификаторов не может быть пустым");
     }
 }

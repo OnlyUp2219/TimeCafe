@@ -1,3 +1,8 @@
+global using System.Net;
+global using System.Net.Http.Headers;
+global using System.Net.Http.Json;
+global using System.Text;
+global using System.Text.Json;
 global using Auth.TimeCafe.Application.CQRS.Admin.Command;
 global using Auth.TimeCafe.Application.CQRS.Admin.Query;
 global using Auth.TimeCafe.Application.CQRS.Auth.Commands;
@@ -7,13 +12,8 @@ global using Auth.TimeCafe.Infrastructure.Data;
 global using Auth.TimeCafe.Infrastructure.Services;
 global using Auth.TimeCafe.Test.Integration.Endpoints;
 global using Auth.TimeCafe.Test.Integration.Helpers;
-
-global using BuildingBlocks.Exceptions;
-
 global using FluentAssertions;
-
 global using FluentValidation;
-
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Mvc.Testing;
@@ -23,9 +23,3 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Infrastructure;
 global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.DependencyInjection;
-
-global using System.Net;
-global using System.Net.Http.Headers;
-global using System.Net.Http.Json;
-global using System.Text;
-global using System.Text.Json;

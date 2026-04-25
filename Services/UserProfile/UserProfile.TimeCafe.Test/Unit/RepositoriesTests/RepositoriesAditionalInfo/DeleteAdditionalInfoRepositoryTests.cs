@@ -25,3 +25,4 @@ public class DeleteAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
         ok.Should().BeFalse();
     }
 }
+

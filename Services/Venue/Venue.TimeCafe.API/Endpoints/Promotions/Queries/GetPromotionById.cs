@@ -10,7 +10,7 @@ public class GetPromotionById : ICarterModule
         {
             var query = new GetPromotionByIdQuery(promotionId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotion = r.Promotion }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Promotions")
         .WithName("GetPromotionById")
@@ -21,3 +21,4 @@ public class GetPromotionById : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }
+

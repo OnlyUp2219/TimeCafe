@@ -13,8 +13,7 @@ public class CreatePhotoProfile : ICarterModule
             var stream = file.OpenReadStream();
             var cmd = new UploadProfilePhotoCommand(userId, stream, file.ContentType, file.FileName, file.Length);
             var result = await sender.Send(cmd, ct);
-            return result.ToHttpResult(r =>
-                Results.Created($"/S3/image/{userId}", new { r.Key, r.Url, r.Size, r.ContentType }));
+            return result.ToHttpResult(r => TypedResults.Created($"/profiles/{userId}/photo", new { key = $"profiles/{userId}/photo", url = r, contentType = file.ContentType }));
         })
         .Accepts<IFormFile>("multipart/form-data")
         .DisableAntiforgery()
@@ -26,3 +25,4 @@ public class CreatePhotoProfile : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfilePhotoCreate));
     }
 }
+

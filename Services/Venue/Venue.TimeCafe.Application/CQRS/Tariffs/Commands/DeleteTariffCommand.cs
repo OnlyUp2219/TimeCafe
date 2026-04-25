@@ -1,23 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record DeleteTariffCommand(Guid TariffId) : IRequest<DeleteTariffResult>;
-
-public record DeleteTariffResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeleteTariffResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-
-    public static DeleteTariffResult DeleteFailed() =>
-        new(false, Code: "DeleteTariffFailed", Message: "Не удалось удалить тариф", StatusCode: 500);
-
-    public static DeleteTariffResult DeleteSuccess() =>
-        new(true, Message: "Тариф успешно удалён");
-}
+public record DeleteTariffCommand(Guid TariffId) : ICommand;
 
 public class DeleteTariffCommandValidator : AbstractValidator<DeleteTariffCommand>
 {
@@ -27,28 +10,29 @@ public class DeleteTariffCommandValidator : AbstractValidator<DeleteTariffComman
     }
 }
 
-public class DeleteTariffCommandHandler(ITariffRepository repository) : IRequestHandler<DeleteTariffCommand, DeleteTariffResult>
+public class DeleteTariffCommandHandler(ITariffRepository repository) : ICommandHandler<DeleteTariffCommand>
 {
     private readonly ITariffRepository _repository = repository;
 
-    public async Task<DeleteTariffResult> Handle(DeleteTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var existing = await _repository.GetByIdAsync(request.TariffId);
             if (existing == null)
-                return DeleteTariffResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             var result = await _repository.DeleteAsync(request.TariffId);
 
             if (!result)
-                return DeleteTariffResult.DeleteFailed();
+                return Result.Fail(new DeleteFailedError());
 
-            return DeleteTariffResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeleteTariffResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

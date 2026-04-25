@@ -11,7 +11,7 @@ public class GetVisitsPage : ICarterModule
         {
             var query = new GetVisitsPageQuery(pageNumber, pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { visits = r.Visits, totalCount = r.TotalCount }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Visits")
         .WithName("GetVisitsPage")
@@ -21,3 +21,4 @@ public class GetVisitsPage : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }
+

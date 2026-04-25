@@ -10,7 +10,7 @@ public class DeactivateTariff : ICarterModule
         {
             var command = new DeactivateTariffCommand(tariffId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("Tariffs")
         .WithName("DeactivateTariff")
@@ -21,4 +21,5 @@ public class DeactivateTariff : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffDeactivate));
     }
 }
+
 

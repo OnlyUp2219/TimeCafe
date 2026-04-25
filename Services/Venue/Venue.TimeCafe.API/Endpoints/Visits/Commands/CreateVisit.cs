@@ -27,7 +27,7 @@ public class CreateVisit : ICarterModule
                 request.RequirePositiveBalance ?? true,
                 request.RequireEnoughForPlanned ?? false);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Json(new { message = r.Message, visit = r.Visit }, statusCode: 201));
+            return result.ToHttpResult(r => TypedResults.Created($"/visits/{r.VisitId}", r));
         })
         .WithTags("Visits")
         .WithName("CreateVisit")
@@ -37,3 +37,4 @@ public class CreateVisit : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitCreate));
     }
 }
+

@@ -115,3 +115,4 @@ public class GetPagedAsyncTests : BaseCqrsTest
         tariffWithTheme.ThemeId.Should().Be(theme.ThemeId);
     }
 }
+

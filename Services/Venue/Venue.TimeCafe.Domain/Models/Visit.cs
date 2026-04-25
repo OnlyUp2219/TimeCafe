@@ -48,12 +48,18 @@ public class Visit
     }
 
 
-    public static decimal CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime)
+    public static decimal CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime, decimal maxDiscountPercent = 50m, decimal globalDiscount = 0m, decimal tariffDiscount = 0m, decimal personalDiscount = 0m)
     {
         var duration = (exitTime - entryTime).TotalMinutes;
 
-        return tariffBillingType == BillingType.Hourly
+        var baseCost = tariffBillingType == BillingType.Hourly
                 ? (decimal)Math.Ceiling(duration / 60) * tariffPricePerMinute * 60
                 : (decimal)Math.Ceiling(duration) * tariffPricePerMinute;
+
+        var bestPromotion = Math.Max(globalDiscount, tariffDiscount);
+        var totalDiscount = Math.Min(bestPromotion + personalDiscount, maxDiscountPercent);
+
+        return baseCost * (1m - (totalDiscount / 100m));
     }
 }
+

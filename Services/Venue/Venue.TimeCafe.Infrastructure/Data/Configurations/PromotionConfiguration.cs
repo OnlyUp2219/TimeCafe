@@ -32,3 +32,4 @@ public class PromotionConfiguration : IEntityTypeConfiguration<Promotion>
         builder.HasIndex(p => new { p.IsActive, p.ValidFrom, p.ValidTo, p.DiscountPercent });
     }
 }
+

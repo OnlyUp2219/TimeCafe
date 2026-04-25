@@ -1,6 +1,4 @@
-using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Auth.TimeCafe.Infrastructure.Services;
 

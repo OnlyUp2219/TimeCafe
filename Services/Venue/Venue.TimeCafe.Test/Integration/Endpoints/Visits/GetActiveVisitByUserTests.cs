@@ -1,9 +1,9 @@
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Visits;
 
-public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
+public class GetactiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_GetActiveVisitByUser_Should_Return200_WhenUserHasActiveVisit()
+    public async Task Endpoint_GetactiveVisitByUser_Should_Return200_WhenUserHasActiveVisit()
     {
         await ClearDatabaseAndCacheAsync();
         var userId = TestData.NewVisits.NewVisit1UserId;
@@ -15,18 +15,18 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("visit", out var visitJson).Should().BeTrue();
-            visitJson.GetProperty("userId").GetString().Should().Be(userId.ToString());
+
+            json.GetProperty("userId").GetString().Should().Be(userId.ToString());
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisitByUser_Should_Return200_WhenUserHasActiveVisit] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisitByUser_Should_Return200_WhenUserHasActiveVisit] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_GetActiveVisitByUser_Should_Return404_WhenUserHasNoActiveVisit()
+    public async Task Endpoint_GetactiveVisitByUser_Should_Return404_WhenUserHasNoactiveVisit()
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -39,13 +39,13 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisitByUser_Should_Return404_WhenUserHasNoActiveVisit] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisitByUser_Should_Return404_WhenUserHasNoactiveVisit] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_GetActiveVisitByUser_Should_ReturnOnlyActiveVisit_WhenUserHasMultipleVisits()
+    public async Task Endpoint_GetactiveVisitByUser_Should_ReturnOnlyactiveVisit_WhenUserHasMultipleVisits()
     {
         await ClearDatabaseAndCacheAsync();
         var userId = TestData.NewVisits.NewVisit2UserId;
@@ -58,14 +58,27 @@ public class GetActiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var visit = json.GetProperty("visit");
-            visit.GetProperty("visitId").GetString().Should().Be(activeVisit.VisitId.ToString());
-            visit.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.Active);
+            var visit = json;
+            json.GetProperty("visitId").GetString().Should().Be(activeVisit.VisitId.ToString());
+            json.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.Active);
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetActiveVisitByUser_Should_ReturnOnlyActiveVisit_WhenUserHasMultipleVisits] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetactiveVisitByUser_Should_ReturnOnlyactiveVisit_WhenUserHasMultipleVisits] Response: {jsonString}");
             throw;
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

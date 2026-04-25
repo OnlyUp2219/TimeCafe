@@ -19,13 +19,13 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out var message).Should().BeTrue();
-            message.GetString().Should().NotBeNullOrWhiteSpace();
 
-            json.TryGetProperty("theme", out var updatedTheme).Should().BeTrue();
-            updatedTheme.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
-            updatedTheme.GetProperty("name").GetString().Should().Be("Обновленная тема");
-            updatedTheme.GetProperty("emoji").GetString().Should().Be("🎭");
+
+
+
+            json.GetProperty("themeId").GetGuid().Should().Be(theme.ThemeId);
+            json.GetProperty("name").GetString().Should().Be("Обновленная тема");
+            json.GetProperty("emoji").GetString().Should().Be("🎭");
         }
         catch (Exception)
         {
@@ -77,10 +77,10 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var updatedTheme = json.GetProperty("theme");
-            updatedTheme.GetProperty("name").GetString().Should().Be("Новое имя");
-            updatedTheme.GetProperty("emoji").GetString().Should().Be("🎨");
-            updatedTheme.GetProperty("colors").GetString().Should().Be("{\"primary\":\"#FF0000\"}");
+            var updatedTheme = json;
+            json.GetProperty("name").GetString().Should().Be("Новое имя");
+            json.GetProperty("emoji").GetString().Should().Be("🎨");
+            json.GetProperty("colors").GetString().Should().Be("{\"primary\":\"#FF0000\"}");
         }
         catch (Exception)
         {
@@ -135,9 +135,9 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var updatedTheme = json.GetProperty("theme");
-            updatedTheme.GetProperty("themeId").GetGuid().Should().Be(originalTheme.ThemeId);
-            updatedTheme.GetProperty("name").GetString().Should().Be("Только имя изменилось");
+            var updatedTheme = json;
+            json.GetProperty("themeId").GetGuid().Should().Be(originalTheme.ThemeId);
+            json.GetProperty("name").GetString().Should().Be("Только имя изменилось");
         }
         catch (Exception)
         {
@@ -172,3 +172,17 @@ public class UpdateThemeTests(IntegrationApiFactory factory) : BaseEndpointTest(
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

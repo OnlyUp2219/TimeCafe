@@ -9,7 +9,7 @@ public class GetAllProfiles : ICarterModule
         {
             var query = new GetAllProfilesQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(r.Profiles));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Profiles")
         .WithName("GetAllProfiles")
@@ -19,3 +19,4 @@ public class GetAllProfiles : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileProfileRead));
     }
 }
+

@@ -10,7 +10,7 @@ public class GetAdditionalInfoById : ICarterModule
         {
             var query = new GetAdditionalInfoByIdQuery(infoId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(r.AdditionalInfo));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("AdditionalInfos")
         .WithName("GetAdditionalInfoById")
@@ -21,3 +21,4 @@ public class GetAdditionalInfoById : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfileAdditionalInfoRead));
     }
 }
+

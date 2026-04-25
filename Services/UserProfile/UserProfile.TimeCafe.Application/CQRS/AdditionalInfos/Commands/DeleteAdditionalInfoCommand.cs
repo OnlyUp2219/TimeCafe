@@ -1,23 +1,6 @@
-namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
+﻿namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
-public record DeleteAdditionalInfoCommand(Guid InfoId) : IRequest<DeleteAdditionalInfoResult>;
-
-public record DeleteAdditionalInfoResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
-{
-    public static DeleteAdditionalInfoResult InfoNotFound() =>
-        new(false, Code: "AdditionalInfoNotFound", Message: "Дополнительная информация не найдена", StatusCode: 404);
-
-    public static DeleteAdditionalInfoResult DeleteFailed() =>
-        new(false, Code: "DeleteAdditionalInfoFailed", Message: "Не удалось удалить дополнительную информацию", StatusCode: 500);
-
-    public static DeleteAdditionalInfoResult DeleteSuccess() =>
-        new(true, Message: "Дополнительная информация успешно удалена");
-}
+public record DeleteAdditionalInfoCommand(Guid InfoId) : ICommand;
 
 public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAdditionalInfoCommand>
 {
@@ -27,24 +10,24 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
     }
 }
 
-public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : IRequestHandler<DeleteAdditionalInfoCommand, DeleteAdditionalInfoResult>
+public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : ICommandHandler<DeleteAdditionalInfoCommand>
 {
     private readonly IAdditionalInfoRepository _repository = repository;
 
-    public async Task<DeleteAdditionalInfoResult> Handle(DeleteAdditionalInfoCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteAdditionalInfoCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var deleted = await _repository.DeleteAdditionalInfoAsync(request.InfoId, cancellationToken);
 
             if (!deleted)
-                return DeleteAdditionalInfoResult.InfoNotFound();
+                return Result.Fail(new InfoNotFoundError());
 
-            return DeleteAdditionalInfoResult.DeleteSuccess();
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(DeleteAdditionalInfoResult.DeleteFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

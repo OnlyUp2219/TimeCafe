@@ -66,3 +66,4 @@ public class GetByIdAsyncTests : BaseCqrsTest
         result.Colors.Should().Be(TestData.ExistingThemes.Theme2Colors);
     }
 }
+

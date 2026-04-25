@@ -11,7 +11,7 @@ public class DeletePhotoProfile : ICarterModule
         {
             var cmd = new DeleteProfilePhotoCommand(userId);
             var result = await sender.Send(cmd, ct);
-            return result.ToHttpResult(_ => Results.NoContent());
+            return result.ToHttpResult(() => TypedResults.NoContent());
         })
         .WithTags("ProfilePhoto")
         .WithName("DeleteProfilePhoto")
@@ -22,3 +22,4 @@ public class DeletePhotoProfile : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.UserProfilePhotoDelete));
     }
 }
+

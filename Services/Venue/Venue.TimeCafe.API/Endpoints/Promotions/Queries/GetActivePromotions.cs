@@ -9,7 +9,7 @@ public class GetActivePromotions : ICarterModule
         {
             var query = new GetActivePromotionsQuery();
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { promotions = r.Promotions }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Promotions")
         .WithName("GetActivePromotions")
@@ -19,3 +19,4 @@ public class GetActivePromotions : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionRead));
     }
 }
+

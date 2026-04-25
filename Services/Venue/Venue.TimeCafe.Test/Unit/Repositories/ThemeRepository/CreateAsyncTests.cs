@@ -109,3 +109,4 @@ public class CreateAsyncTests : BaseCqrsTest
         result.Colors.Should().Be(TestData.ExistingThemes.Theme1Colors);
     }
 }
+

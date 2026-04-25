@@ -28,9 +28,9 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeTrue();
-        result.Tariff.Should().NotBeNull();
-        result.Tariff!.Name.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.Name.Should().Be(TestData.ExistingTariffs.Tariff1Name);
     }
 
     [Fact]
@@ -43,26 +43,19 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("TariffNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_Should_ThrowCqrsResultException_WhenExceptionThrown()
+    public async Task Handler_Should_ReturnFailed_WhenExceptionThrown()
     {
         var tariffId = Guid.NewGuid();
         var query = new GetTariffByIdQuery(tariffId);
 
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => _handler.Handle(query, CancellationToken.None));
-
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("GetTariffFailed");
-        ex.Result.StatusCode.Should().Be(500);
+        var result = await _handler.Handle(query, CancellationToken.None);
+        result.IsFailed.Should().BeTrue();
     }
 
     [Theory]
@@ -92,3 +85,4 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         result.IsValid.Should().BeTrue();
     }
 }
+

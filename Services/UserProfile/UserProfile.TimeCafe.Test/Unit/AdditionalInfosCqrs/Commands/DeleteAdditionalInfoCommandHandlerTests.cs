@@ -19,8 +19,8 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Code.Should().BeNull();
+        result.IsSuccess.Should().BeTrue();
+
         repoMock.Verify(r => r.DeleteAdditionalInfoAsync(infoId, It.IsAny<CancellationToken>()), Times.Once());
     }
 
@@ -53,7 +53,8 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(cmd, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("AdditionalInfoNotFound");
+        result.IsFailed.Should().BeTrue();
     }
 }
+
+

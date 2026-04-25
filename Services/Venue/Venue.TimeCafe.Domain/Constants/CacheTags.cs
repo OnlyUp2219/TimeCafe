@@ -15,3 +15,4 @@ public static class CacheTags
     public const string Promotions = "promotions";
     public static string Promotion(Guid id) => $"promotion:{id}";
 }
+

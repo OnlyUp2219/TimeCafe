@@ -72,3 +72,4 @@ public class GetByIdAsyncTests : BaseCqrsTest
         result.IsActive.Should().BeTrue();
     }
 }
+

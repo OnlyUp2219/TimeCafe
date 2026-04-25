@@ -57,3 +57,4 @@ public class ActivateAsyncTests : BaseCqrsTest
         fromDb!.IsActive.Should().BeTrue();
     }
 }
+

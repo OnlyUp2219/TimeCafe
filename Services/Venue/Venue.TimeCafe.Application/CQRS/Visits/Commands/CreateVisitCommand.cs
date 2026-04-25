@@ -5,28 +5,7 @@ public record CreateVisitCommand(
     Guid TariffId,
     int? PlannedMinutes = null,
     bool RequirePositiveBalance = true,
-    bool RequireEnoughForPlanned = false) : IRequest<CreateVisitResult>;
-
-public record CreateVisitResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Visit? Visit = null) : ICqrsResult
-{
-    public static CreateVisitResult TariffNotFound() =>
-        new(false, Code: "TariffNotFound", Message: "Тариф не найден", StatusCode: 404);
-    public static CreateVisitResult InsufficientFunds(string message) =>
-        new(false, Code: "InsufficientFunds", Message: message, StatusCode: 400);
-    public static CreateVisitResult BalanceCheckFailed() =>
-        new(false, Code: "BalanceCheckFailed", Message: "Не удалось проверить баланс. Повторите попытку позже", StatusCode: 503);
-    public static CreateVisitResult CreateFailed() =>
-        new(false, Code: "CreateVisitFailed", Message: "Не удалось создать посещение", StatusCode: 500);
-
-    public static CreateVisitResult CreateSuccess(Visit visit) =>
-        new(true, Message: "Посещение успешно создано", StatusCode: 201, Visit: visit);
-}
+    bool RequireEnoughForPlanned = false) : ICommand<Visit>;
 
 public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 {
@@ -44,19 +23,19 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 public class CreateVisitCommandHandler(
     IVisitRepository repository,
     ITariffRepository tariffRepository,
-    IVisitBalancePolicyService visitBalancePolicyService) : IRequestHandler<CreateVisitCommand, CreateVisitResult>
+    IVisitBalancePolicyService visitBalancePolicyService) : ICommandHandler<CreateVisitCommand, Visit>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly ITariffRepository _tariffRepository = tariffRepository;
     private readonly IVisitBalancePolicyService _visitBalancePolicyService = visitBalancePolicyService;
 
-    public async Task<CreateVisitResult> Handle(CreateVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Visit>> Handle(CreateVisitCommand request, CancellationToken cancellationToken)
     {
         try
         {
             var tariff = await _tariffRepository.GetByIdAsync(request.TariffId);
             if (tariff == null)
-                return CreateVisitResult.TariffNotFound();
+                return Result.Fail(new TariffNotFoundError());
 
             if (request.RequirePositiveBalance || request.RequireEnoughForPlanned)
             {
@@ -70,8 +49,7 @@ public class CreateVisitCommandHandler(
 
                 if (!balanceCheck.IsAllowed)
                 {
-                    return CreateVisitResult.InsufficientFunds(
-                        balanceCheck.Message ?? "Недостаточно средств для старта визита");
+                    return Result.Fail(new InsufficientFundsError());
                 }
             }
 
@@ -86,21 +64,22 @@ public class CreateVisitCommandHandler(
             var created = await _repository.CreateAsync(visit);
 
             if (created == null)
-                return CreateVisitResult.CreateFailed();
+                return Result.Fail(new CreateFailedError());
 
-            return CreateVisitResult.CreateSuccess(created);
+            return Result.Ok(created);
         }
         catch (HttpRequestException)
         {
-            return CreateVisitResult.BalanceCheckFailed();
+            return Result.Fail(new BalanceCheckFailedError());
         }
         catch (TaskCanceledException)
         {
-            return CreateVisitResult.BalanceCheckFailed();
+            return Result.Fail(new BalanceCheckFailedError());
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(CreateVisitResult.CreateFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }
+

@@ -141,3 +141,4 @@ public class CleanArchitectureTests
             "Application layer не должен иметь зависимость от ASP.NET Core");
     }
 }
+

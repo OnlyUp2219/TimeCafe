@@ -15,3 +15,4 @@ public class VisitWithTariffDto
     public string TariffDescription { get; set; } = string.Empty;
     public BillingType TariffBillingType { get; set; }
 }
+

@@ -27,3 +27,4 @@ public class UpdateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
         result.Should().BeNull();
     }
 }
+

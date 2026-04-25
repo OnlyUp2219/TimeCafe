@@ -1,4 +1,3 @@
-using UserProfile.TimeCafe.Application.CQRS.Photos.Queries;
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Queries;
@@ -28,10 +27,9 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().Be(200);
-        result.Stream.Should().NotBeNull();
-        result.ContentType.Should().Be(PhotoTestData.JpegContentType);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Stream.Should().NotBeNull();
+        result.Value.ContentType.Should().Be(PhotoTestData.JpegContentType);
     }
 
     [Fact]
@@ -49,14 +47,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PhotoNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Фото не найдено");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_GetPhoto_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_GetPhoto_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -67,15 +62,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(query, CancellationToken.None));
+        var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("PhotoGetFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Ошибка получения фото");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Fact]
@@ -111,7 +102,10 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var result = await handler.Handle(query, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.ContentType.Should().Be(contentType);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.ContentType.Should().Be(contentType);
     }
 }
+
+
+

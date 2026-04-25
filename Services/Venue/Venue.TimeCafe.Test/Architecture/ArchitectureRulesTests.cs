@@ -1,7 +1,6 @@
-using FluentValidation;
-
 using System.Reflection;
 using System.Text.RegularExpressions;
+using FluentValidation;
 
 namespace Venue.TimeCafe.Test.Architecture;
 
@@ -117,3 +116,4 @@ public partial class ArchitectureRulesTests
     [GeneratedRegex("\\[(FromServices|FromRoute|FromBody|FromQuery|FromHeader|FromForm)\\b", RegexOptions.IgnoreCase, "ru-RU")]
     private static partial Regex MyRegex();
 }
+

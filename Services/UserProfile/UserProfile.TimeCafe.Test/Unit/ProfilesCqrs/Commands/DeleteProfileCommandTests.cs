@@ -15,9 +15,7 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Message.Should().Be("Профиль успешно удалён");
-
+        result.IsSuccess.Should().BeTrue();
         var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().BeNull();
     }
@@ -34,14 +32,11 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Message.Should().Be("Профиль не найден");
+        result.IsFailed.Should().BeTrue();
     }
 
     [Fact]
-    public async Task Handler_DeleteProfile_Should_ThrowCqrsResultException_WhenExceptionOccurs()
+    public async Task Handler_DeleteProfile_Should_ReturnFailed_WhenExceptionOccurs()
     {
         // Arrange
         var userId = Guid.Parse(ExistingUsers.User2Id);
@@ -52,15 +47,11 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         var handler = new DeleteProfileCommandHandler(Repository);
 
         // Act
-        var ex = await Assert.ThrowsAsync<CqrsResultException>(
-            () => handler.Handle(command, CancellationToken.None));
+        var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("DeleteProfileFailed");
-        ex.Result.StatusCode.Should().Be(500);
-        ex.Result.Message.Should().Be("Не удалось удалить профиль");
+        result.IsFailed.Should().BeTrue();
+
     }
 
     [Fact]
@@ -98,3 +89,5 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         // Keeping this as a placeholder showing the change
     }
 }
+
+

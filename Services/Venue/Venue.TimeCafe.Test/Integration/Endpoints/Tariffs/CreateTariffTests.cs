@@ -23,9 +23,9 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("message", out _).Should().BeTrue();
-            json.TryGetProperty("tariff", out var tariff).Should().BeTrue();
-            tariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff1Name);
+
+
+            json.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff1Name);
         }
         catch (Exception)
         {
@@ -145,9 +145,9 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            var tariff = json.GetProperty("tariff");
-            tariff.GetProperty("tariffId").GetString().Should().NotBeNullOrWhiteSpace();
-            tariff.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
+            var tariff = json;
+            json.GetProperty("tariffId").GetString().Should().NotBeNullOrWhiteSpace();
+            json.GetProperty("name").GetString().Should().Be(TestData.NewTariffs.NewTariff2Name);
         }
         catch (Exception)
         {
@@ -183,3 +183,16 @@ public class CreateTariffTests(IntegrationApiFactory factory) : BaseEndpointTest
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

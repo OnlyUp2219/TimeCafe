@@ -10,7 +10,7 @@ public class HasActiveVisit : ICarterModule
         {
             var query = new HasActiveVisitQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { hasActiveVisit = r.HasActiveVisit }));
+            return result.ToHttpResult(r => TypedResults.Ok(new { hasActiveVisit = r }));
         })
         .WithTags("Visits")
         .WithName("HasActiveVisit")
@@ -20,3 +20,4 @@ public class HasActiveVisit : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitRead));
     }
 }
+

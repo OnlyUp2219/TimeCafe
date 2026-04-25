@@ -17,15 +17,15 @@ builder.Services.AddRedis(builder.Configuration);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
-builder.Services.AddHttpClient("Auth", client => 
+builder.Services.AddHttpClient("Auth", client =>
     client.BaseAddress = new Uri(builder.Configuration["Services:Auth"]))
     .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
-builder.Services.AddHttpClient("UserProfile", client => 
+builder.Services.AddHttpClient("UserProfile", client =>
     client.BaseAddress = new Uri(builder.Configuration["Services:UserProfile"]))
     .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
-builder.Services.AddHttpClient("Billing", client => 
+builder.Services.AddHttpClient("Billing", client =>
     client.BaseAddress = new Uri(builder.Configuration["Services:Billing"]))
     .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 

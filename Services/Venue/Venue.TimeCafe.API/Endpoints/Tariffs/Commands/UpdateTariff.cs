@@ -35,7 +35,7 @@ public class UpdateTariff : ICarterModule
             );
 
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, tariff = r.Tariff }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Tariffs")
         .WithName("UpdateTariff")
@@ -46,3 +46,4 @@ public class UpdateTariff : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueTariffUpdate));
     }
 }
+

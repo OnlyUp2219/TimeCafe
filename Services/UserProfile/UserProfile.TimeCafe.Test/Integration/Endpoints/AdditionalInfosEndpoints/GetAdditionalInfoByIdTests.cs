@@ -12,7 +12,7 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
         var createResponse = await Client.PostAsJsonAsync("/userprofile/infos", createDto);
         createResponse.EnsureSuccessStatusCode();
         var createJson = JsonDocument.Parse(await createResponse.Content.ReadAsStringAsync()).RootElement;
-        var infoId = createJson.GetProperty("info").GetProperty("infoId").GetString();
+        var infoId = createJson.GetProperty("infoId").GetString();
 
         // Act
         var response = await Client.GetAsync($"/userprofile/infos/{infoId}");
@@ -58,3 +58,11 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
         }
     }
 }
+
+
+
+
+
+
+
+

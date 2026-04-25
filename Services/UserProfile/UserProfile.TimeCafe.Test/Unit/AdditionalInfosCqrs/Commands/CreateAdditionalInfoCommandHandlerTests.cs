@@ -25,10 +25,9 @@ public class CreateAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.AdditionalInfo.Should().NotBeNull();
-        result.AdditionalInfo!.InfoId.Should().Be(Guid.Parse(AdditionalInfoData.Info1Id));
-        result.Message.Should().Contain("успешно");
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value!.InfoId.Should().Be(Guid.Parse(AdditionalInfoData.Info1Id));
         userRepoMock.Verify(u => u.GetProfileByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()), Times.Once());
         repoMock.Verify(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Once());
     }
@@ -76,15 +75,13 @@ public class CreateAdditionalInfoCommandHandlerTests
         var result = await handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("ProfileNotFound");
-        result.StatusCode.Should().Be(404);
+        result.IsFailed.Should().BeTrue();
         userRepoMock.Verify(u => u.GetProfileByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()), Times.Once());
         repoMock.Verify(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]
-    public async Task Handle_Should_ThrowCqrsResultException_When_Exception()
+    public async Task Handle_Should_ReturnFailed_When_Exception()
     {
         // Arrange
         var repoMock = new Mock<IAdditionalInfoRepository>();
@@ -102,12 +99,11 @@ public class CreateAdditionalInfoCommandHandlerTests
         var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
 
         // Act
-        var ex = await Assert.ThrowsAsync<BuildingBlocks.Exceptions.CqrsResultException>(
-            () => handler.Handle(new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), "Txt"), CancellationToken.None));
+        var result = await handler.Handle(new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), "Txt"), CancellationToken.None);
 
         // Assert
-        ex.Result.Should().NotBeNull();
-        ex.Result!.Success.Should().BeFalse();
-        ex.Result.Code.Should().Be("CreateAdditionalInfoFailed");
+        result.IsFailed.Should().BeTrue();
     }
 }
+
+

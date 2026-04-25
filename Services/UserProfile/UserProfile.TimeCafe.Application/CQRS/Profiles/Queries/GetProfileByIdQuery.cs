@@ -1,26 +1,6 @@
-using UserProfile.TimeCafe.Application.Helpers;
-
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfileByIdQuery(Guid UserId) : IRequest<GetProfileByIdResult>;
-
-public record GetProfileByIdResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Profile? Profile = null) : ICqrsResult
-{
-    public static GetProfileByIdResult ProfileNotFound() =>
-        new(false, Code: "ProfileNotFound", Message: "Профиль не найден", StatusCode: 404);
-
-    public static GetProfileByIdResult GetFailed() =>
-        new(false, Code: "GetProfileFailed", Message: "Не удалось получить профиль", StatusCode: 500);
-
-    public static GetProfileByIdResult GetSuccess(Profile profile) =>
-        new(true, Message: "Профиль найден", Profile: profile);
-}
+public record GetProfileByIdQuery(Guid UserId) : IQuery<Profile>;
 
 public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuery>
 {
@@ -30,25 +10,25 @@ public class GetProfileByIdQueryValidator : AbstractValidator<GetProfileByIdQuer
     }
 }
 
-public class GetProfileByIdQueryHandler(IUserRepositories repository) : IRequestHandler<GetProfileByIdQuery, GetProfileByIdResult>
+public class GetProfileByIdQueryHandler(IUserRepositories repository) : IQueryHandler<GetProfileByIdQuery, Profile>
 {
     private readonly IUserRepositories _repository = repository;
 
-    public async Task<GetProfileByIdResult> Handle(GetProfileByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<Profile>> Handle(GetProfileByIdQuery request, CancellationToken cancellationToken)
     {
         try
         {
             var profile = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
 
             if (profile == null)
-                return GetProfileByIdResult.ProfileNotFound();
+                return Result.Fail(new ProfileNotFoundError());
 
             var responseProfile = ProfilePhotoUrlMapper.WithApiUrl(profile);
-            return GetProfileByIdResult.GetSuccess(responseProfile);
+            return Result.Ok(responseProfile);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(GetProfileByIdResult.GetFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

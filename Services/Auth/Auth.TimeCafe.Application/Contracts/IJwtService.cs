@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace Auth.TimeCafe.Application.Contracts;
 
 public interface IJwtService

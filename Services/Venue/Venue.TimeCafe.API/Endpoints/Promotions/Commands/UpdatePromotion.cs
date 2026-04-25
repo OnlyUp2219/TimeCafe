@@ -12,7 +12,11 @@ public record UpdatePromotionRequest(
     /// <example>2025-08-31T23:59:59+03:00</example>
     DateTimeOffset ValidTo,
     /// <example>true</example>
-    bool IsActive);
+    bool IsActive,
+    /// <example>0</example>
+    int? Type,
+    /// <example>a1b2c3d4-e5f6-7890-abcd-ef1234567890</example>
+    Guid? TariffId);
 
 public class UpdatePromotion : ICarterModule
 {
@@ -23,9 +27,9 @@ public class UpdatePromotion : ICarterModule
             Guid promotionId,
             [FromBody] UpdatePromotionRequest request) =>
         {
-            var command = new UpdatePromotionCommand(promotionId, request.Name, request.Description, request.DiscountPercent, request.ValidFrom, request.ValidTo, request.IsActive);
+            var command = new UpdatePromotionCommand(promotionId, request.Name, request.Description, request.DiscountPercent, request.ValidFrom, request.ValidTo, request.IsActive, request.Type.HasValue ? (PromotionType)request.Type.Value : null, request.TariffId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, promotion = r.Promotion }));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Promotions")
         .WithName("UpdatePromotion")
@@ -36,3 +40,4 @@ public class UpdatePromotion : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenuePromotionUpdate));
     }
 }
+
