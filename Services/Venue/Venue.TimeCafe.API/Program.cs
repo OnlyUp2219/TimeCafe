@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
 
 // Serilog
@@ -73,6 +74,7 @@ venueGroup.MapControllers();
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

@@ -143,6 +143,8 @@ public static class VenueSeedExtensions
     private static async Task SeedPromotionsAsync(ApplicationDbContext dbContext)
     {
         var now = DateTimeOffset.UtcNow;
+        var todayUtc = new DateTimeOffset(now.Date, TimeSpan.Zero);
+
         var requiredPromotions = new[]
         {
             new Promotion
@@ -150,9 +152,10 @@ public static class VenueSeedExtensions
                 Name = "Welcome 10%",
                 Description = "Скидка для новых гостей на первый визит.",
                 DiscountPercent = 10,
-                ValidFrom = now.Date,
-                ValidTo = now.Date.AddMonths(6),
+                ValidFrom = todayUtc,
+                ValidTo = todayUtc.AddMonths(6),
                 IsActive = true,
+                Type = PromotionType.Global,
                 CreatedAt = now,
             },
             new Promotion
@@ -160,9 +163,11 @@ public static class VenueSeedExtensions
                 Name = "Student 15%",
                 Description = "Скидка для студентов в дневное время.",
                 DiscountPercent = 15,
-                ValidFrom = now.Date,
-                ValidTo = now.Date.AddMonths(12),
-                IsActive = true,
+                ValidFrom = todayUtc,
+                ValidTo = todayUtc.AddMonths(12),
+                IsActive = false,
+                Type = PromotionType.Draft,
+                TariffId = null,
                 CreatedAt = now,
             }
         };

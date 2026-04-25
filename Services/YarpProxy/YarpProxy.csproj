@@ -29,6 +29,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\BuildingBlocks\BuildingBlocks.csproj" />
+	  <ProjectReference Include="..\TimeCafe.ServiceDefaults\TimeCafe.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

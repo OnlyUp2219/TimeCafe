@@ -116,8 +116,6 @@ public class BalanceCheckFailedError : Error
     }
 }
 
-
-
 public class CheckFailedError : Error
 {
     public CheckFailedError() : base("Не удалось проверить активное посещение")

@@ -46,6 +46,7 @@
 		<ProjectReference Include="..\Venue.TimeCafe.Infrastructure\Venue.TimeCafe.Infrastructure.csproj" />
 		<ProjectReference Include="..\Venue.TimeCafe.Application\Venue.TimeCafe.Application.csproj" />
 		<ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
+		<ProjectReference Include="..\..\TimeCafe.ServiceDefaults\TimeCafe.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

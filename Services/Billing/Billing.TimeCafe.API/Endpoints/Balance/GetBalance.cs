@@ -10,18 +10,25 @@ public class GetBalance : ICarterModule
         {
             var query = new GetBalanceQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new
+            return result.ToHttpResult(onSuccess: r =>
             {
-                // TODO : Add Mapping
-                balance = new
+                if (r.Balance == null)
                 {
-                    r.Balance!.UserId,
-                    r.Balance.CurrentBalance,
-                    r.Balance.TotalDeposited,
-                    r.Balance.TotalSpent,
-                    r.Balance.Debt
+                    return Results.Ok(new { balance = (object?)null });
                 }
-            }));
+
+                return Results.Ok(new
+                {
+                    balance = new
+                    {
+                        r.Balance.UserId,
+                        r.Balance.CurrentBalance,
+                        r.Balance.TotalDeposited,
+                        r.Balance.TotalSpent,
+                        r.Balance.Debt
+                    }
+                });
+            });
         })
         .WithTags("Balance")
         .WithName("GetBalance")

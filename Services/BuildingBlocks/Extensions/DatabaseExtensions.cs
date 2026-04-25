@@ -27,6 +27,27 @@ public static class DatabaseExtensions
 
         using var scope = app.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<TContext>();
-        await dbContext.Database.MigrateAsync();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<TContext>>();
+
+        var retries = 5;
+        while (retries > 0)
+        {
+            try
+            {
+                await dbContext.Database.MigrateAsync();
+                break;
+            }
+            catch (Exception ex)
+            {
+                retries--;
+                if (retries == 0)
+                {
+                    logger.LogCritical(ex, "Failed to apply migrations after several retries.");
+                    throw;
+                }
+                logger.LogWarning("Failed to apply migrations, retrying in 2 seconds... ({Retries} retries left)", retries);
+                await Task.Delay(2000);
+            }
+        }
     }
 }

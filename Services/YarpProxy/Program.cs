@@ -1,4 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
 
 var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
@@ -46,6 +47,7 @@ app.UseScalarConfiguration();
 
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 app.MapHealthChecks("/health").AllowAnonymous();
+app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
 {

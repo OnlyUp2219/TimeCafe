@@ -18,12 +18,6 @@ public static class MassTransitExtensions
             return services;
         }
 
-        var rabbitMqSection = configuration.GetSection("RabbitMQ");
-        if (!rabbitMqSection.Exists())
-            throw new InvalidOperationException("RabbitMQ configuration section is missing.");
-
-        var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
-
         services.AddMassTransit(x =>
         {
             x.AddBillingMassTransit();
@@ -37,11 +31,24 @@ public static class MassTransitExtensions
 
             x.UsingRabbitMq((context, cfg) =>
             {
-                cfg.Host(rabbitMqSection["Host"]!, h =>
+                var connectionString = configuration["RabbitMQ:ConnectionString"] ?? configuration.GetConnectionString("rabbitmq");
+                if (!string.IsNullOrEmpty(connectionString))
                 {
-                    h.Username(rabbitMqSection["Username"]!);
-                    h.Password(rabbitMqSection["Password"]!);
-                });
+                    cfg.Host(connectionString);
+                }
+                else
+                {
+                    var rabbitMqSection = configuration.GetSection("RabbitMQ");
+                    var host = rabbitMqSection["Host"] ?? "localhost";
+                    var port = configuration.GetValue<ushort>("RabbitMQ:Port", 5672);
+                    var rabbitMqHost = host.Replace("tcp://", "rabbitmq://");
+
+                    cfg.Host(rabbitMqHost, port, "/", h =>
+                    {
+                        h.Username(rabbitMqSection["Username"] ?? "guest");
+                        h.Password(rabbitMqSection["Password"] ?? "guest");
+                    });
+                }
 
                 cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
 

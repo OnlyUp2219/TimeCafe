@@ -1,0 +1,35 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.1.0">
+	
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <SuppressAspireWorkloadDeprecationWarning>true</SuppressAspireWorkloadDeprecationWarning>
+    <UserSecretsId>timecafe-apphost</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+    <PackageReference Include="Aspire.Hosting.Elasticsearch" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" />
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" />
+    <PackageReference Include="Aspire.Hosting.RabbitMQ" />
+    <PackageReference Include="Aspire.Hosting.Redis" />
+    <PackageReference Include="Aspire.Hosting.Testing" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Async" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.Debug" />
+    <PackageReference Include="Serilog.Sinks.Elasticsearch" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Services\Auth\Auth.TimeCafe.API\Auth.TimeCafe.API.csproj" />
+    <ProjectReference Include="..\Services\Billing\Billing.TimeCafe.API\Billing.TimeCafe.API.csproj" />
+    <ProjectReference Include="..\Services\UserProfile\UserProfile.TimeCafe.API\UserProfile.TimeCafe.API.csproj" />
+    <ProjectReference Include="..\Services\Venue\Venue.TimeCafe.API\Venue.TimeCafe.API.csproj" />
+    <ProjectReference Include="..\Services\YarpProxy\YarpProxy.csproj" />
+  </ItemGroup>
+
+</Project>

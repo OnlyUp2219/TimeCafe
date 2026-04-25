@@ -6,17 +6,8 @@ public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration)
     {
-        var rabbitMqSection = configuration.GetSection("RabbitMQ");
-        if (!rabbitMqSection.Exists())
-            throw new InvalidOperationException("RabbitMQ configuration section is missing.");
-
-        var host = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
-        var virtualHost = rabbitMqSection["VirtualHost"] ?? "/";
-        var hasPort = ushort.TryParse(rabbitMqSection["Port"], out var port);
-
         services.AddMassTransit(x =>
         {
-
             x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
             {
                 o.UsePostgres();
@@ -26,23 +17,25 @@ public static class MassTransitExtensions
 
             x.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>();
 
-
             x.UsingRabbitMq((context, cfg) =>
             {
-                if (hasPort)
+                var connectionString = configuration["RabbitMQ:ConnectionString"] ?? configuration.GetConnectionString("rabbitmq");
+                if (!string.IsNullOrEmpty(connectionString))
                 {
-                    cfg.Host(host, port, virtualHost, h =>
-                    {
-                        h.Username(rabbitMqSection["Username"]!);
-                        h.Password(rabbitMqSection["Password"]!);
-                    });
+                    cfg.Host(connectionString);
                 }
                 else
                 {
-                    cfg.Host(host, h =>
+                    var rabbitMqSection = configuration.GetSection("RabbitMQ");
+                    var host = rabbitMqSection["Host"] ?? "localhost";
+                    var virtualHost = rabbitMqSection["VirtualHost"] ?? "/";
+                    var port = configuration.GetValue<ushort>("RabbitMQ:Port", 5672);
+                    var rabbitMqHost = host.Replace("tcp://", "rabbitmq://");
+
+                    cfg.Host(rabbitMqHost, port, virtualHost, h =>
                     {
-                        h.Username(rabbitMqSection["Username"]!);
-                        h.Password(rabbitMqSection["Password"]!);
+                        h.Username(rabbitMqSection["Username"] ?? "guest");
+                        h.Password(rabbitMqSection["Password"] ?? "guest");
                     });
                 }
 

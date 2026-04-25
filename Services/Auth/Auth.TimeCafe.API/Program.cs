@@ -1,4 +1,5 @@
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
 
 // Serilog
@@ -111,6 +112,7 @@ authGroup.MapControllers();
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 authGroup.MapGet("/test-publish", async (IPublishEndpoint pub) =>
 {

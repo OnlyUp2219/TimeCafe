@@ -4,52 +4,52 @@ public static class MassTransitExtensions
 {
     public static IServiceCollection AddRabbitMqMessaging(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
     {
-        var hasLicense =
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MT_LICENSE")) ||
-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("MT_LICENSE_PATH"));
-
-        if (!hasLicense || environment.IsEnvironment("Testing"))
+        if (environment.IsEnvironment("Testing"))
         {
             services.AddMassTransit(x => x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context)));
-
             return services;
         }
-
-        var rabbitMqSection = configuration.GetSection("RabbitMQ");
-        if (!rabbitMqSection.Exists())
-            throw new InvalidOperationException("RabbitMQ configuration section is missing.");
-        _ = rabbitMqSection["Host"] ?? throw new InvalidOperationException("RabbitMQ:Host is not configured.");
 
         services.AddMassTransit(x =>
         {
             x.AddEntityFrameworkOutbox<ApplicationDbContext>(o =>
             {
                 o.UsePostgres();
-
                 o.UseBusOutbox();
             });
 
             x.UsingRabbitMq((context, cfg) =>
+            {
+                var connectionString = configuration["RabbitMQ:ConnectionString"] ?? configuration.GetConnectionString("rabbitmq");
+                if (!string.IsNullOrEmpty(connectionString))
                 {
-                    cfg.Host(rabbitMqSection["Host"]!, h =>
+                    cfg.Host(connectionString);
+                }
+                else
+                {
+                    var rabbitMqSection = configuration.GetSection("RabbitMQ");
+                    var host = rabbitMqSection["Host"] ?? "localhost";
+                    var port = configuration.GetValue<ushort>("RabbitMQ:Port", 5672);
+                    var rabbitMqHost = host.Replace("tcp://", "rabbitmq://");
+
+                    cfg.Host(rabbitMqHost, port, "/", h =>
                     {
-                        h.Username(rabbitMqSection["Username"]!);
-                        h.Password(rabbitMqSection["Password"]!);
+                        h.Username(rabbitMqSection["Username"] ?? "guest");
+                        h.Password(rabbitMqSection["Password"] ?? "guest");
                     });
+                }
 
-                    cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
-                    cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
+                cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
+                cfg.Publish<UserRegisteredEvent>(p => p.ExchangeType = "fanout");
 
-                    cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                    cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
+                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
+                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
-                    cfg.ConfigureEndpoints(context);
-                });
+                cfg.ConfigureEndpoints(context);
+            });
         });
 
         services.Configure<MassTransitHostOptions>(options => options.StopTimeout = TimeSpan.FromSeconds(30));
-
-
 
         return services;
     }

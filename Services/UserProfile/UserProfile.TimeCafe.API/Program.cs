@@ -1,6 +1,7 @@
 using UserProfile.TimeCafe.API.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
 
 // Serilog
@@ -62,6 +63,7 @@ userProfileGroup.MapCarter();
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 
 await app.RunAsync();
