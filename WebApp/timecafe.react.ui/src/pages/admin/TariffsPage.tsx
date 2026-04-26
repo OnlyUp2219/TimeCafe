@@ -36,6 +36,7 @@ import {
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllThemesQuery,
+    useGetAllPromotionsQuery,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -85,6 +86,8 @@ export const TariffsPage = () => {
         { refetchOnMountOrArgChange: true }
     );
     const { data: themes = [], isLoading: themesLoading } = useGetAllThemesQuery();
+    const { data: promotions = [] } = useGetAllPromotionsQuery();
+    
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
@@ -205,16 +208,36 @@ export const TariffsPage = () => {
                 columnId: "price",
                 compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
                 renderHeaderCell: () => "Цена",
-                renderCell: (tariff) => (
-                    <TableCellLayout truncate>
-                        <div>
-                            <Body1 block>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</Body1>
-                            <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
-                                {(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
-                            </Caption1>
-                        </div>
-                    </TableCellLayout>
-                ),
+                renderCell: (tariff) => {
+                    const activePromos = promotions.filter(p => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
+                    const globalPromo = activePromos.filter(p => p.type === 1).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const tariffPromo = activePromos.filter(p => p.type === 2 && p.tariffId === tariff.tariffId).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const maxDiscount = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
+                    
+                    const hasDiscount = maxDiscount > 0;
+                    const discountedPrice = hasDiscount ? tariff.pricePerMinute * (1 - maxDiscount / 100) : tariff.pricePerMinute;
+                    
+                    return (
+                        <TableCellLayout truncate>
+                            <div>
+                                <Body1 block>
+                                    {hasDiscount ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="line-through text-gray-400 text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
+                                            <span className="text-red-500 font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
+                                        </span>
+                                    ) : (
+                                        <span>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</span>
+                                    )}
+                                </Body1>
+                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                    {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
+                                    {hasDiscount && <span className="ml-1 text-red-500">(-{maxDiscount}%)</span>}
+                                </Caption1>
+                            </div>
+                        </TableCellLayout>
+                    );
+                },
             }),
             createTableColumn<TariffWithTheme>({
                 columnId: "billingType",

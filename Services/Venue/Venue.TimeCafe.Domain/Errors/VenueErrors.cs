@@ -126,4 +126,11 @@ public class CheckFailedError : Error
     }
 }
 
-
+public class ActiveGlobalPromotionAlreadyExistsError : Error
+{
+    public ActiveGlobalPromotionAlreadyExistsError()
+        : base("Уже существует активная глобальная акция. Сначала деактивируйте её.")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

@@ -41,36 +41,12 @@ export const profileApi = createApi({
     tagTypes: ["Profile", "ProfilePhoto", "ProfilesPage"],
     endpoints: (builder) => ({
         getProfileByUserId: builder.query<Profile, string>({
-            async queryFn(userId, _queryApi, _extraOptions, fetchWithBQ) {
-                const result = await fetchWithBQ(`/userprofile/profiles/${userId}`);
-                if (result.error) return {error: result.error};
-
-                const data = result.data as {profile: Profile | null} | Profile;
-                const profile = "profile" in data ? data.profile : data as Profile;
-
-                if (!profile) {
-                    const createResult = await fetchWithBQ({
-                        url: `/userprofile/profiles/empty/${userId}`,
-                        method: "POST",
-                    });
-                    if (createResult.error) return {error: createResult.error};
-                    const retryResult = await fetchWithBQ(`/userprofile/profiles/${userId}`);
-                    if (retryResult.error) return {error: retryResult.error};
-                    const retryData = retryResult.data as {profile: Profile | null} | Profile;
-                    const retryProfile = "profile" in retryData ? retryData.profile : retryData as Profile;
-                    return retryProfile ? {data: retryProfile} : {error: {status: 500, error: "Profile creation failed"} as never};
-                }
-                return {data: profile};
-            },
+            query: (userId) => `/userprofile/profiles/${userId}`,
             providesTags: (_result, _error, userId) => [{type: "Profile", id: userId}],
         }),
 
         getProfileByUserIdReadOnly: builder.query<Profile | null, string>({
             query: (userId) => `/userprofile/profiles/${userId}`,
-            transformResponse: (response: {profile: Profile | null} | Profile) => {
-                if ("profile" in response) return response.profile;
-                return response as Profile;
-            },
             providesTags: (_result, _error, userId) => [{type: "Profile", id: userId}],
         }),
 

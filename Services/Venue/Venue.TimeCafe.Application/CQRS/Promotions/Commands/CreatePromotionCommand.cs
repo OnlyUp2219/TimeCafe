@@ -33,6 +33,15 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IC
     {
         try
         {
+            if (request.Type == PromotionType.Global && request.IsActive)
+            {
+                var activePromos = await _repository.GetActiveAsync(cancellationToken);
+                if (activePromos.Any(p => p.Type == PromotionType.Global))
+                {
+                    return Result.Fail(new ActiveGlobalPromotionAlreadyExistsError());
+                }
+            }
+
             var promotionResult = Promotion.Create(
                 promotionId: null,
                 name: request.Name,

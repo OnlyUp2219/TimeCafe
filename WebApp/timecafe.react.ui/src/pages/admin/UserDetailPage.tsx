@@ -29,7 +29,7 @@ import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
 import { useGetUserByIdQuery } from "@store/api/adminApi";
 import { useGetBalanceQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
-import { useGetVisitHistoryQuery } from "@store/api/venueApi";
+import { useGetVisitHistoryQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 import {
     useCreateAdditionalInfoMutation,
     useDeleteAdditionalInfoMutation,
@@ -135,6 +135,7 @@ export const UserDetailPage = () => {
         { skip: !id }
     );
     const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery({ userId: id! }, { skip: !id });
+    const { data: loyalty, isLoading: loyaltyLoading } = useGetUserLoyaltyQuery(id!, { skip: !id });
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
     const [notesPage, setNotesPage] = useState(1);
     const NOTES_PAGE_SIZE = 3;
@@ -382,6 +383,12 @@ export const UserDetailPage = () => {
                         <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
                             <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
                         </HasPermission>
+                    </Card>
+                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                        <Body2 block>Лояльность (Скидка)</Body2>
+                        <Title3 className="text-brand">
+                            {loyaltyLoading ? NO_DATA : loyalty?.personalDiscountPercent != null ? `${loyalty.personalDiscountPercent}%` : "0%"}
+                        </Title3>
                     </Card>
                 </div>
 

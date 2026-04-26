@@ -50,14 +50,7 @@ interface EndVisitResponse {
     calculatedCost: number;
 }
 
-const mapTariff = (item: TariffApiResponse): Tariff => ({
-    tariffId: item.tariffId,
-    name: item.name,
-    description: item.description ?? "",
-    billingType: item.billingType,
-    pricePerMinute: item.pricePerMinute,
-    isActive: item.isActive,
-});
+
 
 interface GetTariffsPageResponse {
     tariffs: TariffWithTheme[];
@@ -106,6 +99,8 @@ export interface Promotion {
     validFrom: string;
     validTo: string;
     isActive: boolean;
+    type: number;
+    tariffId?: string | null;
     createdAt: string;
 }
 
@@ -116,6 +111,8 @@ export interface CreatePromotionRequest {
     validFrom: string;
     validTo: string;
     isActive: boolean;
+    type: number;
+    tariffId?: string;
 }
 
 export interface UpdatePromotionRequest {
@@ -126,6 +123,8 @@ export interface UpdatePromotionRequest {
     validFrom: string;
     validTo: string;
     isActive: boolean;
+    type: number;
+    tariffId?: string;
 }
 
 export interface Theme {
@@ -148,20 +147,24 @@ export interface UpdateThemeRequest {
     colors?: string;
 }
 
+export interface UserLoyalty {
+    userId: string;
+    personalDiscountPercent: number;
+    lastUpdated: string;
+}
+
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "Promotions", "Themes"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "Promotions", "Themes", "UserLoyalty"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
-            transformResponse: (response: GetTariffsResponse) => response.tariffs,
             providesTags: ["ActiveTariffs"],
         }),
 
         getAllTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs",
-            transformResponse: (response: GetTariffsResponse) => response.tariffs,
             providesTags: ["AllTariffs"],
         }),
 
@@ -176,7 +179,6 @@ export const venueApi = createApi({
 
         getTariffById: builder.query<Tariff, string>({
             query: (tariffId) => `/venue/tariffs/${tariffId}`,
-            transformResponse: (response: GetTariffResponse) => mapTariff(response.tariff),
             providesTags: (_result, _error, tariffId) => [{type: "Tariff", id: tariffId}],
         }),
 
@@ -188,7 +190,6 @@ export const venueApi = createApi({
 
         getActiveVisitByUser: builder.query<VisitWithTariff, string>({
             query: (userId) => `/venue/visits/active/${userId}`,
-            transformResponse: (response: { visit: VisitWithTariff }) => response.visit,
             providesTags: (_result, _error, userId) => [{type: "ActiveVisit", id: userId}],
         }),
 
@@ -197,11 +198,10 @@ export const venueApi = createApi({
                 url: `/venue/visits/history/${userId}`,
                 params: {pageNumber, pageSize},
             }),
-            transformResponse: (response: VisitsResponse) => response.visits,
             providesTags: (_result, _error, {userId}) => [{type: "VisitHistory", id: userId}],
         }),
 
-        getVisitById: builder.query<{visit: VisitWithTariff}, string>({
+        getVisitById: builder.query<VisitWithTariff, string>({
             query: (visitId) => `/venue/visits/${visitId}`,
             providesTags: (_result, _error, visitId) => [{type: "VisitsPage", id: visitId}],
         }),
@@ -212,6 +212,11 @@ export const venueApi = createApi({
                 params: {pageNumber, pageSize},
             }),
             providesTags: ["VisitsPage"],
+        }),
+
+        getUserLoyalty: builder.query<UserLoyalty, string>({
+            query: (userId) => `/venue/loyalty/${userId}`,
+            providesTags: ["UserLoyalty"],
         }),
 
         createVisit: builder.mutation<CreateVisitResponse, CreateVisitRequest>({
@@ -278,7 +283,6 @@ export const venueApi = createApi({
 
         getAllPromotions: builder.query<Promotion[], void>({
             query: () => "/venue/promotions",
-            transformResponse: (response: {promotions: Promotion[]}) => response.promotions,
             providesTags: ["Promotions"],
         }),
 
@@ -326,8 +330,11 @@ export const venueApi = createApi({
 
         getAllThemes: builder.query<Theme[], void>({
             query: () => "/venue/themes",
-            transformResponse: (response: {themes: Theme[]}) => response.themes,
             providesTags: ["Themes"],
+        }),
+        getThemeById: builder.query<Theme, string>({
+            query: (themeId) => `/venue/themes/${themeId}`,
+            providesTags: (_result, _error, themeId) => [{type: "Themes", id: themeId}],
         }),
 
         createTheme: builder.mutation<{message: string; theme: Theme}, CreateThemeRequest>({
@@ -369,6 +376,7 @@ export const {
     useLazyGetActiveVisitByUserQuery,
     useGetVisitHistoryQuery,
     useGetVisitsPageQuery,
+    useGetUserLoyaltyQuery,
     useCreateVisitMutation,
     useEndVisitMutation,
     useCreateTariffMutation,
@@ -383,6 +391,7 @@ export const {
     useActivatePromotionMutation,
     useDeactivatePromotionMutation,
     useGetAllThemesQuery,
+    useGetThemeByIdQuery,
     useCreateThemeMutation,
     useUpdateThemeMutation,
     useDeleteThemeMutation,

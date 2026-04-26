@@ -21,6 +21,11 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Dropdown,
+    Option,
+    RadioGroup,
+    Radio,
+    Caption1,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {Add20Regular, Delete20Regular, Edit20Regular} from "@fluentui/react-icons";
@@ -31,6 +36,7 @@ import {
     useDeletePromotionMutation,
     useActivatePromotionMutation,
     useDeactivatePromotionMutation,
+    useGetAllTariffsQuery,
 } from "@store/api/venueApi";
 import type {Promotion} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
@@ -55,6 +61,8 @@ interface PromotionFormState {
     validFrom: string;
     validTo: string;
     isActive: boolean;
+    type: number;
+    tariffId: string;
 }
 
 const emptyForm: PromotionFormState = {
@@ -64,12 +72,15 @@ const emptyForm: PromotionFormState = {
     validFrom: "",
     validTo: "",
     isActive: true,
+    type: 1, // Global
+    tariffId: "",
 };
 
 export const PromotionsPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
     const {data: promotions = [], isLoading, error} = useGetAllPromotionsQuery();
+    const {data: tariffs = []} = useGetAllTariffsQuery();
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [createPromotion] = useCreatePromotionMutation();
@@ -83,6 +94,10 @@ export const PromotionsPage = () => {
     const [form, setForm] = useState<PromotionFormState>(emptyForm);
     const [mutationError, setMutationError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+
+    const hasActiveGlobal = useMemo(() => {
+        return promotions.some(p => p.type === 1 && p.isActive && p.promotionId !== editingPromotion?.promotionId);
+    }, [promotions, editingPromotion]);
 
     const openCreate = useCallback(() => {
         setEditingPromotion(null);
@@ -100,6 +115,8 @@ export const PromotionsPage = () => {
             validFrom: toInputDate(p.validFrom),
             validTo: toInputDate(p.validTo),
             isActive: p.isActive,
+            type: p.type || 1,
+            tariffId: p.tariffId ?? "",
         });
         setMutationError(null);
         setDialogOpen(true);
@@ -116,6 +133,8 @@ export const PromotionsPage = () => {
                 validFrom: form.validFrom,
                 validTo: form.validTo,
                 isActive: form.isActive,
+                type: form.type,
+                tariffId: form.type === 2 && form.tariffId ? form.tariffId : undefined,
             };
             if (editingPromotion) {
                 await updatePromotion({promotionId: editingPromotion.promotionId, ...body}).unwrap();
@@ -153,6 +172,7 @@ export const PromotionsPage = () => {
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         name: {minWidth: 150, defaultWidth: 250},
         discount: {minWidth: 80, defaultWidth: 120},
+        type: {minWidth: 100, defaultWidth: 150},
         period: {minWidth: 150, defaultWidth: 220},
         status: {minWidth: 100, defaultWidth: 150},
         actions: {minWidth: 90, defaultWidth: 100},
@@ -182,6 +202,27 @@ export const PromotionsPage = () => {
                         {promo.discountPercent != null
                             ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
                             : "—"}
+                    </TableCellLayout>
+                ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "type",
+                compare: (a, b) => a.type - b.type,
+                renderHeaderCell: () => "Тип",
+                renderCell: (promo) => (
+                    <TableCellLayout truncate>
+                        {promo.type === 1 ? (
+                            <Badge appearance="filled" color="brand">Глобальная</Badge>
+                        ) : promo.type === 2 ? (
+                            <div className="flex flex-col">
+                                <Badge appearance="outline" color="informative">Для тарифа</Badge>
+                                <Caption1 className="text-gray-500 truncate mt-1">
+                                    {tariffs.find(t => t.tariffId === promo.tariffId)?.name || "Неизвестный тариф"}
+                                </Caption1>
+                            </div>
+                        ) : (
+                            <Badge appearance="outline" color="danger">Черновик</Badge>
+                        )}
                     </TableCellLayout>
                 ),
             }),
@@ -289,6 +330,37 @@ export const PromotionsPage = () => {
                             <Field label="Скидка (%)">
                                 <Input type="number" value={form.discountPercent} onChange={(_, d) => setForm(f => ({...f, discountPercent: d.value}))} />
                             </Field>
+                            <Field label="Тип акции">
+                                <RadioGroup
+                                    layout="horizontal"
+                                    value={form.type.toString()}
+                                    onChange={(_, data) => setForm(f => ({...f, type: parseInt(data.value)}))}
+                                >
+                                    <Radio value="1" label="Глобальная" />
+                                    <Radio value="2" label="Для тарифа" />
+                                </RadioGroup>
+                                {form.type === 1 && form.isActive && hasActiveGlobal && (
+                                    <Caption1 className="text-red-500 mt-1 block">
+                                        Внимание: уже существует другая активная глобальная акция. Сначала деактивируйте её, либо сохраните эту как неактивную.
+                                    </Caption1>
+                                )}
+                            </Field>
+                            {form.type === 2 && (
+                                <Field label="Тариф" required>
+                                    <Dropdown
+                                        placeholder="Выберите тариф"
+                                        value={tariffs.find(t => t.tariffId === form.tariffId)?.name ?? ""}
+                                        selectedOptions={form.tariffId ? [form.tariffId] : []}
+                                        onOptionSelect={(_, data) => setForm(f => ({...f, tariffId: data.optionValue ?? ""}))}
+                                    >
+                                        {tariffs.map(t => (
+                                            <Option key={t.tariffId} value={t.tariffId}>
+                                                {t.name} ({t.pricePerMinute} ₽/мин)
+                                            </Option>
+                                        ))}
+                                    </Dropdown>
+                                </Field>
+                            )}
                             <Field label="Действует с" required>
                                 <Input type="date" value={form.validFrom} onChange={(_, d) => setForm(f => ({...f, validFrom: d.value}))} />
                             </Field>
@@ -310,7 +382,7 @@ export const PromotionsPage = () => {
                             <DialogTrigger disableButtonEnhancement>
                                 <Button appearance="secondary">Отмена</Button>
                             </DialogTrigger>
-                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.validFrom || !form.validTo}>
+                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.validFrom || !form.validTo || (form.type === 1 && form.isActive && hasActiveGlobal)}>
                                 {saving ? <Spinner size="tiny" /> : (editingPromotion ? "Сохранить" : "Создать")}
                             </Button>
                         </DialogActions>

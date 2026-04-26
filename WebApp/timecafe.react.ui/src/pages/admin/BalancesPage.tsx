@@ -62,22 +62,6 @@ const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "
     return "informative";
 };
 
-const AdminUserCell = ({userId}: {userId: string}) => {
-    const {data: profile} = useGetProfileByUserIdQuery(userId);
-    const displayName = profile?.firstName || profile?.lastName
-        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
-        : profile?.email || null;
-
-    return (
-        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
-            <div className="flex flex-col min-w-0">
-                <Body1 block truncate>{displayName || userId}</Body1>
-                <Caption1 block className="font-mono text-gray-400" style={{ fontSize: '10px' }}>{userId}</Caption1>
-            </div>
-        </TableCellLayout>
-    );
-};
-
 export const BalancesPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();

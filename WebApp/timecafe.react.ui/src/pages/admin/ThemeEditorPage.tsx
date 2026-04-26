@@ -203,6 +203,26 @@ const emptyConfig: ThemeConfig = {
     patterns: [],
 };
 
+const LayerPreview = memo(({ layer }: { layer: PatternLayer }) => {
+    const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
+    return (
+        <div className="relative w-full h-32 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden bg-slate-50 flex items-center justify-center">
+            <div className="absolute inset-0 opacity-10 bg-slate-900" style={{ backgroundImage: 'radial-gradient(#000 10%, transparent 10%)', backgroundSize: '10px 10px' }} />
+            <div style={{ ...styles, inset: 0 }} />
+            <Caption1 className="absolute bottom-1 right-2 text-gray-400">Предпросмотр слоя</Caption1>
+        </div>
+    );
+});
+
+const MiniPreview = memo(({ layer }: { layer: PatternLayer }) => {
+    const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
+    return (
+        <div className="w-5 h-5 rounded border border-gray-200 relative overflow-hidden bg-slate-100">
+            <div style={{ ...styles, inset: 0, transform: (styles.transform || '') + ' scale(0.5)' }} />
+        </div>
+    );
+});
+
 export const ThemeEditorPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();

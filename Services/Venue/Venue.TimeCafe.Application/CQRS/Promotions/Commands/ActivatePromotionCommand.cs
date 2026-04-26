@@ -22,6 +22,15 @@ public class ActivatePromotionCommandHandler(IPromotionRepository repository) : 
             if (existing == null)
                 return Result.Fail(new PromotionNotFoundError());
 
+            if (existing.Type == PromotionType.Global)
+            {
+                var activePromos = await _repository.GetActiveAsync(cancellationToken);
+                if (activePromos.Any(p => p.Type == PromotionType.Global && p.PromotionId != request.PromotionId))
+                {
+                    return Result.Fail(new ActiveGlobalPromotionAlreadyExistsError());
+                }
+            }
+
             var result = await _repository.ActivateAsync(request.PromotionId);
 
             if (!result)

@@ -30,6 +30,15 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IC
             if (existing == null)
                 return Result.Fail(new Error("Акция не найдена").WithMetadata("ErrorCode", "404"));
 
+            if ((request.Type == PromotionType.Global || (request.Type == null && existing.Type == PromotionType.Global)) && request.IsActive)
+            {
+                var activePromos = await _repository.GetActiveAsync(cancellationToken);
+                if (activePromos.Any(p => p.Type == PromotionType.Global && p.PromotionId != request.PromotionId))
+                {
+                    return Result.Fail(new ActiveGlobalPromotionAlreadyExistsError());
+                }
+            }
+
             var promotionResult = Promotion.Update(
                 existingPromotion: existing,
                 name: request.Name,
