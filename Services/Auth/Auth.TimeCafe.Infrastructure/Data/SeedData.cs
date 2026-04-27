@@ -17,7 +17,6 @@ public static class SeedData
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
             throw new InvalidOperationException("Seed:Admin credentials missing in configuration.");
 
-
         if (!await roleManager.RoleExistsAsync(adminRole))
             await roleManager.CreateAsync(new IdentityRole<Guid>(adminRole));
 

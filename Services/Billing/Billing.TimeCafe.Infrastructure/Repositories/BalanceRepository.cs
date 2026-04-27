@@ -54,12 +54,19 @@ public class BalanceRepository(
         if (existingBalance != null)
             return existingBalance;
 
-        _context.Balances.Add(balance);
-        await _context.SaveChangesAsync(ct);
-
-        await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
-
-        return balance;
+        try
+        {
+            _context.Balances.Add(balance);
+            await _context.SaveChangesAsync(ct);
+            await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
+            return balance;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+            _context.Entry(balance).State = EntityState.Detached;
+            await _cache.RemoveByTagAsync(CacheTags.Balance(balance.UserId), ct);
+            return await GetByUserIdAsync(balance.UserId, ct) ?? balance;
+        }
     }
 
     public async Task<Balance> UpdateAsync(Balance balance, CancellationToken ct = default)

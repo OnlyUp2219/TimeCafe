@@ -41,7 +41,30 @@ export const profileApi = createApi({
     tagTypes: ["Profile", "ProfilePhoto", "ProfilesPage"],
     endpoints: (builder) => ({
         getProfileByUserId: builder.query<Profile, string>({
-            query: (userId) => `/userprofile/profiles/${userId}`,
+            async queryFn(userId, _queryApi, _extraOptions, fetchWithBQ) {
+                const result = await fetchWithBQ(`/userprofile/profiles/${userId}`);
+                if (result.error) {
+                    const status = (result.error as {status?: number}).status;
+                    if (status === 404) {
+                        const createResult = await fetchWithBQ({
+                            url: `/userprofile/profiles/empty/${userId}`,
+                            method: "POST",
+                        });
+                        if (createResult.error) return {error: createResult.error};
+                        const retryResult = await fetchWithBQ(`/userprofile/profiles/${userId}`);
+                        if (retryResult.error) return {error: retryResult.error};
+                        
+                        const retryData = retryResult.data as {profile: Profile} | Profile;
+                        const retryProfile = "profile" in retryData ? retryData.profile : (retryData as Profile);
+                        return {data: retryProfile};
+                    }
+                    return {error: result.error};
+                }
+                
+                const data = result.data as {profile: Profile} | Profile;
+                const profile = "profile" in data ? data.profile : (data as Profile);
+                return {data: profile};
+            },
             providesTags: (_result, _error, userId) => [{type: "Profile", id: userId}],
         }),
 

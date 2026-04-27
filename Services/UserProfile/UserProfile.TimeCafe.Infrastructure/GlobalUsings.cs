@@ -14,3 +14,5 @@ global using UserProfile.TimeCafe.Domain.Enums;
 global using UserProfile.TimeCafe.Domain.Models;
 global using UserProfile.TimeCafe.Infrastructure.Data;
 global using UserProfile.TimeCafe.Infrastructure.Repositories;
+global using Npgsql;
+global using BuildingBlocks.Extensions;

@@ -1,16 +1,13 @@
-using Microsoft.Extensions.Caching.Hybrid;
-using Npgsql;
-
 namespace BuildingBlocks.Permissions;
 
 public sealed class PermissionClaimsEnrichmentTransformer(
     HybridCache cache,
-    IConfiguration configuration,
+    PermissionGrpcService.PermissionGrpcServiceClient grpcClient,
     ILogger<PermissionClaimsEnrichmentTransformer> logger)
-    : Microsoft.AspNetCore.Authentication.IClaimsTransformation
+    : IClaimsTransformation
 {
     private readonly HybridCache _cache = cache;
-    private readonly IConfiguration _configuration = configuration;
+    private readonly PermissionGrpcService.PermissionGrpcServiceClient _grpcClient = grpcClient;
     private readonly ILogger<PermissionClaimsEnrichmentTransformer> _logger = logger;
 
     public async Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
@@ -26,10 +23,6 @@ public sealed class PermissionClaimsEnrichmentTransformer(
             ?? principal.FindFirstValue("nameid");
 
         if (!Guid.TryParse(subject, out var userId))
-            return principal;
-
-        var authConnectionString = ResolveAuthConnectionString();
-        if (string.IsNullOrWhiteSpace(authConnectionString))
             return principal;
 
         var roleTags = principal
@@ -54,7 +47,7 @@ public sealed class PermissionClaimsEnrichmentTransformer(
         {
             permissions = await _cache.GetOrCreateAsync(
                 PermissionClaimsCacheKeys.UserPermissionsKey(userId),
-                async token => await LoadPermissionsAsync(authConnectionString, userId, token),
+                async token => await LoadPermissionsViaGrpcAsync(userId, token),
                 options: new HybridCacheEntryOptions
                 {
                     Expiration = TimeSpan.FromMinutes(10),
@@ -64,7 +57,7 @@ public sealed class PermissionClaimsEnrichmentTransformer(
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to enrich permissions for user {UserId}", userId);
+            _logger.LogWarning(ex, "Failed to enrich permissions via gRPC for user {UserId}", userId);
             return principal;
         }
 
@@ -83,65 +76,13 @@ public sealed class PermissionClaimsEnrichmentTransformer(
         return principal;
     }
 
-    private string? ResolveAuthConnectionString()
-    {
-        var explicitAuthConnection = _configuration.GetConnectionString("AuthConnection")
-            ?? _configuration["ConnectionStrings:AuthConnection"];
-
-        if (!string.IsNullOrWhiteSpace(explicitAuthConnection))
-            return explicitAuthConnection;
-
-        var defaultConnection = _configuration.GetConnectionString("DefaultConnection")
-            ?? _configuration["ConnectionStrings:DefaultConnection"];
-
-        if (string.IsNullOrWhiteSpace(defaultConnection))
-            return null;
-
-        try
-        {
-            var builder = new NpgsqlConnectionStringBuilder(defaultConnection)
-            {
-                Database = "Auth.TimeCafe"
-            };
-
-            return builder.ConnectionString;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
-    private static async Task<IReadOnlyCollection<string>> LoadPermissionsAsync(
-        string connectionString,
+    private async Task<IReadOnlyCollection<string>> LoadPermissionsViaGrpcAsync(
         Guid userId,
         CancellationToken ct)
     {
-        const string sql = @"
-    SELECT DISTINCT rc.""ClaimValue""
-    FROM ""AspNetUserRoles"" ur
-    INNER JOIN ""AspNetRoleClaims"" rc ON rc.""RoleId"" = ur.""RoleId""
-    WHERE ur.""UserId"" = @userId
-      AND rc.""ClaimType"" = @claimType
-      AND rc.""ClaimValue"" IS NOT NULL";
-
-        await using var connection = new NpgsqlConnection(connectionString);
-        await connection.OpenAsync(ct);
-
-        await using var command = new NpgsqlCommand(sql, connection);
-        command.Parameters.AddWithValue("userId", userId);
-        command.Parameters.AddWithValue("claimType", CustomClaimTypes.Permissions);
-
-        var permissions = new HashSet<string>(StringComparer.Ordinal);
-
-        await using var reader = await command.ExecuteReaderAsync(ct);
-        while (await reader.ReadAsync(ct))
-        {
-            var value = reader.GetString(0);
-            if (!string.IsNullOrWhiteSpace(value))
-                permissions.Add(value);
-        }
-
-        return permissions.ToList();
+        var request = new GetUserPermissionsRequest { UserId = userId.ToString() };
+        var response = await _grpcClient.GetUserPermissionsAsync(request, cancellationToken: ct);
+        
+        return response.Permissions.ToList();
     }
 }

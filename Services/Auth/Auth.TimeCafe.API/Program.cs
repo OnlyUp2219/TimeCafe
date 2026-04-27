@@ -30,6 +30,7 @@ builder.Services.AddAuthCqrs();
 builder.Services.AddControllers();
 
 builder.Services.AddOpenApiConfiguration("TimeCafe Auth API");
+builder.Services.AddGrpc();
 
 // Rate Limiter
 builder.Services.AddCustomRateLimiter(builder.Configuration);
@@ -96,7 +97,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseOpenApiDevelopment("TimeCafe Auth API");
 
-app.UseHttpsRedirection();
 app.UseCors(corsPolicyName);
 
 app.UseMiddleware<RateLimitCounterMiddleware>();
@@ -110,6 +110,7 @@ authGroup.MapCarter();
 authGroup.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGrpcService<Auth.TimeCafe.API.Services.PermissionGrpcService>();
 
 app.UseHealthChecks();
 app.MapDefaultEndpoints();

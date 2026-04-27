@@ -30,3 +30,6 @@ global using Microsoft.IdentityModel.Tokens;
 global using Microsoft.OpenApi;
 global using Scalar.AspNetCore;
 global using Serilog;
+global using BuildingBlocks.Permissions.Grpc;
+global using Grpc.Core;
+global using Microsoft.Extensions.Caching.Hybrid;

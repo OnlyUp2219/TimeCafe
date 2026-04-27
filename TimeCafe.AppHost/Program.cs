@@ -20,7 +20,6 @@ var postgres = builder.AddPostgres("postgres")
 
 var elastic = builder.AddElasticsearch("elasticsearch")
     .WithEndpoint("http", endpoint => endpoint.Port = 9200)
-    .WithDataBindMount("./elasticsearch_data")
     .WithEnvironment("discovery.type", "single-node")
     .WithEnvironment("xpack.security.enabled", "false");
 
@@ -35,7 +34,6 @@ void ApplyTimeCafeReferences(IResourceBuilder<ProjectResource> projectBuilder, I
 {
     projectBuilder
         .WithReference(db, "DefaultConnection")
-        .WithReference(authDb, "AuthConnection")
         .WithReference(redis)
         .WithReference(rabbitmq)
         .WithReference(elastic)
@@ -98,7 +96,6 @@ var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WithReference(venueApi)
     .WithReference(billingApi)
     .WithReference(redis)
-    .WithReference(authDb, "AuthConnection")
     .WithEnvironment("Redis__ConnectionString", redis)
     .WithEnvironment("Services__Auth", authApi.GetEndpoint("api"))
     .WithEnvironment("Services__UserProfile", userProfileApi.GetEndpoint("api"))

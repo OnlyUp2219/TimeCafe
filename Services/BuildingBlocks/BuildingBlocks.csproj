@@ -28,6 +28,12 @@
 		<PackageReference Include="Serilog.Sinks.Async" />
 		<PackageReference Include="Serilog.Sinks.Console" />
 		<PackageReference Include="Serilog.Sinks.Debug" />
+		<PackageReference Include="Grpc.AspNetCore" />
+		<PackageReference Include="Google.Protobuf" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Protos\permissions.proto" GrpcServices="Both" />
 	</ItemGroup>
 
 </Project>

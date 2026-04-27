@@ -9,6 +9,12 @@ public static class JwtAuthenticationExtensions
         services.AddAuthorizationBuilder();
         services.AddTransient<Microsoft.AspNetCore.Authentication.IClaimsTransformation, PermissionClaimsEnrichmentTransformer>();
 
+        services.AddGrpcClient<PermissionGrpcService.PermissionGrpcServiceClient>(o =>
+        {
+            var authUrl = configuration["Services:Auth"] ?? "http://auth-api";
+            o.Address = new Uri(authUrl);
+        });
+
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
             ?? throw new InvalidOperationException("Jwt configuration section is missing.");
 

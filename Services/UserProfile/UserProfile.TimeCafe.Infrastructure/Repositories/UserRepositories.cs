@@ -96,19 +96,24 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
         if (exist)
             return;
 
-        _context.Profiles.Add(new Profile()
+        try
         {
-            UserId = userId,
-            FirstName = "",
-            LastName = "",
-            Gender = Gender.NotSpecified,
-            ProfileStatus = ProfileStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow,
-        });
+            _context.Profiles.Add(new Profile()
+            {
+                UserId = userId,
+                FirstName = "",
+                LastName = "",
+                Gender = Gender.NotSpecified,
+                ProfileStatus = ProfileStatus.Pending,
+                CreatedAt = DateTimeOffset.UtcNow,
+            });
 
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
+        {
+        }
     }
 
     public async Task<IEnumerable<Profile>> GetProfilesByIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)

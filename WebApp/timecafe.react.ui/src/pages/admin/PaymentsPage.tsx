@@ -17,7 +17,7 @@ import {
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
 import {useGetAdminPaymentsQuery} from "@store/api/adminApi";
 import type {AdminPaymentDto} from "@store/api/adminApi";
-import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import {useGetProfileByUserIdReadOnlyQuery} from "@store/api/profileApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
@@ -65,7 +65,7 @@ const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
 const AdminUserCell = ({userId}: {userId: string}) => {
-    const {data: profile} = useGetProfileByUserIdQuery(userId);
+    const {data: profile} = useGetProfileByUserIdReadOnlyQuery(userId);
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : profile?.email || null;

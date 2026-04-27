@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "BuildingBlocks.Permissions.Grpc";
+
+package permissions;
+
+service PermissionGrpcService {
+  rpc GetUserPermissions (GetUserPermissionsRequest) returns (GetUserPermissionsResponse);
+}
+
+message GetUserPermissionsRequest {
+  string user_id = 1;
+}
+
+message GetUserPermissionsResponse {
+  repeated string permissions = 1;
+}
