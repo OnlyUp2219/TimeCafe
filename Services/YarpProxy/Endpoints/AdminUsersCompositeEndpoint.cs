@@ -27,24 +27,28 @@ public class AdminUsersCompositeEndpoint : ICarterModule
 
             var userIds = authResponse.Users.Select(u => u.Id).ToList();
 
-            var profilesTask = profileClient.PostAsJsonAsync("/userprofile/profiles/batch", userIds);
-            var balancesTask = billingClient.PostAsJsonAsync("/billing/balance/batch", userIds);
-
-            await Task.WhenAll(profilesTask, balancesTask);
-
-            var profilesResponse = await profilesTask;
-            var balancesResponse = await balancesTask;
-
             List<ProfileDto>? profiles = null;
-            if (profilesResponse.IsSuccessStatusCode)
-            {
-                profiles = await profilesResponse.Content.ReadFromJsonAsync<List<ProfileDto>>();
-            }
-
             List<BalanceDto>? balances = null;
-            if (balancesResponse.IsSuccessStatusCode)
+
+            if (userIds.Count > 0)
             {
-                balances = await balancesResponse.Content.ReadFromJsonAsync<List<BalanceDto>>();
+                var profilesTask = profileClient.PostAsJsonAsync("/userprofile/profiles/batch", userIds);
+                var balancesTask = billingClient.PostAsJsonAsync("/billing/balance/batch", userIds);
+
+                await Task.WhenAll(profilesTask, balancesTask);
+
+                var profilesResponse = await profilesTask;
+                var balancesResponse = await balancesTask;
+
+                if (profilesResponse.IsSuccessStatusCode)
+                {
+                    profiles = await profilesResponse.Content.ReadFromJsonAsync<List<ProfileDto>>();
+                }
+
+                if (balancesResponse.IsSuccessStatusCode)
+                {
+                    balances = await balancesResponse.Content.ReadFromJsonAsync<List<BalanceDto>>();
+                }
             }
 
             var profilesMap = profiles?.ToDictionary(p => p.UserId) ?? new Dictionary<Guid, ProfileDto>();

@@ -33,3 +33,4 @@ global using Serilog;
 global using BuildingBlocks.Permissions.Grpc;
 global using Grpc.Core;
 global using Microsoft.Extensions.Caching.Hybrid;
+global using Microsoft.AspNetCore.Authentication;

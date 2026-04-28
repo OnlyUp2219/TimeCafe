@@ -19,16 +19,25 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddHttpClient("Auth", client =>
-    client.BaseAddress = new Uri(builder.Configuration["Services:Auth"]))
-    .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
+{
+    var url = builder.Configuration["Services:Auth"];
+    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+})
+.AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddHttpClient("UserProfile", client =>
-    client.BaseAddress = new Uri(builder.Configuration["Services:UserProfile"]))
-    .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
+{
+    var url = builder.Configuration["Services:UserProfile"];
+    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+})
+.AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddHttpClient("Billing", client =>
-    client.BaseAddress = new Uri(builder.Configuration["Services:Billing"]))
-    .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
+{
+    var url = builder.Configuration["Services:Billing"];
+    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+})
+.AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddCarter();
 

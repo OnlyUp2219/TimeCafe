@@ -37,6 +37,4 @@ global using Scalar.AspNetCore;
 global using Serilog;
 
 global using BuildingBlocks.Permissions.Grpc;
-global using BuildingBlocks.Permissions;
 global using Grpc.Core;
-global using Auth.TimeCafe.Infrastructure.Persistence;

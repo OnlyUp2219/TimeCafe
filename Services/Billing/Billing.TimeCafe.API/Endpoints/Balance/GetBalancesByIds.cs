@@ -4,7 +4,7 @@ public class GetBalancesByIds : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapPost("/billing/balance/batch", async (
+        app.MapPost("/balance/batch", async (
             [FromServices] ISender sender,
             [FromBody] List<Guid> userIds) =>
         {

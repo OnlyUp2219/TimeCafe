@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Caching.Hybrid;
+
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
 public record RegisterUserCommand(string Username, string Email, string Password, bool SendEmail = true) : IRequest<RegisterUserResult>;
@@ -30,17 +32,18 @@ public class RegisterUserCommandValidator : AbstractValidator<RegisterUserComman
             .NotEmpty().WithMessage("Пароль обязателен");
     }
 }
-
 public class RegisterUserCommandHandler(
     UserManager<ApplicationUser> userManager,
     IEmailSender<ApplicationUser> emailSender,
     IOptionsSnapshot<PostmarkOptions> postmarkOptions,
-    IPublishEndpoint publishEndpoint) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+    IPublishEndpoint publishEndpoint,
+    HybridCache cache) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly IOptionsSnapshot<PostmarkOptions> _postmarkOptions = postmarkOptions;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly HybridCache _cache = cache;
 
     // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
@@ -70,6 +73,8 @@ public class RegisterUserCommandHandler(
                 List<ErrorItem> errs = [.. addToRoleResult.Errors.Select(e => new ErrorItem(e.Code, e.Description))];
                 return RegisterUserResult.Error(errs);
             }
+
+            await _cache.RemoveByTagAsync("users", cancellationToken);
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

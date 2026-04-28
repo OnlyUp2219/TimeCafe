@@ -16,3 +16,4 @@ global using Scalar.AspNetCore;
 global using Serilog;
 global using Yarp.ReverseProxy.Transforms;
 global using YarpProxy.Extensions;
+global using BuildingBlocks.Permissions.Grpc;

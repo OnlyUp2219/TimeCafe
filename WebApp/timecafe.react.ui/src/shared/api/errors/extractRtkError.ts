@@ -1,6 +1,6 @@
 import type {SerializedError} from "@reduxjs/toolkit";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import type {ApiError} from "@api/errors/types";
+import type {ApiError, ApiErrorItem} from "@api/errors/types";
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -16,11 +16,17 @@ export const extractRtkError = (error: FetchBaseQueryError | SerializedError | u
         if (typeof fe.status === "number") {
             const data = asRecord(fe.data);
             if (data) {
-                const message = typeof data.message === "string" ? data.message : "Произошла ошибка";
+                const message = 
+                    typeof data.message === "string" ? data.message :
+                    typeof data.title === "string" ? data.title :
+                    typeof data.detail === "string" ? data.detail :
+                    `Ошибка сервера (${fe.status})`;
+                
                 const code = typeof data.code === "string" ? data.code : undefined;
                 const statusCode = typeof data.statusCode === "number" ? data.statusCode : fe.status;
 
-                let errors: ApiError["errors"];
+                let errors: ApiError["errors"] = [];
+
                 if (Array.isArray(data.errors)) {
                     errors = data.errors
                         .map((item: unknown) => {
@@ -32,6 +38,19 @@ export const extractRtkError = (error: FetchBaseQueryError | SerializedError | u
                             return {code: typeof obj.code === "string" ? obj.code : undefined, message: msg};
                         })
                         .filter(Boolean) as ApiError["errors"];
+                } 
+                else if (asRecord(data.errors)) {
+                    const validationErrors = data.errors as Record<string, string[] | string>;
+                    const errorArray: ApiErrorItem[] = errors || [];
+                    Object.entries(validationErrors).forEach(([key, val]) => {
+                        const messages = Array.isArray(val) ? val : [val];
+                        messages.forEach(m => {
+                            if (typeof m === "string") {
+                                errorArray.push({ code: key, message: m });
+                            }
+                        });
+                    });
+                    errors = errorArray;
                 }
 
                 return {statusCode, code, message, errors, raw: fe.data};
@@ -41,11 +60,11 @@ export const extractRtkError = (error: FetchBaseQueryError | SerializedError | u
         }
 
         if (fe.status === "FETCH_ERROR") {
-            return {statusCode: 0, code: "NetworkError", message: "Ошибка сети. Проверьте соединение.", raw: fe};
+            return {statusCode: 0, code: "NetworkError", message: "Ошибка сети. Проверьте соединение или CORS.", raw: fe};
         }
 
         if (fe.status === "PARSING_ERROR") {
-            return {statusCode: 0, code: "ParseError", message: "Ошибка обработки ответа сервера", raw: fe};
+            return {statusCode: 0, code: "ParseError", message: "Ошибка обработки ответа сервера (Invalid JSON)", raw: fe};
         }
 
         if (fe.status === "CUSTOM_ERROR") {
@@ -62,19 +81,19 @@ export const getRtkErrorMessage = (error: FetchBaseQueryError | SerializedError 
     if (!apiError) return "";
 
     if (apiError.statusCode === 401) return "Сессия истекла. Войдите снова.";
-    if (apiError.statusCode === 403) {
-        const serverMsg = apiError.errors?.map(e => e.message).filter(Boolean).join(". ");
-        if (serverMsg) return serverMsg;
-        if (apiError.message && apiError.message !== "Произошла ошибка") return apiError.message;
-        return "Недостаточно прав для выполнения действия.";
-    }
-
+    
     if (apiError.errors?.length) {
         const messages = apiError.errors.map(e => e.message).filter(Boolean);
         if (messages.length) return messages.join(". ");
     }
 
-    return apiError.message;
+    if (apiError.message && 
+        apiError.message !== "Произошла ошибка" && 
+        !apiError.message.startsWith("Ошибка сервера")) {
+        return apiError.message;
+    }
+
+    return apiError.message || "Произошла ошибка";
 };
 
 export const getRtkValidationErrors = (error: FetchBaseQueryError | SerializedError | undefined): Record<string, string> => {

@@ -42,6 +42,7 @@ import { RoleClaimsPage } from "@pages/admin/RoleClaimsPage";
 import { UserRolesPage } from "@pages/admin/UserRolesPage";
 import { VisitDetailPage } from "@pages/admin/VisitDetailPage";
 import { AdminLayout } from "@layouts/AdminLayout/AdminLayout";
+import { DevDebugPage } from "@pages/admin/DevDebugPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -118,6 +119,7 @@ const AppRoutes = () => {
                     <Route path="/admin/roles" element={<RolesPage />} />
                     <Route path="/admin/roles/:roleName/claims" element={<RoleClaimsPage />} />
                     <Route path="/admin/users/:id/roles" element={<UserRolesPage />} />
+                    <Route path="/admin/dev-debug" element={<DevDebugPage />} />
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage />} />
 

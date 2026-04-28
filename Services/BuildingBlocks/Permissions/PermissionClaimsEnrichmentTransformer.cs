@@ -50,8 +50,8 @@ public sealed class PermissionClaimsEnrichmentTransformer(
                 async token => await LoadPermissionsViaGrpcAsync(userId, token),
                 options: new HybridCacheEntryOptions
                 {
-                    Expiration = TimeSpan.FromMinutes(10),
-                    LocalCacheExpiration = TimeSpan.FromMinutes(5)
+                    Expiration = TimeSpan.FromMinutes(5),
+                    LocalCacheExpiration = TimeSpan.Zero
                 },
                 tags: cacheTags);
         }

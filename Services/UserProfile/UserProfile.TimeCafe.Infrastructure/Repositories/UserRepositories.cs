@@ -110,6 +110,7 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
 
             await _context.SaveChangesAsync(cancellationToken);
             await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
+            await _cache.RemoveByTagAsync(CacheTags.Profile(userId), cancellationToken);
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
         {

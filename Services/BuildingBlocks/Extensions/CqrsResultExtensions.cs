@@ -89,6 +89,18 @@ public static class CqrsResultExtensions
         if (error.Metadata.TryGetValue("Code", out var rawCode))
             return rawCode?.ToString();
 
+        var typeName = error.GetType().Name;
+        if (typeName != "Error" && typeName != "FluentError" && !typeName.EndsWith("`1"))
+        {
+            return typeName.EndsWith("Error") ? typeName[..^5] : typeName;
+        }
+
+        if (error.Metadata.TryGetValue("ErrorCode", out var errCode))
+            return errCode?.ToString();
+
+        if (error.Metadata.TryGetValue("StatusCode", out var stCode))
+            return stCode?.ToString();
+
         return null;
     }
 

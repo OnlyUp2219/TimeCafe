@@ -7,8 +7,11 @@ public static class AuthenticationExtensions
         services.AddValidatedOptions<JwtOptions>(configuration, "Jwt");
 
         services.AddTransient<IClaimsTransformation, PermissionClaimsEnrichmentTransformer>();
-
-        services.AddAuthorizationBuilder();
+        services.AddGrpcClient<PermissionGrpcService.PermissionGrpcServiceClient>(o =>
+        {
+            var authUrl = configuration["Services:Auth"] ?? "http://auth-api";
+            o.Address = new Uri(authUrl);
+        });
 
         var jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
             ?? throw new InvalidOperationException("Jwt configuration section is missing.");

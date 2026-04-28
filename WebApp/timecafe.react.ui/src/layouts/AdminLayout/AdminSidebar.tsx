@@ -6,7 +6,7 @@ import { clearTokens } from "@store/authSlice";
 import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
-    SignOut20Regular, Eye20Regular
+    SignOut20Regular, Eye20Regular, Bug24Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
@@ -49,6 +49,12 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                     { id: "balances", label: "Балансы", path: "/admin/balances", icon: <Money20Regular />, permission: Permissions.BillingBalanceRead },
                     { id: "transactions", label: "Транзакции", path: "/admin/transactions", icon: <ArrowTrending20Regular />, permission: Permissions.BillingTransactionRead },
                     { id: "payments", label: "Платежи", path: "/admin/payments", icon: <Payment20Regular />, permission: Permissions.BillingPaymentHistoryRead },
+                ],
+            },
+            {
+                title: "Система",
+                items: [
+                    { id: "debug", label: "Debug Errors", path: "/admin/dev-debug", icon: <Bug24Regular /> },
                 ],
             },
         ];

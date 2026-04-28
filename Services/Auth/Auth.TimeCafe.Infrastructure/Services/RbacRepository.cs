@@ -255,6 +255,7 @@ public class RbacRepository : IRbacRepository
 
     private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken ct = default)
     {
+        await _cache.RemoveAsync(PermissionClaimsCacheKeys.UserPermissionsKey(userId), ct);
         await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), ct);
         await _cache.RemoveByTagAsync($"user_{userId}", ct);
     }

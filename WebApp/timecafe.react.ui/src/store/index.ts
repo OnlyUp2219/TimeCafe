@@ -11,6 +11,7 @@ import {profileApi} from "@store/api/profileApi";
 import {billingApi} from "@store/api/billingApi";
 import {venueApi} from "@store/api/venueApi";
 import {adminApi} from "@store/api/adminApi";
+import {debugApi} from "@store/api/debugApi";
 
 const appReducer = combineReducers({
     ui: uiSlice,
@@ -22,6 +23,7 @@ const appReducer = combineReducers({
     [billingApi.reducerPath]: billingApi.reducer,
     [venueApi.reducerPath]: venueApi.reducer,
     [adminApi.reducerPath]: adminApi.reducer,
+    [debugApi.reducerPath]: debugApi.reducer,
 });
 
 const rootReducer = (state: ReturnType<typeof appReducer> | undefined, action: { type: string }) => {
@@ -36,11 +38,13 @@ const persistConfigure = {
     storage,
     blacklist: [
         "auth",
+        "permissions",
         authApi.reducerPath,
         profileApi.reducerPath,
         billingApi.reducerPath,
         venueApi.reducerPath,
         adminApi.reducerPath,
+        debugApi.reducerPath,
     ],
 };
 
@@ -67,6 +71,7 @@ export const store = configureStore({
             billingApi.middleware,
             venueApi.middleware,
             adminApi.middleware,
+            debugApi.middleware,
         ),
 });
 

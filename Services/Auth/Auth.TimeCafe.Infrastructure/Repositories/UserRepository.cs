@@ -51,7 +51,7 @@ public class UserRepository(
 
                 return (users, totalCount);
             },
-            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
             tags: ["users"],
             cancellationToken: ct);
 

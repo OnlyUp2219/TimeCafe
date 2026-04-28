@@ -95,21 +95,47 @@ const normalizeFromProblemDetails = (data: unknown, fallbackStatusCode: number):
     };
 };
 
+const normalizeFromLegacy = (data: unknown, fallbackStatusCode: number): ApiError | null => {
+    const obj = asRecord(data);
+    if (!obj) return null;
+
+    // Проверяем наличие признаков "старого" формата
+    const hasSuccess = typeof obj.success === "boolean";
+    const hasErrorField = typeof obj.error === "string";
+    const hasMessage = typeof obj.message === "string";
+
+    if (!hasSuccess && !hasErrorField) return null;
+
+    const statusCode = typeof obj.statusCode === "number" ? obj.statusCode : fallbackStatusCode;
+    const message = (obj.error as string) || (obj.message as string) || "Ошибка (Legacy format)";
+    const code = "LegacyError";
+
+    return {
+        statusCode,
+        code,
+        message,
+        raw: obj,
+    };
+};
+
 export const normalizeAxiosError = (error: AxiosError): ApiError => {
     const statusCode = error.response?.status ?? 0;
     const data = error.response?.data;
 
     if (data) {
+        // 1. Попытка нормализации из CQRS V2 (наш текущий стандарт)
         const cqrs = normalizeFromCqrsV2(data, statusCode);
         if (cqrs) return cqrs;
 
+        // 2. Попытка нормализации из ASP.NET ProblemDetails
         const pd = normalizeFromProblemDetails(data, statusCode);
         if (pd) return pd;
 
-        if (typeof data === "string") {
-            return {statusCode, message: data, raw: data};
-        }
+        // 3. Попытка нормализации из Legacy форматов
+        const legacy = normalizeFromLegacy(data, statusCode);
+        if (legacy) return legacy;
 
+        // 4. Попытка извлечь message напрямую из объекта
         if (typeof data === "object") {
             const obj = asRecord(data);
             const maybeMessage = obj?.message;
@@ -122,13 +148,17 @@ export const normalizeAxiosError = (error: AxiosError): ApiError => {
                 return {statusCode, message: flat.join(" "), raw: data};
             }
         }
+
+        if (typeof data === "string") {
+            return {statusCode, message: data, raw: data};
+        }
     }
 
     if (statusCode === 401) {
         return {
             statusCode: 401,
             code: "Unauthorized",
-            message: "Unauthorized",
+            message: "Сессия истекла. Пожалуйста, войдите снова.",
             raw: error,
         };
     }
@@ -137,14 +167,14 @@ export const normalizeAxiosError = (error: AxiosError): ApiError => {
         return {
             statusCode: 403,
             code: "Forbidden",
-            message: "Forbidden",
+            message: "У вас недостаточно прав для этого действия.",
             raw: error,
         };
     }
 
     return {
         statusCode,
-        code: undefined,
+        code: "NetworkError",
         message: error.message || "Произошла ошибка сети",
         raw: error,
     };

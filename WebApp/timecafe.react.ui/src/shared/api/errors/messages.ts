@@ -8,7 +8,9 @@ export const getAuthErrorMessageByStatus = (statusCode: number): string | null =
 
 export const getUserMessage = (error: ApiError): string => {
     const authMsg = getAuthErrorMessageByStatus(error.statusCode);
-    if (authMsg) return authMsg;
+    if (authMsg && !error.code && (!error.errors || error.errors.length === 0)) return authMsg;
+
+    let description = error.message || "Произошла ошибка";
 
     if (error.errors && error.errors.length) {
         const msg = error.errors
@@ -16,8 +18,11 @@ export const getUserMessage = (error: ApiError): string => {
             .map((s: string) => s.trim())
             .filter(Boolean)
             .join(" ");
-        if (msg) return msg;
+        if (msg) description = msg;
     }
 
-    return error.message || "Произошла ошибка";
+    const code = error.code || (error.errors && error.errors.length > 0 ? error.errors[0].code : null) || "Error";
+    const statusPart = error.statusCode ? ` (${error.statusCode})` : "";
+
+    return `${code}${statusPart}: ${description}`;
 };

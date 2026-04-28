@@ -28,7 +28,7 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IC
         {
             var existing = await _repository.GetByIdAsync(request.PromotionId);
             if (existing == null)
-                return Result.Fail(new Error("Акция не найдена").WithMetadata("ErrorCode", "404"));
+                return Result.Fail(new PromotionNotFoundError());
 
             if ((request.Type == PromotionType.Global || (request.Type == null && existing.Type == PromotionType.Global)) && request.IsActive)
             {
@@ -59,13 +59,13 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IC
             var updated = await _repository.UpdateAsync(promotion);
 
             if (updated == null)
-                return Result.Fail(new Error("Не удалось обновить акцию").WithMetadata("ErrorCode", "500"));
+                return Result.Fail(new UpdateFailedError());
 
             return Result.Ok(updated);
         }
         catch (Exception ex)
         {
-            return Result.Fail(new Error("Не удалось обновить акцию").CausedBy(ex).WithMetadata("ErrorCode", "500"));
+            return Result.Fail(new UpdateFailedError().CausedBy(ex));
         }
     }
 }
