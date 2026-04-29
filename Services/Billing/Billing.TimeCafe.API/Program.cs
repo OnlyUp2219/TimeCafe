@@ -55,7 +55,6 @@ billingGroup.MapControllers();
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 
 app.UseHealthChecks();
-app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

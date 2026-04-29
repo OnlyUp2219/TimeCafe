@@ -11,7 +11,8 @@ public static class JwtAuthenticationExtensions
 
         services.AddGrpcClient<PermissionGrpcService.PermissionGrpcServiceClient>(o =>
         {
-            var authUrl = configuration["Services:Auth"] ?? "http://auth-api";
+            var authUrl = configuration["Services:AuthGrpc"] 
+                ?? throw new InvalidOperationException("Configuration 'Services:AuthGrpc' is missing.");
             o.Address = new Uri(authUrl);
         });
 

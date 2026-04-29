@@ -20,27 +20,26 @@ builder.Services.AddTransient<BuildingBlocks.Utilities.HeaderPropagationHandler>
 
 builder.Services.AddHttpClient("Auth", client =>
 {
-    var url = builder.Configuration["Services:Auth"];
-    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+    var url = builder.Configuration["Services:Auth"] ?? throw new InvalidOperationException("Services:Auth is missing");
+    client.BaseAddress = new Uri(url);
 })
 .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddHttpClient("UserProfile", client =>
 {
-    var url = builder.Configuration["Services:UserProfile"];
-    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+    var url = builder.Configuration["Services:UserProfile"] ?? throw new InvalidOperationException("Services:UserProfile is missing");
+    client.BaseAddress = new Uri(url);
 })
 .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddHttpClient("Billing", client =>
 {
-    var url = builder.Configuration["Services:Billing"];
-    if (!string.IsNullOrEmpty(url)) client.BaseAddress = new Uri(url);
+    var url = builder.Configuration["Services:Billing"] ?? throw new InvalidOperationException("Services:Billing is missing");
+    client.BaseAddress = new Uri(url);
 })
 .AddHttpMessageHandler<BuildingBlocks.Utilities.HeaderPropagationHandler>();
 
 builder.Services.AddCarter();
-
 
 var app = builder.Build();
 
@@ -55,7 +54,7 @@ app.MapCarter();
 app.UseScalarConfiguration();
 
 app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
-app.MapHealthChecks("/health").AllowAnonymous();
+
 app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())
@@ -109,6 +108,7 @@ if (app.Environment.IsDevelopment())
         });
     }).AllowAnonymous();
 }
+
 
 await app.RunAsync();
 

@@ -113,7 +113,6 @@ app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
 app.MapGrpcService<Auth.TimeCafe.API.Services.PermissionGrpcService>();
 
 app.UseHealthChecks();
-app.MapDefaultEndpoints();
 
 authGroup.MapGet("/test-publish", async (IPublishEndpoint pub) =>
 {
