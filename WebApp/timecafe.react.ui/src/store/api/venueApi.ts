@@ -55,6 +55,7 @@ interface EndVisitResponse {
 interface GetTariffsPageResponse {
     tariffs: TariffWithTheme[];
     totalCount: number;
+    maxTotalDiscountPercent: number;
 }
 
 interface GetTariffsPageArgs {
@@ -281,6 +282,14 @@ export const venueApi = createApi({
             invalidatesTags: ["AllTariffs", "ActiveTariffs"],
         }),
 
+        getPromotionsPage: builder.query<{promotions: Promotion[]; totalCount: number}, {pageNumber: number; pageSize: number}>({
+            query: ({pageNumber, pageSize}) => ({
+                url: "/venue/promotions/page",
+                params: {pageNumber, pageSize},
+            }),
+            providesTags: ["Promotions"],
+        }),
+
         getAllPromotions: builder.query<Promotion[], void>({
             query: () => "/venue/promotions",
             providesTags: ["Promotions"],
@@ -326,6 +335,14 @@ export const venueApi = createApi({
                 method: "POST",
             }),
             invalidatesTags: ["Promotions"],
+        }),
+
+        getThemesPage: builder.query<{themes: Theme[]; totalCount: number}, {pageNumber: number; pageSize: number}>({
+            query: ({pageNumber, pageSize}) => ({
+                url: "/venue/themes/page",
+                params: {pageNumber, pageSize},
+            }),
+            providesTags: ["Themes"],
         }),
 
         getAllThemes: builder.query<Theme[], void>({
@@ -385,12 +402,14 @@ export const {
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllPromotionsQuery,
+    useGetPromotionsPageQuery,
     useCreatePromotionMutation,
     useUpdatePromotionMutation,
     useDeletePromotionMutation,
     useActivatePromotionMutation,
     useDeactivatePromotionMutation,
     useGetAllThemesQuery,
+    useGetThemesPageQuery,
     useGetThemeByIdQuery,
     useCreateThemeMutation,
     useUpdateThemeMutation,

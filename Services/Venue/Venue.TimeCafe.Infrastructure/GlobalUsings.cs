@@ -1,3 +1,4 @@
+global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Events;
 global using MassTransit;
 global using Microsoft.EntityFrameworkCore;

@@ -4,6 +4,8 @@ public interface IThemeRepository
 {
     Task<Theme?> GetByIdAsync(Guid themeId, CancellationToken ct = default);
     Task<IEnumerable<Theme>> GetAllAsync(CancellationToken ct = default);
+    Task<IEnumerable<Theme>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
+    Task<int> GetTotalCountAsync(CancellationToken ct = default);
 
     Task<Theme> CreateAsync(Theme theme, CancellationToken ct = default);
     Task<Theme> UpdateAsync(Theme theme, CancellationToken ct = default);

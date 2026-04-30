@@ -30,6 +30,26 @@ public class ThemeRepository(
             cancellationToken: ct) ?? [];
     }
 
+    public async Task<IEnumerable<Theme>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<Theme>>(
+            CacheKeys.Theme_Page(pageNumber, pageSize),
+            async ct => await _context.Themes
+                .AsNoTracking()
+                .OrderBy(t => t.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Themes],
+            cancellationToken: ct) ?? [];
+    }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
+    {
+        return await _context.Themes.CountAsync(ct);
+    }
+
     public async Task<Theme> CreateAsync(Theme theme, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(theme);

@@ -1,3 +1,4 @@
+global using BuildingBlocks.Extensions;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Net.Http.Headers;
 global using System.Security.Claims;

@@ -12,6 +12,7 @@ import {
     MessageBarActions,
     Divider,
     Badge,
+    Body1Strong,
 } from "@fluentui/react-components";
 import {
     Bug24Regular,
@@ -33,7 +34,7 @@ import {
     useLazyGetInfoQuery,
     useLazyGetLegacyResultQuery
 } from "@store/api/debugApi";
-import { getRtkErrorMessage, extractRtkError } from "@shared/api/errors/extractRtkError";
+import { extractRtkError, getRtkErrorMessage, getRtkErrorTitle, normalizeUnknownError } from "@shared/api/errors/extractRtkError";
 
 export const DevDebugPage: React.FC = () => {
     const { showToast, ToasterElement } = useProgressToast();
@@ -63,13 +64,13 @@ export const DevDebugPage: React.FC = () => {
             if (result.error) {
                 const errorData = result.error;
                 const extracted = extractRtkError(errorData);
+                if (!extracted) return;
+
                 const message = extracted.message;
-                
                 const isValidation = extracted.statusCode === 422;
                 const intent = isValidation ? "warning" : "error";
-                
-                // Заголовок: если есть statusCode, используем его, иначе имя экшена
-                const title = extracted.statusCode ? `Error ${extracted.statusCode}` : (extracted.code || name);
+
+                const title = getRtkErrorTitle(errorData, name);
 
                 setLastResponse(errorData);
                 setExtractedInfo(extracted);
@@ -82,11 +83,11 @@ export const DevDebugPage: React.FC = () => {
                 }
             } else {
                 const data = result.data;
-                const extracted = normalizeUnknownError(data); // Нормализуем даже успех для консистентности
-                
+                const extracted = normalizeUnknownError(data);
+
                 setLastResponse(data);
                 setExtractedInfo(extracted);
-                
+
                 const message = data?.message || "Операция выполнена";
                 const isInfo = data?.type === "Info" || data?.code?.toLowerCase().includes("info");
                 const intent = isInfo ? "info" : "success";
@@ -143,7 +144,7 @@ export const DevDebugPage: React.FC = () => {
                             <Body1 italic className="opacity-70 mb-1">
                                 {currentIntent.toUpperCase()} Message:
                             </Body1>
-                            <Body1 strong>{localError}</Body1>
+                            <Body1Strong>{localError}</Body1Strong>
                         </div>
                     </MessageBarBody>
                     <MessageBarActions
@@ -244,8 +245,7 @@ export const DevDebugPage: React.FC = () => {
                                     <div key={i} className="flex flex-col p-2 bg-white rounded border border-gray-200 shadow-sm">
                                         <div className="flex items-center gap-2 mb-1">
                                             {e.code && <Badge appearance="filled" color="brand" size="small">{e.code}</Badge>}
-                                            <Body1 strong size={200}>Field/Code</Body1>
-                                        </div>
+                                            <Body1Strong>Field/Code</Body1Strong>                                        </div>
                                         <Body1 className="text-red-600">{e.message}</Body1>
                                     </div>
                                 )) : (

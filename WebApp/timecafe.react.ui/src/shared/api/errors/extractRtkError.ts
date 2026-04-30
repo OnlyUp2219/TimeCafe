@@ -108,3 +108,30 @@ export const getRtkValidationErrors = (error: FetchBaseQueryError | SerializedEr
     }
     return result;
 };
+export const getRtkErrorTitle = (error: FetchBaseQueryError | SerializedError | undefined, defaultTitle: string = "Ошибка"): string => {
+    const apiError = extractRtkError(error);
+    if (!apiError) return defaultTitle;
+
+    if (apiError.code) {
+        return `${apiError.code} ${apiError.statusCode || ""}`.trim();
+    }
+
+    if (apiError.statusCode && apiError.statusCode > 0) {
+        return `Error ${apiError.statusCode}`;
+    }
+
+    return apiError.code || defaultTitle;
+};
+
+export const normalizeUnknownError = (data: any): ApiError => {
+    if (!data || typeof data !== "object") {
+        return { statusCode: 0, message: "Неизвестная ошибка" };
+    }
+
+    const message = data.message || data.title || data.detail || "Нет сообщения";
+    const statusCode = data.statusCode || 0;
+    const code = data.code;
+    const errors = Array.isArray(data.errors) ? data.errors : [];
+
+    return { statusCode, code, message, errors, raw: data };
+};

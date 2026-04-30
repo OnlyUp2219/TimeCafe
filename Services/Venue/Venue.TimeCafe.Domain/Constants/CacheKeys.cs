@@ -21,5 +21,10 @@ public static class CacheKeys
     public const string Promotion_Active = "venue:promotion:active";
     public static string Promotion_ById(Guid id) => $"venue:promotion:id:{id}";
     public static string Promotion_ActiveByDate(string date) => $"venue:promotion:active:date:{date}";
+    public static string Promotion_Page(int page, int pageSize) => $"venue:promotion:page:p{page}:s{pageSize}";
+
+    public const string Theme_All = "venue:theme:all";
+    public static string Theme_ById(Guid id) => $"venue:theme:id:{id}";
+    public static string Theme_Page(int page, int pageSize) => $"venue:theme:page:p{page}:s{pageSize}";
 }
 

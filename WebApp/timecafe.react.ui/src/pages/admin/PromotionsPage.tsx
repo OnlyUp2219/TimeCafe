@@ -28,9 +28,10 @@ import {
     Caption1,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Add20Regular, Delete20Regular, Edit20Regular} from "@fluentui/react-icons";
+import {Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular} from "@fluentui/react-icons";
 import {
     useGetAllPromotionsQuery,
+    useGetPromotionsPageQuery,
     useCreatePromotionMutation,
     useUpdatePromotionMutation,
     useDeletePromotionMutation,
@@ -42,6 +43,7 @@ import type {Promotion} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {DataTable} from "@components/DataTable/DataTable";
+import {Pagination} from "@components/Pagination/Pagination";
 import {useComponentSize} from "@hooks/useComponentSize";
 import {usePermissions} from "@hooks/usePermissions";
 import {HasPermission} from "@components/Guard/HasPermission";
@@ -79,8 +81,19 @@ const emptyForm: PromotionFormState = {
 export const PromotionsPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const {data: promotions = [], isLoading, error} = useGetAllPromotionsQuery();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+
+    const {data, isLoading, error, refetch} = useGetPromotionsPageQuery(
+        {pageNumber: currentPage, pageSize},
+        {refetchOnMountOrArgChange: true}
+    );
+    const {data: allPromotions = []} = useGetAllPromotionsQuery();
     const {data: tariffs = []} = useGetAllTariffsQuery();
+
+    const promotions = data?.promotions ?? [];
+    const totalCount = data?.totalCount ?? 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [createPromotion] = useCreatePromotionMutation();
@@ -96,8 +109,8 @@ export const PromotionsPage = () => {
     const [saving, setSaving] = useState(false);
 
     const hasActiveGlobal = useMemo(() => {
-        return promotions.some(p => p.type === 1 && p.isActive && p.promotionId !== editingPromotion?.promotionId);
-    }, [promotions, editingPromotion]);
+        return allPromotions.some(p => p.type === 1 && p.isActive && p.promotionId !== editingPromotion?.promotionId);
+    }, [allPromotions, editingPromotion]);
 
     const openCreate = useCallback(() => {
         setEditingPromotion(null);
@@ -174,6 +187,7 @@ export const PromotionsPage = () => {
         discount: {minWidth: 80, defaultWidth: 120},
         type: {minWidth: 100, defaultWidth: 150},
         period: {minWidth: 150, defaultWidth: 220},
+        condition: {minWidth: 120, defaultWidth: 160},
         status: {minWidth: 100, defaultWidth: 150},
         actions: {minWidth: 90, defaultWidth: 100},
     }), []);
@@ -217,7 +231,7 @@ export const PromotionsPage = () => {
                             <div className="flex flex-col">
                                 <Badge appearance="outline" color="informative">Для тарифа</Badge>
                                 <Caption1 className="text-gray-500 truncate mt-1">
-                                    {tariffs.find(t => t.tariffId === promo.tariffId)?.name || "Неизвестный тариф"}
+                                    {tariffs.find(t => t.tariffId.toLowerCase() === promo.tariffId?.toLowerCase())?.name || (tariffs.length === 0 ? "Загрузка..." : "Неизвестный тариф")}
                                 </Caption1>
                             </div>
                         ) : (
@@ -235,6 +249,23 @@ export const PromotionsPage = () => {
                         {formatDate(promo.validFrom)} — {formatDate(promo.validTo)}
                     </TableCellLayout>
                 ),
+            }),
+            createTableColumn<Promotion>({
+                columnId: "condition",
+                compare: (a, b) => {
+                    const aExp = new Date(a.validTo) < new Date();
+                    const bExp = new Date(b.validTo) < new Date();
+                    return Number(aExp) - Number(bExp);
+                },
+                renderHeaderCell: () => "Состояние",
+                renderCell: (promo) => {
+                    const isExpired = new Date(promo.validTo) < new Date();
+                    const isNotStarted = new Date(promo.validFrom) > new Date();
+                    
+                    if (isExpired) return <Badge color="danger" appearance="tint">Истекла</Badge>;
+                    if (isNotStarted) return <Badge color="warning" appearance="tint">Ожидает</Badge>;
+                    return <Badge color="success" appearance="tint">Актуальна</Badge>;
+                },
             }),
             createTableColumn<Promotion>({
                 columnId: "status",
@@ -272,7 +303,7 @@ export const PromotionsPage = () => {
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as any));
-    }, [sizes, handleToggleActive, openEdit, handleDelete, has]);
+    }, [sizes, handleToggleActive, openEdit, handleDelete, has, tariffs]);
 
     if (isLoading) {
         return <div className="flex justify-center p-12"><Spinner label="Загрузка акций..." /></div>;
@@ -291,13 +322,16 @@ export const PromotionsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Акции</Title2>
-                    <Body2 block>{promotions.length} акций</Body2>
+                    <Body2 block>{totalCount} акций</Body2>
                 </div>
-                <HasPermission can={Permissions.VenuePromotionCreate}>
-                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                        Добавить акцию
-                    </Button>
-                </HasPermission>
+                <div className="flex gap-2">
+                    <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
+                    <HasPermission can={Permissions.VenuePromotionCreate}>
+                        <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                            Добавить акцию
+                        </Button>
+                    </HasPermission>
+                </div>
             </div>
 
             {mutationError && (
@@ -315,6 +349,18 @@ export const PromotionsPage = () => {
                     columnSizingOptions={columnSizingOptions}
                 />
             </Card>
+
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {promotions.length} из {totalCount}</Body1>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
+            </div>
 
             <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
                 <DialogSurface>
@@ -349,12 +395,12 @@ export const PromotionsPage = () => {
                                 <Field label="Тариф" required>
                                     <Dropdown
                                         placeholder="Выберите тариф"
-                                        value={tariffs.find(t => t.tariffId === form.tariffId)?.name ?? ""}
+                                        value={tariffs.find(t => t.tariffId.toLowerCase() === form.tariffId.toLowerCase())?.name ?? ""}
                                         selectedOptions={form.tariffId ? [form.tariffId] : []}
                                         onOptionSelect={(_, data) => setForm(f => ({...f, tariffId: data.optionValue ?? ""}))}
                                     >
                                         {tariffs.map(t => (
-                                            <Option key={t.tariffId} value={t.tariffId}>
+                                            <Option key={t.tariffId} value={t.tariffId} text={t.name}>
                                                 {t.name} ({t.pricePerMinute} ₽/мин)
                                             </Option>
                                         ))}

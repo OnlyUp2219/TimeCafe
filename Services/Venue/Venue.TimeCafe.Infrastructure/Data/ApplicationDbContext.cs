@@ -12,6 +12,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Promotion> Promotions { get; set; }
     public DbSet<UserLoyalty> UserLoyalties { get; set; }
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.ConfigurePostgresConventions();
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

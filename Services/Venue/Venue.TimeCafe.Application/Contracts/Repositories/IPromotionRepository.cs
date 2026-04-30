@@ -6,6 +6,8 @@ public interface IPromotionRepository
     Task<IEnumerable<Promotion>> GetAllAsync(CancellationToken ct = default);
     Task<IEnumerable<Promotion>> GetActiveAsync(CancellationToken ct = default);
     Task<IEnumerable<Promotion>> GetActiveByDateAsync(DateTimeOffset date, CancellationToken ct = default);
+    Task<IEnumerable<Promotion>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default);
+    Task<int> GetTotalCountAsync(CancellationToken ct = default);
 
     Task<Promotion> CreateAsync(Promotion promotion, CancellationToken ct = default);
     Task<Promotion> UpdateAsync(Promotion promotion, CancellationToken ct = default);

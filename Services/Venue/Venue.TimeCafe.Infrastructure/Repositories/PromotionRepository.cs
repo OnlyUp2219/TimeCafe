@@ -58,6 +58,26 @@ public class PromotionRepository(
             cancellationToken: ct) ?? [];
     }
 
+    public async Task<IEnumerable<Promotion>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    {
+        return await _cache.GetOrCreateAsync<List<Promotion>>(
+            CacheKeys.Promotion_Page(pageNumber, pageSize),
+            async ct => await _context.Promotions
+                .AsNoTracking()
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Promotions],
+            cancellationToken: ct) ?? [];
+    }
+
+    public async Task<int> GetTotalCountAsync(CancellationToken ct = default)
+    {
+        return await _context.Promotions.CountAsync(ct);
+    }
+
     public async Task<Promotion> CreateAsync(Promotion promotion, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(promotion);

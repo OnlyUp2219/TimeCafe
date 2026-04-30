@@ -25,9 +25,11 @@ import {
     TableCellLayout,
     Dropdown,
     Option,
+    Tooltip,
+    MessageBarTitle,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
+import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular } from "@fluentui/react-icons";
 import {
     useGetTariffsPageQuery,
     useCreateTariffMutation,
@@ -87,9 +89,10 @@ export const TariffsPage = () => {
     );
     const { data: themes = [], isLoading: themesLoading } = useGetAllThemesQuery();
     const { data: promotions = [] } = useGetAllPromotionsQuery();
-    
+
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
+    const maxCap = data?.maxTotalDiscountPercent;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -193,13 +196,12 @@ export const TariffsPage = () => {
                             <Avatar
                                 name={tariff.name}
                                 initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
-                                color="neutral"
                             />
                         }
                     >
-                        <div>
-                            <Body1 block>{tariff.name}</Body1>
-                            {tariff.description && <Body2 block className="text-gray-500">{tariff.description}</Body2>}
+                        <div className="flex flex-col">
+                            <Body1 >{tariff.name}</Body1>
+                            {tariff.description && <Body2 className="text-gray-500 !line-clamp-2">{tariff.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -212,11 +214,13 @@ export const TariffsPage = () => {
                     const activePromos = promotions.filter(p => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
                     const globalPromo = activePromos.filter(p => p.type === 1).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
                     const tariffPromo = activePromos.filter(p => p.type === 2 && p.tariffId === tariff.tariffId).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
-                    const maxDiscount = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
-                    
-                    const hasDiscount = maxDiscount > 0;
-                    const discountedPrice = hasDiscount ? tariff.pricePerMinute * (1 - maxDiscount / 100) : tariff.pricePerMinute;
-                    
+                    const bestPromo = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
+
+
+                    const appliedDiscount = maxCap !== undefined ? Math.min(bestPromo, maxCap) : bestPromo;
+                    const hasDiscount = appliedDiscount > 0;
+                    const discountedPrice = hasDiscount ? tariff.pricePerMinute * (1 - appliedDiscount / 100) : tariff.pricePerMinute;
+
                     return (
                         <TableCellLayout truncate>
                             <div>
@@ -232,7 +236,13 @@ export const TariffsPage = () => {
                                 </Body1>
                                 <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
                                     {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
-                                    {hasDiscount && <span className="ml-1 text-red-500">(-{maxDiscount}%)</span>}
+                                    {hasDiscount && (
+                                        <Tooltip content={maxCap !== undefined && bestPromo > maxCap ? `Акция ${bestPromo}% ограничена системным лимитом ${maxCap}%` : "Применена лучшая акция"} relationship="label">
+                                            <span className="ml-1 text-red-500 cursor-help">
+                                                (-{appliedDiscount}%){maxCap !== undefined && bestPromo > maxCap && " *"}
+                                            </span>
+                                        </Tooltip>
+                                    )}
                                 </Caption1>
                             </div>
                         </TableCellLayout>
@@ -293,7 +303,7 @@ export const TariffsPage = () => {
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as any));
-    }, [sizes, handleToggleActive, openEdit, handleDelete, has]);
+    }, [sizes, handleToggleActive, openEdit, handleDelete, has, promotions, maxCap]);
 
     const perHour = calcPerHour(form.pricePerMinute);
 
@@ -310,8 +320,8 @@ export const TariffsPage = () => {
     }
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
                     <Title2>Тарифы</Title2>
                     <Body2 block>{totalCount} тарифов</Body2>
@@ -326,8 +336,26 @@ export const TariffsPage = () => {
                 </div>
             </div>
 
+            <MessageBar intent="info" shape="square" icon={<Info20Regular />}>
+                <MessageBarBody>
+                    <MessageBarTitle>Информация о тарификации</MessageBarTitle>
+                    <div className="flex flex-col gap-1">
+                        <Body1>
+                            Система выбирает лучшую из активных акций (Глобальная или Тарифная) и применяет её к базовой стоимости.
+                        </Body1>
+                        <Caption1 italic>
+                            {maxCap !== undefined ? (
+                                <>* Итоговая скидка ограничена системным лимитом <b>{maxCap}%</b>. При расчете визита к ней также плюсуется персональная скидка гостя.</>
+                            ) : (
+                                <>* Системный лимит скидки не определен (данные не загружены).</>
+                            )}
+                        </Caption1>
+                    </div>
+                </MessageBarBody>
+            </MessageBar>
+
             {mutationError && (
-                <MessageBar intent="error" className="mb-4">
+                <MessageBar intent="error">
                     <MessageBarBody>{mutationError}</MessageBarBody>
                 </MessageBar>
             )}
@@ -342,7 +370,7 @@ export const TariffsPage = () => {
                 />
             </Card>
 
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
                 <Body1>Показано {tariffs.length} из {totalCount}</Body1>
                 <Pagination
                     currentPage={currentPage}

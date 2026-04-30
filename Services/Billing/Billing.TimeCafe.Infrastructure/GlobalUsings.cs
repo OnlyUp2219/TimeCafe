@@ -1,3 +1,4 @@
+global using BuildingBlocks.Extensions;
 global using Billing.TimeCafe.Application.Services.Payments;
 global using Billing.TimeCafe.Domain.Constants;
 global using Billing.TimeCafe.Domain.Contracts;

@@ -2,7 +2,7 @@ namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffsPageQuery(int PageNumber, int PageSize) : IQuery<GetTariffsPageResponse>;
 
-public record GetTariffsPageResponse(IEnumerable<TariffWithThemeDto> Tariffs, int TotalCount);
+public record GetTariffsPageResponse(IEnumerable<TariffWithThemeDto> Tariffs, int TotalCount, decimal MaxTotalDiscountPercent);
 
 public class GetTariffsPageQueryValidator : AbstractValidator<GetTariffsPageQuery>
 {
@@ -14,9 +14,10 @@ public class GetTariffsPageQueryValidator : AbstractValidator<GetTariffsPageQuer
     }
 }
 
-public class GetTariffsPageQueryHandler(ITariffRepository repository) : IQueryHandler<GetTariffsPageQuery, GetTariffsPageResponse>
+public class GetTariffsPageQueryHandler(ITariffRepository repository, IOptionsSnapshot<VenuePricingOptions> options) : IQueryHandler<GetTariffsPageQuery, GetTariffsPageResponse>
 {
     private readonly ITariffRepository _repository = repository;
+    private readonly VenuePricingOptions _options = options.Value;
 
     public async Task<Result<GetTariffsPageResponse>> Handle(GetTariffsPageQuery request, CancellationToken cancellationToken)
     {
@@ -25,7 +26,7 @@ public class GetTariffsPageQueryHandler(ITariffRepository repository) : IQueryHa
             var tariffs = await _repository.GetPagedAsync(request.PageNumber, request.PageSize);
             var totalCount = await _repository.GetTotalCountAsync();
 
-            return Result.Ok(new GetTariffsPageResponse(tariffs, totalCount));
+            return Result.Ok(new GetTariffsPageResponse(tariffs, totalCount, _options.MaxTotalDiscountPercent));
         }
         catch (Exception ex)
         {

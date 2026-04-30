@@ -48,16 +48,7 @@ public class Promotion
     public static Result<Promotion> Update(Promotion existingPromotion, string? name = null, string? description = null, decimal? DiscountPercent = null, DateTimeOffset? validFrom = null, DateTimeOffset? validTo = null, bool? isActive = null, PromotionType? type = null, Guid? tariffId = null)
     {
         var newType = type ?? existingPromotion.Type;
-        Guid? newTariffId;
-
-        if (newType == PromotionType.Global)
-        {
-            newTariffId = null;
-        }
-        else
-        {
-            newTariffId = tariffId ?? existingPromotion.TariffId;
-        }
+        var newTariffId = newType == PromotionType.Global ? null : tariffId ?? existingPromotion.TariffId;
 
         if (newType == PromotionType.TariffSpecific && newTariffId == null)
             return Result.Fail<Promotion>(new PromotionInvalidTypeError());

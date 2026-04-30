@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+    Body1,
     Body2,
     Caption1,
     Button,
@@ -14,9 +16,9 @@ import {
     Subtitle1,
     Title1
 } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular } from "@fluentui/react-icons";
+import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import {
-    useGetAllThemesQuery,
+    useGetThemesPageQuery,
     useDeleteThemeMutation,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
@@ -24,10 +26,20 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 import { parseThemeConfig, getThemeStyles, getPatternLayerStyles } from "@utility/themeStyles";
+import { Pagination } from "@components/Pagination/Pagination";
 
 export const ThemesPage = () => {
     const navigate = useNavigate();
-    const { data: themes = [], isLoading, error: queryError } = useGetAllThemesQuery();
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(12);
+
+    const { data, isLoading, error: queryError, refetch } = useGetThemesPageQuery({
+        pageNumber: currentPage,
+        pageSize
+    });
+    const themes = data?.themes ?? [];
+    const totalCount = data?.totalCount ?? 0;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const [deleteTheme, { error: deleteError }] = useDeleteThemeMutation();
 
     const mutationError = deleteError ? getRtkErrorMessage(deleteError as FetchBaseQueryError) : null;
@@ -86,18 +98,21 @@ export const ThemesPage = () => {
             <div className="flex justify-between items-center ">
                 <div>
                     <Title1 block>Визуальные темы</Title1>
-                    <Caption1 className="text-gray-500">Управление оформлением карточек тарифов</Caption1>
+                    <Caption1 className="text-gray-500">Управление оформлением карточек тарифов ({totalCount})</Caption1>
                 </div>
-                <HasPermission can={Permissions.VenueThemeCreate}>
-                    <Button
-                        appearance="primary"
-                        size="large"
-                        icon={<Add20Regular />}
-                        onClick={() => navigate("/admin/themes/create")}
-                    >
-                        Создать тему
-                    </Button>
-                </HasPermission>
+                <div className="flex gap-2">
+                    <Button appearance="subtle" size="large" icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
+                    <HasPermission can={Permissions.VenueThemeCreate}>
+                        <Button
+                            appearance="primary"
+                            size="large"
+                            icon={<Add20Regular />}
+                            onClick={() => navigate("/admin/themes/create")}
+                        >
+                            Создать тему
+                        </Button>
+                    </HasPermission>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -156,6 +171,18 @@ export const ThemesPage = () => {
                         </Card>
                     );
                 })}
+            </div>
+
+            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <Body1>Показано {themes.length} из {totalCount}</Body1>
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    totalCount={totalCount}
+                />
             </div>
         </div>
     );

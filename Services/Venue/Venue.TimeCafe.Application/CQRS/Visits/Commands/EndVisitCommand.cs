@@ -17,7 +17,7 @@ public class EndVisitCommandHandler(
     ILogger<EndVisitCommandHandler> logger,
     IPromotionRepository promotionRepository,
     IUserLoyaltyRepository userLoyaltyRepository,
-    IOptions<VenuePricingOptions> options) : ICommandHandler<EndVisitCommand, EndVisitResponse>
+    IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<EndVisitCommand, EndVisitResponse>
 {
     private readonly IVisitRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
