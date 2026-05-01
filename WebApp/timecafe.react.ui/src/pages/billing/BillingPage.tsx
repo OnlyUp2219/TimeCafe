@@ -34,12 +34,13 @@ import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useI
 const TELEGRAM_SUPPORT_URL = "https://t.me/OnlyUp_S";
 import {useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery} from "@store/api/venueApi";
 
+import { usePagination } from "@hooks/usePagination";
+
 export const BillingPage = () => {
     const userId = useAppSelector((state) => state.auth.userId);
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
-    const pageSize = 20;
-    const [page, setPage] = useState(1);
+    const { page, size: pageSize, setPage } = usePagination("userBilling", 1, 20);
 
     const {data: balance, isLoading: loadingOverview} = useGetBalanceQuery(userId ?? "", {skip: !userId});
     const {data: debtRub = 0} = useGetDebtQuery(userId ?? "", {skip: !userId});

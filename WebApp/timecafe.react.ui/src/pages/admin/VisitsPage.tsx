@@ -57,12 +57,13 @@ const formatCost = (cost: number | null) => {
     return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const VisitsPage = () => {
     const navigate = useNavigate();
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminVisits");
     const {data, isLoading, error} = useGetVisitsPageQuery(
         {pageNumber: currentPage, pageSize},
         {refetchOnMountOrArgChange: true}

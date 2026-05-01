@@ -49,11 +49,12 @@ const genderLabel = (g: number) => {
     }
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const ProfilesPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminProfiles");
 
     const {data, isLoading, error} = useGetProfilesPageQuery(
         {pageNumber: currentPage, pageSize},

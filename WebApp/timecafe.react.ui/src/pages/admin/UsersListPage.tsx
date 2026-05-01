@@ -118,14 +118,19 @@ const BalanceCell = ({ user }: { user: User }) => {
     );
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const UsersListPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, filters, setPage: setCurrentPage, setSize: setPageSize, setFilters } = usePagination("adminUsers");
+    
+    const search = filters.search || "";
+    const statusFilter = filters.statusFilter || "";
+
+    const setSearch = (s: string) => setFilters({ search: s });
+    const setStatusFilter = (s: string) => setFilters({ statusFilter: s });
 
     const { data, isLoading, error } = useGetUsersCompositeQuery({
         page: currentPage,
@@ -140,10 +145,9 @@ export const UsersListPage = () => {
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const handleClearFilters = useCallback(() => {
-        setSearch("");
-        setStatusFilter("");
+        setFilters({ search: "", statusFilter: "" });
         setCurrentPage(1);
-    }, []);
+    }, [setFilters, setCurrentPage]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         user: { minWidth: 150, defaultWidth: 220, idealWidth: 250 },

@@ -28,10 +28,11 @@ import { Permissions } from "@shared/auth/permissions";
 import { parseThemeConfig, getThemeStyles, getPatternLayerStyles } from "@utility/themeStyles";
 import { Pagination } from "@components/Pagination/Pagination";
 
+import { usePagination } from "@hooks/usePagination";
+
 export const ThemesPage = () => {
     const navigate = useNavigate();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(12);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminThemes", 1, 12);
 
     const { data, isLoading, error: queryError, refetch } = useGetThemesPageQuery({
         pageNumber: currentPage,

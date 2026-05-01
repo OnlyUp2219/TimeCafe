@@ -48,6 +48,8 @@ export interface BaseSidebarProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     showMobileToggle?: boolean;
+    collapsed: boolean;
+    onCollapsedChange: (collapsed: boolean) => void;
 }
 
 type DrawerType = Required<NavDrawerProps>["type"];
@@ -64,10 +66,11 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
     isOpen,
     onOpenChange,
     showMobileToggle = false,
+    collapsed,
+    onCollapsedChange,
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [collapsed, setCollapsed] = useState(false);
     const [drawerType, setDrawerType] = useState<DrawerType>("inline");
     const restoreFocusSourceAttributes = useRestoreFocusSource();
 
@@ -205,7 +208,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                             appearance="subtle"
                             size="large"
                             icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
-                            onClick={() => setCollapsed((prev) => !prev)}
+                            onClick={() => onCollapsedChange(!collapsed)}
                             className={collapsed ? "mx-auto" : "ml-auto"}
                         />
                     </Tooltip>

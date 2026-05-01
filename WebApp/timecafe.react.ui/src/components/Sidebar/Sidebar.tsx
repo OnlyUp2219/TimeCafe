@@ -3,7 +3,7 @@ import { Avatar, Body1, Button, Caption1, Tooltip } from "@fluentui/react-compon
 import { useLocation, useNavigate } from "react-router-dom";
 import { clearTokens, selectUserId } from "@store/authSlice";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
-import { setSelectedNav, setSidebarOpen } from "@store/uiSlice";
+import { setSelectedNav, setSidebarOpen, setSidebarCollapsed } from "@store/uiSlice";
 import { useHasActiveVisitQuery } from "@store/api/venueApi";
 import { Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Eye20Regular, SignOut20Regular } from "@fluentui/react-icons";
 import { usePermissions } from "@hooks/usePermissions";
@@ -117,6 +117,8 @@ export const Sidebar: FC = () => {
             onLogoClick={() => navigate("/home")}
             isOpen={isOpen}
             onOpenChange={(open) => dispatch(setSidebarOpen(open))}
+            collapsed={useAppSelector((state) => state.ui.isSidebarCollapsed)}
+            onCollapsedChange={(val) => dispatch(setSidebarCollapsed(val))}
         />
     );
 };

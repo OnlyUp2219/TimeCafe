@@ -62,11 +62,12 @@ const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "
     return "informative";
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const BalancesPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminBalances");
 
     const {data, isLoading, error} = useGetAdminBalancesQuery(
         {page: currentPage, pageSize},

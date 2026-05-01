@@ -118,13 +118,15 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
     }
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const UserDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
 
-    const [txPage, setTxPage] = useState(1);
-    const txPageSize = 10;
+    const { page: txPage, size: txPageSize, setPage: setTxPage } = usePagination("adminUserDetailTx", 1, 10);
+    const { page: notesPage, size: NOTES_PAGE_SIZE, setPage: setNotesPage } = usePagination("adminUserDetailNotes", 1, 3);
 
     const { data: userData, isLoading: userLoading, error: userError } = useGetUserByIdQuery(id!, { skip: !id, refetchOnMountOrArgChange: true });
     const user = userData?.user;
@@ -137,8 +139,6 @@ export const UserDetailPage = () => {
     const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery({ userId: id! }, { skip: !id });
     const { data: loyalty, isLoading: loyaltyLoading } = useGetUserLoyaltyQuery(id!, { skip: !id });
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
-    const [notesPage, setNotesPage] = useState(1);
-    const NOTES_PAGE_SIZE = 3;
     const { data: notesData, isLoading: notesLoading } = useGetAdditionalInfosByUserIdQuery(
         { userId: id!, pageNumber: notesPage, pageSize: NOTES_PAGE_SIZE },
         { skip: !id }

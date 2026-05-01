@@ -80,12 +80,15 @@ const AdminUserCell = ({userId}: {userId: string}) => {
     );
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const PaymentsPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
-    const [userIdFilter, setUserIdFilter] = useState("");
+    const { page: currentPage, size: pageSize, filters, setPage: setCurrentPage, setSize: setPageSize, setFilters } = usePagination("adminPayments");
+    const userIdFilter = filters.userIdFilter || "";
+
+    const setUserIdFilter = (id: string) => setFilters({ userIdFilter: id });
 
     const {data, isLoading, error} = useGetAdminPaymentsQuery(
         {page: currentPage, pageSize, userId: userIdFilter || undefined},
@@ -121,13 +124,13 @@ export const PaymentsPage = () => {
                     renderHeaderCell: () => "Сумма",
                     renderCell: (p) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingPaymentRead} fallback={NO_ACCESS}>
+                            <HasPermission can={Permissions.BillingPaymentHistoryRead} fallback={NO_ACCESS}>
                                 <Body1 style={{ color: "var(--colorPaletteGreenForeground1)" }}>{formatMoney(p.amount)}</Body1>
                             </HasPermission>
                         </TableCellLayout>
                     ),
                 }),
-                permission: Permissions.BillingPaymentRead
+                permission: Permissions.BillingPaymentHistoryRead
             },
             createTableColumn<AdminPaymentDto>({
                 columnId: "method",

@@ -81,12 +81,15 @@ const txStatusColor = (s: number): "warning" | "success" | "danger" | "informati
     }
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const TransactionsPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [userId, setUserId] = useState("");
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, filters, setPage: setCurrentPage, setSize: setPageSize, setFilters } = usePagination("adminTransactions");
+    const userId = filters.userId || "";
+    
+    const setUserId = (id: string) => setFilters({ userId: id });
 
     const {data, isLoading, error} = useGetAdminTransactionsQuery(
         {page: currentPage, pageSize, userId: userId || undefined},

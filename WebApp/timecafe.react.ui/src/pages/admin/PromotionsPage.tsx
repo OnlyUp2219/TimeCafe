@@ -78,11 +78,12 @@ const emptyForm: PromotionFormState = {
     tariffId: "",
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const PromotionsPage = () => {
     const {sizes} = useComponentSize();
     const {has} = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminPromotions");
 
     const {data, isLoading, error, refetch} = useGetPromotionsPageQuery(
         {pageNumber: currentPage, pageSize},

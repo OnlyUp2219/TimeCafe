@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { clearTokens } from "@store/authSlice";
+import { setSidebarCollapsed } from "@store/uiSlice";
 import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
@@ -123,6 +124,8 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
             onLogoClick={() => navigate("/admin/dashboard")}
             isOpen={isOpen}
             onOpenChange={onOpenChange}
+            collapsed={useAppSelector((state) => state.ui.isSidebarCollapsed)}
+            onCollapsedChange={(val) => dispatch(setSidebarCollapsed(val))}
         />
     );
 };

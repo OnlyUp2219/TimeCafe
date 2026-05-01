@@ -78,11 +78,12 @@ const calcPerHour = (perMinute: string): string => {
     return (v * 60).toFixed(2);
 };
 
+import { usePagination } from "@hooks/usePagination";
+
 export const TariffsPage = () => {
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminTariffs");
     const { data, isLoading, error, refetch } = useGetTariffsPageQuery(
         { pageNumber: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }

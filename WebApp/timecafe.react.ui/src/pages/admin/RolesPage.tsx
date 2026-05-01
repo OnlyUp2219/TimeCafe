@@ -35,6 +35,8 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 
+import { usePagination } from "@hooks/usePagination";
+
 export const RolesPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
@@ -43,8 +45,7 @@ export const RolesPage = () => {
     const roles = data?.roles ?? [];
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminRoles");
 
     const totalCount = roles.length;
     const totalPages = Math.ceil(totalCount / pageSize) || 1;
