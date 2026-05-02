@@ -9,6 +9,7 @@ import {
     Subtitle2Stronger,
     Body1,
     Body2,
+    Image,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -160,28 +161,28 @@ export const ActiveVisitPage = () => {
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
             {ToasterElement}
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <img
+                <Image
                     src={vortex}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[10vw] -left-[10vw] w-[55vw] max-w-[680px] select-none opacity-[0.22]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={repeat}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[6vw] -right-[8vw] w-[45vw] max-w-[560px] select-none opacity-[0.22]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={surf}
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[16vw] left-0 w-[100vw] max-w-none select-none opacity-[0.22]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={surf}
                     alt=""
                     aria-hidden="true"

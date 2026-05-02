@@ -9,6 +9,7 @@ import {
     MessageBarBody,
     MessageBarTitle,
     Title2,
+    Image,
 } from "@fluentui/react-components";
 import {useCallback, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
@@ -257,28 +258,28 @@ export const PersonalDataPage = () => {
             {ToasterElement}
 
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <img
+                <Image
                     src={blob3Url}
                     alt=""
                     aria-hidden="true"
                     className={`absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={blob4Url}
                     alt=""
                     aria-hidden="true"
                     className={`absolute -left-[12vw] top-[35vh] w-[55vw] max-w-[720px] -rotate-6 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={squiggly1Url}
                     alt=""
                     aria-hidden="true"
                     className={`absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none ${backgroundOpacityClass}`}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={glitchUrl}
                     alt=""
                     aria-hidden="true"

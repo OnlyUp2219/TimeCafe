@@ -215,7 +215,7 @@ export const PromotionsPage = () => {
                 renderCell: (promo) => (
                     <TableCellLayout truncate>
                         {promo.discountPercent != null
-                            ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
+                            ? <Badge appearance="outline" size={sizes.badge}>{promo.discountPercent}%</Badge>
                             : "—"}
                     </TableCellLayout>
                 ),
@@ -227,16 +227,16 @@ export const PromotionsPage = () => {
                 renderCell: (promo) => (
                     <TableCellLayout truncate>
                         {promo.type === 1 ? (
-                            <Badge appearance="filled" color="brand">Глобальная</Badge>
+                            <Badge appearance="filled" color="brand" size={sizes.badge}>Глобальная</Badge>
                         ) : promo.type === 2 ? (
                             <div className="flex flex-col">
-                                <Badge appearance="outline" color="informative">Для тарифа</Badge>
+                                <Badge appearance="outline" color="informative" size={sizes.badge}>Для тарифа</Badge>
                                 <Caption1 className="text-gray-500 truncate mt-1">
                                     {tariffs.find(t => t.tariffId.toLowerCase() === promo.tariffId?.toLowerCase())?.name || (tariffs.length === 0 ? "Загрузка..." : "Неизвестный тариф")}
                                 </Caption1>
                             </div>
                         ) : (
-                            <Badge appearance="outline" color="danger">Черновик</Badge>
+                            <Badge appearance="outline" color="danger" size={sizes.badge}>Черновик</Badge>
                         )}
                     </TableCellLayout>
                 ),
@@ -263,9 +263,9 @@ export const PromotionsPage = () => {
                     const isExpired = new Date(promo.validTo) < new Date();
                     const isNotStarted = new Date(promo.validFrom) > new Date();
                     
-                    if (isExpired) return <Badge color="danger" appearance="tint">Истекла</Badge>;
-                    if (isNotStarted) return <Badge color="warning" appearance="tint">Ожидает</Badge>;
-                    return <Badge color="success" appearance="tint">Актуальна</Badge>;
+                    if (isExpired) return <Badge color="danger" appearance="tint" size={sizes.badge}>Истекла</Badge>;
+                    if (isNotStarted) return <Badge color="warning" appearance="tint" size={sizes.badge}>Ожидает</Badge>;
+                    return <Badge color="success" appearance="tint" size={sizes.badge}>Актуальна</Badge>;
                 },
             }),
             createTableColumn<Promotion>({
@@ -274,7 +274,7 @@ export const PromotionsPage = () => {
                 renderHeaderCell: () => "Статус",
                 renderCell: (promo) => (
                     <HasPermission anyOf={[Permissions.VenuePromotionActivate, Permissions.VenuePromotionDeactivate]} fallback={
-                        <Badge appearance="tint" color={promo.isActive ? "success" : "warning"}>
+                        <Badge appearance="tint" color={promo.isActive ? "success" : "warning"} size={sizes.badge}>
                             {promo.isActive ? "Активна" : "Неактивна"}
                         </Badge>
                     }>
@@ -293,10 +293,10 @@ export const PromotionsPage = () => {
                 renderCell: (promo) => (
                     <div className="flex gap-1">
                         <HasPermission can={Permissions.VenuePromotionUpdate}>
-                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
+                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} size={sizes.button} />
                         </HasPermission>
                         <HasPermission can={Permissions.VenuePromotionDelete}>
-                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} size={sizes.button} />
                         </HasPermission>
                     </div>
                 ),
@@ -369,13 +369,13 @@ export const PromotionsPage = () => {
                         <DialogTitle>{editingPromotion ? "Редактировать акцию" : "Новая акция"}</DialogTitle>
                         <DialogContent className="flex flex-col gap-4">
                             <Field label="Название" required>
-                                <Input value={form.name} onChange={(_, d) => setForm(f => ({...f, name: d.value}))} />
+                                <Input value={form.name} onChange={(_, d) => setForm(f => ({...f, name: d.value}))} size={sizes.input} />
                             </Field>
                             <Field label="Описание">
-                                <Input value={form.description} onChange={(_, d) => setForm(f => ({...f, description: d.value}))} />
+                                <Input value={form.description} onChange={(_, d) => setForm(f => ({...f, description: d.value}))} size={sizes.input} />
                             </Field>
                             <Field label="Скидка (%)">
-                                <Input type="number" value={form.discountPercent} onChange={(_, d) => setForm(f => ({...f, discountPercent: d.value}))} />
+                                <Input type="number" value={form.discountPercent} onChange={(_, d) => setForm(f => ({...f, discountPercent: d.value}))} size={sizes.input} />
                             </Field>
                             <Field label="Тип акции">
                                 <RadioGroup
@@ -399,6 +399,7 @@ export const PromotionsPage = () => {
                                         value={tariffs.find(t => t.tariffId.toLowerCase() === form.tariffId.toLowerCase())?.name ?? ""}
                                         selectedOptions={form.tariffId ? [form.tariffId] : []}
                                         onOptionSelect={(_, data) => setForm(f => ({...f, tariffId: data.optionValue ?? ""}))}
+                                        size={sizes.dropdown}
                                     >
                                         {tariffs.map(t => (
                                             <Option key={t.tariffId} value={t.tariffId} text={t.name}>
@@ -409,10 +410,10 @@ export const PromotionsPage = () => {
                                 </Field>
                             )}
                             <Field label="Действует с" required>
-                                <Input type="date" value={form.validFrom} onChange={(_, d) => setForm(f => ({...f, validFrom: d.value}))} />
+                                <Input type="date" value={form.validFrom} onChange={(_, d) => setForm(f => ({...f, validFrom: d.value}))} size={sizes.input} />
                             </Field>
                             <Field label="Действует до" required>
-                                <Input type="date" value={form.validTo} onChange={(_, d) => setForm(f => ({...f, validTo: d.value}))} />
+                                <Input type="date" value={form.validTo} onChange={(_, d) => setForm(f => ({...f, validTo: d.value}))} size={sizes.input} />
                             </Field>
                             <Switch
                                 checked={form.isActive}
@@ -427,9 +428,9 @@ export const PromotionsPage = () => {
                         </DialogContent>
                         <DialogActions>
                             <DialogTrigger disableButtonEnhancement>
-                                <Button appearance="secondary">Отмена</Button>
+                                <Button appearance="secondary" size={sizes.button}>Отмена</Button>
                             </DialogTrigger>
-                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.validFrom || !form.validTo || (form.type === 1 && form.isActive && hasActiveGlobal)}>
+                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.validFrom || !form.validTo || (form.type === 1 && form.isActive && hasActiveGlobal)} size={sizes.button}>
                                 {saving ? <Spinner size="tiny" /> : (editingPromotion ? "Сохранить" : "Создать")}
                             </Button>
                         </DialogActions>

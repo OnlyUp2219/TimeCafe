@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Avatar,
@@ -44,21 +44,23 @@ const getUserStatusBadgeClass = (status: string): string => {
 };
 
 const ProfileNameCell = ({ user }: { user: User }) => {
+    const { sizes } = useComponentSize();
     const profile = user.profile;
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : (user.name || NO_DATA);
     return (
-        <HasPermission 
-            can={Permissions.UserProfileProfileRead} 
-            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}
+        <HasPermission
+            can={Permissions.UserProfileProfileRead}
+            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} size={sizes.avatar} />}>{NO_ACCESS}</TableCellLayout>}
         >
-            <TableCellLayout 
-                truncate 
+            <TableCellLayout
+                truncate
                 media={
-                    <SecureAvatar 
-                        name={displayName || user.email} 
-                        photoUrl={profile?.photoUrl} 
+                    <SecureAvatar
+                        name={displayName || user.email}
+                        photoUrl={profile?.photoUrl}
+                        size={sizes.avatar}
                     />
                 }
             >
@@ -95,12 +97,13 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 };
 
 const ProfileStatusCell = ({ user }: { user: User }) => {
+    const { sizes } = useComponentSize();
     const profile = user.profile;
     if (!profile) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
         <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
             <TableCellLayout truncate>
-                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
+                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)} size={sizes.badge}>
                     {profileStatusLabel(profile.profileStatus)}
                 </Badge>
             </TableCellLayout>
@@ -125,7 +128,7 @@ export const UsersListPage = () => {
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, filters, setPage: setCurrentPage, setSize: setPageSize, setFilters } = usePagination("adminUsers");
-    
+
     const search = filters.search || "";
     const statusFilter = filters.statusFilter || "";
 
@@ -192,7 +195,7 @@ export const UsersListPage = () => {
                     renderHeaderCell: () => "Роль",
                     renderCell: (user) => (
                         <TableCellLayout truncate>
-                            <Badge appearance="outline">{user.role}</Badge>
+                            <Badge appearance="outline" size={sizes.badge}>{user.role}</Badge>
                         </TableCellLayout>
                     ),
                 }),
@@ -205,6 +208,7 @@ export const UsersListPage = () => {
                             <Badge
                                 appearance="tint"
                                 shape="rounded"
+                                size={sizes.badge}
                                 className={getUserStatusBadgeClass(user.status)}
                             >
                                 {user.status}
@@ -235,7 +239,7 @@ export const UsersListPage = () => {
                     compare: () => 0,
                     renderHeaderCell: () => "Действия",
                     renderCell: (user) => (
-                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)}>
+                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)} size={sizes.button}>
                             Открыть
                         </Button>
                     ),

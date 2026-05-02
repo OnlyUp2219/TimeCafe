@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import { useMemo } from "react";
 import {
     Avatar,
     Body1,
@@ -13,27 +13,27 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {useGetAdminBalancesQuery} from "@store/api/adminApi";
-import type {AdminBalanceDto} from "@store/api/adminApi";
-import {useGetProfileByUserIdReadOnlyQuery} from "@store/api/profileApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
-import {NO_DATA, NO_ACCESS} from "@shared/const/placeholders";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {usePermissions} from "@hooks/usePermissions";
-import {HasPermission} from "@components/Guard/HasPermission";
-import {Permissions} from "@shared/auth/permissions";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { useGetAdminBalancesQuery } from "@store/api/adminApi";
+import type { AdminBalanceDto } from "@store/api/adminApi";
+import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
 const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-const AdminUserCell = ({userId}: {userId: string}) => {
-    const {data: profile} = useGetProfileByUserIdReadOnlyQuery(userId);
+const AdminUserCell = ({ userId }: { userId: string }) => {
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : profile?.email || null;
@@ -65,13 +65,13 @@ const getBalanceTypeColor = (balance: AdminBalanceDto): "success" | "danger" | "
 import { usePagination } from "@hooks/usePagination";
 
 export const BalancesPage = () => {
-    const {sizes} = useComponentSize();
-    const {has} = usePermissions();
+    const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminBalances");
 
-    const {data, isLoading, error} = useGetAdminBalancesQuery(
-        {page: currentPage, pageSize},
-        {refetchOnMountOrArgChange: true}
+    const { data, isLoading, error } = useGetAdminBalancesQuery(
+        { page: currentPage, pageSize },
+        { refetchOnMountOrArgChange: true }
     );
 
     const balances = data?.balances ?? [];
@@ -84,13 +84,13 @@ export const BalancesPage = () => {
     const debtorsCount = useMemo(() => balances.filter(b => b.debt > 0).length, [balances]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        user: {minWidth: 180, defaultWidth: 260, idealWidth: 300},
-        type: {minWidth: 110, defaultWidth: 150, idealWidth: 180},
-        current: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
-        deposited: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
-        spent: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
-        debt: {minWidth: 100, defaultWidth: 120, idealWidth: 140},
-        updated: {minWidth: 130, defaultWidth: 170, idealWidth: 200},
+        user: { minWidth: 180, defaultWidth: 260, idealWidth: 300 },
+        type: { minWidth: 110, defaultWidth: 150, idealWidth: 180 },
+        current: { minWidth: 100, defaultWidth: 130, idealWidth: 160 },
+        deposited: { minWidth: 100, defaultWidth: 130, idealWidth: 160 },
+        spent: { minWidth: 100, defaultWidth: 130, idealWidth: 160 },
+        debt: { minWidth: 100, defaultWidth: 120, idealWidth: 140 },
+        updated: { minWidth: 130, defaultWidth: 170, idealWidth: 200 },
     }), []);
 
     const columns: TableColumnDefinition<AdminBalanceDto>[] = useMemo(() => {
@@ -206,7 +206,7 @@ export const BalancesPage = () => {
                 <Card size={sizes.card}>
                     <Body2 block>Суммарный баланс (стр.)</Body2>
                     <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3 style={{color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)"}}>
+                        <Title3 style={{ color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)" }}>
                             {formatMoney(totalBalance)}
                         </Title3>
                     </HasPermission>
@@ -214,7 +214,7 @@ export const BalancesPage = () => {
                 <Card size={sizes.card}>
                     <Body2 block>Суммарный долг (стр.)</Body2>
                     <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3 style={{color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined}}>
+                        <Title3 style={{ color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined }}>
                             {totalDebt > 0 ? formatMoney(totalDebt) : NO_DATA}
                         </Title3>
                     </HasPermission>

@@ -196,6 +196,7 @@ export const TariffsPage = () => {
                         media={
                             <Avatar
                                 name={tariff.name}
+                                size={sizes.avatar}
                                 initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
                             />
                         }
@@ -256,7 +257,7 @@ export const TariffsPage = () => {
                 renderHeaderCell: () => "Тип",
                 renderCell: (tariff) => (
                     <TableCellLayout truncate>
-                        <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>
+                        <Badge appearance="outline" size={sizes.badge}>{billingTypeLabel(tariff.billingType)}</Badge>
                     </TableCellLayout>
                 ),
             }),
@@ -274,7 +275,7 @@ export const TariffsPage = () => {
                 renderHeaderCell: () => "Статус",
                 renderCell: (tariff) => (
                     <HasPermission anyOf={[Permissions.VenueTariffActivate, Permissions.VenueTariffDeactivate]} fallback={
-                        <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"}>
+                        <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"} size={sizes.badge}>
                             {tariff.isActive ? "Активен" : "Неактивен"}
                         </Badge>
                     }>
@@ -293,10 +294,10 @@ export const TariffsPage = () => {
                 renderCell: (tariff) => (
                     <div className="flex gap-1">
                         <HasPermission can={Permissions.VenueTariffUpdate}>
-                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
+                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} size={sizes.button} />
                         </HasPermission>
                         <HasPermission can={Permissions.VenueTariffDelete}>
-                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
+                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} size={sizes.button} />
                         </HasPermission>
                     </div>
                 ),
@@ -389,16 +390,17 @@ export const TariffsPage = () => {
                         <DialogTitle>{editingTariff ? "Редактировать тариф" : "Новый тариф"}</DialogTitle>
                         <DialogContent className="flex flex-col gap-4">
                             <Field label="Название" required>
-                                <Input value={form.name} onChange={(_, d) => setForm(f => ({ ...f, name: d.value }))} />
+                                <Input value={form.name} onChange={(_, d) => setForm(f => ({ ...f, name: d.value }))} size={sizes.input} />
                             </Field>
                             <Field label="Описание">
-                                <Input value={form.description} onChange={(_, d) => setForm(f => ({ ...f, description: d.value }))} />
+                                <Input value={form.description} onChange={(_, d) => setForm(f => ({ ...f, description: d.value }))} size={sizes.input} />
                             </Field>
                             <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined}>
                                 <Input
                                     type="number"
                                     value={form.pricePerMinute}
                                     onChange={(_, d) => setForm(f => ({ ...f, pricePerMinute: d.value }))}
+                                    size={sizes.input}
                                 />
                             </Field>
                             <Field label="Тип тарификации">
@@ -406,12 +408,14 @@ export const TariffsPage = () => {
                                     <Button
                                         appearance={form.billingType === 2 ? "primary" : "secondary"}
                                         onClick={() => setForm(f => ({ ...f, billingType: 2 }))}
+                                        size={sizes.button}
                                     >
                                         Поминутный
                                     </Button>
                                     <Button
                                         appearance={form.billingType === 1 ? "primary" : "secondary"}
                                         onClick={() => setForm(f => ({ ...f, billingType: 1 }))}
+                                        size={sizes.button}
                                     >
                                         Почасовой
                                     </Button>
@@ -424,6 +428,7 @@ export const TariffsPage = () => {
                                     selectedOptions={form.themeId ? [form.themeId] : []}
                                     onOptionSelect={(_, data) => setForm(f => ({ ...f, themeId: data.optionValue ?? "" }))}
                                     disabled={themesLoading}
+                                    size={sizes.dropdown}
                                 >
                                     <Option key="none" value="" text="Без темы">
                                         Без темы
@@ -448,9 +453,9 @@ export const TariffsPage = () => {
                         </DialogContent>
                         <DialogActions>
                             <DialogTrigger disableButtonEnhancement>
-                                <Button appearance="secondary">Отмена</Button>
+                                <Button appearance="secondary" size={sizes.button}>Отмена</Button>
                             </DialogTrigger>
-                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.pricePerMinute}>
+                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.pricePerMinute} size={sizes.button}>
                                 {saving ? <Spinner size="tiny" /> : (editingTariff ? "Сохранить" : "Создать")}
                             </Button>
                         </DialogActions>

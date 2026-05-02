@@ -6,6 +6,7 @@ import {
     LargeTitle,
     Tag,
     Text,
+    Image,
 } from "@fluentui/react-components";
 import {Sparkle20Regular} from "@fluentui/react-icons";
 import {useNavigate} from "react-router-dom";
@@ -110,7 +111,7 @@ export const HomePage = () => {
     return (
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <img
+                <Image
                     src={vortex}
                     alt=""
                     aria-hidden="true"
@@ -118,7 +119,7 @@ export const HomePage = () => {
                     style={{opacity: 0.30}}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={repeat}
                     alt=""
                     aria-hidden="true"
@@ -126,7 +127,7 @@ export const HomePage = () => {
                     style={{opacity: 0.30}}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={surf}
                     alt=""
                     aria-hidden="true"
@@ -134,7 +135,7 @@ export const HomePage = () => {
                     style={{opacity: 0.30}}
                     draggable={false}
                 />
-                <img
+                <Image
                     src={surf}
                     alt=""
                     aria-hidden="true"

@@ -12,12 +12,14 @@ import {getJwtInfo} from "@shared/auth/jwt";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
 import {AuthHero} from "@components/AuthHero/AuthHero";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export const LoginPage = () => {
     const navigate = useNavigate();
     const {showToast, ToasterElement} = useProgressToast();
     const dispatch = useAppDispatch();
     const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
+    const {sizes} = useComponentSize();
 
     const [loginJwt] = useLoginJwtV2Mutation();
     const [email, setEmailValue] = useState("");
@@ -86,7 +88,7 @@ export const LoginPage = () => {
                         disabled={isSubmitting}
                         onValidationChange={handleEmailValidationChange}
                         shouldValidate={submitted}
-                        size="large"
+                        size={sizes.input}
                     />
 
                     <PasswordInput
@@ -95,7 +97,7 @@ export const LoginPage = () => {
                         disabled={isSubmitting}
                         onValidationChange={handlePasswordValidationChange}
                         shouldValidate={false}
-                        size="large"
+                        size={sizes.input}
                     />
 
                     <div className="flex items-center justify-between">
@@ -113,7 +115,7 @@ export const LoginPage = () => {
                         data-testid="login-submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                        size="large"
+                        size={sizes.button}
                         icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Войти"
                         label="Войти"
@@ -128,6 +130,7 @@ export const LoginPage = () => {
                                 onClick={handleGoogleLogin}
                                 disabled={isSubmitting}
                                 icon={<i className="icons8-google"/>}
+                                size={sizes.button}
                                 tooltip="Войти через Google"
                                 label="Google"
                             />
@@ -137,6 +140,7 @@ export const LoginPage = () => {
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}
                                 icon={<i className="icons8-microsoft"/>}
+                                size={sizes.button}
                                 tooltip="Войти через Microsoft"
                                 label="Microsoft"
                             />

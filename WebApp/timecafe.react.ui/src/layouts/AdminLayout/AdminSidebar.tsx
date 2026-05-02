@@ -12,6 +12,7 @@ import {
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
 import { usePermissions } from "@hooks/usePermissions";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 interface AdminSidebarProps {
     isOpen: boolean;
@@ -24,6 +25,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
     const email = useAppSelector((state) => state.auth.email);
 
     const { has, loaded } = usePermissions();
+    const { sizes } = useComponentSize();
 
     const sections: NavSectionType[] = useMemo(() => {
         const allSections: NavSectionType[] = [
@@ -79,26 +81,26 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
         <>
             {compact ? (
                 <div className="admin-sidebar__bottom-compact">
-                    <Avatar name={email ?? "Admin"} size={28} />
+                    <Avatar name={email ?? "Admin"} size={sizes.avatar} />
                     <Tooltip content="Вид клиента" relationship="label" positioning="after">
-                        <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")} />
+                        <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={() => navigate("/home")} />
                     </Tooltip>
                     <Tooltip content="Выйти" relationship="label" positioning="after">
-                        <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout} />
+                        <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout} />
                     </Tooltip>
                 </div>
             ) : (
                 <>
                     <div className="admin-sidebar__bottom-user">
-                        <Avatar name={email ?? "Admin"} size={32} />
+                        <Avatar name={email ?? "Admin"} size={sizes.avatar} />
                         <div className="min-w-0">
                             <Body1 truncate wrap={false} block>Админ</Body1>
                             <Caption1 truncate wrap={false} block>{email ?? "—"}</Caption1>
                         </div>
                     </div>
                     <div className="admin-sidebar__bottom-actions">
-                        <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")}>Вид клиента</Button>
-                        <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
+                        <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={() => navigate("/home")}>Вид клиента</Button>
+                        <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
                     </div>
                 </>
             )}
@@ -107,9 +109,9 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
 
     const renderMobileFooter = () => (
         <>
-            <Avatar name={email ?? "Admin"} size={28} />
-            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => { onOpenChange(false); navigate("/home"); }}>Вид клиента</Button>
-            <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
+            <Avatar name={email ?? "Admin"} size={sizes.avatar} />
+            <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={() => { onOpenChange(false); navigate("/home"); }}>Вид клиента</Button>
+            <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
         </>
     );
 

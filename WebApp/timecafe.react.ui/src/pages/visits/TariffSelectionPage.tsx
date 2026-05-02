@@ -6,6 +6,7 @@ import {
     Text,
     Title2,
     Tooltip,
+    Image,
 } from "@fluentui/react-components";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
@@ -166,28 +167,28 @@ export const TariffSelectionPage = () => {
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
             {ToasterElement}
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <img
+                <Image
                     src={repeatTriangleUrl}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[8vw] -left-[10vw] w-[60vw] max-w-[720px] -rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={blob2Url}
                     alt=""
                     aria-hidden="true"
                     className="absolute -right-[14vw] top-[18vh] w-[55vw] max-w-[720px] rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={blob4Url}
                     alt=""
                     aria-hidden="true"
                     className="absolute -left-[14vw] top-[70vh] w-[60vw] max-w-[760px] -rotate-6 select-none opacity-[0.1]"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={vortexUrl}
                     alt=""
                     aria-hidden="true"

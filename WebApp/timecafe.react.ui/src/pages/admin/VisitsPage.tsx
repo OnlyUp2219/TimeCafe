@@ -1,5 +1,5 @@
-import {useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Badge,
     Body1,
@@ -13,22 +13,22 @@ import {
     TableCellLayout,
     Spinner,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {Eye20Regular} from "@fluentui/react-icons";
-import {useGetVisitsPageQuery} from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import type {VisitWithTariff} from "@app-types/visitWithTariff";
-import {VisitStatus} from "@app-types/visit";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {usePermissions} from "@hooks/usePermissions";
-import {HasPermission} from "@components/Guard/HasPermission";
-import {Permissions} from "@shared/auth/permissions";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Eye20Regular } from "@fluentui/react-icons";
+import { useGetVisitsPageQuery } from "@store/api/venueApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { VisitWithTariff } from "@app-types/visitWithTariff";
+import { VisitStatus } from "@app-types/visit";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
-import {NO_DATA} from "@shared/const/placeholders";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { NO_DATA } from "@shared/const/placeholders";
 
 const statusLabel = (status: number) => {
     switch (status) {
@@ -49,7 +49,7 @@ const statusColor = (status: number): "success" | "informative" | "warning" => {
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
     const d = new Date(iso);
-    return d.toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+    return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 };
 
 const formatCost = (cost: number | null) => {
@@ -61,12 +61,12 @@ import { usePagination } from "@hooks/usePagination";
 
 export const VisitsPage = () => {
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
-    const {has} = usePermissions();
+    const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminVisits");
-    const {data, isLoading, error} = useGetVisitsPageQuery(
-        {pageNumber: currentPage, pageSize},
-        {refetchOnMountOrArgChange: true}
+    const { data, isLoading, error } = useGetVisitsPageQuery(
+        { pageNumber: currentPage, pageSize },
+        { refetchOnMountOrArgChange: true }
     );
     const visits = data?.visits ?? [];
     const totalCount = data?.totalCount ?? 0;
@@ -74,12 +74,12 @@ export const VisitsPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        tariff: {minWidth: 120, defaultWidth: 200},
-        status: {minWidth: 80, defaultWidth: 120},
-        entryTime: {minWidth: 130, defaultWidth: 170},
-        exitTime: {minWidth: 130, defaultWidth: 170},
-        cost: {minWidth: 80, defaultWidth: 120},
-        userId: {minWidth: 100, defaultWidth: 180},
+        tariff: { minWidth: 120, defaultWidth: 200 },
+        status: { minWidth: 80, defaultWidth: 120 },
+        entryTime: { minWidth: 130, defaultWidth: 170 },
+        exitTime: { minWidth: 130, defaultWidth: 170 },
+        cost: { minWidth: 80, defaultWidth: 120 },
+        userId: { minWidth: 100, defaultWidth: 180 },
     }), []);
 
     const columns: TableColumnDefinition<VisitWithTariff>[] = useMemo(() => {

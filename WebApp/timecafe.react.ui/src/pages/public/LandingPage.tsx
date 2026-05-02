@@ -16,6 +16,7 @@ import {
     Title2,
     Title3,
     tokens,
+    Image,
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
@@ -139,7 +140,7 @@ export const LandingPage: FC = () => {
 
             <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
                 {/* top-right blob */}
-                <img
+                <Image
                     src={blob1Url}
                     alt=""
                     aria-hidden="true"
@@ -149,7 +150,7 @@ export const LandingPage: FC = () => {
                 />
 
                 {/* mid-left blob */}
-                <img
+                <Image
                     src={blob2Url}
                     alt=""
                     aria-hidden="true"
@@ -159,7 +160,7 @@ export const LandingPage: FC = () => {
                 />
 
                 {/* waves near top */}
-                <img
+                <Image
                     src={squigglyUrl}
                     alt=""
                     aria-hidden="true"
@@ -169,7 +170,7 @@ export const LandingPage: FC = () => {
                 />
 
                 {/* waves near bottom */}
-                <img
+                <Image
                     src={squigglyUrl}
                     alt=""
                     aria-hidden="true"
@@ -179,7 +180,7 @@ export const LandingPage: FC = () => {
                 />
 
                 {/* vortex */}
-                <img
+                <Image
                     src={vortexUrl}
                     alt=""
                     aria-hidden="true"

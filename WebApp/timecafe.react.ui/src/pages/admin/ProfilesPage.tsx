@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import { useMemo, useState } from "react";
 import {
     Avatar,
     Badge,
@@ -11,17 +11,16 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {useGetProfilesPageQuery} from "@store/api/profileApi";
-import type {Profile} from "@app-types/profile";
-import {ProfileStatus} from "@app-types/profile";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {usePermissions} from "@hooks/usePermissions";
-import {Permissions} from "@shared/auth/permissions";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { useGetProfilesPageQuery } from "@store/api/profileApi";
+import type { Profile } from "@app-types/profile";
+import { ProfileStatus } from "@app-types/profile";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
 
 const statusLabel = (s: number) => {
     switch (s) {
@@ -52,13 +51,13 @@ const genderLabel = (g: number) => {
 import { usePagination } from "@hooks/usePagination";
 
 export const ProfilesPage = () => {
-    const {sizes} = useComponentSize();
-    const {has} = usePermissions();
+    const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminProfiles");
 
-    const {data, isLoading, error} = useGetProfilesPageQuery(
-        {pageNumber: currentPage, pageSize},
-        {refetchOnMountOrArgChange: true}
+    const { data, isLoading, error } = useGetProfilesPageQuery(
+        { pageNumber: currentPage, pageSize },
+        { refetchOnMountOrArgChange: true }
     );
 
     const profiles = data?.profiles ?? [];
@@ -67,11 +66,11 @@ export const ProfilesPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: {minWidth: 150, defaultWidth: 220, idealWidth: 260},
-        email: {minWidth: 150, defaultWidth: 220, idealWidth: 260},
-        gender: {minWidth: 50, defaultWidth: 70, idealWidth: 90},
-        birthDate: {minWidth: 100, defaultWidth: 130, idealWidth: 160},
-        status: {minWidth: 100, defaultWidth: 140, idealWidth: 180},
+        name: { minWidth: 150, defaultWidth: 220, idealWidth: 260 },
+        email: { minWidth: 150, defaultWidth: 220, idealWidth: 260 },
+        gender: { minWidth: 50, defaultWidth: 70, idealWidth: 90 },
+        birthDate: { minWidth: 100, defaultWidth: 130, idealWidth: 160 },
+        status: { minWidth: 100, defaultWidth: 140, idealWidth: 180 },
     }), []);
 
     const columns: TableColumnDefinition<Profile>[] = useMemo(() => {
@@ -81,7 +80,7 @@ export const ProfilesPage = () => {
                 compare: (a, b) => a.lastName.localeCompare(b.lastName),
                 renderHeaderCell: () => "Имя",
                 renderCell: (p) => (
-                    <TableCellLayout truncate media={<Avatar name={`${p.firstName} ${p.lastName}`} image={p.photoUrl ? {src: p.photoUrl} : undefined} />}>
+                    <TableCellLayout truncate media={<Avatar name={`${p.firstName} ${p.lastName}`} image={p.photoUrl ? { src: p.photoUrl } : undefined} />}>
                         <Body1>{p.lastName} {p.firstName} {p.middleName ?? ""}</Body1>
                     </TableCellLayout>
                 ),

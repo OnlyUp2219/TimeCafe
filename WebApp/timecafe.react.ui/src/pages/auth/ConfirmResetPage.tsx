@@ -1,32 +1,32 @@
-import {Body2, Title3, Spinner} from "@fluentui/react-components";
-import React, {useState, useEffect, useCallback} from "react";
-import {useNavigate, useLocation} from "react-router-dom";
-import {useProgressToast} from "@components/ToastProgress/ToastProgress";
-import {PasswordInput, ConfirmPasswordInput} from "@components/FormFields";
-import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {TooltipButton} from "@components/TooltipButton/TooltipButton";
-import {useResetPasswordMutation} from "@store/api/authApi";
-import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {AuthHero} from "@components/AuthHero/AuthHero";
+import { Body2, Title3, Spinner } from "@fluentui/react-components";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useProgressToast } from "@components/ToastProgress/ToastProgress";
+import { PasswordInput, ConfirmPasswordInput } from "@components/FormFields";
+import { authFormContainerClassName } from "@layouts/AuthLayout/authLayout.styles";
+import { TooltipButton } from "@components/TooltipButton/TooltipButton";
+import { useResetPasswordMutation } from "@store/api/authApi";
+import { getUserMessageFromUnknown } from "@api/errors/getUserMessageFromUnknown";
+import { AuthHero } from "@components/AuthHero/AuthHero";
 
 export const ConfirmResetPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const {showToast, ToasterElement} = useProgressToast();
+    const { showToast, ToasterElement } = useProgressToast();
 
     const searchParams = new URLSearchParams(location.search);
     const email = searchParams.get("email") || "";
     const resetCode = searchParams.get("code") || "";
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [errors, setErrors] = useState({newPassword: "", confirmPassword: ""});
+    const [errors, setErrors] = useState({ newPassword: "", confirmPassword: "" });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [resetPasswordMutation] = useResetPasswordMutation();
 
     useEffect(() => {
         if (!email || !resetCode) {
-            navigate("/login", {replace: true});
+            navigate("/login", { replace: true });
         }
     }, [email, resetCode, navigate, location]);
 
@@ -41,7 +41,7 @@ export const ConfirmResetPage = () => {
 
         setIsSubmitting(true);
         try {
-            await resetPasswordMutation({email, resetCode, newPassword}).unwrap();
+            await resetPasswordMutation({ email, resetCode, newPassword }).unwrap();
             showToast("Пароль успешно изменен", "success");
             navigate("/login");
         } catch (err: unknown) {
@@ -52,11 +52,11 @@ export const ConfirmResetPage = () => {
     };
 
     const handleNewPasswordValidationChange = useCallback((error: string) => {
-        setErrors(prev => ({...prev, newPassword: error}));
+        setErrors(prev => ({ ...prev, newPassword: error }));
     }, []);
 
     const handleConfirmPasswordValidationChange = useCallback((error: string) => {
-        setErrors(prev => ({...prev, confirmPassword: error}));
+        setErrors(prev => ({ ...prev, confirmPassword: error }));
     }, []);
 
     if (!email || !resetCode) {
@@ -76,7 +76,7 @@ export const ConfirmResetPage = () => {
 
             {/* Confirm Reset Form */}
             <div id="Form"
-                 className={authFormContainerClassName}>
+                className={authFormContainerClassName}>
                 <div className="flex flex-col w-full max-w-md gap-[12px]">
 
                     <div className="flex flex-col items-center">
@@ -112,7 +112,7 @@ export const ConfirmResetPage = () => {
                                 type="submit"
                                 disabled={isSubmitting}
                                 className="w-full order-1 sm:order-2"
-                                icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
+                                icon={isSubmitting ? <Spinner size="tiny" /> : undefined}
                                 tooltip="Сохранить новый пароль"
                                 label="Восстановить пароль"
                             />

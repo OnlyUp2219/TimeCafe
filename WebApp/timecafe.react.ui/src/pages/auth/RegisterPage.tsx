@@ -13,6 +13,7 @@ import {isApiError} from "@api/errors/types";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {useExternalAuthLogin} from "@hooks/useExternalAuthLogin";
 import {AuthHero} from "@components/AuthHero/AuthHero";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export const RegisterPage = () => {
     const navigate = useNavigate();
@@ -20,6 +21,7 @@ export const RegisterPage = () => {
     const dispatch = useAppDispatch();
     const {handleGoogleLogin, handleMicrosoftLogin} = useExternalAuthLogin();
     const [registerUser] = useRegisterMutation();
+    const {sizes} = useComponentSize();
 
     const [email, setEmailValue] = useState("");
     const [password, setPassword] = useState("");
@@ -128,7 +130,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.email}
                         autoComplete="off"
-                        size="large"
+                        size={sizes.input}
                     />
 
                     <PasswordInput
@@ -140,7 +142,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.password}
                         autoComplete="new-password"
-                        size="large"
+                        size={sizes.input}
                     />
 
                     <ConfirmPasswordInput
@@ -152,7 +154,7 @@ export const RegisterPage = () => {
                         shouldValidate={submitted}
                         externalError={serverErrors.confirmPassword}
                         autoComplete="new-password"
-                        size="large"
+                        size={sizes.input}
                     />
 
                     <TooltipButton
@@ -160,7 +162,7 @@ export const RegisterPage = () => {
                         type="submit"
                         disabled={isSubmitting}
                         className="sm:w-full"
-                        size="large"
+                        size={sizes.button}
                         icon={isSubmitting ? <Spinner size="tiny"/> : undefined}
                         tooltip="Зарегистрироваться"
                         label="Зарегистрироваться"
@@ -175,6 +177,7 @@ export const RegisterPage = () => {
                                 onClick={handleGoogleLogin}
                                 disabled={isSubmitting}
                                 icon={<i className="icons8-google"/>}
+                                size={sizes.button}
                                 tooltip="Зарегистрироваться через Google"
                                 label="Google"
                             />
@@ -185,6 +188,7 @@ export const RegisterPage = () => {
                                 onClick={handleMicrosoftLogin}
                                 disabled={isSubmitting}
                                 icon={<i className="icons8-microsoft"/>}
+                                size={sizes.button}
                                 tooltip="Зарегистрироваться через Microsoft"
                                 label="Microsoft"
                             />

@@ -1,4 +1,4 @@
-import {useParams, useNavigate} from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Avatar,
     Badge,
@@ -13,18 +13,18 @@ import {
     Title2,
     Title3,
 } from "@fluentui/react-components";
-import {ArrowLeft20Regular, Checkmark20Regular} from "@fluentui/react-icons";
-import {useGetVisitByIdQuery, useEndVisitMutation} from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {VisitStatus} from "@app-types/visit";
-import {useState} from "react";
-import {HasPermission} from "@components/Guard/HasPermission";
-import {Permissions} from "@shared/auth/permissions";
+import { ArrowLeft20Regular, Checkmark20Regular } from "@fluentui/react-icons";
+import { useGetVisitByIdQuery, useEndVisitMutation } from "@store/api/venueApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { VisitStatus } from "@app-types/visit";
+import { useState } from "react";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
-import {NO_DATA} from "@shared/const/placeholders";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { NO_DATA } from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
@@ -40,13 +40,13 @@ const statusLabel = (s: number) => s === VisitStatus.Active ? "Активен" :
 const statusColor = (s: number): "success" | "informative" => s === VisitStatus.Active ? "success" : "informative";
 
 export const VisitDetailPage = () => {
-    const {id} = useParams<{id: string}>();
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
     const [endError, setEndError] = useState<string | null>(null);
 
-    const {data: visitData, isLoading, error} = useGetVisitByIdQuery(id!, {skip: !id});
-    const [endVisit, {isLoading: ending}] = useEndVisitMutation();
+    const { data: visitData, isLoading, error } = useGetVisitByIdQuery(id!, { skip: !id });
+    const [endVisit, { isLoading: ending }] = useEndVisitMutation();
 
     const visit = visitData?.visit;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;

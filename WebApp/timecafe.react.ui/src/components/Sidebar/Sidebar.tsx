@@ -9,6 +9,7 @@ import { Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Eye20Re
 import { usePermissions } from "@hooks/usePermissions";
 import { AdminPanelPermission } from "@shared/auth/permissions";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "./BaseSidebar";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
@@ -21,6 +22,7 @@ export const Sidebar: FC = () => {
     const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
     const { has: hasPerm } = usePermissions();
     const canAccessAdmin = hasPerm(AdminPanelPermission);
+    const { sizes } = useComponentSize();
 
     const sections: NavSectionType[] = useMemo(() => {
         const visitItem = hasActive
@@ -66,20 +68,20 @@ export const Sidebar: FC = () => {
         <>
             {compact ? (
                 <div className="user-sidebar__bottom-compact">
-                    <Avatar name={email || role || "User"} size={28} />
+                    <Avatar name={email || role || "User"} size={sizes.avatar} />
                     {canAccessAdmin && (
                         <Tooltip content="Вид админа" relationship="label" positioning="after">
-                            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={handleAdminView} />
+                            <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={handleAdminView} />
                         </Tooltip>
                     )}
                     <Tooltip content="Выйти" relationship="label" positioning="after">
-                        <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout} />
+                        <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout} />
                     </Tooltip>
                 </div>
             ) : (
                 <>
                     <div className="user-sidebar__bottom-user">
-                        <Avatar name={email || role || "User"} size={32} />
+                        <Avatar name={email || role || "User"} size={sizes.avatar} />
                         <div className="min-w-0">
                             <Body1 truncate wrap={false} block>Пользователь</Body1>
                             <Caption1 truncate wrap={false} block>{email || role || "—"}</Caption1>
@@ -87,9 +89,9 @@ export const Sidebar: FC = () => {
                     </div>
                     <div className="user-sidebar__bottom-actions">
                         {canAccessAdmin && (
-                            <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={handleAdminView}>Вид админа</Button>
+                            <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={handleAdminView}>Вид админа</Button>
                         )}
-                        <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
+                        <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
                     </div>
                 </>
             )}
@@ -98,11 +100,11 @@ export const Sidebar: FC = () => {
 
     const renderMobileFooter = () => (
         <>
-            <Avatar name={email || role || "User"} size={28} />
+            <Avatar name={email || role || "User"} size={sizes.avatar} />
             {canAccessAdmin && (
-                <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={handleAdminView}>Вид админа</Button>
+                <Button appearance="subtle" size={sizes.button} icon={<Eye20Regular />} onClick={handleAdminView}>Вид админа</Button>
             )}
-            <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
+            <Button appearance="subtle" size={sizes.button} icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
         </>
     );
 

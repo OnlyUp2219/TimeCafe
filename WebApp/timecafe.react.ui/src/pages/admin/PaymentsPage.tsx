@@ -1,4 +1,4 @@
-import {useMemo, useState} from "react";
+import { useMemo } from "react";
 import {
     Avatar,
     Badge,
@@ -14,21 +14,21 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {useGetAdminPaymentsQuery} from "@store/api/adminApi";
-import type {AdminPaymentDto} from "@store/api/adminApi";
-import {useGetProfileByUserIdReadOnlyQuery} from "@store/api/profileApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {usePermissions} from "@hooks/usePermissions";
-import {HasPermission} from "@components/Guard/HasPermission";
-import {Permissions} from "@shared/auth/permissions";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { useGetAdminPaymentsQuery } from "@store/api/adminApi";
+import type { AdminPaymentDto } from "@store/api/adminApi";
+import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions } from "@shared/auth/permissions";
 
-import {NO_ACCESS} from "@shared/const/placeholders";
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
+import { NO_ACCESS } from "@shared/const/placeholders";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 const paymentStatusLabel = (s: number) => {
     switch (s) {
@@ -62,10 +62,10 @@ const paymentMethodLabel = (m: number) => {
 
 const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
-const AdminUserCell = ({userId}: {userId: string}) => {
-    const {data: profile} = useGetProfileByUserIdReadOnlyQuery(userId);
+const AdminUserCell = ({ userId }: { userId: string }) => {
+    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
         : profile?.email || null;
@@ -83,16 +83,16 @@ const AdminUserCell = ({userId}: {userId: string}) => {
 import { usePagination } from "@hooks/usePagination";
 
 export const PaymentsPage = () => {
-    const {sizes} = useComponentSize();
-    const {has} = usePermissions();
+    const { sizes } = useComponentSize();
+    const { has } = usePermissions();
     const { page: currentPage, size: pageSize, filters, setPage: setCurrentPage, setSize: setPageSize, setFilters } = usePagination("adminPayments");
     const userIdFilter = filters.userIdFilter || "";
 
     const setUserIdFilter = (id: string) => setFilters({ userIdFilter: id });
 
-    const {data, isLoading, error} = useGetAdminPaymentsQuery(
-        {page: currentPage, pageSize, userId: userIdFilter || undefined},
-        {refetchOnMountOrArgChange: true}
+    const { data, isLoading, error } = useGetAdminPaymentsQuery(
+        { page: currentPage, pageSize, userId: userIdFilter || undefined },
+        { refetchOnMountOrArgChange: true }
     );
 
     const payments = data?.payments ?? [];
@@ -101,12 +101,12 @@ export const PaymentsPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        userId: {minWidth: 100, defaultWidth: 160, idealWidth: 200},
-        amount: {minWidth: 80, defaultWidth: 120, idealWidth: 140},
-        method: {minWidth: 80, defaultWidth: 110, idealWidth: 130},
-        status: {minWidth: 100, defaultWidth: 130, idealWidth: 150},
-        externalId: {minWidth: 100, defaultWidth: 180, idealWidth: 220},
-        createdAt: {minWidth: 130, defaultWidth: 160, idealWidth: 180},
+        userId: { minWidth: 100, defaultWidth: 160, idealWidth: 200 },
+        amount: { minWidth: 80, defaultWidth: 120, idealWidth: 140 },
+        method: { minWidth: 80, defaultWidth: 110, idealWidth: 130 },
+        status: { minWidth: 100, defaultWidth: 130, idealWidth: 150 },
+        externalId: { minWidth: 100, defaultWidth: 180, idealWidth: 220 },
+        createdAt: { minWidth: 130, defaultWidth: 160, idealWidth: 180 },
     }), []);
 
     const columns: TableColumnDefinition<AdminPaymentDto>[] = useMemo(() => {
@@ -185,7 +185,7 @@ export const PaymentsPage = () => {
                         value={userIdFilter}
                         onChange={(e) => { setUserIdFilter(e.target.value); setCurrentPage(1); }}
                         placeholder="Введите userId..."
-                        style={{minWidth: 280}}
+                        style={{ minWidth: 280 }}
                     />
                 </Field>
             </div>

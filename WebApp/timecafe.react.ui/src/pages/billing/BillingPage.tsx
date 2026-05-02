@@ -7,6 +7,7 @@ import {
     MessageBarBody,
     MessageBarTitle,
     Title2,
+    Image,
 } from "@fluentui/react-components";
 import {DismissRegular} from "@fluentui/react-icons";
 
@@ -237,28 +238,28 @@ export const BillingPage = () => {
     return (
         <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
             <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <img
+                <Image
                     src={glitch}
                     alt=""
                     aria-hidden="true"
                     className="absolute -top-[12vw] -left-[12vw] w-[52vw] max-w-[720px] select-none opacity-30"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={blob4}
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[18vw] -left-[10vw] w-[70vw] max-w-none select-none opacity-30"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={blob2}
                     alt=""
                     aria-hidden="true"
                     className="absolute -bottom-[10vw] -right-[12vw] w-[44vw] max-w-[640px] select-none opacity-30"
                     draggable={false}
                 />
-                <img
+                <Image
                     src={squiggl}
                     alt=""
                     aria-hidden="true"
