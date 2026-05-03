@@ -9,6 +9,7 @@ import {
     MessageBarBody,
     MessageBarTitle,
     Title2,
+    Subtitle2,
     Image,
 } from "@fluentui/react-components";
 import {useCallback, useState} from "react";
@@ -30,6 +31,8 @@ import {
     useUploadProfilePhotoMutation,
     useDeleteProfilePhotoMutation,
 } from "@store/api/profileApi";
+import {useGetUserLoyaltyQuery} from "@store/api/venueApi";
+import {LoyaltyProgress} from "@components/Loyalty/LoyaltyProgress";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {normalizeBirthDateForApi} from "@utility/normalizeDate";
 import blob3Url from "@assets/ssshape_blob3.svg";
@@ -43,6 +46,7 @@ export const PersonalDataPage = () => {
     const dispatch = useAppDispatch();
     const userId = useAppSelector((state) => state.auth.userId);
     const {data: profile} = useGetProfileByUserIdQuery(userId, {skip: !userId});
+    const {data: loyalty, isLoading: loyaltyLoading} = useGetUserLoyaltyQuery(userId, {skip: !userId});
 
     const {showToast, ToasterElement} = useProgressToast();
     const [logoutMutation] = useLogoutMutation();
@@ -194,6 +198,17 @@ export const PersonalDataPage = () => {
                                 void savePatch(patch, "Персональные данные сохранены.");
                             }}
                         />
+
+                        <Card className="w-full">
+                            <Subtitle2 block>
+                                Программа лояльности
+                            </Subtitle2>
+                            <Divider />
+                            <LoyaltyProgress 
+                                visitCount={profile?.visitCount || 0} 
+                                currentDiscount={loyalty?.personalDiscountPercent || 0} 
+                            />
+                        </Card>
 
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
                             <PhoneFormCard

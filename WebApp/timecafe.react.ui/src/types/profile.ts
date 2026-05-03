@@ -30,4 +30,6 @@ export interface Profile {
 
   profileStatus: ProfileStatus;
   banReason?: string;
+  visitCount?: number;
+  personalDiscountPercent?: number;
 }

@@ -13,6 +13,7 @@ public static class MassTransitExtensions
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<UserRegisteredConsumer>();
+                x.AddConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitCompletedEventConsumer>();
 
                 x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
             });
@@ -30,6 +31,7 @@ public static class MassTransitExtensions
             });
 
             x.AddConsumer<UserRegisteredConsumer>();
+            x.AddConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitCompletedEventConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -63,6 +65,13 @@ public static class MassTransitExtensions
                     e.Durable = true;
                     e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureConsumer<UserRegisteredConsumer>(context);
+                });
+
+                cfg.ReceiveEndpoint("user-profile.visit-completed", e =>
+                {
+                    e.Durable = true;
+                    e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    e.ConfigureConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitCompletedEventConsumer>(context);
                 });
 
                 cfg.ConfigureEndpoints(context);

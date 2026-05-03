@@ -36,4 +36,8 @@ public class Profile
 
     [MaxLength(500)]
     public string? BanReason { get; set; }
+
+    public int VisitCount { get; set; }
+
+    public decimal? PersonalDiscountPercent { get; set; }
 }

@@ -1,9 +1,12 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useCallback, useMemo, useState } from "react";
-import { type TableColumnDefinition, type TableColumnSizingOptions, Tooltip } from "@fluentui/react-components";
 import {
+    type TableColumnDefinition,
+    type TableColumnSizingOptions,
+    Tooltip,
     Badge,
     Body1,
+    Body1Strong,
     Body2,
     Button,
     Caption1,
@@ -52,6 +55,8 @@ import { Permissions } from "@shared/auth/permissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { formatMoney } from "@shared/const/FormatMoney.ts";
 import { txTypeLabel } from "@shared/const/TxTypeLabel.ts";
+
+import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
 
 import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
 
@@ -335,10 +340,10 @@ export const UserDetailPage = () => {
             <Card size={sizes.card}>
                 <div className="flex items-start gap-4 flex-wrap ">
                     <div className="flex items-start gap-4 flex-1">
-                        <SecureAvatar 
-                            name={displayName} 
-                            size={72} 
-                            photoUrl={profile?.photoUrl} 
+                        <SecureAvatar
+                            name={displayName}
+                            size={72}
+                            photoUrl={profile?.photoUrl}
                         />
                         <div className="flex gap-2 flex-wrap  flex-col">
                             <Title2>{displayName}</Title2>
@@ -364,33 +369,34 @@ export const UserDetailPage = () => {
             </Card>
 
             <div className="flex flex-wrap gap-4 justify-between">
-                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                        <Body2 block>Баланс</Body2>
-                        <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                            <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
-                                {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
-                            </Title3>
-                        </HasPermission>
-                    </Card>
-                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                        <Body2 block>Визитов всего</Body2>
-                        <HasPermission can={Permissions.VenueVisitRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                            <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
-                        </HasPermission>
-                    </Card>
-                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                        <Body2 block>Потрачено</Body2>
-                        <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                            <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
-                        </HasPermission>
-                    </Card>
-                    <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                        <Body2 block>Лояльность (Скидка)</Body2>
-                        <Title3 className="text-brand">
-                            {loyaltyLoading ? NO_DATA : loyalty?.personalDiscountPercent != null ? `${loyalty.personalDiscountPercent}%` : "0%"}
+                <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                    <Body2 block>Баланс</Body2>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
+                            {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
                         </Title3>
-                    </Card>
-                </div>
+                    </HasPermission>
+                </Card>
+                <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                    <Body2 block>Визитов всего</Body2>
+                    <HasPermission can={Permissions.VenueVisitRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
+                    </HasPermission>
+                </Card>
+                <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                    <Body2 block>Потрачено</Body2>
+                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                    </HasPermission>
+                </Card>
+                <Card size={sizes.card} className="flex-1 min-w-[300px]">
+                    <Body1Strong block className="mb-2">Программа лояльности</Body1Strong>
+                    <LoyaltyProgress
+                        visitCount={profileData?.visitCount || 0}
+                        currentDiscount={loyalty?.personalDiscountPercent || 0}
+                    />
+                </Card>
+            </div>
 
             <div className="flex flex-wrap gap-4">
                 <HasPermission

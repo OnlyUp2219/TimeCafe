@@ -16,3 +16,5 @@ global using UserProfile.TimeCafe.Infrastructure.Data;
 global using UserProfile.TimeCafe.Infrastructure.Repositories;
 global using Npgsql;
 global using BuildingBlocks.Extensions;
+global using Microsoft.Extensions.Options;
+global using UserProfile.TimeCafe.Application.Options;
