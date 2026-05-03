@@ -44,7 +44,6 @@ const getUserStatusBadgeClass = (status: string): string => {
 };
 
 const ProfileNameCell = ({ user }: { user: User }) => {
-    const { sizes } = useComponentSize();
     const profile = user.profile;
     const displayName = profile?.firstName || profile?.lastName
         ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
@@ -52,7 +51,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
     return (
         <HasPermission
             can={Permissions.UserProfileProfileRead}
-            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} size={sizes.avatar} />}>{NO_ACCESS}</TableCellLayout>}
+            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}
         >
             <TableCellLayout
                 truncate
@@ -60,7 +59,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
                     <SecureAvatar
                         name={displayName || user.email}
                         photoUrl={profile?.photoUrl}
-                        size={sizes.avatar}
+
                     />
                 }
             >
@@ -97,13 +96,12 @@ const profileStatusColor = (status?: number): "warning" | "success" | "danger" =
 };
 
 const ProfileStatusCell = ({ user }: { user: User }) => {
-    const { sizes } = useComponentSize();
     const profile = user.profile;
     if (!profile) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
         <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
             <TableCellLayout truncate>
-                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)} size={sizes.badge}>
+                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
                     {profileStatusLabel(profile.profileStatus)}
                 </Badge>
             </TableCellLayout>
@@ -195,7 +193,7 @@ export const UsersListPage = () => {
                     renderHeaderCell: () => "Роль",
                     renderCell: (user) => (
                         <TableCellLayout truncate>
-                            <Badge appearance="outline" size={sizes.badge}>{user.role}</Badge>
+                            <Badge appearance="outline">{user.role}</Badge>
                         </TableCellLayout>
                     ),
                 }),
@@ -208,7 +206,7 @@ export const UsersListPage = () => {
                             <Badge
                                 appearance="tint"
                                 shape="rounded"
-                                size={sizes.badge}
+
                                 className={getUserStatusBadgeClass(user.status)}
                             >
                                 {user.status}
@@ -239,7 +237,7 @@ export const UsersListPage = () => {
                     compare: () => 0,
                     renderHeaderCell: () => "Действия",
                     renderCell: (user) => (
-                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)} size={sizes.button}>
+                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/users/${user.id}`)}>
                             Открыть
                         </Button>
                     ),

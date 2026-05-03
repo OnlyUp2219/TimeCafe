@@ -20,9 +20,9 @@ import {
     PanelLeftExpand20Regular,
 } from "@fluentui/react-icons";
 import { MOBILE_SIDEBAR_BREAKPOINT } from "@shared/layout/breakpoints";
-import { useComponentSize } from "@hooks/useComponentSize";
 
-import type {Permission} from "@shared/auth/permissions";
+
+import type { Permission } from "@shared/auth/permissions";
 
 export interface NavItemType {
     id: string;
@@ -74,7 +74,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
     const location = useLocation();
     const [drawerType, setDrawerType] = useState<DrawerType>("inline");
     const restoreFocusSourceAttributes = useRestoreFocusSource();
-    const { sizes } = useComponentSize();
+
 
     const navItems = useMemo(() => nav.flatMap((section) => section.items), [nav]);
 
@@ -148,7 +148,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                     action={
                         <Button
                             appearance="subtle"
-                            size={sizes.button}
+                            size="large"
                             icon={<PanelLeftContract20Regular />}
                             aria-label="Скрыть меню"
                             onClick={() => onOpenChange(false)}
@@ -196,7 +196,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                     {...restoreFocusSourceAttributes}
                     aria-label={isOpen ? "Закрыть меню" : "Открыть меню"}
                     appearance="subtle"
-                    size={sizes.button}
+                    size="large"
                     icon={<PanelLeftExpand20Regular />}
                     onClick={() => onOpenChange(!isOpen)}
                     className={`${classNamePrefix}__mobile-toggle`}
@@ -208,7 +208,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                     <Tooltip content={collapsed ? "Развернуть" : "Свернуть"} relationship="label">
                         <Button
                             appearance="subtle"
-                            size={sizes.button}
+                            size="large"
                             icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
                             onClick={() => onCollapsedChange(!collapsed)}
                             className={collapsed ? "mx-auto" : "ml-auto"}
@@ -228,7 +228,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                 <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
                                     <Button
                                         appearance={selectedValue === item.id ? "primary" : "subtle"}
-                                        size={sizes.button}
+                                        size="large"
                                         icon={item.icon}
                                         onClick={() => handleNavigate(item.path)}
                                         className="admin-sidebar__icon-btn"
@@ -254,7 +254,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                         <Button
                             key={item.id}
                             appearance={selectedValue === item.id ? "primary" : "subtle"}
-                            size={sizes.button}
+                            size="large"
                             icon={item.icon}
                             aria-label={item.label}
                             onClick={() => handleNavigate(item.path)}
@@ -263,7 +263,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                     ))}
                     <Button
                         appearance="subtle"
-                        size={sizes.button}
+                        size="large"
                         icon={<PanelLeftExpand20Regular />}
                         aria-label="Открыть меню"
                         onClick={() => onOpenChange(true)}

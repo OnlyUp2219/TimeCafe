@@ -39,6 +39,7 @@ export const Permissions = {
     VenueVisitUpdate: "venue.visit.update",
     VenueVisitDelete: "venue.visit.delete",
     VenueVisitEnd: "venue.visit.end",
+    VenueLoyaltyRead: "venue.loyalty.read",
 
     AccountSelfRead: "auth.account.self.read",
     AccountAdminRead: "auth.account.admin.read",

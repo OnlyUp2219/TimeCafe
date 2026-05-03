@@ -142,13 +142,13 @@ export const UserDetailPage = () => {
         { skip: !id }
     );
     const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery({ userId: id! }, { skip: !id });
-    const { data: loyalty, isLoading: loyaltyLoading } = useGetUserLoyaltyQuery(id!, { skip: !id });
+    const { data: loyalty, } = useGetUserLoyaltyQuery(id!, { skip: !id });
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
     const { data: notesData, isLoading: notesLoading } = useGetAdditionalInfosByUserIdQuery(
         { userId: id!, pageNumber: notesPage, pageSize: NOTES_PAGE_SIZE },
         { skip: !id }
     );
-    const adminNotes = notesData?.items ?? [];
+    const adminNotes = notesData?.infos ?? [];
     const totalNotes = notesData?.totalCount ?? 0;
     const [createNote, { isLoading: creatingNote }] = useCreateAdditionalInfoMutation();
     const [deleteNote] = useDeleteAdditionalInfoMutation();
@@ -391,10 +391,12 @@ export const UserDetailPage = () => {
                 </Card>
                 <Card size={sizes.card} className="flex-1 min-w-[300px]">
                     <Body1Strong block className="mb-2">Программа лояльности</Body1Strong>
-                    <LoyaltyProgress
-                        visitCount={profileData?.visitCount || 0}
-                        currentDiscount={loyalty?.personalDiscountPercent || 0}
-                    />
+                    <HasPermission can={Permissions.VenueLoyaltyRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                        <LoyaltyProgress
+                            visitCount={profile?.visitCount || 0}
+                            currentDiscount={loyalty?.personalDiscountPercent || 0}
+                        />
+                    </HasPermission>
                 </Card>
             </div>
 

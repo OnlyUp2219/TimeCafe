@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Input, Select, Caption1, Body1 } from "@fluentui/react-components";
+import { Button, Input, Dropdown, Option, Body1 } from "@fluentui/react-components";
 import { ChevronLeftRegular, ChevronRightRegular } from "@fluentui/react-icons";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -37,7 +37,7 @@ export const Pagination = ({
 
     const renderPages = () => {
         const pages: (number | string)[] = [];
-        
+
         if (totalPages <= 1) {
             pages.push(1);
         } else {
@@ -90,18 +90,21 @@ export const Pagination = ({
             {onPageSizeChange && pageSize !== undefined && (
                 <div className="flex items-center gap-2">
                     <Body1>Строк:</Body1>
-                    <Select
+                    <Dropdown
                         size={size}
                         value={String(pageSize)}
-                        onChange={(_, d) => {
-                            onPageSizeChange(Number(d.value));
-                            onPageChange(1);
+                        selectedOptions={[String(pageSize)]}
+                        onOptionSelect={(_, d) => {
+                            if (d.optionValue) {
+                                onPageSizeChange(Number(d.optionValue));
+                            }
                         }}
+                        style={{ minWidth: '80px' }}
                     >
                         {PAGE_SIZE_OPTIONS.map(s => (
-                            <option key={s} value={s}>{s}</option>
+                            <Option key={s} value={String(s)} text={String(s)}>{s}</Option>
                         ))}
-                    </Select>
+                    </Dropdown>
                     {totalCount !== undefined && (
                         <Body1>из {totalCount}</Body1>
                     )}

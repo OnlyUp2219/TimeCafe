@@ -196,7 +196,6 @@ export const TariffsPage = () => {
                         media={
                             <Avatar
                                 name={tariff.name}
-                                size={sizes.avatar}
                                 initials={tariff.themeEmoji || tariff.name.substring(0, 1).toUpperCase()}
                             />
                         }
@@ -257,7 +256,7 @@ export const TariffsPage = () => {
                 renderHeaderCell: () => "Тип",
                 renderCell: (tariff) => (
                     <TableCellLayout truncate>
-                        <Badge appearance="outline" size={sizes.badge}>{billingTypeLabel(tariff.billingType)}</Badge>
+                        <Badge appearance="outline">{billingTypeLabel(tariff.billingType)}</Badge>
                     </TableCellLayout>
                 ),
             }),
@@ -275,7 +274,7 @@ export const TariffsPage = () => {
                 renderHeaderCell: () => "Статус",
                 renderCell: (tariff) => (
                     <HasPermission anyOf={[Permissions.VenueTariffActivate, Permissions.VenueTariffDeactivate]} fallback={
-                        <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"} size={sizes.badge}>
+                        <Badge appearance="tint" color={tariff.isActive ? "success" : "warning"}>
                             {tariff.isActive ? "Активен" : "Неактивен"}
                         </Badge>
                     }>
@@ -294,10 +293,10 @@ export const TariffsPage = () => {
                 renderCell: (tariff) => (
                     <div className="flex gap-1">
                         <HasPermission can={Permissions.VenueTariffUpdate}>
-                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} size={sizes.button} />
+                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
                         </HasPermission>
                         <HasPermission can={Permissions.VenueTariffDelete}>
-                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} size={sizes.button} />
+                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(tariff.tariffId)} />
                         </HasPermission>
                     </div>
                 ),

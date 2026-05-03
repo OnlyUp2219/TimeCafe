@@ -116,7 +116,7 @@ export const profileApi = createApi({
                 {type: "ProfilePhoto", id: userId},
             ],
         }),
-        getAdditionalInfosByUserId: builder.query<{ items: { infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string }[]; totalCount: number }, { userId: string; pageNumber: number; pageSize: number }>({
+        getAdditionalInfosByUserId: builder.query<{ infos: { infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string }[]; totalCount: number }, { userId: string; pageNumber: number; pageSize: number }>({
             query: ({ userId, pageNumber, pageSize }) => ({
                 url: `/userprofile/profiles/${userId}/infos`,
                 params: { pageNumber, pageSize },
