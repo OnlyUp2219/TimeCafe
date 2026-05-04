@@ -202,7 +202,7 @@ export const TariffsPage = () => {
                     >
                         <div className="flex flex-col">
                             <Body1 >{tariff.name}</Body1>
-                            {tariff.description && <Body2 className="text-gray-500 !line-clamp-2">{tariff.description}</Body2>}
+                            {tariff.description && <Body2 className="text-[var(--colorNeutralForeground3)] !line-clamp-2">{tariff.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -228,8 +228,8 @@ export const TariffsPage = () => {
                                 <Body1 block>
                                     {hasDiscount ? (
                                         <span className="flex items-center gap-2">
-                                            <span className="line-through text-gray-400 text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
-                                            <span className="text-red-500 font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
+                                            <span className="line-through text-[var(--colorNeutralForeground4)] text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
+                                            <span className="text-[var(--colorPaletteRedForeground1)] font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
                                         </span>
                                     ) : (
                                         <span>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</span>
@@ -239,7 +239,7 @@ export const TariffsPage = () => {
                                     {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
                                     {hasDiscount && (
                                         <Tooltip content={maxCap !== undefined && bestPromo > maxCap ? `Акция ${bestPromo}% ограничена системным лимитом ${maxCap}%` : "Применена лучшая акция"} relationship="label">
-                                            <span className="ml-1 text-red-500 cursor-help">
+                                            <span className="ml-1 text-[var(--colorPaletteRedForeground1)] cursor-help">
                                                 (-{appliedDiscount}%){maxCap !== undefined && bestPromo > maxCap && " *"}
                                             </span>
                                         </Tooltip>

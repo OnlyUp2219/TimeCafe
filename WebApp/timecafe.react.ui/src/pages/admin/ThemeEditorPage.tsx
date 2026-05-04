@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useDeferredValue, memo } from "react";
+import { useState, useMemo, useEffect, useDeferredValue, memo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     Body2,
@@ -39,8 +39,7 @@ import {
     MenuTrigger,
     MenuPopover,
     MenuList,
-    MenuItem,
-    MenuButton,
+    MenuItem
 } from "@fluentui/react-components";
 import { ArrowLeft20Regular, Color20Regular, Add20Regular, Delete20Regular, MoreHorizontal20Regular } from "@fluentui/react-icons";
 import { tinycolor } from "@ctrl/tinycolor";
@@ -75,7 +74,7 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
             <Popover trapFocus>
                 <PopoverTrigger disableButtonEnhancement>
                     <div
-                        className="w-10 h-8 border border-gray-200 cursor-pointer rounded shadow-sm transition-transform hover:scale-110"
+                        className="w-10 h-8 border border-[var(--colorNeutralStroke2)] cursor-pointer rounded shadow-sm transition-transform hover:scale-110"
                         style={{ backgroundColor: value }}
                     />
                 </PopoverTrigger>
@@ -92,7 +91,7 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
                                     <AlphaSlider aria-label="Alpha" />
                                 </div>
                                 <div
-                                    className="w-12 h-12 rounded shadow-sm border border-gray-200"
+                                    className="w-12 h-12 rounded shadow-sm border border-[var(--colorNeutralStroke2)]"
                                     style={{ backgroundColor: value }}
                                 />
                             </div>
@@ -133,7 +132,7 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
                 image={<span style={{ fontSize: "36px" }}>{emoji}</span>}
                 header={<Title2 style={{ color: textColor }}>{name || "Название тарифа"}</Title2>}
                 description={
-                    <Body2 style={{ color: textColor, opacity: 0.8 }} size={400}>
+                    <Body2 style={{ color: textColor, opacity: 0.8 }}>
                         Здесь будет описание вашего тарифа. Используйте яркие темы для привлечения внимания гостей!
                     </Body2>
                 }
@@ -142,13 +141,13 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
             <Divider style={{ color: textColor, opacity: 0.3 }} className="relative z-10" />
 
             <div className="flex flex-col gap-1 px-3 relative z-10">
-                <Caption1 style={{ color: textColor, opacity: 0.7 }} size={300}>Стандартный</Caption1>
+                <Caption1 style={{ color: textColor, opacity: 0.7 }}>Стандартный</Caption1>
                 <Title2 style={{ color: textColor }}>15.00 ₽ / мин</Title2>
             </div>
 
             <CardFooter className="relative z-10">
-                <Button 
-                    appearance="primary" 
+                <Button
+                    appearance="primary"
                     style={{ backgroundColor: "rgba(255,255,255,0.2)", color: textColor }}
                 >
                     Выбрать тариф
@@ -206,10 +205,10 @@ const emptyConfig: ThemeConfig = {
 const LayerPreview = memo(({ layer }: { layer: PatternLayer }) => {
     const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
     return (
-        <div className="relative w-full h-32 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden bg-slate-50 flex items-center justify-center">
+        <div className="relative w-full h-32 rounded-lg border-2 border-dashed border-[var(--colorNeutralStroke1)] overflow-hidden bg-slate-50 flex items-center justify-center">
             <div className="absolute inset-0 opacity-10 bg-slate-900" style={{ backgroundImage: 'radial-gradient(#000 10%, transparent 10%)', backgroundSize: '10px 10px' }} />
             <div style={{ ...styles, inset: 0 }} />
-            <Caption1 className="absolute bottom-1 right-2 text-gray-400">Предпросмотр слоя</Caption1>
+            <Caption1 className="absolute bottom-1 right-2 text-[var(--colorNeutralForeground4)]">Предпросмотр слоя</Caption1>
         </div>
     );
 });
@@ -217,7 +216,7 @@ const LayerPreview = memo(({ layer }: { layer: PatternLayer }) => {
 const MiniPreview = memo(({ layer }: { layer: PatternLayer }) => {
     const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
     return (
-        <div className="w-5 h-5 rounded border border-gray-200 relative overflow-hidden bg-slate-100">
+        <div className="w-5 h-5 rounded border border-[var(--colorNeutralStroke2)] relative overflow-hidden bg-slate-100">
             <div style={{ ...styles, inset: 0, transform: (styles.transform || '') + ' scale(0.5)' }} />
         </div>
     );
@@ -382,7 +381,7 @@ export const ThemeEditorPage = () => {
                                                 <Tooltip content="Удалить" relationship="label">
                                                     <Button
                                                         appearance="secondary"
-                                                        icon={<Delete20Regular className="text-red-500" />}
+                                                        icon={<Delete20Regular className="text-[var(--colorPaletteRedForeground1)]" />}
                                                         onClick={() => setForm(f => ({
                                                             ...f,
                                                             config: { ...f.config, colors: f.config.colors.filter((_, idx) => idx !== i) }
@@ -466,7 +465,7 @@ export const ThemeEditorPage = () => {
                                         <div className="absolute top-2 right-2 flex gap-2">
                                             <Popover>
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button size="large" appearance="subtle" icon={<Delete20Regular className="text-red-500" />} />
+                                                    <Button size="large" appearance="subtle" icon={<Delete20Regular className="text-[var(--colorPaletteRedForeground1)]" />} />
                                                 </PopoverTrigger>
                                                 <PopoverSurface>
                                                     <div className="flex flex-col gap-2">
@@ -512,9 +511,9 @@ export const ThemeEditorPage = () => {
                                             </Field>
 
                                             {layer.type === "custom-svg" && (
-                                                <Field 
-                                                    label="Ваш SVG (код)" 
-                                                    className="col-span-2" 
+                                                <Field
+                                                    label="Ваш SVG (код)"
+                                                    className="col-span-2"
                                                     size="large"
                                                     validationState={layer.customSvg && !layer.customSvg.trim().toLowerCase().startsWith("<svg") ? "error" : "none"}
                                                     validationMessage={layer.customSvg && !layer.customSvg.trim().toLowerCase().startsWith("<svg") ? "Код должен начинаться с <svg" : undefined}
@@ -660,8 +659,8 @@ export const ThemeEditorPage = () => {
 
                 <div className="flex flex-col gap-4 flex-1  pl-2 pr-2" style={{ backgroundColor: "var(--colorNeutralBackground2)" }}>
                     <div className="flex flex-col">
-                        <Body2 className="uppercase text-slate-400">Предпросмотр</Body2>
-                        <Body2 className="text-slate-500">Живой результат</Body2>
+                        <Body2 className="uppercase text-[var(--colorNeutralForeground4)]">Предпросмотр</Body2>
+                        <Body2 className="text-[var(--colorNeutralForeground3)]">Живой результат</Body2>
                     </div>
 
                     <div className="flex flex-col gap-4 w-full h-full justify-center items-center content-center">
@@ -675,7 +674,7 @@ export const ThemeEditorPage = () => {
 
                         <Card className="w-[420px]">
                             <Subtitle1 block className="mb-2 font-bold">Совет по дизайну</Subtitle1>
-                            <Caption1 className="text-slate-600 leading-relaxed italic block">
+                            <Caption1 className="text-[var(--colorNeutralForeground2)] leading-relaxed italic block">
                                 Используйте 2-3 гармоничных цвета для градиента. Мелкие узоры (dots) с низкой прозрачностью (10-20%) придают карточке премиальный вид.
                             </Caption1>
                         </Card>

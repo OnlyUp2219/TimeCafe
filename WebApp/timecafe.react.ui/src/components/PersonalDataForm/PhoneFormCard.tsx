@@ -123,7 +123,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                 </Button>
                             </div>
                         </div>
-                        {phoneError && <Caption1 className="text-red-600">{phoneError}</Caption1>}
+                        {phoneError && <Caption1 className="text-[var(--colorPaletteRedForeground1)]">{phoneError}</Caption1>}
                     </div>
                 </div>
 

@@ -109,7 +109,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     const isActiveVisitPage = location.pathname.startsWith("/visit/active");
     const displayName = `${profile?.firstName?.trim() ?? ""} ${profile?.lastName?.trim() ?? ""}`.trim() || authEmail?.trim() || "Пользователь";
     return (
-        <header className="w-full border-b border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+        <header className="w-full border-b border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
           
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
@@ -121,7 +121,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
                             />
                         </div>
                     )}
-                    <h1 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">TimeCafe</h1>
+                    <h1 className="text-lg font-semibold tracking-tight text-[var(--colorNeutralForeground1)] sm:text-xl">TimeCafe</h1>
                     {!isPublic && isActiveVisit && activeVisitDuration && (
                         <div className="hidden items-center gap-2 sm:flex">
                             <Tag appearance="brand" icon={<Clock20Regular />}>

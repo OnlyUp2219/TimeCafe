@@ -104,6 +104,6 @@ export const ProfileGateForm: FC<ProfileGateFormProps> = ({
             />
         </div>
 
-        {saveError ? <Caption1 className="text-red-600">{saveError}</Caption1> : null}
+        {saveError ? <Caption1 className="text-[var(--colorPaletteRedForeground1)]">{saveError}</Caption1> : null}
     </div>
 );

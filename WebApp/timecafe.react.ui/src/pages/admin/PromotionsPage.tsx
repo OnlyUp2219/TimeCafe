@@ -203,7 +203,7 @@ export const PromotionsPage = () => {
                     <TableCellLayout truncate>
                         <div>
                             <Body1 block>{promo.name}</Body1>
-                            {promo.description && <Body2 block className="text-gray-500">{promo.description}</Body2>}
+                            {promo.description && <Body2 block className="text-[var(--colorNeutralForeground3)]">{promo.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -231,7 +231,7 @@ export const PromotionsPage = () => {
                         ) : promo.type === 2 ? (
                             <div className="flex flex-col">
                                 <Badge appearance="outline" color="informative">Для тарифа</Badge>
-                                <Caption1 className="text-gray-500 truncate mt-1">
+                                <Caption1 className="text-[var(--colorNeutralForeground3)] truncate mt-1">
                                     {tariffs.find(t => t.tariffId.toLowerCase() === promo.tariffId?.toLowerCase())?.name || (tariffs.length === 0 ? "Загрузка..." : "Неизвестный тариф")}
                                 </Caption1>
                             </div>
@@ -387,7 +387,7 @@ export const PromotionsPage = () => {
                                     <Radio value="2" label="Для тарифа" />
                                 </RadioGroup>
                                 {form.type === 1 && form.isActive && hasActiveGlobal && (
-                                    <Caption1 className="text-red-500 mt-1 block">
+                                    <Caption1 className="text-[var(--colorPaletteRedForeground1)] mt-1 block">
                                         Внимание: уже существует другая активная глобальная акция. Сначала деактивируйте её, либо сохраните эту как неактивную.
                                     </Caption1>
                                 )}

@@ -238,7 +238,7 @@ export const UserDetailPage = () => {
             renderHeaderCell: () => "Сумма",
             renderCell: (tx) => (
                 <TableCellLayout truncate>
-                    <span className={tx.type === TransactionType.Withdrawal ? "text-red-500" : "text-green-600"}>
+                    <span className={tx.type === TransactionType.Withdrawal ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
                         {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
                     </span>
                 </TableCellLayout>
@@ -348,14 +348,14 @@ export const UserDetailPage = () => {
                         <div className="flex gap-2 flex-wrap  flex-col">
                             <Title2>{displayName}</Title2>
                             <Body1 block>{contactLine}</Body1>
-                            <Body2 block className="text-gray-500 ">{user.role} · {user.status}</Body2>
+                            <Body2 block className="text-[var(--colorNeutralForeground3)] ">{user.role} · {user.status}</Body2>
                             <div className="flex gap-2 flex-wrap">
                                 {nickname && <Badge appearance="outline">{nickname}</Badge>}
                                 {user && <Badge appearance="tint" color={user.emailConfirmed ? "success" : "warning"}>{user.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
                                 {user && <Badge appearance="tint" color={user.phoneNumberConfirmed ? "success" : "warning"}>{user.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
                                 {profile && <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>{profileStatusLabel(profile.profileStatus)}</Badge>}
                             </div>
-                            <Caption1 block className="text-gray-400">{user.id}</Caption1>
+                            <Caption1 block className="text-[var(--colorNeutralForeground4)]">{user.id}</Caption1>
                         </div>
                     </div>
                     <div className="flex gap-2">
@@ -372,7 +372,7 @@ export const UserDetailPage = () => {
                 <Card size={sizes.card} className="flex-1 min-w-[200px]">
                     <Body2 block>Баланс</Body2>
                     <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-red-600" : "text-green-600"}>
+                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
                             {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
                         </Title3>
                     </HasPermission>
@@ -454,7 +454,7 @@ export const UserDetailPage = () => {
                             {profile?.banReason && (
                                 <div className="sm:col-span-2">
                                     <Body2 block>Причина блокировки</Body2>
-                                    <Body1 block className="text-red-500">{profile.banReason}</Body1>
+                                    <Body1 block className="text-[var(--colorPaletteRedForeground1)]">{profile.banReason}</Body1>
                                 </div>
                             )}
                         </div>

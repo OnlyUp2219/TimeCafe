@@ -4,7 +4,7 @@ import {Link} from "@fluentui/react-components";
 export const Footer: FC = () => {
     return (
         <footer
-            className="mt-auto border-t w-full border-slate-200 bg-white/90 backdrop-blur
+            className="mt-auto border-t w-full border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur
             supports-[backdrop-filter]:bg-white/90">
             <div className="page-content flex items-center justify-between text-sm">
                 <span>© 2026 TimeCafe</span>

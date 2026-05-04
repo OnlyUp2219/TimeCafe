@@ -42,7 +42,7 @@ const AdminUserCell = ({ userId }: { userId: string }) => {
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
             <div className="flex flex-col min-w-0">
                 <Body1 block truncate>{displayName || userId}</Body1>
-                <Caption1 block className="font-mono text-gray-400" style={{ fontSize: '10px' }}>{userId}</Caption1>
+                <Caption1 block className="font-mono text-[var(--colorNeutralForeground4)]" style={{ fontSize: '10px' }}>{userId}</Caption1>
             </div>
         </TableCellLayout>
     );

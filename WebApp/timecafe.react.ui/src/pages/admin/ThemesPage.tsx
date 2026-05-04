@@ -84,7 +84,7 @@ export const ThemesPage = () => {
                     </HasPermission>
                 </div>
                 <Card appearance="filled-alternative" size="large" className="items-center justify-center !min-h-[250px] ">
-                    <Subtitle1 className="text-gray-400 ">Тем пока нет. Создайте первую!</Subtitle1>
+                    <Subtitle1 className="text-[var(--colorNeutralForeground4)] ">Тем пока нет. Создайте первую!</Subtitle1>
                     <CardFooter className="flex ">
                         <Button size="large" appearance="outline" onClick={() => navigate("/admin/themes/create")}>Добавить оформление</Button>
                     </CardFooter>
@@ -98,7 +98,7 @@ export const ThemesPage = () => {
             <div className="flex justify-between items-center ">
                 <div>
                     <Title1 block>Визуальные темы</Title1>
-                    <Caption1 className="text-gray-500">Управление оформлением карточек тарифов ({totalCount})</Caption1>
+                    <Caption1 className="text-[var(--colorNeutralForeground3)]">Управление оформлением карточек тарифов ({totalCount})</Caption1>
                 </div>
                 <div className="flex gap-2">
                     <Button appearance="subtle" size="large" icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />

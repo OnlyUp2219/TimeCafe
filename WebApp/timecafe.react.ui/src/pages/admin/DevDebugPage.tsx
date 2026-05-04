@@ -161,7 +161,7 @@ export const DevDebugPage: React.FC = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderBlock("404 & 422 Errors", <Warning24Regular className="text-orange-500" />, (
+                {renderBlock("404 & 422 Errors", <Warning24Regular className="text-[var(--colorPaletteDarkOrangeForeground1)]" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(trigger404Single, "404 Single")}>
                             404 Single (Not Found)
@@ -172,7 +172,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("500 & Exceptions", <Bug24Regular className="text-red-600" />, (
+                {renderBlock("500 & Exceptions", <Bug24Regular className="text-[var(--colorPaletteRedForeground1)]" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(trigger500Single, "500 Single")}>
                             500 Single Error
@@ -186,7 +186,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("Success & Info", <CheckmarkCircle24Regular className="text-green-600" />, (
+                {renderBlock("Success & Info", <CheckmarkCircle24Regular className="text-[var(--colorPaletteGreenForeground1)]" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(triggerSuccess, "Success Response")}>
                             Success (200 OK)
@@ -197,7 +197,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("Legacy & RTK", <ArrowSync24Regular className="text-blue-500" />, (
+                {renderBlock("Legacy & RTK", <ArrowSync24Regular className="text-[var(--colorBrandForeground1)]" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(triggerLegacy, "Legacy Format")}>
                             Legacy CqrsResult
@@ -215,8 +215,8 @@ export const DevDebugPage: React.FC = () => {
             <Divider />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="bg-black text-green-400 p-4 font-mono text-xs overflow-auto max-h-96">
-                    <div className="flex items-center gap-2 mb-2 text-white border-b border-gray-700 pb-2">
+                <Card className="bg-black text-[var(--colorPaletteGreenForeground1)] p-4 font-mono text-xs overflow-auto max-h-96">
+                    <div className="flex items-center gap-2 mb-2 text-white border-b border-[var(--colorNeutralStrokeAccessible)] pb-2">
                         <Document24Regular />
                         <Body1>RAW API RESPONSE</Body1>
                     </div>
@@ -236,26 +236,26 @@ export const DevDebugPage: React.FC = () => {
                             </div>
                             <div className="flex justify-between">
                                 <Caption1>Main Message:</Caption1>
-                                <Body1 className="text-blue-700 font-bold">{extractedInfo.message}</Body1>
+                                <Body1 className="text-[var(--colorBrandForeground1)] font-bold">{extractedInfo.message}</Body1>
                             </div>
                             <Divider />
                             <Caption1>Detailed Errors ({extractedInfo.errors?.length || 0}):</Caption1>
                             <div className="flex flex-col gap-2 mt-1">
                                 {extractedInfo.errors?.length ? extractedInfo.errors.map((e: any, i: number) => (
-                                    <div key={i} className="flex flex-col p-2 bg-white rounded border border-gray-200 shadow-sm">
+                                    <div key={i} className="flex flex-col p-2 bg-white rounded border border-[var(--colorNeutralStroke2)] shadow-sm">
                                         <div className="flex items-center gap-2 mb-1">
                                             {e.code && <Badge appearance="filled" color="brand" size="small">{e.code}</Badge>}
                                             <Body1Strong>Field/Code</Body1Strong>                                        </div>
-                                        <Body1 className="text-red-600">{e.message}</Body1>
+                                        <Body1 className="text-[var(--colorPaletteRedForeground1)]">{e.message}</Body1>
                                     </div>
                                 )) : (
-                                    <Body1 italic className="text-gray-400">Нет детальных ошибок (только общее сообщение)</Body1>
+                                    <Body1 italic className="text-[var(--colorNeutralForeground4)]">Нет детальных ошибок (только общее сообщение)</Body1>
                                 )}
                             </div>
                             <Divider />
                             <div className="mt-2">
                                 <Caption1>Final UI Message (getRtkErrorMessage):</Caption1>
-                                <div className="bg-yellow-100 p-2 mt-1 rounded border border-yellow-200">
+                                <div className="bg-yellow-100 p-2 mt-1 rounded border border-[var(--colorPaletteYellowBorder1)]">
                                     <Body1>{getRtkErrorMessage(lastResponse)}</Body1>
                                 </div>
                             </div>
