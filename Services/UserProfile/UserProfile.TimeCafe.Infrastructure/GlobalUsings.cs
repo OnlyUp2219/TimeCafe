@@ -18,3 +18,4 @@ global using Npgsql;
 global using BuildingBlocks.Extensions;
 global using Microsoft.Extensions.Options;
 global using UserProfile.TimeCafe.Application.Options;
+global using UserProfile.TimeCafe.Application.Contracts;

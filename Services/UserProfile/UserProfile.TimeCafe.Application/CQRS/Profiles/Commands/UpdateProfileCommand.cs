@@ -6,32 +6,22 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
 {
     public UpdateProfileCommandValidator()
     {
-        RuleFor(x => x.User)
-            .NotNull().WithMessage("Профиль обязателен");
-
-        RuleFor(x => x.User.UserId)
-            .ValidGuidId("Такого пользователя не существует");
-
+        RuleFor(x => x.User).NotNull().WithMessage("Профиль обязателен");
+        RuleFor(x => x.User.UserId).ValidGuidId("Такого пользователя не существует");
         RuleFor(x => x.User.FirstName).ValidName("Имя");
-
         RuleFor(x => x.User.LastName).ValidName("Фамилия");
-
-        RuleFor(x => x.User.Gender)
-            .IsInEnum().WithMessage("Пол указан некорректно");
-
+        RuleFor(x => x.User.Gender).IsInEnum().WithMessage("Пол указан некорректно");
         RuleFor(x => x.User.BirthDate).ValidBirthDate();
     }
 }
 
-public class UpdateProfileCommandHandler(IUserRepositories repositories) : ICommandHandler<UpdateProfileCommand, Profile>
+public class UpdateProfileCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<UpdateProfileCommand, Profile>
 {
-    private readonly IUserRepositories _repositories = repositories;
-
-    public async Task<Result<Profile>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Profile>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repositories.GetProfileByIdAsync(request.User.UserId, cancellationToken);
+            var existing = await uow.Profiles.GetByIdAsync(request.User.UserId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new ProfileNotFoundError());
 
@@ -51,10 +41,13 @@ public class UpdateProfileCommandHandler(IUserRepositories repositories) : IComm
                 request.User.ProfileStatus = isCompleted ? ProfileStatus.Completed : ProfileStatus.Pending;
             }
 
-            var updated = await _repositories.UpdateProfileAsync(request.User, cancellationToken);
+            var updated = await uow.Profiles.UpdateAsync(request.User, cancellationToken);
 
             if (updated == null)
                 return Result.Fail(new UpdateFailedError());
+
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new ProfileChangedEvent(updated.UserId), cancellationToken);
 
             var responseProfile = ProfilePhotoUrlMapper.WithApiUrl(updated);
             return Result.Ok(responseProfile);

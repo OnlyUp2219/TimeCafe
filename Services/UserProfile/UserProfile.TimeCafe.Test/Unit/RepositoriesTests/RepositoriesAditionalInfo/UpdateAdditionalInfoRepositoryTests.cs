@@ -3,14 +3,15 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditional
 public class UpdateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
 {
     [Fact]
-    public async Task Repository_UpdateAdditionalInfo_Should_UpdateAndInvalidateCaches()
+    public async Task Repository_UpdateAdditionalInfo_Should_Update()
     {
         await SeedAsync();
         var infoId = TestInfos[1].InfoId;
         var userId = TestInfos[1].UserId;
         var upd = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = "Updated second" };
 
-        var result = await Repository.UpdateAdditionalInfoAsync(upd, CancellationToken.None);
+        var result = await Repository.UpdateAsync(upd);
+        await Context.SaveChangesAsync();
 
         result.Should().NotBeNull();
         var db = await Context.AdditionalInfos.FindAsync(infoId);
@@ -22,7 +23,7 @@ public class UpdateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryT
     {
         var upd = new AdditionalInfo { InfoId = Guid.NewGuid(), UserId = TestInfos[0].UserId, InfoText = "Ghost" };
 
-        var result = await Repository.UpdateAdditionalInfoAsync(upd, CancellationToken.None);
+        var result = await Repository.UpdateAsync(upd);
 
         result.Should().BeNull();
     }

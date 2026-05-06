@@ -1,4 +1,4 @@
-﻿namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
+namespace UserProfile.TimeCafe.Application.CQRS.Photos.Commands;
 
 public record DeleteProfilePhotoCommand(Guid UserId) : ICommand;
 
@@ -10,25 +10,24 @@ public class DeleteProfilePhotoCommandValidator : AbstractValidator<DeleteProfil
     }
 }
 
-public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUserRepositories userRepository) : ICommandHandler<DeleteProfilePhotoCommand>
+public class DeleteProfilePhotoCommandHandler(IProfilePhotoStorage storage, IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeleteProfilePhotoCommand>
 {
-    private readonly IProfilePhotoStorage _storage = storage;
-    private readonly IUserRepositories _userRepository = userRepository;
-
-    public async Task<Result> Handle(DeleteProfilePhotoCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteProfilePhotoCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var profile = await uow.Profiles.GetByIdAsync(request.UserId, cancellationToken);
             if (profile is null)
                 return Result.Fail(new ProfileNotFoundError());
 
-            var deleted = await _storage.DeleteAsync(request.UserId, cancellationToken);
+            var deleted = await storage.DeleteAsync(request.UserId, cancellationToken);
             if (!deleted)
                 return Result.Fail(new PhotoNotFoundError());
 
             profile.PhotoUrl = null;
-            await _userRepository.UpdateProfileAsync(profile, cancellationToken);
+            await uow.Profiles.UpdateAsync(profile, cancellationToken);
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new ProfileChangedEvent(profile.UserId), cancellationToken);
 
             return Result.Ok();
         }

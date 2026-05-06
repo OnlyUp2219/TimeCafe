@@ -15,7 +15,7 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         await SeedProfileAsync(userId3, ExistingUsers.User3FirstName, ExistingUsers.User3LastName);
 
         var query = new GetAllProfilesQuery();
-        var handler = new GetAllProfilesQueryHandler(Repository);
+        var handler = new GetAllProfilesQueryHandler(Uow);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -31,7 +31,7 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
     {
         // Arrange
         var query = new GetAllProfilesQuery();
-        var handler = new GetAllProfilesQueryHandler(Repository);
+        var handler = new GetAllProfilesQueryHandler(Uow);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -48,7 +48,7 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var query = new GetAllProfilesQuery();
-        var handler = new GetAllProfilesQueryHandler(Repository);
+        var handler = new GetAllProfilesQueryHandler(Uow);
 
         // Act
         var result = await handler.Handle(query, CancellationToken.None);
@@ -57,4 +57,3 @@ public class GetAllProfilesQueryTests : BaseCqrsTest
         result.IsFailed.Should().BeTrue();
     }
 }
-

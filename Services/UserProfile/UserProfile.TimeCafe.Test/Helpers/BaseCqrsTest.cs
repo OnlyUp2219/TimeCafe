@@ -8,7 +8,8 @@ public abstract class BaseCqrsTest : IDisposable
     protected readonly HybridCache HybridCache;
     protected readonly Mock<IDistributedCache> CacheMock;
     protected readonly Mock<ILogger<UserRepositories>> LoggerMock;
-    protected readonly IUserRepositories Repository;
+    protected readonly IUnitOfWork Uow;
+    protected readonly Mock<IPublisher> PublisherMock = new();
     private bool _disposed;
 
     protected BaseCqrsTest()
@@ -30,7 +31,7 @@ public abstract class BaseCqrsTest : IDisposable
 
         CacheMock = new Mock<IDistributedCache>();
         LoggerMock = new Mock<ILogger<UserRepositories>>();
-        Repository = new UserRepositories(Context, HybridCache);
+        Uow = new UnitOfWork(Context, HybridCache);
 
         SetupDefaultCacheMocks();
     }
@@ -95,4 +96,3 @@ public abstract class BaseCqrsTest : IDisposable
         _disposed = true;
     }
 }
-

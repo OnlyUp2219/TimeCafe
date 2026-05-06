@@ -1,29 +1,15 @@
-﻿namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
+namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfoByIdQuery(Guid InfoId) : IQuery<AdditionalInfo>;
+public record GetAdditionalInfoByIdQuery(Guid Id) : IQuery<AdditionalInfo>;
 
-public class GetAdditionalInfoByIdQueryValidator : AbstractValidator<GetAdditionalInfoByIdQuery>
+public class GetAdditionalInfoByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetAdditionalInfoByIdQuery, AdditionalInfo>
 {
-    public GetAdditionalInfoByIdQueryValidator()
-    {
-        RuleFor(x => x.InfoId).ValidGuidEntityId("Информации отсутствует");
-    }
-}
-
-public class GetAdditionalInfoByIdQueryHandler(IAdditionalInfoRepository repository) : IQueryHandler<GetAdditionalInfoByIdQuery, AdditionalInfo>
-{
-    private readonly IAdditionalInfoRepository _repository = repository;
-
-    public async Task<Result<AdditionalInfo>> Handle(GetAdditionalInfoByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<AdditionalInfo>> Handle(GetAdditionalInfoByIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var info = await _repository.GetAdditionalInfoByIdAsync(request.InfoId, cancellationToken);
-
-            if (info == null)
-                return Result.Fail(new InfoNotFoundError());
-
-            return Result.Ok(info);
+            var info = await uow.AdditionalInfos.GetByIdAsync(request.Id, cancellationToken);
+            return info != null ? Result.Ok(info) : Result.Fail(new InfoNotFoundError());
         }
         catch (Exception ex)
         {

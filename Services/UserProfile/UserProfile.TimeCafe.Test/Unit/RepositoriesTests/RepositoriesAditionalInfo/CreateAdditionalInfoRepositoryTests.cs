@@ -3,12 +3,13 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditional
 public class CreateAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
 {
     [Fact]
-    public async Task Repository_CreateAdditionalInfo_Should_PersistAndInvalidateUserCache()
+    public async Task Repository_CreateAdditionalInfo_Should_Persist()
     {
         await SeedAsync();
         var newInfo = new AdditionalInfo { UserId = TestInfos[0].UserId, InfoText = "New cached removal" };
 
-        var result = await Repository.CreateAdditionalInfoAsync(newInfo, CancellationToken.None);
+        var result = await Repository.CreateAsync(newInfo);
+        await Context.SaveChangesAsync();
 
         result.Should().NotBeNull();
         var db = await Context.AdditionalInfos.FindAsync(result.InfoId);

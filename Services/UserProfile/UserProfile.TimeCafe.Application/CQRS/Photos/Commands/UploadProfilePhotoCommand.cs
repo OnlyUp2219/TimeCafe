@@ -8,11 +8,9 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
     {
         var opts = photoOptions.Value;
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-
         RuleFor(x => x.ContentType)
             .Must(ct => opts.AllowedContentTypes.Contains(ct))
             .WithMessage($"Неподдерживаемый тип файла. Допустимые: {string.Join(", ", opts.AllowedContentTypes)}");
-
         RuleFor(x => x.Size)
             .GreaterThan(0)
             .LessThanOrEqualTo(opts.MaxSizeBytes)
@@ -22,20 +20,16 @@ public class UploadProfilePhotoCommandValidator : AbstractValidator<UploadProfil
 
 public class UploadProfilePhotoCommandHandler(
     IProfilePhotoStorage storage,
-    IUserRepositories userRepository,
+    IUnitOfWork uow,
+    IPublisher publisher,
     IPhotoModerationService moderationService,
     ILogger<UploadProfilePhotoCommandHandler> logger) : ICommandHandler<UploadProfilePhotoCommand, string>
 {
-    private readonly IProfilePhotoStorage _storage = storage;
-    private readonly IUserRepositories _userRepository = userRepository;
-    private readonly IPhotoModerationService _moderationService = moderationService;
-    private readonly ILogger<UploadProfilePhotoCommandHandler> _logger = logger;
-
-    public async Task<Result<string>> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(UploadProfilePhotoCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var profile = await uow.Profiles.GetByIdAsync(request.UserId, cancellationToken);
             if (profile is null)
                 return Result.Fail(new ProfileNotFoundError());
 
@@ -47,11 +41,11 @@ public class UploadProfilePhotoCommandHandler(
 
                 var moderationBytes = uploadStream.ToArray();
                 await using var moderationStream = new MemoryStream(moderationBytes);
-                var moderationResult = await _moderationService.ModeratePhotoAsync(moderationStream, cancellationToken);
+                var moderationResult = await moderationService.ModeratePhotoAsync(moderationStream, cancellationToken);
 
                 if (!moderationResult.IsSafe)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         "Фото отклонено модерацией для UserId={UserId}. Причина: {Reason}. Scores: {Scores}",
                         request.UserId,
                         moderationResult.Reason,
@@ -60,20 +54,22 @@ public class UploadProfilePhotoCommandHandler(
                     return Result.Fail(new Error($"Фото отклонено: {moderationResult.Reason}").WithMetadata("ErrorCode", "400").WithMetadata("Code", "PhotoRejected"));
                 }
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Фото прошло модерацию для UserId={UserId}. Scores: {Scores}",
                     request.UserId,
                     moderationResult.Scores != null ? string.Join(", ", moderationResult.Scores.Select(s => $"{s.Key}={s.Value:F2}")) : "N/A");
 
                 uploadStream.Position = 0;
 
-                var result = await _storage.UploadAsync(request.UserId, uploadStream, request.ContentType, request.FileName, cancellationToken);
+                var result = await storage.UploadAsync(request.UserId, uploadStream, request.ContentType, request.FileName, cancellationToken);
 
                 if (!result.Success || result.Key is null || result.Size is null || result.ContentType is null)
                     return Result.Fail(new FailedError());
 
                 profile.PhotoUrl = result.Key;
-                await _userRepository.UpdateProfileAsync(profile, cancellationToken);
+                await uow.Profiles.UpdateAsync(profile, cancellationToken);
+                await uow.SaveChangesAsync(cancellationToken);
+                await publisher.Publish(new ProfileChangedEvent(profile.UserId), cancellationToken);
 
                 var responseUrl = ProfilePhotoUrlMapper.BuildApiUrl(request.UserId);
                 return Result.Ok(responseUrl);

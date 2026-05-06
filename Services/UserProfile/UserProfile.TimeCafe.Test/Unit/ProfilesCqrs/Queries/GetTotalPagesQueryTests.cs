@@ -12,10 +12,10 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         }
 
         var query = new GetTotalPagesQuery();
-        var handler = new GetTotalPagesQueryHandler(Repository);
+        var handler = new GetTotalPagesQueryHandler(Uow);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -27,10 +27,10 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
     {
         // Arrange
         var query = new GetTotalPagesQuery();
-        var handler = new GetTotalPagesQueryHandler(Repository);
+        var handler = new GetTotalPagesQueryHandler(Uow);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -43,15 +43,12 @@ public class GetTotalPagesQueryTests : BaseCqrsTest
         // Arrange
         await Context.DisposeAsync();
         var query = new GetTotalPagesQuery();
-        var handler = new GetTotalPagesQueryHandler(Repository);
+        var handler = new GetTotalPagesQueryHandler(Uow);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
     }
 }
-
-

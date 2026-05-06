@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
-
+ 
 public class CreateEmptyCommandTests : BaseCqrsTest
 {
     [Fact]
@@ -8,15 +8,16 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NewProfiles.NewUser1Id);
         var command = new CreateEmptyCommand(userId);
-        var handler = new CreateEmptyCommandHandler(Repository);
+        var handler = new CreateEmptyCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().NotBeNull();
+        PublisherMock.Verify(p => p.Publish(It.Is<ProfileChangedEvent>(e => e.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
         profile!.UserId.Should().Be(userId);
         profile.ProfileStatus.Should().Be(ProfileStatus.Pending);
     }
@@ -28,10 +29,10 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
         var command = new CreateEmptyCommand(userId);
-        var handler = new CreateEmptyCommandHandler(Repository);
+        var handler = new CreateEmptyCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -44,14 +45,13 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         await Context.DisposeAsync();
         var userId = Guid.Parse(NewProfiles.NewUser2Id);
         var command = new CreateEmptyCommand(userId);
-        var handler = new CreateEmptyCommandHandler(Repository);
+        var handler = new CreateEmptyCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
     }
 
     [Fact]
@@ -81,13 +81,4 @@ public class CreateEmptyCommandTests : BaseCqrsTest
         // Assert
         result.IsValid.Should().BeTrue();
     }
-
-    [Fact]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
-    {
-        // This test is no longer applicable as UserId is now Guid (fixed size)
-        // Keeping this as a placeholder showing the change
-    }
 }
-
-

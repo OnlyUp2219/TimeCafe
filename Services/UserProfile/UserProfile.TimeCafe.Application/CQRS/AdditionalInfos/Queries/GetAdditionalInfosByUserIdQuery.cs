@@ -1,33 +1,15 @@
 namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Queries;
 
-public record GetAdditionalInfosByUserIdQuery(Guid UserId, int PageNumber = 1, int PageSize = 10) : IQuery<GetAdditionalInfosByUserIdResponse>;
+public record GetAdditionalInfosByUserIdQuery(Guid UserId, int PageNumber, int PageSize) : IQuery<IEnumerable<AdditionalInfo>>;
 
-public record GetAdditionalInfosByUserIdResponse(IEnumerable<AdditionalInfo> Infos, int TotalCount);
-
-public class GetAdditionalInfosByUserIdQueryValidator : AbstractValidator<GetAdditionalInfosByUserIdQuery>
+public class GetAdditionalInfosByUserIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetAdditionalInfosByUserIdQuery, IEnumerable<AdditionalInfo>>
 {
-    public GetAdditionalInfosByUserIdQueryValidator()
-    {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-    }
-}
-
-public class GetAdditionalInfosByUserIdQueryHandler(IAdditionalInfoRepository repository, IUserRepositories userRepository) : IQueryHandler<GetAdditionalInfosByUserIdQuery, GetAdditionalInfosByUserIdResponse>
-{
-    private readonly IAdditionalInfoRepository _repository = repository;
-    private readonly IUserRepositories _userRepository = userRepository;
-
-    public async Task<Result<GetAdditionalInfosByUserIdResponse>> Handle(GetAdditionalInfosByUserIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<AdditionalInfo>>> Handle(GetAdditionalInfosByUserIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
-            if (profile == null)
-                return Result.Fail(new ProfileNotFoundError());
-
-            var (infos, totalCount) = await _repository.GetPagedAdditionalInfosByUserIdAsync(request.UserId, request.PageNumber, request.PageSize, cancellationToken);
-
-            return Result.Ok(new GetAdditionalInfosByUserIdResponse(infos, totalCount));
+            var infos = await uow.AdditionalInfos.GetByUserIdAsync(request.UserId, cancellationToken);
+            return Result.Ok(infos);
         }
         catch (Exception ex)
         {

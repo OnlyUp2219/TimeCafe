@@ -7,7 +7,7 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         await SeedAsync();
 
-        var result = await Repository.GetAdditionalInfosByUserIdAsync(TestInfos[0].UserId, CancellationToken.None);
+        var result = await Repository.GetByUserIdAsync(TestInfos[0].UserId);
 
         result.Should().HaveCount(2);
         result.First().InfoText.Should().Be("Second info");
@@ -18,8 +18,8 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         await SeedAsync();
 
-        var result1 = await Repository.GetAdditionalInfosByUserIdAsync(TestInfos[0].UserId, CancellationToken.None);
-        var result2 = await Repository.GetAdditionalInfosByUserIdAsync(TestInfos[0].UserId, CancellationToken.None);
+        var result1 = await Repository.GetByUserIdAsync(TestInfos[0].UserId);
+        var result2 = await Repository.GetByUserIdAsync(TestInfos[0].UserId);
 
         result2.Should().HaveCount(2)
             .And.BeEquivalentTo(result1, o => o.Including(i => i.InfoId).Including(i => i.InfoText));
@@ -30,7 +30,7 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         await SeedAsync();
 
-        var result = await Repository.GetAdditionalInfoByIdAsync(TestInfos[1].InfoId, CancellationToken.None);
+        var result = await Repository.GetByIdAsync(TestInfos[1].InfoId);
 
         result.Should().NotBeNull();
         result!.InfoId.Should().Be(TestInfos[1].InfoId);
@@ -42,8 +42,8 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         await SeedAsync();
 
-        var result1 = await Repository.GetAdditionalInfoByIdAsync(TestInfos[0].InfoId, CancellationToken.None);
-        var result2 = await Repository.GetAdditionalInfoByIdAsync(TestInfos[0].InfoId, CancellationToken.None);
+        var result1 = await Repository.GetByIdAsync(TestInfos[0].InfoId);
+        var result2 = await Repository.GetByIdAsync(TestInfos[0].InfoId);
 
         result2.Should().NotBeNull();
         result2!.InfoId.Should().Be(result1!.InfoId);
@@ -54,7 +54,7 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         var nonexistentId = Guid.NewGuid();
 
-        var result = await Repository.GetAdditionalInfoByIdAsync(nonexistentId, CancellationToken.None);
+        var result = await Repository.GetByIdAsync(nonexistentId);
 
         result.Should().BeNull();
     }
@@ -64,7 +64,7 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
     {
         await SeedAsync();
 
-        var result = await Repository.GetAdditionalInfosByUserIdAsync(Guid.NewGuid(), CancellationToken.None);
+        var result = await Repository.GetByUserIdAsync(Guid.NewGuid());
 
         result.Should().BeEmpty();
     }

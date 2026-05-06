@@ -3,13 +3,14 @@ namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 public class UpdateProfileRepositoryTests : BaseRepositoryTest
 {
     [Fact]
-    public async Task Repository_UpdateProfile_Should_UpdateProfileAndInvalidateCache()
+    public async Task Repository_UpdateProfile_Should_UpdateProfile()
     {
         await SeedProfilesAsync();
         var userId = TestProfiles[0].UserId;
         var updatedProfile = new Profile { UserId = userId, FirstName = "Jane" };
 
-        var result = await Repository.UpdateProfileAsync(updatedProfile, CancellationToken.None);
+        var result = await Repository.UpdateAsync(updatedProfile);
+        await Context.SaveChangesAsync();
 
         result.Should().NotBeNull();
 
@@ -32,7 +33,8 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
             BirthDate = new DateOnly(1990, 1, 1)
         };
 
-        var result = await Repository.UpdateProfileAsync(updatedProfile, CancellationToken.None);
+        var result = await Repository.UpdateAsync(updatedProfile);
+        await Context.SaveChangesAsync();
 
         result.Should().NotBeNull();
         result!.FirstName.Should().Be("Updated");
@@ -47,24 +49,9 @@ public class UpdateProfileRepositoryTests : BaseRepositoryTest
     {
         var nonExistentProfile = new Profile { UserId = Guid.NewGuid(), FirstName = "Test" };
 
-        var result = await Repository.UpdateProfileAsync(nonExistentProfile, CancellationToken.None);
+        var result = await Repository.UpdateAsync(nonExistentProfile);
 
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Repository_UpdateProfile_Should_InvalidateSpecificCacheKeys()
-    {
-        await SeedProfilesAsync();
-        var userId = TestProfiles[1].UserId;
-        var _ = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
-
-        var updatedProfile = new Profile { UserId = userId, FirstName = "UpdatedJane" };
-        await Repository.UpdateProfileAsync(updatedProfile, CancellationToken.None);
-
-        var result = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
-        result.Should().NotBeNull();
-        result!.FirstName.Should().Be("UpdatedJane");
     }
 }
 

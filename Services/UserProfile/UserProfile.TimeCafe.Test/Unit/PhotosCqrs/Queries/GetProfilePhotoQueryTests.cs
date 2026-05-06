@@ -24,7 +24,7 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -44,10 +44,11 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<PhotoNotFoundError>().Should().BeTrue();
     }
 
     [Fact]
@@ -62,25 +63,10 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
-    }
-
-    [Fact]
-    public async Task Validator_Should_FailValidation_WhenUserIdEmpty()
-    {
-        // Arrange
-        var query = new GetProfilePhotoQuery(Guid.Empty);
-        var validator = new GetProfilePhotoQueryValidator();
-
-        // Act
-        var result = await validator.ValidateAsync(query);
-
-        // Assert
-        result.IsValid.Should().BeFalse();
     }
 
     [Theory]
@@ -99,13 +85,10 @@ public class GetProfilePhotoQueryTests : BaseCqrsTest
         var handler = new GetProfilePhotoQueryHandler(_storageMock.Object);
 
         // Act
-        var result = await handler.Handle(query, CancellationToken.None);
+        var result = await handler.Handle(query);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.ContentType.Should().Be(contentType);
     }
 }
-
-
-

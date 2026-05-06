@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
-
+ 
 public class CreateProfileCommandTests : BaseCqrsTest
 {
     [Fact]
@@ -8,10 +8,10 @@ public class CreateProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NewProfiles.NewUser1Id);
         var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
-        var handler = new CreateProfileCommandHandler(Repository);
+        var handler = new CreateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -20,6 +20,7 @@ public class CreateProfileCommandTests : BaseCqrsTest
         result.Value.FirstName.Should().Be(ExistingUsers.User1FirstName);
         result.Value.LastName.Should().Be(ExistingUsers.User1LastName);
         result.Value.Gender.Should().Be(ExistingUsers.User1Gender);
+        PublisherMock.Verify(p => p.Publish(It.Is<ProfileChangedEvent>(e => e.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -29,10 +30,10 @@ public class CreateProfileCommandTests : BaseCqrsTest
         var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
         var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
-        var handler = new CreateProfileCommandHandler(Repository);
+        var handler = new CreateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -45,14 +46,13 @@ public class CreateProfileCommandTests : BaseCqrsTest
         await Context.DisposeAsync();
         var userId = Guid.Parse(NewProfiles.NewUser2Id);
         var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, ExistingUsers.User1Gender);
-        var handler = new CreateProfileCommandHandler(Repository);
+        var handler = new CreateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
     }
 
     [Theory]
@@ -98,15 +98,14 @@ public class CreateProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NewProfiles.NewUser1Id);
         var command = new CreateProfileCommand(userId, ExistingUsers.User1FirstName, ExistingUsers.User1LastName, Gender.Female);
-        var handler = new CreateProfileCommandHandler(Repository);
+        var handler = new CreateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value!.ProfileStatus.Should().Be(ProfileStatus.Pending);
+        PublisherMock.Verify(p => p.Publish(It.Is<ProfileChangedEvent>(e => e.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
     }
 }
-
-

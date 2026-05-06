@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
-
+ 
 public class UpdateProfileCommandTests : BaseCqrsTest
 {
     [Fact]
@@ -17,16 +17,17 @@ public class UpdateProfileCommandTests : BaseCqrsTest
             ProfileStatus = ProfileStatus.Completed
         };
         var command = new UpdateProfileCommand(updatedProfile);
-        var handler = new UpdateProfileCommandHandler(Repository);
+        var handler = new UpdateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value!.FirstName.Should().Be(UpdateData.UpdatedFirstName);
         result.Value.LastName.Should().Be(UpdateData.UpdatedLastName);
+        PublisherMock.Verify(p => p.Publish(It.Is<ProfileChangedEvent>(e => e.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -41,13 +42,14 @@ public class UpdateProfileCommandTests : BaseCqrsTest
             LastName = TestProfiles.TestLastName
         };
         var command = new UpdateProfileCommand(profile);
-        var handler = new UpdateProfileCommandHandler(Repository);
+        var handler = new UpdateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<ProfileNotFoundError>().Should().BeTrue();
     }
 
     [Fact]
@@ -60,14 +62,13 @@ public class UpdateProfileCommandTests : BaseCqrsTest
 
         var profile = new Profile { UserId = userId, FirstName = TestProfiles.TestFirstName, LastName = TestProfiles.TestLastName };
         var command = new UpdateProfileCommand(profile);
-        var handler = new UpdateProfileCommandHandler(Repository);
+        var handler = new UpdateProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
     }
 
     [Fact]
@@ -121,5 +122,3 @@ public class UpdateProfileCommandTests : BaseCqrsTest
         result.Errors.Count.Should().Be(2);
     }
 }
-
-

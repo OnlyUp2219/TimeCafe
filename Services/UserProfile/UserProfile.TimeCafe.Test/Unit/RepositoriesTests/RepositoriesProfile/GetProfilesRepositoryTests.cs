@@ -7,7 +7,7 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result = await Repository.GetAllProfilesAsync(CancellationToken.None);
+        var result = await Repository.GetAllAsync(CancellationToken.None);
 
         result.Should().HaveCount(TestProfiles.Count)
             .And.BeEquivalentTo(TestProfiles, options => options
@@ -20,8 +20,8 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result1 = await Repository.GetAllProfilesAsync(CancellationToken.None);
-        var result2 = await Repository.GetAllProfilesAsync(CancellationToken.None);
+        var result1 = await Repository.GetAllAsync(CancellationToken.None);
+        var result2 = await Repository.GetAllAsync(CancellationToken.None);
 
         result2.Should().HaveCount(TestProfiles.Count)
             .And.BeEquivalentTo(result1, options => options
@@ -34,7 +34,7 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result = await Repository.GetProfileByIdAsync(TestProfiles[0].UserId, CancellationToken.None);
+        var result = await Repository.GetByIdAsync(TestProfiles[0].UserId);
 
         result.Should().NotBeNull()
             .And.BeEquivalentTo(TestProfiles[0], options => options
@@ -47,8 +47,8 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result1 = await Repository.GetProfileByIdAsync(TestProfiles[0].UserId, CancellationToken.None);
-        var result2 = await Repository.GetProfileByIdAsync(TestProfiles[0].UserId, CancellationToken.None);
+        var result1 = await Repository.GetByIdAsync(TestProfiles[0].UserId);
+        var result2 = await Repository.GetByIdAsync(TestProfiles[0].UserId);
 
         result2.Should().NotBeNull()
             .And.BeEquivalentTo(result1, options => options
@@ -61,7 +61,7 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
     {
         var nonexistentId = Guid.NewGuid();
 
-        var result = await Repository.GetProfileByIdAsync(nonexistentId, CancellationToken.None);
+        var result = await Repository.GetByIdAsync(nonexistentId);
 
         result.Should().BeNull();
     }

@@ -7,23 +7,22 @@ public class DeleteProfileCommandValidator : AbstractValidator<DeleteProfileComm
     public DeleteProfileCommandValidator()
     {
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-
     }
 }
 
-public class DeleteProfileCommandHandler(IUserRepositories userRepositories) : ICommandHandler<DeleteProfileCommand>
+public class DeleteProfileCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeleteProfileCommand>
 {
-    private readonly IUserRepositories _userRepositories = userRepositories;
-
-    public async Task<Result> Handle(DeleteProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteProfileCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _userRepositories.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var existing = await uow.Profiles.GetByIdAsync(request.UserId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new ProfileNotFoundError());
 
-            await _userRepositories.DeleteProfileAsync(request.UserId, cancellationToken);
+            await uow.Profiles.DeleteAsync(request.UserId, cancellationToken);
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new ProfileChangedEvent(request.UserId), cancellationToken);
             return Result.Ok();
         }
         catch (Exception ex)

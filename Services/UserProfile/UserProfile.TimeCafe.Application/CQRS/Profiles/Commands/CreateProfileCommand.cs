@@ -7,22 +7,18 @@ public class CreateProfileCommandValidator : AbstractValidator<CreateProfileComm
     public CreateProfileCommandValidator()
     {
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-
         RuleFor(x => x.FirstName).ValidName("Имя");
-
         RuleFor(x => x.LastName).ValidName("Фамилия");
     }
 }
 
-public class CreateProfileCommandHandler(IUserRepositories repository) : ICommandHandler<CreateProfileCommand, Profile>
+public class CreateProfileCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CreateProfileCommand, Profile>
 {
-    private readonly IUserRepositories _repository = repository;
-
-    public async Task<Result<Profile>> Handle(CreateProfileCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Profile>> Handle(CreateProfileCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var existing = await uow.Profiles.GetByIdAsync(request.UserId, cancellationToken);
             if (existing != null)
                 return Result.Fail(new ProfileAlreadyExistsError());
 
@@ -36,10 +32,13 @@ public class CreateProfileCommandHandler(IUserRepositories repository) : IComman
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
-            var created = await _repository.CreateProfileAsync(profile, cancellationToken);
+            var created = await uow.Profiles.CreateAsync(profile, cancellationToken);
 
             if (created == null)
                 return Result.Fail(new CreateFailedError());
+
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new ProfileChangedEvent(created.UserId), cancellationToken);
 
             return Result.Ok(created);
         }

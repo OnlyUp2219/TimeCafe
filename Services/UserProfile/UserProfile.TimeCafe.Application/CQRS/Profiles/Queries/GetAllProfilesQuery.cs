@@ -1,26 +1,15 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
 public record GetAllProfilesQuery() : IQuery<IEnumerable<Profile>>;
-public class GetAllProfilesQueryValidator : AbstractValidator<GetAllProfilesQuery>
-{
-    public GetAllProfilesQueryValidator()
-    {
-        // Нет параметров для валидации
-    }
-}
 
-public class GetAllProfilesQueryHandler(IUserRepositories userRepositories) : IQueryHandler<GetAllProfilesQuery, IEnumerable<Profile>>
+public class GetAllProfilesQueryHandler(IUnitOfWork uow) : IQueryHandler<GetAllProfilesQuery, IEnumerable<Profile>>
 {
-    private readonly IUserRepositories _userRepositories = userRepositories;
-
-    public async Task<Result<IEnumerable<Profile>>> Handle(GetAllProfilesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Profile>>> Handle(GetAllProfilesQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profiles = await _userRepositories.GetAllProfilesAsync(cancellationToken);
-            var nonNullProfiles = profiles.Where(p => p != null).Cast<Profile>();
-            var responseProfiles = ProfilePhotoUrlMapper.WithApiUrl(nonNullProfiles);
-            return Result.Ok<IEnumerable<Profile>>(responseProfiles);
+            var profiles = await uow.Profiles.GetAllAsync(cancellationToken);
+            return Result.Ok<IEnumerable<Profile>>(ProfilePhotoUrlMapper.WithApiUrl(profiles.Where(p => p != null)!));
         }
         catch (Exception ex)
         {

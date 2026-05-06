@@ -1,4 +1,4 @@
-﻿namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
+namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
 public record CreateAdditionalInfoCommand(Guid UserId, string InfoText, string? CreatedBy = null) : ICommand<AdditionalInfo>;
 
@@ -7,24 +7,18 @@ public class CreateAdditionalInfoCommandValidator : AbstractValidator<CreateAddi
     public CreateAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-
         RuleFor(x => x.InfoText).ValidInfoText();
-
-        RuleFor(x => x.CreatedBy).ValidCreatedBy()
-            .When(x => !string.IsNullOrEmpty(x.CreatedBy));
+        RuleFor(x => x.CreatedBy).ValidCreatedBy().When(x => !string.IsNullOrEmpty(x.CreatedBy));
     }
 }
 
-public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository, IUserRepositories userRepository) : ICommandHandler<CreateAdditionalInfoCommand, AdditionalInfo>
+public class CreateAdditionalInfoCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CreateAdditionalInfoCommand, AdditionalInfo>
 {
-    private readonly IAdditionalInfoRepository _repository = repository;
-    private readonly IUserRepositories _userRepository = userRepository;
-
-    public async Task<Result<AdditionalInfo>> Handle(CreateAdditionalInfoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<AdditionalInfo>> Handle(CreateAdditionalInfoCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profile = await _userRepository.GetProfileByIdAsync(request.UserId, cancellationToken);
+            var profile = await uow.Profiles.GetByIdAsync(request.UserId, cancellationToken);
             if (profile == null)
                 return Result.Fail(new ProfileNotFoundError());
 
@@ -36,7 +30,9 @@ public class CreateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
                 CreatedAt = DateTimeOffset.UtcNow
             };
 
-            var created = await _repository.CreateAdditionalInfoAsync(info, cancellationToken);
+            var created = await uow.AdditionalInfos.CreateAsync(info, cancellationToken);
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new AdditionalInfoChangedEvent(request.UserId), cancellationToken);
 
             return Result.Ok(created);
         }

@@ -5,7 +5,7 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<IEnumerable<Profile?>> GetAllProfilesAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Profile?>> GetAllAsync(CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_All,
@@ -14,10 +14,10 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync(token),
             tags: [CacheTags.Profiles],
-            cancellationToken: cancellationToken);
+            cancellationToken: ct);
     }
 
-    public async Task<IEnumerable<Profile?>> GetProfilesPageAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Profile?>> GetPageAsync(int pageNumber, int pageSize, CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync(
             CacheKeys.Profile_Page(pageNumber),
@@ -29,99 +29,77 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
                 .ToListAsync(token),
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
             tags: [CacheTags.Profiles],
-            cancellationToken: cancellationToken);
+            cancellationToken: ct);
     }
 
-    public async Task<int> GetTotalPageAsync(CancellationToken cancellationToken = default)
+    public async Task<int> GetTotalPageAsync(CancellationToken ct = default)
     {
-        return await _context.Profiles.CountAsync(cancellationToken);
+        return await _context.Profiles.CountAsync(ct);
     }
 
-    public async Task<Profile?> GetProfileByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<Profile?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _cache.GetOrCreateAsync(
-            CacheKeys.Profile_ById(userId),
+            CacheKeys.Profile_ById(id),
             async token => await _context.Profiles
                 .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.UserId == userId, token),
-            tags: [CacheTags.Profiles, CacheTags.Profile(userId)],
-            cancellationToken: cancellationToken);
+                .FirstOrDefaultAsync(c => c.UserId == id, token),
+            tags: [CacheTags.Profiles, CacheTags.Profile(id)],
+            cancellationToken: ct);
     }
 
-    public async Task<Profile?> CreateProfileAsync(Profile profile, CancellationToken cancellationToken = default)
-    {
-        profile.CreatedAt = DateTimeOffset.UtcNow;
-        _context.Profiles.Add(profile);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
-
-        return profile;
-    }
-
-    public async Task<Profile?> UpdateProfileAsync(Profile profile, CancellationToken cancellationToken = default)
-    {
-        var existingClient = await _context.Profiles.FindAsync([profile.UserId], cancellationToken);
-
-        if (existingClient is null)
-            return null;
-
-        _context.Entry(existingClient).CurrentValues.SetValues(profile);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
-
-        return profile;
-    }
-
-    public async Task DeleteProfileAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        var client = await _context.Profiles.FindAsync([userId], cancellationToken);
-
-        if (client is null)
-            return;
-
-        _context.Profiles.Remove(client);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
-        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfos, cancellationToken);
-        await _cache.RemoveByTagAsync(CacheTags.AdditionalInfoByUser(userId), cancellationToken);
-    }
-
-    public async Task CreateEmptyAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        var exist = await _context.Profiles
-            .AnyAsync(u => u.UserId == userId, cancellationToken);
-        if (exist)
-            return;
-
-        try
-        {
-            _context.Profiles.Add(new Profile()
-            {
-                UserId = userId,
-                FirstName = "",
-                LastName = "",
-                Gender = Gender.NotSpecified,
-                ProfileStatus = ProfileStatus.Pending,
-                CreatedAt = DateTimeOffset.UtcNow,
-            });
-
-            await _context.SaveChangesAsync(cancellationToken);
-            await _cache.RemoveByTagAsync(CacheTags.Profiles, cancellationToken);
-            await _cache.RemoveByTagAsync(CacheTags.Profile(userId), cancellationToken);
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-        }
-    }
-
-    public async Task<IEnumerable<Profile>> GetProfilesByIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Profile>> GetByIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct = default)
     {
         return await _context.Profiles
             .AsNoTracking()
             .Where(p => userIds.Contains(p.UserId))
-            .ToListAsync(cancellationToken);
+            .ToListAsync(ct);
+    }
+
+    public async Task CreateEmptyAsync(Guid userId, CancellationToken ct = default)
+    {
+        var exist = await _context.Profiles
+            .AnyAsync(u => u.UserId == userId, ct);
+        if (exist)
+            return;
+
+        _context.Profiles.Add(new Profile()
+        {
+            UserId = userId,
+            FirstName = "",
+            LastName = "",
+            Gender = Gender.NotSpecified,
+            ProfileStatus = ProfileStatus.Pending,
+            CreatedAt = DateTimeOffset.UtcNow,
+        });
+    }
+
+
+    public async Task<Profile> CreateAsync(Profile entity, CancellationToken ct = default)
+    {
+        entity.CreatedAt = DateTimeOffset.UtcNow;
+        _context.Profiles.Add(entity);
+        return entity;
+    }
+
+    public async Task<Profile?> UpdateAsync(Profile entity, CancellationToken ct = default)
+    {
+        var existingClient = await _context.Profiles.FindAsync([entity.UserId], ct);
+        if (existingClient is null)
+            return null;
+
+        _context.Entry(existingClient).CurrentValues.SetValues(entity);
+
+        return existingClient;
+    }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    {
+        var client = await _context.Profiles.FindAsync([id], ct);
+        if (client is null)
+            return false;
+
+        _context.Profiles.Remove(client);
+        return true;
     }
 }

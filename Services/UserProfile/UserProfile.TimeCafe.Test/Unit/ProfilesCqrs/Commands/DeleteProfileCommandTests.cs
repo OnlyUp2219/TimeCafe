@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
-
+ 
 public class DeleteProfileCommandTests : BaseCqrsTest
 {
     [Fact]
@@ -9,15 +9,16 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         var userId = Guid.Parse(ExistingUsers.User1Id);
         await SeedProfileAsync(userId);
         var command = new DeleteProfileCommand(userId);
-        var handler = new DeleteProfileCommandHandler(Repository);
+        var handler = new DeleteProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         var profile = await Context.Profiles.FindAsync(userId);
         profile.Should().BeNull();
+        PublisherMock.Verify(p => p.Publish(It.Is<ProfileChangedEvent>(e => e.UserId == userId), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -26,13 +27,14 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NonExistingUsers.UserId1);
         var command = new DeleteProfileCommand(userId);
-        var handler = new DeleteProfileCommandHandler(Repository);
+        var handler = new DeleteProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<ProfileNotFoundError>().Should().BeTrue();
     }
 
     [Fact]
@@ -44,14 +46,13 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         await Context.DisposeAsync();
 
         var command = new DeleteProfileCommand(userId);
-        var handler = new DeleteProfileCommandHandler(Repository);
+        var handler = new DeleteProfileCommandHandler(Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-
     }
 
     [Fact]
@@ -81,13 +82,4 @@ public class DeleteProfileCommandTests : BaseCqrsTest
         // Assert
         result.IsValid.Should().BeTrue();
     }
-
-    [Fact]
-    public async Task Validator_Should_FailValidation_WhenUserIdIsTooLong()
-    {
-        // This test is no longer applicable as UserId is now Guid (fixed size)
-        // Keeping this as a placeholder showing the change
-    }
 }
-
-

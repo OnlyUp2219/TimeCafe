@@ -22,15 +22,15 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
             .ReturnsAsync(true);
 
         var command = new DeleteProfilePhotoCommand(userId);
-        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         // Verify profile PhotoUrl was cleared
-        var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
+        var updatedProfile = await Context.Profiles.FindAsync(userId);
         updatedProfile!.PhotoUrl.Should().BeNull();
     }
 
@@ -40,13 +40,14 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
         // Arrange
         var userId = Guid.Parse(NonExistingUsers.UserId1);
         var command = new DeleteProfilePhotoCommand(userId);
-        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<ProfileNotFoundError>().Should().BeTrue();
         // Verify storage was not called
         _storageMock.Verify(s => s.DeleteAsync(
             It.IsAny<Guid>(),
@@ -64,13 +65,14 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
             .ReturnsAsync(false);
 
         var command = new DeleteProfilePhotoCommand(userId);
-        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<PhotoNotFoundError>().Should().BeTrue();
     }
 
     [Fact]
@@ -86,10 +88,10 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
             .ThrowsAsync(new Exception("Storage error"));
 
         var command = new DeleteProfilePhotoCommand(userId);
-        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -137,16 +139,14 @@ public class DeleteProfilePhotoCommandTests : BaseCqrsTest
             .ReturnsAsync(true);
 
         var command = new DeleteProfilePhotoCommand(userId);
-        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Repository);
+        var handler = new DeleteProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
+        var updatedProfile = await Context.Profiles.FindAsync(userId);
         updatedProfile!.PhotoUrl.Should().BeNull();
     }
 }
-
-

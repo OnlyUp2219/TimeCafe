@@ -1,4 +1,4 @@
-﻿namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
+namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
 public record DeleteAdditionalInfoCommand(Guid InfoId) : ICommand;
 
@@ -10,18 +10,19 @@ public class DeleteAdditionalInfoCommandValidator : AbstractValidator<DeleteAddi
     }
 }
 
-public class DeleteAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : ICommandHandler<DeleteAdditionalInfoCommand>
+public class DeleteAdditionalInfoCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeleteAdditionalInfoCommand>
 {
-    private readonly IAdditionalInfoRepository _repository = repository;
-
-    public async Task<Result> Handle(DeleteAdditionalInfoCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteAdditionalInfoCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var deleted = await _repository.DeleteAdditionalInfoAsync(request.InfoId, cancellationToken);
-
-            if (!deleted)
+            var existing = await uow.AdditionalInfos.GetByIdAsync(request.InfoId, cancellationToken);
+            if (existing == null)
                 return Result.Fail(new InfoNotFoundError());
+
+            await uow.AdditionalInfos.DeleteAsync(request.InfoId, cancellationToken);
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new AdditionalInfoChangedEvent(existing.UserId), cancellationToken);
 
             return Result.Ok();
         }

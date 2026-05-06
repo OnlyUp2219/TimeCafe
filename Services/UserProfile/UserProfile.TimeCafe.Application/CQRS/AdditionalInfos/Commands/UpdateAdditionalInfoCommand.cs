@@ -1,4 +1,4 @@
-﻿namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
+namespace UserProfile.TimeCafe.Application.CQRS.AdditionalInfos.Commands;
 
 public record UpdateAdditionalInfoCommand(Guid InfoId, Guid UserId, string InfoText, string? CreatedBy = null) : ICommand<AdditionalInfo>;
 
@@ -7,28 +7,22 @@ public class UpdateAdditionalInfoCommandValidator : AbstractValidator<UpdateAddi
     public UpdateAdditionalInfoCommandValidator()
     {
         RuleFor(x => x.InfoId).ValidGuidEntityId("Информации отсутствует");
-
         RuleFor(x => x.UserId).ValidGuidEntityId("Такого пользователя не существует");
-
         RuleFor(x => x.InfoText).ValidInfoText();
-
         RuleFor(x => x.CreatedBy).ValidCreatedBy();
     }
 }
 
-public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository repository) : ICommandHandler<UpdateAdditionalInfoCommand, AdditionalInfo>
+public class UpdateAdditionalInfoCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<UpdateAdditionalInfoCommand, AdditionalInfo>
 {
-    private readonly IAdditionalInfoRepository _repository = repository;
-
-    public async Task<Result<AdditionalInfo>> Handle(UpdateAdditionalInfoCommand request, CancellationToken cancellationToken)
+    public async Task<Result<AdditionalInfo>> Handle(UpdateAdditionalInfoCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetAdditionalInfoByIdAsync(request.InfoId, cancellationToken);
+            var existing = await uow.AdditionalInfos.GetByIdAsync(request.InfoId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new InfoNotFoundError());
 
-            //TODO : Mapping and updating CreatedBy
             var additionalInfo = new AdditionalInfo
             {
                 InfoId = request.InfoId,
@@ -38,10 +32,14 @@ public class UpdateAdditionalInfoCommandHandler(IAdditionalInfoRepository reposi
                 CreatedBy = request.CreatedBy,
             };
 
-            var updated = await _repository.UpdateAdditionalInfoAsync(additionalInfo, cancellationToken);
+            //TODO : Mapping and updating CreatedBy
+            var updated = await uow.AdditionalInfos.UpdateAsync(additionalInfo, cancellationToken);
 
             if (updated == null)
                 return Result.Fail(new UpdateFailedError());
+
+            await uow.SaveChangesAsync(cancellationToken);
+            await publisher.Publish(new AdditionalInfoChangedEvent(request.UserId), cancellationToken);
 
             return Result.Ok(updated);
         }

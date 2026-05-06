@@ -7,7 +7,7 @@ public class PaginationRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result = await Repository.GetProfilesPageAsync(1, 2, CancellationToken.None);
+        var result = await Repository.GetPageAsync(1, 2);
 
         result.Should().NotBeNull()
             .And.HaveCount(2);
@@ -18,8 +18,8 @@ public class PaginationRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result1 = await Repository.GetProfilesPageAsync(1, 2, CancellationToken.None);
-        var result2 = await Repository.GetProfilesPageAsync(1, 2, CancellationToken.None);
+        var result1 = await Repository.GetPageAsync(1, 2);
+        var result2 = await Repository.GetPageAsync(1, 2);
 
         result2.Should().NotBeNull()
             .And.HaveCount(2)
@@ -33,7 +33,7 @@ public class PaginationRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result = await Repository.GetProfilesPageAsync(2, 2, CancellationToken.None);
+        var result = await Repository.GetPageAsync(2, 2);
 
         result.Should().NotBeNull()
             .And.HaveCount(1);
@@ -44,7 +44,7 @@ public class PaginationRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result = await Repository.GetProfilesPageAsync(10, 2, CancellationToken.None);
+        var result = await Repository.GetPageAsync(10, 2);
 
         result.Should().NotBeNull().And.BeEmpty();
     }
@@ -54,13 +54,13 @@ public class PaginationRepositoryTests : BaseRepositoryTest
     {
         await SeedProfilesAsync();
 
-        var result1 = await Repository.GetProfilesPageAsync(1, 2, CancellationToken.None);
+        var result1 = await Repository.GetPageAsync(1, 2);
         result1.Should().HaveCount(2);
 
         var newProfile = new Profile { UserId = Guid.NewGuid(), FirstName = "NewUser", CreatedAt = DateTimeOffset.UtcNow.AddDays(1) };
-        await Repository.CreateProfileAsync(newProfile, CancellationToken.None);
+        await Repository.CreateAsync(newProfile);
 
-        var result2 = await Repository.GetProfilesPageAsync(1, 2, CancellationToken.None);
+        var result2 = await Repository.GetPageAsync(1, 2);
         result2.Should().HaveCount(2);
     }
 }

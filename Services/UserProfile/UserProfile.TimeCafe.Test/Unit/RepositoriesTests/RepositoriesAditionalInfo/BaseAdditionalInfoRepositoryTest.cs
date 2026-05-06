@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Caching.Hybrid;
-
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditionalInfo;
 
 public abstract class BaseAdditionalInfoRepositoryTest : IDisposable

@@ -43,17 +43,17 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(true, $"profiles/{userId}/photo", null, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object, _moderationMock.Object, _loggerMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be($"/userprofile/S3/image/{userId}");
 
         // Verify profile was updated
-        var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
+        var updatedProfile = await Context.Profiles.FindAsync(userId);
         updatedProfile!.PhotoUrl.Should().Be($"profiles/{userId}/photo");
     }
 
@@ -64,13 +64,14 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
         var stream = new MemoryStream(PhotoTestData.TestPhotoBytes);
         var userId = Guid.Parse(NonExistingUsers.UserId1);
         var command = new UploadProfilePhotoCommand(userId, stream, PhotoTestData.JpegContentType, PhotoTestData.TestFileName, PhotoTestData.ValidPhotoSize);
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object, _moderationMock.Object, _loggerMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
+        result.HasError<ProfileNotFoundError>().Should().BeTrue();
         // Verify storage was not called
         _storageMock.Verify(s => s.UploadAsync(
             It.IsAny<Guid>(),
@@ -97,10 +98,10 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(false));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object, _moderationMock.Object, _loggerMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
@@ -212,14 +213,14 @@ public class UploadProfilePhotoCommandTests : BaseCqrsTest
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PhotoUploadDto(true, "profiles/new-photo", null, PhotoTestData.ValidPhotoSize, PhotoTestData.JpegContentType));
 
-        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Repository, _moderationMock.Object, _loggerMock.Object);
+        var handler = new UploadProfilePhotoCommandHandler(_storageMock.Object, Uow, PublisherMock.Object, _moderationMock.Object, _loggerMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        var updatedProfile = await Repository.GetProfileByIdAsync(userId, CancellationToken.None);
+        var updatedProfile = await Context.Profiles.FindAsync(userId);
         updatedProfile!.PhotoUrl.Should().Be("profiles/new-photo");
     }
 }

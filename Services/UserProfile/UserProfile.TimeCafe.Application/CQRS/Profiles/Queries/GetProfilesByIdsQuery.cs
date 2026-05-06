@@ -1,35 +1,19 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfilesByIdsQuery(IEnumerable<Guid> UserIds) : IQuery<List<Profile>>;
+public record GetProfilesByIdsQuery(IEnumerable<Guid> Ids) : IQuery<IEnumerable<Profile>>;
 
-public class GetProfilesByIdsQueryHandler(IUserRepositories repository) : IQueryHandler<GetProfilesByIdsQuery, List<Profile>>
+public class GetProfilesByIdsQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfilesByIdsQuery, IEnumerable<Profile>>
 {
-    private readonly IUserRepositories _repository = repository;
-
-    public async Task<Result<List<Profile>>> Handle(GetProfilesByIdsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Profile>>> Handle(GetProfilesByIdsQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profiles = await _repository.GetProfilesByIdsAsync(request.UserIds, cancellationToken);
-
-            var mappedProfiles = profiles
-                .Select(ProfilePhotoUrlMapper.WithApiUrl)
-                .ToList();
-
-            return Result.Ok(mappedProfiles);
+            var profiles = await uow.Profiles.GetByIdsAsync(request.Ids, cancellationToken);
+            return Result.Ok<IEnumerable<Profile>>(ProfilePhotoUrlMapper.WithApiUrl(profiles));
         }
         catch (Exception ex)
         {
-            return Result.Fail(new Error("Не удалось получить профили").CausedBy(ex));
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
-    }
-}
-
-public class GetProfilesByIdsQueryValidator : AbstractValidator<GetProfilesByIdsQuery>
-{
-    public GetProfilesByIdsQueryValidator()
-    {
-        RuleFor(x => x.UserIds)
-            .NotEmpty().WithMessage("Список идентификаторов не может быть пустым");
     }
 }

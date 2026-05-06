@@ -1,13 +1,22 @@
 namespace UserProfile.TimeCafe.Test.Unit.AdditionalInfosCqrs.Commands;
-
+ 
 public class CreateAdditionalInfoCommandHandlerTests
 {
+    private readonly Mock<IAdditionalInfoRepository> _repoMock = new();
+    private readonly Mock<IUserRepositories> _userRepoMock = new();
+    private readonly Mock<IUnitOfWork> _uowMock = new();
+    private readonly Mock<IPublisher> _publisherMock = new();
+
+    public CreateAdditionalInfoCommandHandlerTests()
+    {
+        _uowMock.Setup(u => u.AdditionalInfos).Returns(_repoMock.Object);
+        _uowMock.Setup(u => u.Profiles).Returns(_userRepoMock.Object);
+    }
+
     [Fact]
     public async Task Handle_Should_Create_Info_And_Return_Success_Result()
     {
         // Arrange
-        var repoMock = new Mock<IAdditionalInfoRepository>();
-        var userRepoMock = new Mock<IUserRepositories>();
         var command = new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), TestInfoTexts.TestInfo, "creator");
         var profile = new Profile
         {
@@ -15,21 +24,22 @@ public class CreateAdditionalInfoCommandHandlerTests
             FirstName = ExistingUsers.User1FirstName,
             LastName = ExistingUsers.User1LastName
         };
-        userRepoMock.Setup(u => u.GetProfileByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()))
+        _userRepoMock.Setup(u => u.GetByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(profile);
-        repoMock.Setup(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
+        _repoMock.Setup(r => r.CreateAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AdditionalInfo a, CancellationToken _) => { a.InfoId = Guid.Parse(AdditionalInfoData.Info1Id); return a; });
-        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
+        var handler = new CreateAdditionalInfoCommandHandler(_uowMock.Object, _publisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value!.InfoId.Should().Be(Guid.Parse(AdditionalInfoData.Info1Id));
-        userRepoMock.Verify(u => u.GetProfileByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()), Times.Once());
-        repoMock.Verify(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Once());
+        _userRepoMock.Verify(u => u.GetByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()), Times.Once());
+        _repoMock.Verify(r => r.CreateAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Once());
+        _publisherMock.Verify(p => p.Publish(It.Is<AdditionalInfoChangedEvent>(e => e.UserId == Guid.Parse(ExistingUsers.User1Id)), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -64,46 +74,40 @@ public class CreateAdditionalInfoCommandHandlerTests
     public async Task Handle_Should_Return_ProfileNotFound_When_Profile_Does_Not_Exist()
     {
         // Arrange
-        var repoMock = new Mock<IAdditionalInfoRepository>();
-        var userRepoMock = new Mock<IUserRepositories>();
         var command = new CreateAdditionalInfoCommand(Guid.Parse(NonExistingUsers.UserId1), TestInfoTexts.TestInfo, "creator");
-        userRepoMock.Setup(u => u.GetProfileByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()))
+        _userRepoMock.Setup(u => u.GetByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Profile?)null);
-        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
+        var handler = new CreateAdditionalInfoCommandHandler(_uowMock.Object, _publisherMock.Object);
 
         // Act
-        var result = await handler.Handle(command, CancellationToken.None);
+        var result = await handler.Handle(command);
 
         // Assert
         result.IsFailed.Should().BeTrue();
-        userRepoMock.Verify(u => u.GetProfileByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()), Times.Once());
-        repoMock.Verify(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Never());
+        _userRepoMock.Verify(u => u.GetByIdAsync(Guid.Parse(NonExistingUsers.UserId1), It.IsAny<CancellationToken>()), Times.Once());
+        _repoMock.Verify(r => r.CreateAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()), Times.Never());
     }
 
     [Fact]
     public async Task Handle_Should_ReturnFailed_When_Exception()
     {
         // Arrange
-        var repoMock = new Mock<IAdditionalInfoRepository>();
-        var userRepoMock = new Mock<IUserRepositories>();
         var profile = new Profile
         {
             UserId = Guid.Parse(ExistingUsers.User1Id),
             FirstName = ExistingUsers.User1FirstName,
             LastName = ExistingUsers.User1LastName
         };
-        userRepoMock.Setup(u => u.GetProfileByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()))
+        _userRepoMock.Setup(u => u.GetByIdAsync(Guid.Parse(ExistingUsers.User1Id), It.IsAny<CancellationToken>()))
             .ReturnsAsync(profile);
-        repoMock.Setup(r => r.CreateAdditionalInfoAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
+        _repoMock.Setup(r => r.CreateAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("DB error"));
-        var handler = new CreateAdditionalInfoCommandHandler(repoMock.Object, userRepoMock.Object);
+        var handler = new CreateAdditionalInfoCommandHandler(_uowMock.Object, _publisherMock.Object);
 
         // Act
-        var result = await handler.Handle(new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), "Txt"), CancellationToken.None);
+        var result = await handler.Handle(new CreateAdditionalInfoCommand(Guid.Parse(ExistingUsers.User1Id), "Txt"));
 
         // Assert
         result.IsFailed.Should().BeTrue();
     }
 }
-
-
