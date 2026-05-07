@@ -10,6 +10,7 @@ public static class DependencyInjection
         services.AddScoped<IVisitRepository, VisitRepository>();
         services.AddScoped<IUserLoyaltyRepository, UserLoyaltyRepository>();
         services.AddScoped<IVisitBalancePolicyService, VisitBalancePolicyService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

@@ -2,23 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
 public record GetThemeByIdQuery(Guid ThemeId) : IQuery<Theme>;
 
-public class GetThemeByIdQueryValidator : AbstractValidator<GetThemeByIdQuery>
+public class GetThemeByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetThemeByIdQuery, Theme>
 {
-    public GetThemeByIdQueryValidator()
-    {
-        RuleFor(x => x.ThemeId).ValidGuidEntityId("Тема не найдена");
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-public class GetThemeByIdQueryHandler(IThemeRepository repository) : IQueryHandler<GetThemeByIdQuery, Theme>
-{
-    private readonly IThemeRepository _repository = repository;
-
-    public async Task<Result<Theme>> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var theme = await _repository.GetByIdAsync(request.ThemeId);
+            var theme = await _uow.Themes.GetByIdAsync(request.ThemeId, cancellationToken);
 
             if (theme == null)
                 return Result.Fail(new ThemeNotFoundError());

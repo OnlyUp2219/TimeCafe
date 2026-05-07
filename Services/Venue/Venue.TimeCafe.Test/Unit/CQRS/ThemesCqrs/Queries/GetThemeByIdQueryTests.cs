@@ -6,7 +6,7 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
 
     public GetThemeByIdQueryTests()
     {
-        _handler = new GetThemeByIdQueryHandler(ThemeRepositoryMock.Object);
+        _handler = new GetThemeByIdQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -47,21 +47,5 @@ public class GetThemeByIdQueryTests : BaseCqrsHandlerTest
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", false, "Тема не найдена")]
-    [InlineData("a1111111-1111-1111-1111-111111111111", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string themeIdStr, bool isValid, string? expectedError)
-    {
-        var query = new GetThemeByIdQuery(Guid.Parse(themeIdStr));
-        var validator = new GetThemeByIdQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
-    }
 }
 

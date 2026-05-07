@@ -6,7 +6,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
 
     public CreateTariffCommandTests()
     {
-        _handler = new CreateTariffCommandHandler(TariffRepositoryMock.Object, ThemeRepositoryMock.Object);
+        _handler = new CreateTariffCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -31,6 +31,7 @@ public class CreateTariffCommandTests : BaseCqrsHandlerTest
         };
 
         TariffRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Tariff>(), It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

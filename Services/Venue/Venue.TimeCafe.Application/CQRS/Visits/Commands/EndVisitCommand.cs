@@ -11,36 +11,34 @@ public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
 }
 
 public class EndVisitCommandHandler(
-    IVisitRepository repository,
+    IUnitOfWork uow,
     IMapper mapper,
     IPublishEndpoint publishEndpoint,
+    IPublisher publisher,
     ILogger<EndVisitCommandHandler> logger,
-    IPromotionRepository promotionRepository,
-    IUserLoyaltyRepository userLoyaltyRepository,
     IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<EndVisitCommand, EndVisitResponse>
 {
-    private readonly IVisitRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly IPublisher _publisher = publisher;
     private readonly ILogger<EndVisitCommandHandler> _logger = logger;
-    private readonly IPromotionRepository _promotionRepository = promotionRepository;
-    private readonly IUserLoyaltyRepository _userLoyaltyRepository = userLoyaltyRepository;
     private readonly VenuePricingOptions _options = options.Value;
 
-    public async Task<Result<EndVisitResponse>> Handle(EndVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result<EndVisitResponse>> Handle(EndVisitCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.VisitId);
+            var existing = await _uow.Visits.GetWithTariffByIdAsync(request.VisitId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new VisitNotFoundError());
 
             var exitTime = DateTimeOffset.UtcNow;
-            var activePromotions = await _promotionRepository.GetActiveByDateAsync(exitTime, cancellationToken);
+            var activePromotions = await _uow.Promotions.GetActiveByDateAsync(exitTime, cancellationToken);
             var globalDiscount = activePromotions.Where(p => p.Type == PromotionType.Global).Max(p => p.DiscountPercent) ?? 0m;
             var tariffDiscount = activePromotions.Where(p => p.Type == PromotionType.TariffSpecific && p.TariffId == existing.TariffId).Max(p => p.DiscountPercent) ?? 0m;
 
-            var userLoyalty = await _userLoyaltyRepository.GetByUserIdAsync(existing.UserId, cancellationToken);
+            var userLoyalty = await _uow.UserLoyalties.GetByUserIdAsync(existing.UserId, cancellationToken);
             var personalDiscount = userLoyalty?.PersonalDiscountPercent ?? 0m;
 
             var visit = Visit.Update(
@@ -57,7 +55,7 @@ public class EndVisitCommandHandler(
                     personalDiscount: personalDiscount),
                 status: VisitStatus.Completed);
 
-            var updated = await _repository.UpdateAsync(visit, saveChanges: false, cancellationToken);
+            var updated = await _uow.Visits.UpdateAsync(visit, cancellationToken);
             if (updated == null)
                 return Result.Fail(new EndVisitFailedError());
 
@@ -69,7 +67,8 @@ public class EndVisitCommandHandler(
                 CompletedAt = exitTime
             }, cancellationToken);
 
-            await _repository.SaveChangesAsync(cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);
 
             return Result.Ok(new EndVisitResponse(updated, visit.CalculatedCost ?? 0));
         }

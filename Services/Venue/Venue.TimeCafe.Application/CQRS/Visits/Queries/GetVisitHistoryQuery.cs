@@ -2,27 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetVisitHistoryQuery(Guid UserId, int PageNumber, int PageSize) : IQuery<IEnumerable<VisitWithTariffDto>>;
 
-public class GetVisitHistoryQueryValidator : AbstractValidator<GetVisitHistoryQuery>
+public class GetVisitHistoryQueryHandler(IUnitOfWork uow) : IQueryHandler<GetVisitHistoryQuery, IEnumerable<VisitWithTariffDto>>
 {
-    public GetVisitHistoryQueryValidator()
-    {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
+    private readonly IUnitOfWork _uow = uow;
 
-        RuleFor(x => x.PageNumber).ValidPageNumber();
-
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
-
-public class GetVisitHistoryQueryHandler(IVisitRepository repository) : IQueryHandler<GetVisitHistoryQuery, IEnumerable<VisitWithTariffDto>>
-{
-    private readonly IVisitRepository _repository = repository;
-
-    public async Task<Result<IEnumerable<VisitWithTariffDto>>> Handle(GetVisitHistoryQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<VisitWithTariffDto>>> Handle(GetVisitHistoryQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var visits = await _repository.GetVisitHistoryByUserAsync(request.UserId, request.PageNumber, request.PageSize);
+            var visits = await _uow.Visits.GetVisitHistoryByUserAsync(request.UserId, request.PageNumber, request.PageSize, cancellationToken);
             return Result.Ok(visits);
         }
         catch (Exception ex)

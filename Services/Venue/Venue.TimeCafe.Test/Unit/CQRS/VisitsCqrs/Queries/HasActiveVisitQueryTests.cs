@@ -6,7 +6,7 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
 
     public HasActiveVisitQueryTests()
     {
-        _handler = new HasActiveVisitQueryHandler(VisitRepositoryMock.Object);
+        _handler = new HasActiveVisitQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -49,17 +49,5 @@ public class HasActiveVisitQueryTests : BaseCqrsHandlerTest
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string userIdStr, bool isValid)
-    {
-        var query = new HasActiveVisitQuery(Guid.Parse(userIdStr));
-        var validator = new HasActiveVisitQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-    }
 }
 

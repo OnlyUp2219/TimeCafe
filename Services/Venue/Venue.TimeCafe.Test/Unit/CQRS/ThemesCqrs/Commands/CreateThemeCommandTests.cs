@@ -6,7 +6,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
 
     public CreateThemeCommandTests()
     {
-        _handler = new CreateThemeCommandHandler(ThemeRepositoryMock.Object);
+        _handler = new CreateThemeCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -16,6 +16,7 @@ public class CreateThemeCommandTests : BaseCqrsHandlerTest
         var theme = new Theme { ThemeId = TestData.ExistingThemes.Theme1Id, Name = TestData.NewThemes.NewTheme1Name, Emoji = TestData.NewThemes.NewTheme1Emoji, Colors = TestData.NewThemes.NewTheme1Colors };
 
         ThemeRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

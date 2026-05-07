@@ -8,7 +8,7 @@ public class MockVisitBalancePolicyService : IVisitBalancePolicyService
         int? plannedMinutes,
         bool requirePositiveBalance,
         bool requireEnoughForPlanned,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         return Task.FromResult(new VisitBalanceCheckResult(true));
     }

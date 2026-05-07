@@ -4,25 +4,16 @@ public record GetThemesPageQuery(int PageNumber, int PageSize) : IQuery<GetTheme
 
 public record GetThemesPageResponse(IEnumerable<Theme> Themes, int TotalCount);
 
-public class GetThemesPageQueryValidator : AbstractValidator<GetThemesPageQuery>
+public class GetThemesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetThemesPageQuery, GetThemesPageResponse>
 {
-    public GetThemesPageQueryValidator()
-    {
-        RuleFor(x => x.PageNumber).ValidPageNumber();
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-public class GetThemesPageQueryHandler(IThemeRepository repository) : IQueryHandler<GetThemesPageQuery, GetThemesPageResponse>
-{
-    private readonly IThemeRepository _repository = repository;
-
-    public async Task<Result<GetThemesPageResponse>> Handle(GetThemesPageQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetThemesPageResponse>> Handle(GetThemesPageQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var themes = await _repository.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
-            var totalCount = await _repository.GetTotalCountAsync(cancellationToken);
+            var themes = await _uow.Themes.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
+            var totalCount = await _uow.Themes.GetTotalCountAsync(cancellationToken);
 
             return Result.Ok(new GetThemesPageResponse(themes, totalCount));
         }

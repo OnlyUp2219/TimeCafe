@@ -2,22 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
 public record GetAllThemesQuery() : IQuery<IEnumerable<Theme>>;
 
-public class GetAllThemesQueryValidator : AbstractValidator<GetAllThemesQuery>
+public class GetAllThemesQueryHandler(IUnitOfWork uow) : IQueryHandler<GetAllThemesQuery, IEnumerable<Theme>>
 {
-    public GetAllThemesQueryValidator()
-    {
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-public class GetAllThemesQueryHandler(IThemeRepository repository) : IQueryHandler<GetAllThemesQuery, IEnumerable<Theme>>
-{
-    private readonly IThemeRepository _repository = repository;
-
-    public async Task<Result<IEnumerable<Theme>>> Handle(GetAllThemesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<Theme>>> Handle(GetAllThemesQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var themes = await _repository.GetAllAsync();
+            var themes = await _uow.Themes.GetAllAsync(cancellationToken);
             return Result.Ok(themes);
         }
         catch (Exception ex)

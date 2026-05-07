@@ -37,23 +37,10 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         await ThemeRepository.DeleteAsync(themeId);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Themes.FindAsync(themeId);
-        fromDb.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Repository_DeleteAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var theme = await SeedThemeAsync(TestData.ExistingThemes.Theme3Name);
-
-        // Act
-        await ThemeRepository.DeleteAsync(theme.ThemeId);
-
-        // Assert
-        var fromDb = await Context.Themes.FindAsync(theme.ThemeId);
         fromDb.Should().BeNull();
     }
 
@@ -66,6 +53,7 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         var firstDelete = await ThemeRepository.DeleteAsync(themeId);
+        await Context.SaveChangesAsync();
         var secondDelete = await ThemeRepository.DeleteAsync(themeId);
 
         // Assert

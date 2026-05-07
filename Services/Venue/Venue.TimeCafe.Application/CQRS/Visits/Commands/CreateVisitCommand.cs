@@ -20,20 +20,17 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
     }
 }
 
-public class CreateVisitCommandHandler(
-    IVisitRepository repository,
-    ITariffRepository tariffRepository,
-    IVisitBalancePolicyService visitBalancePolicyService) : ICommandHandler<CreateVisitCommand, Visit>
+public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyService visitBalancePolicyService, IPublisher publisher) : ICommandHandler<CreateVisitCommand, Visit>
 {
-    private readonly IVisitRepository _repository = repository;
-    private readonly ITariffRepository _tariffRepository = tariffRepository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly IVisitBalancePolicyService _visitBalancePolicyService = visitBalancePolicyService;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<Visit>> Handle(CreateVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Visit>> Handle(CreateVisitCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tariff = await _tariffRepository.GetByIdAsync(request.TariffId);
+            var tariff = await _uow.Tariffs.GetWithThemeByIdAsync(request.TariffId, cancellationToken);
             if (tariff == null)
                 return Result.Fail(new TariffNotFoundError());
 
@@ -61,10 +58,13 @@ public class CreateVisitCommandHandler(
                 Status = VisitStatus.Active
             };
 
-            var created = await _repository.CreateAsync(visit);
+            var created = await _uow.Visits.CreateAsync(visit, cancellationToken);
 
             if (created == null)
                 return Result.Fail(new CreateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new VisitChangedEvent(created.VisitId, created.UserId), cancellationToken);
 
             return Result.Ok(created);
         }

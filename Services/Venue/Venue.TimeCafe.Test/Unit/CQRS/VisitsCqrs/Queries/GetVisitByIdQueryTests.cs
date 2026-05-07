@@ -6,7 +6,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
 
     public GetVisitByIdQueryTests()
     {
-        _handler = new GetVisitByIdQueryHandler(VisitRepositoryMock.Object);
+        _handler = new GetVisitByIdQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
+        VisitRepositoryMock.Setup(r => r.GetWithTariffByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -38,7 +38,7 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
         var query = new GetVisitByIdQuery(visitId);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetWithTariffByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -51,23 +51,11 @@ public class GetVisitByIdQueryTests : BaseCqrsHandlerTest
         var visitId = Guid.NewGuid();
         var query = new GetVisitByIdQuery(visitId);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
+        VisitRepositoryMock.Setup(r => r.GetWithTariffByIdAsync(visitId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", true)]
-    public async Task Validator_Should_ValidateCorrectly(string visitIdStr, bool isValid)
-    {
-        var query = new GetVisitByIdQuery(Guid.Parse(visitIdStr));
-        var validator = new GetVisitByIdQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-    }
 }
 

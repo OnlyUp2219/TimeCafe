@@ -6,7 +6,7 @@ public class GetAllThemesQueryTests : BaseCqrsHandlerTest
 
     public GetAllThemesQueryTests()
     {
-        _handler = new GetAllThemesQueryHandler(ThemeRepositoryMock.Object);
+        _handler = new GetAllThemesQueryHandler(UowMock.Object);
     }
 
     [Fact]

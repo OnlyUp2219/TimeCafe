@@ -6,7 +6,7 @@ public class GetUserLoyaltyQueryHandler(IUserLoyaltyRepository repository) : IQu
 {
     private readonly IUserLoyaltyRepository _repository = repository;
 
-    public async Task<Result<UserLoyalty>> Handle(GetUserLoyaltyQuery request, CancellationToken cancellationToken)
+    public async Task<Result<UserLoyalty>> Handle(GetUserLoyaltyQuery request, CancellationToken cancellationToken = default)
     {
         var loyalty = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
 

@@ -75,34 +75,13 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Act
         var result = await PromotionRepository.CreateAsync(promotion);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Promotions.FindAsync(result.PromotionId);
         fromDb.Should().NotBeNull();
         fromDb!.Name.Should().Be(TestData.NewPromotions.NewPromotion2Name);
         fromDb.DiscountPercent.Should().Be(TestData.NewPromotions.NewPromotion2DiscountPercent);
-    }
-
-    [Fact]
-    public async Task Repository_CreateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var promotion = new Promotion
-        {
-            Name = TestData.DefaultValues.DefaultPromotionName,
-            Description = TestData.DefaultValues.DefaultPromotionDescription,
-            DiscountPercent = TestData.DefaultValues.DefaultDiscountPercent,
-            ValidFrom = TestData.DateTimeData.GetValidFromDate(),
-            ValidTo = TestData.DateTimeData.GetValidToDate(),
-            IsActive = true
-        };
-
-        // Act
-        var result = await PromotionRepository.CreateAsync(promotion);
-
-        // Assert
-        var fromDb = await Context.Promotions.FindAsync(result.PromotionId);
-        fromDb.Should().NotBeNull();
     }
 
     [Theory]

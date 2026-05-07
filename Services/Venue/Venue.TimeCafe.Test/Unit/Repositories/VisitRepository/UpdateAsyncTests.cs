@@ -53,20 +53,7 @@ public class UpdateAsyncTests : BaseCqrsTest
         result.Should().BeNull();
     }
 
-    [Fact]
-    public async Task Repository_UpdateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var existing = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
-        existing.Status = VisitStatus.Completed;
 
-        // Act
-        await VisitRepository.UpdateAsync(existing);
-
-        // Assert
-        var fromDb = await Context.Visits.FindAsync(existing.VisitId);
-        fromDb!.Status.Should().Be(VisitStatus.Completed);
-    }
 
     [Fact]
     public async Task Repository_UpdateAsync_Should_PersistChanges()
@@ -79,6 +66,7 @@ public class UpdateAsyncTests : BaseCqrsTest
 
         // Act
         await VisitRepository.UpdateAsync(existing);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Visits.FindAsync(existing.VisitId);

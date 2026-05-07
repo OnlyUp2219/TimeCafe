@@ -8,7 +8,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
 
     public GetTariffByIdQueryTests()
     {
-        _handler = new GetTariffByIdQueryHandler(TariffRepositoryMock.Object);
+        _handler = new GetTariffByIdQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -24,7 +24,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
             BillingType = TestData.ExistingTariffs.Tariff1BillingType
         };
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -39,7 +39,7 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
         var query = new GetTariffByIdQuery(tariffId);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(query, CancellationToken.None);
 
@@ -52,37 +52,10 @@ public class GetTariffByIdQueryTests : BaseCqrsHandlerTest
         var tariffId = Guid.NewGuid();
         var query = new GetTariffByIdQuery(tariffId);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(tariffId, It.IsAny<CancellationToken>())).ThrowsAsync(new Exception());
 
         var result = await _handler.Handle(query, CancellationToken.None);
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", false, "Тариф не найден")]
-    public async Task Validator_Should_ValidateCorrectly_InvalidCases(string tariffIdStr, bool isValid, string? expectedError)
-    {
-        var query = new GetTariffByIdQuery(Guid.Parse(tariffIdStr));
-        var validator = new GetTariffByIdQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
-    }
-
-    [Fact]
-    public async Task Validator_Should_ValidateCorrectly_ValidGuid()
-    {
-        var query = new GetTariffByIdQuery(Guid.NewGuid());
-        var validator = new GetTariffByIdQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().BeTrue();
     }
 }
 

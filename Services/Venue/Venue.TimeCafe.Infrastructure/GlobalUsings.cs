@@ -15,4 +15,6 @@ global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.Repositories;
 global using Venue.TimeCafe.Infrastructure.Services;
-
+global using IUnitOfWork = Venue.TimeCafe.Application.Contracts.IUnitOfWork;
+global using MediatR;
+global using Venue.TimeCafe.Application.CQRS.Loyalty.Events;

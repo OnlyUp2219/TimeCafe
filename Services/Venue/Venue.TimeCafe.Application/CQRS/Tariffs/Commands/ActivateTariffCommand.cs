@@ -10,22 +10,26 @@ public class ActivateTariffCommandValidator : AbstractValidator<ActivateTariffCo
     }
 }
 
-public class ActivateTariffCommandHandler(ITariffRepository repository) : ICommandHandler<ActivateTariffCommand>
+public class ActivateTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<ActivateTariffCommand>
 {
-    private readonly ITariffRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result> Handle(ActivateTariffCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.TariffId);
+            var existing = await _uow.Tariffs.GetByIdAsync(request.TariffId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new TariffNotFoundError());
 
-            var result = await _repository.ActivateAsync(request.TariffId);
+            var result = await _uow.Tariffs.ActivateAsync(request.TariffId, cancellationToken);
 
             if (!result)
                 return Result.Fail(new ActivateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new TariffChangedEvent(request.TariffId), cancellationToken);
 
             return Result.Ok();
         }

@@ -86,27 +86,5 @@ public class ActivateAsyncTests : BaseCqrsTest
         fromDb!.LastModified.Should().BeAfter(originalModified);
     }
 
-    [Fact]
-    public async Task Repository_ActivateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var tariff = new Tariff
-        {
-            Name = TestData.ExistingTariffs.Tariff3Name,
-            PricePerMinute = TestData.ExistingTariffs.Tariff3PricePerMinute,
-            BillingType = TestData.ExistingTariffs.Tariff3BillingType,
-            IsActive = false,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
-        Context.Tariffs.Add(tariff);
-        await Context.SaveChangesAsync();
-
-        // Act
-        await TariffRepository.ActivateAsync(tariff.TariffId);
-
-        // Assert
-        var fromDb = await Context.Tariffs.FindAsync(tariff.TariffId);
-        fromDb!.IsActive.Should().BeTrue();
-    }
 }
 

@@ -6,11 +6,8 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
 
     public CreateVisitCommandTests()
     {
-        _handler = new CreateVisitCommandHandler(
-            VisitRepositoryMock.Object,
-            TariffRepositoryMock.Object,
-            VisitBalancePolicyServiceMock.Object);
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _handler = new CreateVisitCommandHandler(UowMock.Object, VisitBalancePolicyServiceMock.Object, PublisherMock.Object);
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TariffWithThemeDto
             {
                 TariffId = TestData.DefaultValues.DefaultTariffId,
@@ -48,6 +45,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
         };
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -90,7 +88,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
         var command = new CreateVisitCommand(userId, tariffId);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

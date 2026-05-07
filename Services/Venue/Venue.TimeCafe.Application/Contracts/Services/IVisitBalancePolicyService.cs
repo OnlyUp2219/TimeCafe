@@ -10,6 +10,6 @@ public interface IVisitBalancePolicyService
         int? plannedMinutes,
         bool requirePositiveBalance,
         bool requireEnoughForPlanned,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 }
 

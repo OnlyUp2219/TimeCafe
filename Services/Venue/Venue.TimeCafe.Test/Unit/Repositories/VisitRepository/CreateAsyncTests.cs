@@ -84,6 +84,7 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Act
         var result = await VisitRepository.CreateAsync(visit);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Visits.FindAsync(result.VisitId);
@@ -91,23 +92,6 @@ public class CreateAsyncTests : BaseCqrsTest
         fromDb!.UserId.Should().Be(TestData.NewVisits.NewVisit1UserId);
     }
 
-    [Fact]
-    public async Task Repository_CreateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
-        var visit = new Visit
-        {
-            UserId = TestData.ExistingVisits.Visit1UserId,
-            TariffId = tariff.TariffId
-        };
 
-        // Act
-        var result = await VisitRepository.CreateAsync(visit);
-
-        // Assert
-        var fromDb = await Context.Visits.FindAsync(result.VisitId);
-        fromDb.Should().NotBeNull();
-    }
 }
 

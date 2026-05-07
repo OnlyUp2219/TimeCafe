@@ -1,12 +1,18 @@
+using Microsoft.Extensions.Options;
+using Venue.TimeCafe.Application.Options;
+
 namespace Venue.TimeCafe.Test.Unit.CQRS.TariffsCqrs.Queries;
 
 public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 {
     private readonly GetTariffsPageQueryHandler _handler;
+    private readonly Mock<IOptionsSnapshot<VenuePricingOptions>> _optionsMock;
 
     public GetTariffsPageQueryTests()
     {
-        _handler = new GetTariffsPageQueryHandler(TariffRepositoryMock.Object);
+        _optionsMock = new Mock<IOptionsSnapshot<VenuePricingOptions>>();
+        _optionsMock.Setup(o => o.Value).Returns(new VenuePricingOptions { MaxTotalDiscountPercent = 20 });
+        _handler = new GetTariffsPageQueryHandler(UowMock.Object, _optionsMock.Object);
     }
 
     [Fact]
@@ -56,28 +62,6 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 
         var result = await _handler.Handle(query, CancellationToken.None);
         result.IsFailed.Should().BeTrue();
-    }
-
-    [Theory]
-    [InlineData(0, 10, false, "Страница должна быть больше 0")]
-    [InlineData(-1, 10, false, "Страница должна быть больше 0")]
-    [InlineData(1, 0, false, "Размер страницы должен быть больше 0")]
-    [InlineData(1, -1, false, "Размер страницы должен быть больше 0")]
-    [InlineData(1, 101, false, "Размер страницы не может быть больше 100")]
-    [InlineData(1, 10, true, null)]
-    [InlineData(1, 100, true, null)]
-    public async Task Validator_Should_ValidateCorrectly(int pageNumber, int pageSize, bool isValid, string? expectedError)
-    {
-        var query = new GetTariffsPageQuery(pageNumber, pageSize);
-        var validator = new GetTariffsPageQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
     }
 }
 

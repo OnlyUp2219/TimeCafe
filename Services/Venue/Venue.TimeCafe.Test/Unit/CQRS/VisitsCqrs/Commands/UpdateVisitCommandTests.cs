@@ -8,30 +8,30 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
 
     public UpdateVisitCommandTests()
     {
-        _handler = new UpdateVisitCommandHandler(VisitRepositoryMock.Object, TariffRepositoryMock.Object, MapperMock.Object);
+        _handler = new UpdateVisitCommandHandler(UowMock.Object, MapperMock.Object, PublisherMock.Object);
 
-        MapperMock.Setup(m => m.Map(It.IsAny<UpdateVisitCommand>(), It.IsAny<VisitWithTariffDto>()))
-            .Callback((UpdateVisitCommand cmd, VisitWithTariffDto dto) =>
+        MapperMock.Setup(m => m.Map(It.IsAny<UpdateVisitCommand>(), It.IsAny<Visit>()))
+            .Callback((UpdateVisitCommand cmd, Visit entity) =>
             {
-                dto.UserId = cmd.UserId;
-                dto.TariffId = cmd.TariffId;
-                dto.EntryTime = cmd.EntryTime;
-                dto.ExitTime = cmd.ExitTime;
-                dto.CalculatedCost = cmd.CalculatedCost;
-                dto.Status = cmd.Status;
+                entity.UserId = cmd.UserId;
+                entity.TariffId = cmd.TariffId;
+                entity.EntryTime = cmd.EntryTime;
+                entity.ExitTime = cmd.ExitTime;
+                entity.CalculatedCost = cmd.CalculatedCost;
+                entity.Status = cmd.Status;
             });
 
-        MapperMock.Setup(m => m.Map<Visit>(It.IsAny<VisitWithTariffDto>()))
-            .Returns((VisitWithTariffDto dto) => new Visit(dto.VisitId)
+        MapperMock.Setup(m => m.Map<Visit>(It.IsAny<Visit>()))
+            .Returns((Visit src) => new Visit(src.VisitId)
             {
-                UserId = dto.UserId,
-                TariffId = dto.TariffId,
-                EntryTime = dto.EntryTime,
-                ExitTime = dto.ExitTime,
-                CalculatedCost = dto.CalculatedCost,
-                Status = dto.Status
+                UserId = src.UserId,
+                TariffId = src.TariffId,
+                EntryTime = src.EntryTime,
+                ExitTime = src.ExitTime,
+                CalculatedCost = src.CalculatedCost,
+                Status = src.Status
             });
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TariffWithThemeDto
             {
                 TariffId = TestData.DefaultValues.DefaultTariffId,
@@ -79,8 +79,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(existingVisitDto);
-        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -103,7 +104,7 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
             null,
             VisitStatus.Active);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((Visit?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -136,8 +137,9 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
             Status = VisitStatus.Active
         };
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(existingVisitDto);
-        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>(), It.IsAny<bool>(), It.IsAny<CancellationToken>())).ReturnsAsync((Visit?)null!);
+        var visit = new Visit { VisitId = visitId, UserId = userId, TariffId = tariffId, EntryTime = entryTime, Status = VisitStatus.Active };
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync((Visit?)null!);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -192,8 +194,8 @@ public class UpdateVisitCommandTests : BaseCqrsHandlerTest
             null,
             VisitStatus.Active);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(existingDto);
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(new Visit { VisitId = visitId });
+        TariffRepositoryMock.Setup(r => r.GetWithThemeByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

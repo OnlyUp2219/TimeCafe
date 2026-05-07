@@ -6,7 +6,7 @@ public class GetActiveVisitsQueryTests : BaseCqrsHandlerTest
 
     public GetActiveVisitsQueryTests()
     {
-        _handler = new GetActiveVisitsQueryHandler(VisitRepositoryMock.Object);
+        _handler = new GetActiveVisitsQueryHandler(UowMock.Object);
     }
 
     [Fact]

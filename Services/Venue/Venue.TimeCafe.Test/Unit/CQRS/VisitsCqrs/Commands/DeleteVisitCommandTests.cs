@@ -6,7 +6,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
 
     public DeleteVisitCommandTests()
     {
-        _handler = new DeleteVisitCommandHandler(VisitRepositoryMock.Object);
+        _handler = new DeleteVisitCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -14,17 +14,10 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = TestData.ExistingVisits.Visit1UserId;
         var command = new DeleteVisitCommand(visitId);
-        var visitDto = new VisitWithTariffDto
-        {
-            VisitId = visitId,
-            UserId = TestData.ExistingVisits.Visit1UserId,
-            TariffId = Guid.NewGuid(),
-            EntryTime = DateTimeOffset.UtcNow,
-            Status = VisitStatus.Active
-        };
-
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
+        var visit = new Visit { VisitId = visitId };
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
         VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -37,7 +30,7 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
         var visitId = TestData.NonExistingIds.NonExistingVisitId;
         var command = new DeleteVisitCommand(visitId);
 
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((VisitWithTariffDto?)null);
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync((Visit?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -49,16 +42,8 @@ public class DeleteVisitCommandTests : BaseCqrsHandlerTest
     {
         var visitId = TestData.ExistingVisits.Visit1UserId;
         var command = new DeleteVisitCommand(visitId);
-        var visitDto = new VisitWithTariffDto
-        {
-            VisitId = visitId,
-            UserId = TestData.ExistingVisits.Visit1UserId,
-            TariffId = Guid.NewGuid(),
-            EntryTime = DateTimeOffset.UtcNow,
-            Status = VisitStatus.Active
-        };
-
-        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
+        var visit = new Visit { VisitId = visitId };
+        VisitRepositoryMock.Setup(r => r.GetByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
         VisitRepositoryMock.Setup(r => r.DeleteAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
         var result = await _handler.Handle(command, CancellationToken.None);

@@ -6,7 +6,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
 
     public UpdateThemeCommandTests()
     {
-        _handler = new UpdateThemeCommandHandler(ThemeRepositoryMock.Object);
+        _handler = new UpdateThemeCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -17,6 +17,7 @@ public class UpdateThemeCommandTests : BaseCqrsHandlerTest
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
         ThemeRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Theme>(), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

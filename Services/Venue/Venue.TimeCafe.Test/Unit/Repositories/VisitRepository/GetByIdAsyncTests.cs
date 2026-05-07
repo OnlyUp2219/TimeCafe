@@ -45,7 +45,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_GetByIdAsync_Should_IncludeTariffRelation()
+    public async Task Repository_GetByIdAsync_Should_LoadCorrectTariffId()
     {
         // Arrange
         var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
@@ -56,8 +56,7 @@ public class GetByIdAsyncTests : BaseCqrsTest
 
         // Assert
         result.Should().NotBeNull();
-        result!.TariffName.Should().NotBeNullOrEmpty();
-        result.TariffName.Should().Be(TestData.ExistingTariffs.Tariff1Name);
+        result!.TariffId.Should().Be(tariff.TariffId);
     }
 
     [Fact]

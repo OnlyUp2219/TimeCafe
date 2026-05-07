@@ -6,7 +6,7 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
 
     public GetPromotionByIdQueryTests()
     {
-        _handler = new GetPromotionByIdQueryHandler(PromotionRepositoryMock.Object);
+        _handler = new GetPromotionByIdQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -49,21 +49,5 @@ public class GetPromotionByIdQueryTests : BaseCqrsHandlerTest
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", false, "Акция не найдена")]
-    [InlineData("99999999-9999-9999-9999-999999999999", true, null)]
-    public async Task Validator_Should_ValidateCorrectly(string promotionIdStr, bool isValid, string? expectedError)
-    {
-        var query = new GetPromotionByIdQuery(Guid.Parse(promotionIdStr));
-        var validator = new GetPromotionByIdQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-        if (!isValid)
-        {
-            result.Errors.Should().Contain(e => e.ErrorMessage.Contains(expectedError!));
-        }
-    }
 }
 

@@ -2,23 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffByIdQuery(Guid TariffId) : IQuery<TariffWithThemeDto>;
 
-public class GetTariffByIdQueryValidator : AbstractValidator<GetTariffByIdQuery>
+public class GetTariffByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetTariffByIdQuery, TariffWithThemeDto>
 {
-    public GetTariffByIdQueryValidator()
-    {
-        RuleFor(x => x.TariffId).ValidGuidEntityId("Тариф не найден");
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-public class GetTariffByIdQueryHandler(ITariffRepository repository) : IQueryHandler<GetTariffByIdQuery, TariffWithThemeDto>
-{
-    private readonly ITariffRepository _repository = repository;
-
-    public async Task<Result<TariffWithThemeDto>> Handle(GetTariffByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<TariffWithThemeDto>> Handle(GetTariffByIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tariff = await _repository.GetByIdAsync(request.TariffId);
+            var tariff = await _uow.Tariffs.GetWithThemeByIdAsync(request.TariffId, cancellationToken);
 
             if (tariff == null)
                 return Result.Fail(new TariffNotFoundError());

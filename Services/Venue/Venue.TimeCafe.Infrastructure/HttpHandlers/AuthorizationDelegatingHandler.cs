@@ -11,7 +11,7 @@ public class AuthorizationDelegatingHandler : DelegatingHandler
         _httpContextAccessor = httpContextAccessor;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         var httpContext = _httpContextAccessor.HttpContext;
 

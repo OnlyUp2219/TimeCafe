@@ -60,6 +60,7 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
 
         // Act
         await SeedTariffAsync(TestData.NewTariffs.NewTariff1Name, TestData.NewTariffs.NewTariff1Price);
+        await Context.SaveChangesAsync();
         var countAfter = await TariffRepository.GetTotalCountAsync();
 
         // Assert
@@ -77,6 +78,7 @@ public class GetTotalCountAsyncTests : BaseCqrsTest
 
         // Act
         await TariffRepository.DeleteAsync(tariff2.TariffId);
+        await Context.SaveChangesAsync();
         var countAfter = await TariffRepository.GetTotalCountAsync();
 
         // Assert

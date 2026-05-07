@@ -2,23 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetActiveVisitByUserQuery(Guid UserId) : IQuery<VisitWithTariffDto>;
 
-public class GetActiveVisitByUserQueryValidator : AbstractValidator<GetActiveVisitByUserQuery>
+public class GetActiveVisitByUserQueryHandler(IUnitOfWork uow) : IQueryHandler<GetActiveVisitByUserQuery, VisitWithTariffDto>
 {
-    public GetActiveVisitByUserQueryValidator()
-    {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-public class GetActiveVisitByUserQueryHandler(IVisitRepository repository) : IQueryHandler<GetActiveVisitByUserQuery, VisitWithTariffDto>
-{
-    private readonly IVisitRepository _repository = repository;
-
-    public async Task<Result<VisitWithTariffDto>> Handle(GetActiveVisitByUserQuery request, CancellationToken cancellationToken)
+    public async Task<Result<VisitWithTariffDto>> Handle(GetActiveVisitByUserQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var visit = await _repository.GetActiveVisitByUserAsync(request.UserId);
+            var visit = await _uow.Visits.GetActiveVisitByUserAsync(request.UserId, cancellationToken);
 
             if (visit == null)
                 return Result.Fail(new VisitNotFoundError());

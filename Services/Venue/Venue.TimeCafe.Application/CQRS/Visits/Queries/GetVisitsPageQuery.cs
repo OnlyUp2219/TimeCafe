@@ -4,25 +4,19 @@ public record GetVisitsPageQuery(int PageNumber, int PageSize) : IQuery<GetVisit
 
 public record GetVisitsPageResponse(IEnumerable<VisitWithTariffDto> Visits, int TotalCount);
 
-public class GetVisitsPageQueryValidator : AbstractValidator<GetVisitsPageQuery>
-{
-    public GetVisitsPageQueryValidator()
-    {
-        RuleFor(x => x.PageNumber).ValidPageNumber();
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
 
-public class GetVisitsPageQueryHandler(IVisitRepository repository) : IQueryHandler<GetVisitsPageQuery, GetVisitsPageResponse>
-{
-    private readonly IVisitRepository _repository = repository;
 
-    public async Task<Result<GetVisitsPageResponse>> Handle(GetVisitsPageQuery request, CancellationToken cancellationToken)
+
+public class GetVisitsPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetVisitsPageQuery, GetVisitsPageResponse>
+{
+    private readonly IUnitOfWork _uow = uow;
+
+    public async Task<Result<GetVisitsPageResponse>> Handle(GetVisitsPageQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var visits = await _repository.GetPagedAsync(request.PageNumber, request.PageSize);
-            var totalCount = await _repository.GetTotalCountAsync();
+            var visits = await _uow.Visits.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
+            var totalCount = await _uow.Visits.GetTotalCountAsync(cancellationToken);
 
             return Result.Ok(new GetVisitsPageResponse(visits, totalCount));
         }

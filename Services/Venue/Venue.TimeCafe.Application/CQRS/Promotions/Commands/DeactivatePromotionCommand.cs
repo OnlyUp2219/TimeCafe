@@ -10,22 +10,26 @@ public class DeactivatePromotionCommandValidator : AbstractValidator<DeactivateP
     }
 }
 
-public class DeactivatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<DeactivatePromotionCommand>
+public class DeactivatePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeactivatePromotionCommand>
 {
-    private readonly IPromotionRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result> Handle(DeactivatePromotionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeactivatePromotionCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            var existing = await _uow.Promotions.GetByIdAsync(request.PromotionId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new PromotionNotFoundError());
 
-            var result = await _repository.DeactivateAsync(request.PromotionId);
+            var result = await _uow.Promotions.DeactivateAsync(request.PromotionId, cancellationToken);
 
             if (!result)
                 return Result.Fail(new DeactivateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new PromotionChangedEvent(request.PromotionId), cancellationToken);
 
             return Result.Ok();
         }

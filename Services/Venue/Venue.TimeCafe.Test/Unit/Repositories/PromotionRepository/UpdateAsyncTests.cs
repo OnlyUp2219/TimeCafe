@@ -56,21 +56,6 @@ public class UpdateAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_UpdateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var existing = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, TestData.ExistingPromotions.Promotion1DiscountPercent);
-        existing.Name = TestData.UpdateData.UpdatedPromotionName;
-
-        // Act
-        await PromotionRepository.UpdateAsync(existing);
-
-        // Assert
-        var fromDb = await Context.Promotions.FindAsync(existing.PromotionId);
-        fromDb!.Name.Should().Be(TestData.UpdateData.UpdatedPromotionName);
-    }
-
-    [Fact]
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
@@ -80,6 +65,7 @@ public class UpdateAsyncTests : BaseCqrsTest
 
         // Act
         await PromotionRepository.UpdateAsync(existing);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Promotions.FindAsync(existing.PromotionId);

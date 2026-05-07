@@ -22,19 +22,17 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
     }
 }
 
-
-// Todo : Patch commands
-public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository, IMapper mapper) : ICommandHandler<UpdateTariffCommand, Tariff>
+public class UpdateTariffCommandHandler(IUnitOfWork uow, IMapper mapper, IPublisher publisher) : ICommandHandler<UpdateTariffCommand, Tariff>
 {
-    private readonly ITariffRepository _repository = repository;
-    private readonly IThemeRepository _themeRepository = themeRepository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<Tariff>> Handle(UpdateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Tariff>> Handle(UpdateTariffCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.TariffId);
+            var existing = await _uow.Tariffs.GetByIdAsync(request.TariffId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new TariffNotFoundError());
 
@@ -43,15 +41,18 @@ public class UpdateTariffCommandHandler(ITariffRepository repository, IThemeRepo
 
             if (request.ThemeId.HasValue)
             {
-                var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
+                var themeExists = await _uow.Themes.GetByIdAsync(request.ThemeId.Value, cancellationToken);
                 if (themeExists == null)
                     return Result.Fail(new ThemeNotFoundError());
             }
 
-            var updated = await _repository.UpdateAsync(tariff);
+            var updated = await _uow.Tariffs.UpdateAsync(tariff, cancellationToken);
 
             if (updated == null)
                 return Result.Fail(new UpdateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new TariffChangedEvent(updated.TariffId), cancellationToken);
 
             return Result.Ok(updated);
         }

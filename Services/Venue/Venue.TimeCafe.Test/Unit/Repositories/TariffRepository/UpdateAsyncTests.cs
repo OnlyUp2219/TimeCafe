@@ -70,21 +70,6 @@ public class UpdateAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_UpdateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var existing = await SeedTariffAsync(TestData.ExistingTariffs.Tariff1Name, TestData.ExistingTariffs.Tariff1PricePerMinute);
-        existing.Name = TestData.ExistingTariffs.Tariff2Name;
-
-        // Act
-        await TariffRepository.UpdateAsync(existing);
-
-        // Assert
-        var fromDb = await Context.Tariffs.FindAsync(existing.TariffId);
-        fromDb!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
-    }
-
-    [Fact]
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
@@ -94,6 +79,7 @@ public class UpdateAsyncTests : BaseCqrsTest
 
         // Act
         await TariffRepository.UpdateAsync(existing);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Tariffs.FindAsync(existing.TariffId);

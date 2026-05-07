@@ -13,11 +13,12 @@ public class CreateThemeCommandValidator : AbstractValidator<CreateThemeCommand>
     }
 }
 
-public class CreateThemeCommandHandler(IThemeRepository repository) : ICommandHandler<CreateThemeCommand, Theme>
+public class CreateThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CreateThemeCommand, Theme>
 {
-    private readonly IThemeRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<Theme>> Handle(CreateThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(CreateThemeCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -28,10 +29,13 @@ public class CreateThemeCommandHandler(IThemeRepository repository) : ICommandHa
                 Colors = request.Colors
             };
 
-            var created = await _repository.CreateAsync(theme);
+            var created = await _uow.Themes.CreateAsync(theme, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
             if (created == null)
                 return Result.Fail(new CreateFailedError());
+
+            await _publisher.Publish(new ThemeChangedEvent(created.ThemeId), cancellationToken);
 
             return Result.Ok(created);
         }

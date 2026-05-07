@@ -37,23 +37,10 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         await TariffRepository.DeleteAsync(tariffId);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Tariffs.FindAsync(tariffId);
-        fromDb.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Repository_DeleteAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
-
-        // Act
-        await TariffRepository.DeleteAsync(tariff.TariffId);
-
-        // Assert
-        var fromDb = await Context.Tariffs.FindAsync(tariff.TariffId);
         fromDb.Should().BeNull();
     }
 
@@ -66,6 +53,7 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         var firstDelete = await TariffRepository.DeleteAsync(tariffId);
+        await Context.SaveChangesAsync();
         var secondDelete = await TariffRepository.DeleteAsync(tariffId);
 
         // Assert

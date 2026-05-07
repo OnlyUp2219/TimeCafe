@@ -6,7 +6,7 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
 
     public GetVisitHistoryQueryTests()
     {
-        _handler = new GetVisitHistoryQueryHandler(VisitRepositoryMock.Object);
+        _handler = new GetVisitHistoryQueryHandler(UowMock.Object);
     }
 
     [Fact]
@@ -57,21 +57,5 @@ public class GetVisitHistoryQueryTests : BaseCqrsHandlerTest
         result.IsFailed.Should().BeTrue();
     }
 
-    [Theory]
-    [InlineData("00000000-0000-0000-0000-000000000000", 1, 10, false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", 0, 10, false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", 1, 0, false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", 1, 101, false)]
-    [InlineData("11111111-1111-1111-1111-111111111111", 1, 10, true)]
-    [InlineData("11111111-1111-1111-1111-111111111111", 1, 100, true)]
-    public async Task Validator_Should_ValidateCorrectly(string userIdStr, int pageNumber, int pageSize, bool isValid)
-    {
-        var query = new GetVisitHistoryQuery(Guid.Parse(userIdStr), pageNumber, pageSize);
-        var validator = new GetVisitHistoryQueryValidator();
-
-        var result = await validator.ValidateAsync(query);
-
-        result.IsValid.Should().Be(isValid);
-    }
 }
 

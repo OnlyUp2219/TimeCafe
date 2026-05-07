@@ -1,5 +1,6 @@
 global using System.Reflection;
 global using AutoMapper;
+global using BuildingBlocks.Contracts;
 global using BuildingBlocks.Contracts.CQRS;
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
@@ -10,6 +11,12 @@ global using MassTransit;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
+global using Venue.TimeCafe.Application.Contracts;
+global using Venue.TimeCafe.Application.CQRS.Tariffs.Events;
+global using Venue.TimeCafe.Application.CQRS.Promotions.Events;
+global using Venue.TimeCafe.Application.CQRS.Themes.Events;
+global using Venue.TimeCafe.Application.CQRS.Visits.Events;
+global using Venue.TimeCafe.Application.CQRS.Loyalty.Events;
 global using Venue.TimeCafe.Application.Contracts.Repositories;
 global using Venue.TimeCafe.Application.Contracts.Services;
 global using Venue.TimeCafe.Application.CQRS.Visits.Commands;
@@ -19,4 +26,7 @@ global using Venue.TimeCafe.Application.Options;
 global using Venue.TimeCafe.Domain.Enums;
 global using Venue.TimeCafe.Domain.Errors;
 global using Venue.TimeCafe.Domain.Models;
-
+global using MediatR;
+global using IUnitOfWork = Venue.TimeCafe.Application.Contracts.IUnitOfWork;
+global using Microsoft.Extensions.Caching.Hybrid;
+global using Venue.TimeCafe.Domain.Constants;

@@ -1,3 +1,6 @@
+using Venue.TimeCafe.Application.Contracts;
+using MediatR;
+
 namespace Venue.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsHandlerTest
@@ -10,6 +13,8 @@ public abstract class BaseCqrsHandlerTest
     protected readonly Mock<IUserLoyaltyRepository> UserLoyaltyRepositoryMock;
     protected readonly Mock<IMapper> MapperMock;
     protected readonly Mock<IPublishEndpoint> PublishEndpointMock;
+    protected readonly Mock<IUnitOfWork> UowMock;
+    protected readonly Mock<IPublisher> PublisherMock;
 
     protected BaseCqrsHandlerTest()
     {
@@ -21,6 +26,14 @@ public abstract class BaseCqrsHandlerTest
         UserLoyaltyRepositoryMock = new Mock<IUserLoyaltyRepository>();
         MapperMock = new Mock<IMapper>();
         PublishEndpointMock = new Mock<IPublishEndpoint>();
+        PublisherMock = new Mock<IPublisher>();
+
+        UowMock = new Mock<IUnitOfWork>();
+        UowMock.Setup(u => u.Tariffs).Returns(TariffRepositoryMock.Object);
+        UowMock.Setup(u => u.Promotions).Returns(PromotionRepositoryMock.Object);
+        UowMock.Setup(u => u.Themes).Returns(ThemeRepositoryMock.Object);
+        UowMock.Setup(u => u.Visits).Returns(VisitRepositoryMock.Object);
+        UowMock.Setup(u => u.UserLoyalties).Returns(UserLoyaltyRepositoryMock.Object);
     }
 }
 

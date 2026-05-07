@@ -25,18 +25,18 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
     }
 }
 
-public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepository themeRepository) : ICommandHandler<CreateTariffCommand, Tariff>
+public class CreateTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CreateTariffCommand, Tariff>
 {
-    private readonly ITariffRepository _repository = repository;
-    private readonly IThemeRepository _themeRepository = themeRepository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<Tariff>> Handle(CreateTariffCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Tariff>> Handle(CreateTariffCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
             if (request.ThemeId.HasValue)
             {
-                var themeExists = await _themeRepository.GetByIdAsync(request.ThemeId.Value);
+                var themeExists = await _uow.Themes.GetByIdAsync(request.ThemeId.Value, cancellationToken);
                 if (themeExists == null)
                     return Result.Fail(new ThemeNotFoundError());
             }
@@ -51,10 +51,13 @@ public class CreateTariffCommandHandler(ITariffRepository repository, IThemeRepo
                 IsActive = request.IsActive,
             };
 
-            var created = await _repository.CreateAsync(tariff);
+            var created = await _uow.Tariffs.CreateAsync(tariff, cancellationToken);
 
             if (created == null)
                 return Result.Fail(new CreateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new TariffChangedEvent(created.TariffId), cancellationToken);
 
             return Result.Ok(created);
         }

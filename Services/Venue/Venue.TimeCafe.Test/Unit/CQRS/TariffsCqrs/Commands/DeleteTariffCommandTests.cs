@@ -6,7 +6,7 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
 
     public DeleteTariffCommandTests()
     {
-        _handler = new DeleteTariffCommandHandler(TariffRepositoryMock.Object);
+        _handler = new DeleteTariffCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -14,16 +14,10 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
     {
         var tariffId = Guid.NewGuid();
         var command = new DeleteTariffCommand(tariffId);
-        var tariff = new TariffWithThemeDto
-        {
-            TariffId = tariffId,
-            Name = TestData.ExistingTariffs.Tariff1Name,
-            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            BillingType = TestData.ExistingTariffs.Tariff1BillingType
-        };
-
+        var tariff = new Tariff { TariffId = tariffId };
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
         TariffRepositoryMock.Setup(r => r.DeleteAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -36,7 +30,7 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
         var tariffId = TestData.NonExistingIds.NonExistingTariffId;
         var command = new DeleteTariffCommand(tariffId);
 
-        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((TariffWithThemeDto?)null);
+        TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync((Tariff?)null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -48,14 +42,7 @@ public class DeleteTariffCommandTests : BaseCqrsHandlerTest
     {
         var tariffId = Guid.NewGuid();
         var command = new DeleteTariffCommand(tariffId);
-        var tariff = new TariffWithThemeDto
-        {
-            TariffId = tariffId,
-            Name = TestData.ExistingTariffs.Tariff1Name,
-            PricePerMinute = TestData.ExistingTariffs.Tariff1PricePerMinute,
-            BillingType = TestData.ExistingTariffs.Tariff1BillingType
-        };
-
+        var tariff = new Tariff { TariffId = tariffId };
         TariffRepositoryMock.Setup(r => r.GetByIdAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(tariff);
         TariffRepositoryMock.Setup(r => r.DeleteAsync(tariffId, It.IsAny<CancellationToken>())).ReturnsAsync(false);
 

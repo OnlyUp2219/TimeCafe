@@ -2,15 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetTariffsByBillingTypeQuery(BillingType BillingType) : IQuery<IEnumerable<TariffWithThemeDto>>;
 
-public class GetTariffsByBillingTypeQueryHandler(ITariffRepository repository) : IQueryHandler<GetTariffsByBillingTypeQuery, IEnumerable<TariffWithThemeDto>>
+public class GetTariffsByBillingTypeQueryHandler(IUnitOfWork uow) : IQueryHandler<GetTariffsByBillingTypeQuery, IEnumerable<TariffWithThemeDto>>
 {
-    private readonly ITariffRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
 
-    public async Task<Result<IEnumerable<TariffWithThemeDto>>> Handle(GetTariffsByBillingTypeQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TariffWithThemeDto>>> Handle(GetTariffsByBillingTypeQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tariffs = await _repository.GetByBillingTypeAsync(request.BillingType);
+            var tariffs = await _uow.Tariffs.GetByBillingTypeAsync(request.BillingType, cancellationToken);
             return Result.Ok(tariffs);
         }
         catch (Exception ex)
@@ -19,11 +19,3 @@ public class GetTariffsByBillingTypeQueryHandler(ITariffRepository repository) :
         }
     }
 }
-
-public class GetTariffsByBillingTypeQueryValidator : AbstractValidator<GetTariffsByBillingTypeQuery>
-{
-    public GetTariffsByBillingTypeQueryValidator()
-    {
-    }
-}
-

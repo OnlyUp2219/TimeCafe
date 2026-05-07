@@ -10,22 +10,26 @@ public class DeleteVisitCommandValidator : AbstractValidator<DeleteVisitCommand>
     }
 }
 
-public class DeleteVisitCommandHandler(IVisitRepository repository) : ICommandHandler<DeleteVisitCommand>
+public class DeleteVisitCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeleteVisitCommand>
 {
-    private readonly IVisitRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result> Handle(DeleteVisitCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteVisitCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.VisitId);
+            var existing = await _uow.Visits.GetByIdAsync(request.VisitId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new VisitNotFoundError());
 
-            var result = await _repository.DeleteAsync(request.VisitId);
+            var result = await _uow.Visits.DeleteAsync(request.VisitId, cancellationToken);
 
             if (!result)
                 return Result.Fail(new DeleteFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new VisitChangedEvent(existing.VisitId, existing.UserId), cancellationToken);
 
             return Result.Ok();
         }

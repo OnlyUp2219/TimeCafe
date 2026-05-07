@@ -43,18 +43,5 @@ public class ActivateAsyncTests : BaseCqrsTest
         result.Should().BeFalse();
     }
 
-    [Fact]
-    public async Task Repository_ActivateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent, false);
-
-        // Act
-        await PromotionRepository.ActivateAsync(promotion.PromotionId);
-
-        // Assert
-        var fromDb = await Context.Promotions.FindAsync(promotion.PromotionId);
-        fromDb!.IsActive.Should().BeTrue();
-    }
 }
 

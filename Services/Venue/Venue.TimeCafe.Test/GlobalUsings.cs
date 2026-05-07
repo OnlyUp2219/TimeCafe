@@ -28,4 +28,5 @@ global using Venue.TimeCafe.Infrastructure.Repositories;
 global using Venue.TimeCafe.Test.Helpers;
 global using Venue.TimeCafe.Test.Integration.Helpers;
 global using Xunit;
-
+global using MediatR;
+global using IUnitOfWork = Venue.TimeCafe.Application.Contracts.IUnitOfWork;

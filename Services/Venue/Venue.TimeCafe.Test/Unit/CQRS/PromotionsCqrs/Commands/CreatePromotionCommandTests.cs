@@ -6,7 +6,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
 
     public CreatePromotionCommandTests()
     {
-        _handler = new CreatePromotionCommandHandler(PromotionRepositoryMock.Object);
+        _handler = new CreatePromotionCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -27,6 +27,7 @@ public class CreatePromotionCommandTests : BaseCqrsHandlerTest
         };
 
         PromotionRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Promotion>(), It.IsAny<CancellationToken>())).ReturnsAsync(promotion);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

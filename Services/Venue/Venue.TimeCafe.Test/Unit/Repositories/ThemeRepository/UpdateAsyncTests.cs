@@ -52,21 +52,6 @@ public class UpdateAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_UpdateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var existing = await SeedThemeAsync(TestData.ExistingThemes.Theme1Name);
-        existing.Name = TestData.ExistingThemes.Theme2Name;
-
-        // Act
-        await ThemeRepository.UpdateAsync(existing);
-
-        // Assert
-        var fromDb = await Context.Themes.FindAsync(existing.ThemeId);
-        fromDb!.Name.Should().Be(TestData.ExistingThemes.Theme2Name);
-    }
-
-    [Fact]
     public async Task Repository_UpdateAsync_Should_PersistChanges()
     {
         // Arrange
@@ -76,6 +61,7 @@ public class UpdateAsyncTests : BaseCqrsTest
 
         // Act
         await ThemeRepository.UpdateAsync(existing);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Themes.FindAsync(existing.ThemeId);

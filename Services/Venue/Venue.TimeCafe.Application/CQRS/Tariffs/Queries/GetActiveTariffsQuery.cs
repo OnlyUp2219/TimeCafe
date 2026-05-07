@@ -2,23 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Tariffs.Queries;
 
 public record GetActiveTariffsQuery() : IQuery<IEnumerable<TariffWithThemeDto>>;
 
-public class GetActiveTariffsQueryValidator : AbstractValidator<GetActiveTariffsQuery>
+public class GetActiveTariffsQueryHandler(IUnitOfWork uow) : IQueryHandler<GetActiveTariffsQuery, IEnumerable<TariffWithThemeDto>>
 {
-    public GetActiveTariffsQueryValidator()
-    {
+    private readonly IUnitOfWork _uow = uow;
 
-    }
-}
-
-public class GetActiveTariffsQueryHandler(ITariffRepository repository) : IQueryHandler<GetActiveTariffsQuery, IEnumerable<TariffWithThemeDto>>
-{
-    private readonly ITariffRepository _repository = repository;
-
-    public async Task<Result<IEnumerable<TariffWithThemeDto>>> Handle(GetActiveTariffsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<TariffWithThemeDto>>> Handle(GetActiveTariffsQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tariffs = await _repository.GetActiveAsync();
+            var tariffs = await _uow.Tariffs.GetActiveAsync(cancellationToken);
             return Result.Ok(tariffs);
         }
         catch (Exception ex)

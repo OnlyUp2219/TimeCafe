@@ -2,23 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Visits.Queries;
 
 public record GetActiveVisitsQuery() : IQuery<IEnumerable<VisitWithTariffDto>>;
 
-public class GetActiveVisitsQueryValidator : AbstractValidator<GetActiveVisitsQuery>
+public class GetActiveVisitsQueryHandler(IUnitOfWork uow) : IQueryHandler<GetActiveVisitsQuery, IEnumerable<VisitWithTariffDto>>
 {
-    public GetActiveVisitsQueryValidator()
-    {
-    }
-}
+    private readonly IUnitOfWork _uow = uow;
 
-
-public class GetActiveVisitsQueryHandler(IVisitRepository repository) : IQueryHandler<GetActiveVisitsQuery, IEnumerable<VisitWithTariffDto>>
-{
-    private readonly IVisitRepository _repository = repository;
-
-    public async Task<Result<IEnumerable<VisitWithTariffDto>>> Handle(GetActiveVisitsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<VisitWithTariffDto>>> Handle(GetActiveVisitsQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var visits = await _repository.GetActiveVisitsAsync();
+            var visits = await _uow.Visits.GetActiveVisitsAsync(cancellationToken);
             return Result.Ok(visits);
         }
         catch (Exception ex)

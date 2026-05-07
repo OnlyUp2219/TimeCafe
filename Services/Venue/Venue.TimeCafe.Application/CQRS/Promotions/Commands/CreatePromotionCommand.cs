@@ -25,9 +25,10 @@ public class CreatePromotionCommandValidator : AbstractValidator<CreatePromotion
     }
 }
 
-public class CreatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<CreatePromotionCommand, Promotion>
+public class CreatePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CreatePromotionCommand, Promotion>
 {
-    private readonly IPromotionRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<Promotion>> Handle(CreatePromotionCommand request, CancellationToken cancellationToken)
     {
@@ -35,7 +36,7 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IC
         {
             if (request.Type == PromotionType.Global && request.IsActive)
             {
-                var activePromos = await _repository.GetActiveAsync(cancellationToken);
+                var activePromos = await _uow.Promotions.GetActiveAsync(cancellationToken);
                 if (activePromos.Any(p => p.Type == PromotionType.Global))
                 {
                     return Result.Fail(new ActiveGlobalPromotionAlreadyExistsError());
@@ -57,10 +58,13 @@ public class CreatePromotionCommandHandler(IPromotionRepository repository) : IC
             if (promotionResult.IsFailed)
                 return Result.Fail(promotionResult.Errors);
 
-            var created = await _repository.CreateAsync(promotionResult.Value);
+            var created = await _uow.Promotions.CreateAsync(promotionResult.Value, cancellationToken);
 
             if (created == null)
                 return Result.Fail(new Error("Не удалось сохранить акцию в БД").WithMetadata("ErrorCode", "500"));
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new PromotionChangedEvent(created.PromotionId), cancellationToken);
 
             return Result.Ok(created);
         }

@@ -6,7 +6,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
 
     public DeleteThemeCommandTests()
     {
-        _handler = new DeleteThemeCommandHandler(ThemeRepositoryMock.Object);
+        _handler = new DeleteThemeCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]
@@ -17,6 +17,7 @@ public class DeleteThemeCommandTests : BaseCqrsHandlerTest
 
         ThemeRepositoryMock.Setup(r => r.GetByIdAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(theme);
         ThemeRepositoryMock.Setup(r => r.DeleteAsync(It.Is<Guid>(id => id == TestData.ExistingThemes.Theme1Id), It.IsAny<CancellationToken>())).ReturnsAsync(true);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

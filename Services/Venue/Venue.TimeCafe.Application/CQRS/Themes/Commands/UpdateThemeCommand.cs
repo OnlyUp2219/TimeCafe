@@ -35,15 +35,16 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
     }
 }
 
-public class UpdateThemeCommandHandler(IThemeRepository repository) : ICommandHandler<UpdateThemeCommand, Theme>
+public class UpdateThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<UpdateThemeCommand, Theme>
 {
-    private readonly IThemeRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<Theme>> Handle(UpdateThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result<Theme>> Handle(UpdateThemeCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.ThemeId);
+            var existing = await _uow.Themes.GetByIdAsync(request.ThemeId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new ThemeNotFoundError());
 
@@ -53,10 +54,13 @@ public class UpdateThemeCommandHandler(IThemeRepository repository) : ICommandHa
                 emoji: request.Emoji,
                 colors: request.Colors);
 
-            var updated = await _repository.UpdateAsync(theme);
+            var updated = await _uow.Themes.UpdateAsync(theme, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
             if (updated == null)
                 return Result.Fail(new UpdateFailedError());
+
+            await _publisher.Publish(new ThemeChangedEvent(updated.ThemeId), cancellationToken);
 
             return Result.Ok(updated);
         }

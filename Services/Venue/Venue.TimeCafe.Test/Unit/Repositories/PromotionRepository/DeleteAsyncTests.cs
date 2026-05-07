@@ -37,23 +37,10 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         await PromotionRepository.DeleteAsync(promotionId);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Promotions.FindAsync(promotionId);
-        fromDb.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Repository_DeleteAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var promotion = await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, TestData.ExistingPromotions.Promotion3DiscountPercent);
-
-        // Act
-        await PromotionRepository.DeleteAsync(promotion.PromotionId);
-
-        // Assert
-        var fromDb = await Context.Promotions.FindAsync(promotion.PromotionId);
         fromDb.Should().BeNull();
     }
 
@@ -66,6 +53,7 @@ public class DeleteAsyncTests : BaseCqrsTest
 
         // Act
         var firstDelete = await PromotionRepository.DeleteAsync(promotionId);
+        await Context.SaveChangesAsync();
         var secondDelete = await PromotionRepository.DeleteAsync(promotionId);
 
         // Assert

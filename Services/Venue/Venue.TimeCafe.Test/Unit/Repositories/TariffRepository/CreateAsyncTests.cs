@@ -74,31 +74,12 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Act
         var result = await TariffRepository.CreateAsync(tariff);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Tariffs.FindAsync(result.TariffId);
         fromDb.Should().NotBeNull();
         fromDb!.Name.Should().Be(TestData.ExistingTariffs.Tariff2Name);
-    }
-
-    [Fact]
-    public async Task Repository_CreateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var tariff = new Tariff
-        {
-            Name = TestData.DefaultValues.DefaultTariffName,
-            PricePerMinute = TestData.DefaultValues.DefaultTariffPrice,
-            BillingType = TestData.DefaultValues.DefaultBillingType,
-            IsActive = true
-        };
-
-        // Act
-        var result = await TariffRepository.CreateAsync(tariff);
-
-        // Assert
-        var fromDb = await Context.Tariffs.FindAsync(result.TariffId);
-        fromDb.Should().NotBeNull();
     }
 
     [Theory]

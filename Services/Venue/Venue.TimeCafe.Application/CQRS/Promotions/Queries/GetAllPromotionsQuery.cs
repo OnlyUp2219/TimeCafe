@@ -2,15 +2,15 @@ namespace Venue.TimeCafe.Application.CQRS.Promotions.Queries;
 
 public record GetAllPromotionsQuery() : IQuery<IEnumerable<Promotion>>;
 
-public class GetAllPromotionsQueryHandler(IPromotionRepository repository) : IQueryHandler<GetAllPromotionsQuery, IEnumerable<Promotion>>
+public class GetAllPromotionsQueryHandler(IUnitOfWork uow) : IQueryHandler<GetAllPromotionsQuery, IEnumerable<Promotion>>
 {
-    private readonly IPromotionRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
 
     public async Task<Result<IEnumerable<Promotion>>> Handle(GetAllPromotionsQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            var promotions = await _repository.GetAllAsync();
+            var promotions = await _uow.Promotions.GetAllAsync(cancellationToken);
             return Result.Ok(promotions);
         }
         catch (Exception ex)
@@ -20,10 +20,4 @@ public class GetAllPromotionsQueryHandler(IPromotionRepository repository) : IQu
     }
 }
 
-public class GetAllPromotionsQueryValidator : AbstractValidator<GetAllPromotionsQuery>
-{
-    public GetAllPromotionsQueryValidator()
-    {
-    }
-}
 

@@ -18,21 +18,22 @@ public class UpdatePromotionCommandValidator : AbstractValidator<UpdatePromotion
     }
 }
 
-public class UpdatePromotionCommandHandler(IPromotionRepository repository) : ICommandHandler<UpdatePromotionCommand, Promotion>
+public class UpdatePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<UpdatePromotionCommand, Promotion>
 {
-    private readonly IPromotionRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<Promotion>> Handle(UpdatePromotionCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.PromotionId);
+            var existing = await _uow.Promotions.GetByIdAsync(request.PromotionId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new PromotionNotFoundError());
 
             if ((request.Type == PromotionType.Global || request.Type == null && existing.Type == PromotionType.Global) && request.IsActive)
             {
-                var activePromos = await _repository.GetActiveAsync(cancellationToken);
+                var activePromos = await _uow.Promotions.GetActiveAsync(cancellationToken);
                 if (activePromos.Any(p => p.Type == PromotionType.Global && p.PromotionId != request.PromotionId))
                 {
                     return Result.Fail(new ActiveGlobalPromotionAlreadyExistsError());
@@ -56,10 +57,13 @@ public class UpdatePromotionCommandHandler(IPromotionRepository repository) : IC
 
             var promotion = promotionResult.Value;
 
-            var updated = await _repository.UpdateAsync(promotion);
+            var updated = await _uow.Promotions.UpdateAsync(promotion, cancellationToken);
 
             if (updated == null)
                 return Result.Fail(new UpdateFailedError());
+
+            await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new PromotionChangedEvent(updated.PromotionId), cancellationToken);
 
             return Result.Ok(updated);
         }

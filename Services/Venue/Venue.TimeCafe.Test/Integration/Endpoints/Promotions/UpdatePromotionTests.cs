@@ -11,7 +11,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
-            DiscountPercent = promotion.DiscountPercent,
+            promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
             validTo = promotion.ValidTo,
             isActive = promotion.IsActive
@@ -68,7 +68,7 @@ public class UpdatePromotionTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             name = TestData.UpdateData.UpdatedPromotionName,
             description = promotion.Description,
-            DiscountPercent = promotion.DiscountPercent,
+            promotion.DiscountPercent,
             validFrom = promotion.ValidFrom,
             validTo = promotion.ValidTo,
             isActive = promotion.IsActive

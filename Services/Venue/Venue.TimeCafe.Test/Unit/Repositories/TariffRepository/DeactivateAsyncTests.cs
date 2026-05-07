@@ -59,18 +59,5 @@ public class DeactivateAsyncTests : BaseCqrsTest
         fromDb!.LastModified.Should().BeAfter(originalModified);
     }
 
-    [Fact]
-    public async Task Repository_DeactivateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var tariff = await SeedTariffAsync(TestData.ExistingTariffs.Tariff3Name, TestData.ExistingTariffs.Tariff3PricePerMinute);
-
-        // Act
-        await TariffRepository.DeactivateAsync(tariff.TariffId);
-
-        // Assert
-        var fromDb = await Context.Tariffs.FindAsync(tariff.TariffId);
-        fromDb!.IsActive.Should().BeFalse();
-    }
 }
 

@@ -7,9 +7,11 @@ public class VisitRepository(
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<VisitWithTariffDto?> GetByIdAsync(Guid visitId, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync(
+    public async Task<Visit?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await _context.Visits.AsNoTracking().FirstOrDefaultAsync(v => v.VisitId == id, cancellationToken);
+
+    public async Task<VisitWithTariffDto?> GetWithTariffByIdAsync(Guid visitId, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync(
             CacheKeys.Visit_ById(visitId),
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
@@ -32,11 +34,9 @@ public class VisitRepository(
                               .FirstOrDefaultAsync(cancellationToken),
             tags: [CacheTags.Visits, CacheTags.Visit(visitId)],
             cancellationToken: cancellationToken);
-    }
 
-    public async Task<VisitWithTariffDto?> GetActiveVisitByUserAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync(
+    public async Task<VisitWithTariffDto?> GetActiveVisitByUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync(
             CacheKeys.Visit_ActiveByUser(userId),
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
@@ -59,11 +59,9 @@ public class VisitRepository(
                               .FirstOrDefaultAsync(cancellationToken),
             tags: [CacheTags.Visits, CacheTags.VisitByUser(userId)],
             cancellationToken: cancellationToken);
-    }
 
-    public async Task<IEnumerable<VisitWithTariffDto>> GetActiveVisitsAsync(CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
+    public async Task<IEnumerable<VisitWithTariffDto>> GetActiveVisitsAsync(CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
             CacheKeys.Visit_Active,
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
@@ -88,11 +86,9 @@ public class VisitRepository(
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
             tags: [CacheTags.Visits],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<IEnumerable<VisitWithTariffDto>> GetVisitHistoryByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 20, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
+    public async Task<IEnumerable<VisitWithTariffDto>> GetVisitHistoryByUserAsync(Guid userId, int pageNumber = 1, int pageSize = 20, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
             CacheKeys.Visit_HistoryByUser(userId, pageNumber, pageSize),
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
@@ -119,11 +115,9 @@ public class VisitRepository(
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
             tags: [CacheTags.Visits, CacheTags.VisitByUser(userId)],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<IEnumerable<VisitWithTariffDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
+    public async Task<IEnumerable<VisitWithTariffDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
             CacheKeys.Visit_Page(pageNumber, pageSize),
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
@@ -149,18 +143,13 @@ public class VisitRepository(
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
             tags: [CacheTags.Visits],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Visits.CountAsync(cancellationToken);
-    }
+    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default) =>
+        await _context.Visits.CountAsync(cancellationToken);
 
-    public async Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        return await _context.Visits
+    public async Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        await _context.Visits
             .AnyAsync(v => v.UserId == userId && v.Status == VisitStatus.Active, cancellationToken);
-    }
 
     public async Task<Visit> CreateAsync(Visit visit, CancellationToken cancellationToken = default)
     {
@@ -168,48 +157,27 @@ public class VisitRepository(
         visit.EntryTime = DateTimeOffset.UtcNow;
         visit.Status = VisitStatus.Active;
         _context.Visits.Add(visit);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Visits, cancellationToken);
-
         return visit;
     }
 
-    public async Task<Visit> UpdateAsync(Visit visit, bool saveChanges = true, CancellationToken cancellationToken = default)
+    public async Task<Visit?> UpdateAsync(Visit visit, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(visit);
         var existingVisit = await _context.Visits.FindAsync([visit.VisitId], cancellationToken);
         if (existingVisit == null)
-            return null!;
+            return null;
 
         _context.Entry(existingVisit).CurrentValues.SetValues(visit);
-
-        if (saveChanges)
-        {
-            await _context.SaveChangesAsync(cancellationToken);
-
-            await _cache.RemoveByTagAsync(CacheTags.Visits, cancellationToken);
-        }
 
         return visit;
     }
 
-    public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<bool> DeleteAsync(Guid visitId, CancellationToken cancellationToken = default)
-    {
-        var visit = await _context.Visits.FindAsync([visitId], cancellationToken);
-        if (visit == null)
-            return false;
+        var visit = await _context.Visits.FindAsync([id], cancellationToken);
+        if (visit == null) return false;
 
         _context.Visits.Remove(visit);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Visits, cancellationToken);
-
         return true;
     }
 }

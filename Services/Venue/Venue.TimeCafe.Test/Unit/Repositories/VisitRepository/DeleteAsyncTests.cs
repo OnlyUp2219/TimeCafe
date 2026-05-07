@@ -32,11 +32,13 @@ public class DeleteAsyncTests : BaseCqrsTest
     public async Task Repository_DeleteAsync_Should_RemoveFromDatabase()
     {
         // Arrange
-        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        var tariff = await SeedTariffAsync();
+        var visit = await SeedVisitAsync(tariffId: tariff.TariffId);
         var visitId = visit.VisitId;
 
         // Act
         await VisitRepository.DeleteAsync(visitId);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Visits.FindAsync(visitId);
@@ -44,28 +46,16 @@ public class DeleteAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_DeleteAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
-
-        // Act
-        await VisitRepository.DeleteAsync(visit.VisitId);
-
-        // Assert
-        var fromDb = await Context.Visits.FindAsync(visit.VisitId);
-        fromDb.Should().BeNull();
-    }
-
-    [Fact]
     public async Task Repository_DeleteAsync_Should_HandleAlreadyDeleted()
     {
         // Arrange
-        var visit = await SeedVisitAsync(TestData.ExistingVisits.Visit1UserId);
+        var tariff = await SeedTariffAsync();
+        var visit = await SeedVisitAsync(tariffId: tariff.TariffId);
         var visitId = visit.VisitId;
 
         // Act
         var firstDelete = await VisitRepository.DeleteAsync(visitId);
+        await Context.SaveChangesAsync();
         var secondDelete = await VisitRepository.DeleteAsync(visitId);
 
         // Assert

@@ -4,27 +4,17 @@ public record GetTariffsPageQuery(int PageNumber, int PageSize) : IQuery<GetTari
 
 public record GetTariffsPageResponse(IEnumerable<TariffWithThemeDto> Tariffs, int TotalCount, decimal MaxTotalDiscountPercent);
 
-public class GetTariffsPageQueryValidator : AbstractValidator<GetTariffsPageQuery>
+public class GetTariffsPageQueryHandler(IUnitOfWork uow, IOptionsSnapshot<VenuePricingOptions> options) : IQueryHandler<GetTariffsPageQuery, GetTariffsPageResponse>
 {
-    public GetTariffsPageQueryValidator()
-    {
-        RuleFor(x => x.PageNumber).ValidPageNumber();
-
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
-
-public class GetTariffsPageQueryHandler(ITariffRepository repository, IOptionsSnapshot<VenuePricingOptions> options) : IQueryHandler<GetTariffsPageQuery, GetTariffsPageResponse>
-{
-    private readonly ITariffRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly VenuePricingOptions _options = options.Value;
 
-    public async Task<Result<GetTariffsPageResponse>> Handle(GetTariffsPageQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetTariffsPageResponse>> Handle(GetTariffsPageQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var tariffs = await _repository.GetPagedAsync(request.PageNumber, request.PageSize);
-            var totalCount = await _repository.GetTotalCountAsync();
+            var tariffs = await _uow.Tariffs.GetPagedAsync(request.PageNumber, request.PageSize, cancellationToken);
+            var totalCount = await _uow.Tariffs.GetTotalCountAsync(cancellationToken);
 
             return Result.Ok(new GetTariffsPageResponse(tariffs, totalCount, _options.MaxTotalDiscountPercent));
         }

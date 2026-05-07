@@ -23,5 +23,7 @@ public static class CacheKeys
     public static string Promotion_ById(Guid id) => $"venue:promotion:id:{id}";
     public static string Promotion_ActiveByDate(string date) => $"venue:promotion:active:date:{date}";
     public static string Promotion_Page(int page, int pageSize) => $"venue:promotion:page:p{page}:s{pageSize}";
+
+    public static string UserLoyalty_ByUserId(Guid userId) => $"venue:userloyalty:user:{userId}";
 }
 

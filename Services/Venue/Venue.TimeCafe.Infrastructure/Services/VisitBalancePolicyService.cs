@@ -14,7 +14,7 @@ public class VisitBalancePolicyService(IHttpClientFactory httpClientFactory, ILo
         int? plannedMinutes,
         bool requirePositiveBalance,
         bool requireEnoughForPlanned,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var client = _httpClientFactory.CreateClient("BillingApi");
         var response = await client.GetFromJsonAsync<GetBalanceResponse>($"/billing/balance/{userId}", cancellationToken);

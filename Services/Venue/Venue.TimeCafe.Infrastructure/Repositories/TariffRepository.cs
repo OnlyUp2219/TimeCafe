@@ -1,15 +1,15 @@
 namespace Venue.TimeCafe.Infrastructure.Repositories;
 
-public class TariffRepository(
-    ApplicationDbContext context,
-    HybridCache cache) : ITariffRepository
+public class TariffRepository(ApplicationDbContext context, HybridCache cache) : ITariffRepository
 {
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<TariffWithThemeDto?> GetByIdAsync(Guid tariffId, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync(
+    public async Task<Tariff?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await _context.Tariffs.AsNoTracking().FirstOrDefaultAsync(t => t.TariffId == id, cancellationToken);
+
+    public async Task<TariffWithThemeDto?> GetWithThemeByIdAsync(Guid tariffId, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync(
             CacheKeys.Tariff_ById(tariffId),
             async cancellationToken => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
@@ -34,11 +34,9 @@ public class TariffRepository(
                               .FirstOrDefaultAsync(cancellationToken),
             tags: [CacheTags.Tariffs, CacheTags.Tariff(tariffId)],
             cancellationToken: cancellationToken);
-    }
 
-    public async Task<IEnumerable<TariffWithThemeDto>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+    public async Task<IEnumerable<TariffWithThemeDto>> GetAllAsync(CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
             CacheKeys.Tariff_All,
             async cancellationToken => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
@@ -63,11 +61,9 @@ public class TariffRepository(
                               .ToListAsync(cancellationToken),
             tags: [CacheTags.Tariffs],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<IEnumerable<TariffWithThemeDto>> GetActiveAsync(CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+    public async Task<IEnumerable<TariffWithThemeDto>> GetActiveAsync(CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
             CacheKeys.Tariff_Active,
             async cancellationToken => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
@@ -93,11 +89,9 @@ public class TariffRepository(
                               .ToListAsync(cancellationToken),
             tags: [CacheTags.Tariffs],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<IEnumerable<TariffWithThemeDto>> GetByBillingTypeAsync(BillingType billingType, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+    public async Task<IEnumerable<TariffWithThemeDto>> GetByBillingTypeAsync(BillingType billingType, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
             CacheKeys.Tariff_ByBillingType((int)billingType),
             async cancellationToken => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
@@ -123,11 +117,9 @@ public class TariffRepository(
                               .ToListAsync(cancellationToken),
             tags: [CacheTags.Tariffs],
             cancellationToken: cancellationToken) ?? [];
-    }
 
-    public async Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
-    {
-        return await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
+    public async Task<IEnumerable<TariffWithThemeDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<TariffWithThemeDto>>(
             CacheKeys.Tariff_Page(pageNumber, pageSize),
             async cancellationToken => await (from t in _context.Tariffs
                                join th in _context.Themes on t.ThemeId equals th.ThemeId into thGroup
@@ -155,88 +147,56 @@ public class TariffRepository(
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
             tags: [CacheTags.Tariffs],
             cancellationToken: cancellationToken) ?? [];
+
+    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default) =>
+        await _context.Tariffs.CountAsync(cancellationToken);
+
+    public async Task<Tariff> CreateAsync(Tariff entity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(entity);
+        entity.CreatedAt = DateTimeOffset.UtcNow;
+        entity.LastModified = DateTimeOffset.UtcNow;
+        _context.Tariffs.Add(entity);
+        return entity;
     }
 
-    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
+    public async Task<Tariff?> UpdateAsync(Tariff entity, CancellationToken cancellationToken = default)
     {
-        return await _context.Tariffs.CountAsync(cancellationToken);
+        ArgumentNullException.ThrowIfNull(entity);
+        var existing = await _context.Tariffs.FindAsync([entity.TariffId], cancellationToken);
+        if (existing == null) return null;
+
+        entity.LastModified = DateTimeOffset.UtcNow;
+        _context.Entry(existing).CurrentValues.SetValues(entity);
+        return existing;
     }
 
-    public async Task<Tariff> CreateAsync(Tariff tariff, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(tariff);
+        var entity = await _context.Tariffs.FindAsync([id], cancellationToken);
+        if (entity == null) return false;
 
-        tariff.CreatedAt = DateTimeOffset.UtcNow;
-        tariff.LastModified = DateTimeOffset.UtcNow;
-        _context.Tariffs.Add(tariff);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Tariffs, cancellationToken);
-
-        return tariff;
-    }
-
-    public async Task<Tariff> UpdateAsync(Tariff tariff, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(tariff);
-
-        var existingTariff = await _context.Tariffs.FindAsync([tariff.TariffId], cancellationToken);
-        if (existingTariff == null)
-            return null!;
-
-        tariff.LastModified = DateTimeOffset.UtcNow;
-        _context.Entry(existingTariff).CurrentValues.SetValues(tariff);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Tariffs, cancellationToken);
-        await _cache.RemoveByTagAsync(CacheTags.Visits, cancellationToken);
-
-        return tariff;
-    }
-
-    public async Task<bool> DeleteAsync(Guid tariffId, CancellationToken cancellationToken = default)
-    {
-        var tariff = await _context.Tariffs.FindAsync([tariffId], cancellationToken);
-        if (tariff == null)
-            return false;
-
-        _context.Tariffs.Remove(tariff);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Tariffs, cancellationToken);
-        await _cache.RemoveByTagAsync(CacheTags.Visits, cancellationToken);
-
+        _context.Tariffs.Remove(entity);
         return true;
     }
 
-    public async Task<bool> ActivateAsync(Guid tariffId, CancellationToken cancellationToken = default)
+    public async Task<bool> ActivateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var tariff = await _context.Tariffs.FindAsync([tariffId], cancellationToken);
-        if (tariff == null)
-            return false;
+        var entity = await _context.Tariffs.FindAsync([id], cancellationToken);
+        if (entity == null) return false;
 
-        tariff.IsActive = true;
-        tariff.LastModified = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Tariffs, cancellationToken);
-
+        entity.IsActive = true;
+        entity.LastModified = DateTimeOffset.UtcNow;
         return true;
     }
 
-    public async Task<bool> DeactivateAsync(Guid tariffId, CancellationToken cancellationToken = default)
+    public async Task<bool> DeactivateAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var tariff = await _context.Tariffs.FindAsync([tariffId], cancellationToken);
-        if (tariff == null)
-            return false;
+        var entity = await _context.Tariffs.FindAsync([id], cancellationToken);
+        if (entity == null) return false;
 
-        tariff.IsActive = false;
-        tariff.LastModified = DateTimeOffset.UtcNow;
-        await _context.SaveChangesAsync(cancellationToken);
-
-        await _cache.RemoveByTagAsync(CacheTags.Tariffs, cancellationToken);
-
+        entity.IsActive = false;
+        entity.LastModified = DateTimeOffset.UtcNow;
         return true;
     }
 }
-

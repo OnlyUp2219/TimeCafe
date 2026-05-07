@@ -10,22 +10,26 @@ public class DeleteThemeCommandValidator : AbstractValidator<DeleteThemeCommand>
     }
 }
 
-public class DeleteThemeCommandHandler(IThemeRepository repository) : ICommandHandler<DeleteThemeCommand>
+public class DeleteThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<DeleteThemeCommand>
 {
-    private readonly IThemeRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result> Handle(DeleteThemeCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteThemeCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var existing = await _repository.GetByIdAsync(request.ThemeId);
+            var existing = await _uow.Themes.GetByIdAsync(request.ThemeId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new ThemeNotFoundError());
 
-            var result = await _repository.DeleteAsync(request.ThemeId);
+            var result = await _uow.Themes.DeleteAsync(request.ThemeId, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
 
             if (!result)
                 return Result.Fail(new DeleteFailedError());
+
+            await _publisher.Publish(new ThemeChangedEvent(request.ThemeId), cancellationToken);
 
             return Result.Ok();
         }

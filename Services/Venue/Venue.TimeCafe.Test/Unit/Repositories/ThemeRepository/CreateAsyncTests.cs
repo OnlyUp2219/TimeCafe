@@ -49,26 +49,13 @@ public class CreateAsyncTests : BaseCqrsTest
 
         // Act
         var result = await ThemeRepository.CreateAsync(theme);
+        await Context.SaveChangesAsync();
 
         // Assert
         var fromDb = await Context.Themes.FindAsync(result.ThemeId);
         fromDb.Should().NotBeNull();
         fromDb!.Name.Should().Be(TestData.NewThemes.NewTheme2Name);
         fromDb.Emoji.Should().Be(TestData.NewThemes.NewTheme2Emoji);
-    }
-
-    [Fact]
-    public async Task Repository_CreateAsync_Should_InvalidateCache()
-    {
-        // Arrange
-        var theme = new Theme { Name = TestData.DefaultValues.DefaultThemeName };
-
-        // Act
-        var result = await ThemeRepository.CreateAsync(theme);
-
-        // Assert
-        var fromDb = await Context.Themes.FindAsync(result.ThemeId);
-        fromDb.Should().NotBeNull();
     }
 
     [Fact]

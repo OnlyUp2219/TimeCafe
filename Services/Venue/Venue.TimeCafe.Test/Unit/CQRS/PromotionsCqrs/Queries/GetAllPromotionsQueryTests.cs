@@ -6,7 +6,7 @@ public class GetAllPromotionsQueryTests : BaseCqrsHandlerTest
 
     public GetAllPromotionsQueryTests()
     {
-        _handler = new GetAllPromotionsQueryHandler(PromotionRepositoryMock.Object);
+        _handler = new GetAllPromotionsQueryHandler(UowMock.Object);
     }
 
     [Fact]

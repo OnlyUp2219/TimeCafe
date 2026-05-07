@@ -6,7 +6,7 @@ public class GetActiveTariffsQueryTests : BaseCqrsHandlerTest
 
     public GetActiveTariffsQueryTests()
     {
-        _handler = new GetActiveTariffsQueryHandler(TariffRepositoryMock.Object);
+        _handler = new GetActiveTariffsQueryHandler(UowMock.Object);
     }
 
     [Fact]
