@@ -20,7 +20,6 @@ global using UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 global using UserProfile.TimeCafe.Application.DependencyInjection;
 global using UserProfile.TimeCafe.Domain.Contracts;
 global using UserProfile.TimeCafe.Domain.Enums;
-global using UserProfile.TimeCafe.Domain.Errors;
 global using UserProfile.TimeCafe.Domain.Models;
 global using UserProfile.TimeCafe.Infrastructure;
 global using UserProfile.TimeCafe.Infrastructure.Data;

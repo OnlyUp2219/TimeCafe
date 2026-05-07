@@ -1,6 +1,3 @@
-using BuildingBlocks.Contracts;
-using UserProfile.TimeCafe.Domain.Models;
-
 namespace UserProfile.TimeCafe.Domain.Contracts;
 
 public interface IUserRepositories : IRepository<Profile, Guid>

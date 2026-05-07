@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.AdditionalInfosCqrs.Commands;
- 
+
 public class DeleteAdditionalInfoCommandHandlerTests
 {
     private readonly Mock<IAdditionalInfoRepository> _repoMock = new();
@@ -18,7 +18,7 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var userId = Guid.Parse(ExistingUsers.User1Id);
         var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.TestInfo, CreatedAt = DateTimeOffset.UtcNow, CreatedBy = "creator" };
-        
+
         _repoMock.Setup(r => r.GetByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         _repoMock.Setup(r => r.DeleteAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(true);
         var cmd = new DeleteAdditionalInfoCommand(infoId);
@@ -48,13 +48,13 @@ public class DeleteAdditionalInfoCommandHandlerTests
         var cmd = new DeleteAdditionalInfoCommand(Guid.Empty);
         validator.Validate(cmd).IsValid.Should().BeFalse();
     }
-    
+
     [Fact]
     public async Task Handle_Should_Return_NotFound_When_Not_Exist()
     {
         // Arrange
         var infoId = Guid.Parse(NonExistingUsers.UserId1);
-        
+
         _repoMock.Setup(r => r.GetByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
         var cmd = new DeleteAdditionalInfoCommand(infoId);
         var handler = new DeleteAdditionalInfoCommandHandler(_uowMock.Object, _publisherMock.Object);

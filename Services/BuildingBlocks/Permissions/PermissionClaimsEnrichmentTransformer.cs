@@ -78,10 +78,10 @@ public sealed class PermissionClaimsEnrichmentTransformer(
 
     private async Task<IReadOnlyCollection<string>> LoadPermissionsViaGrpcAsync(
         Guid userId,
-        CancellationToken ct)
+        CancellationToken cancellationToken = default)
     {
         var request = new GetUserPermissionsRequest { UserId = userId.ToString() };
-        var response = await _grpcClient.GetUserPermissionsAsync(request, cancellationToken: ct);
+        var response = await _grpcClient.GetUserPermissionsAsync(request, cancellationToken: cancellationToken);
         
         return response.Permissions.ToList();
     }

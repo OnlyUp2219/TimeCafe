@@ -1,6 +1,5 @@
 using BuildingBlocks.Events;
 using MassTransit;
-using Microsoft.Extensions.Options;
 using UserProfile.TimeCafe.Application.Options;
 using UserProfile.TimeCafe.Infrastructure.Consumers;
 

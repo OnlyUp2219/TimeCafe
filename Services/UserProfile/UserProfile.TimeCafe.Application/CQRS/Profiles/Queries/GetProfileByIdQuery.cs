@@ -9,8 +9,8 @@ public class GetProfileByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProf
         try
         {
             var profile = await uow.Profiles.GetByIdAsync(request.Id, cancellationToken);
-            return profile != null 
-                ? Result.Ok(ProfilePhotoUrlMapper.WithApiUrl(profile)) 
+            return profile != null
+                ? Result.Ok(ProfilePhotoUrlMapper.WithApiUrl(profile))
                 : Result.Fail(new ProfileNotFoundError());
         }
         catch (Exception ex)

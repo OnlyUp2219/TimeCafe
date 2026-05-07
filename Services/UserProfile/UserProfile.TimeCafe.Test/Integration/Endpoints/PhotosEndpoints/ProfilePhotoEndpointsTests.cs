@@ -1,7 +1,5 @@
 using Amazon.S3;
 
-using Microsoft.Extensions.Options;
-
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Test.Integration.Endpoints.PhotosEndpoints;

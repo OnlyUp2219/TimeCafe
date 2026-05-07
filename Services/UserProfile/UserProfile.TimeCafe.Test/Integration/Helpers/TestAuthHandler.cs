@@ -3,7 +3,6 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using BuildingBlocks.Permissions;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.Extensions.Options;
 
 namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 

@@ -1,3 +1,4 @@
+using TimeCafe.ServiceDefaults;
 using UserProfile.TimeCafe.API.Json;
 
 var builder = WebApplication.CreateBuilder(args);

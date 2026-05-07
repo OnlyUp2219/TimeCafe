@@ -38,7 +38,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         // If it returns empty list, it's still success.
         // But the previous test logic expected ProfileNotFound.
         // I will follow the CURRENT implementation which doesn't check profile.
-        
+
         var userId = Guid.Parse(NonExistingUsers.UserId1);
 
         _repoMock.Setup(r => r.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))

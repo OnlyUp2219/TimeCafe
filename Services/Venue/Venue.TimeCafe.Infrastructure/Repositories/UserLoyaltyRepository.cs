@@ -4,9 +4,9 @@ public class UserLoyaltyRepository(ApplicationDbContext context) : IUserLoyaltyR
 {
     private readonly ApplicationDbContext _context = context;
 
-    public async Task<UserLoyalty?> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<UserLoyalty?> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _context.UserLoyalties.FirstOrDefaultAsync(x => x.UserId == userId, ct);
+        return await _context.UserLoyalties.FirstOrDefaultAsync(x => x.UserId == userId, cancellationToken);
     }
 }
 

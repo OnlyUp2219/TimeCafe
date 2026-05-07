@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.ProfilesCqrs.Commands;
- 
+
 public class CreateProfileCommandTests : BaseCqrsTest
 {
     [Fact]

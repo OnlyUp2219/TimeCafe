@@ -1,3 +1,5 @@
+using TimeCafe.ServiceDefaults;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddSharedConfiguration();

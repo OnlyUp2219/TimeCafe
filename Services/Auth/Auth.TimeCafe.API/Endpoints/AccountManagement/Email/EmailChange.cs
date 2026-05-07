@@ -1,4 +1,4 @@
-namespace Auth.TimeCafe.API.Endpoints.AccountManagement;
+namespace Auth.TimeCafe.API.Endpoints.AccountManagement.Email;
 
 public record ChangeEmailRequest(
     /// <example>newemail@example.com</example>

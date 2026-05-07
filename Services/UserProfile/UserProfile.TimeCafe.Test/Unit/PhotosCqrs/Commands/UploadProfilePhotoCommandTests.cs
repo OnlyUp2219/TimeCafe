@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using UserProfile.TimeCafe.Domain.DTOs;
 
 namespace UserProfile.TimeCafe.Test.Unit.PhotosCqrs.Commands;

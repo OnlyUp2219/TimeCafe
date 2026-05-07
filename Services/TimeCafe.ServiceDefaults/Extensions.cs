@@ -9,7 +9,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
-namespace Microsoft.Extensions.Hosting;
+namespace TimeCafe.ServiceDefaults;
 
 public static class ServiceDefaultsExtensions
 {

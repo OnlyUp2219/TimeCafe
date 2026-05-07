@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Caching.Hybrid;
-
 namespace UserProfile.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsTest : IDisposable

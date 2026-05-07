@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.AdditionalInfosCqrs.Commands;
- 
+
 public class UpdateAdditionalInfoCommandHandlerTests
 {
     private readonly Mock<IAdditionalInfoRepository> _repoMock = new();
@@ -18,11 +18,11 @@ public class UpdateAdditionalInfoCommandHandlerTests
         var infoId = Guid.Parse(AdditionalInfoData.Info1Id);
         var userId = Guid.Parse(ExistingUsers.User1Id);
         var existing = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.OriginalInfo, CreatedAt = DateTimeOffset.UtcNow, CreatedBy = "creator" };
-        
+
         _repoMock.Setup(r => r.GetByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync(existing);
         _repoMock.Setup(r => r.UpdateAsync(It.IsAny<AdditionalInfo>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((AdditionalInfo a, CancellationToken _) => a);
-        
+
         var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = existing.CreatedAt };
         var cmd = new UpdateAdditionalInfoCommand(info.InfoId, info.UserId, info.InfoText, info.CreatedBy);
         var handler = new UpdateAdditionalInfoCommandHandler(_uowMock.Object, _publisherMock.Object);
@@ -72,7 +72,7 @@ public class UpdateAdditionalInfoCommandHandlerTests
         // Arrange
         var infoId = Guid.Parse(NonExistingUsers.UserId1);
         var userId = Guid.Parse(NonExistingUsers.UserId2);
-        
+
         _repoMock.Setup(r => r.GetByIdAsync(infoId, It.IsAny<CancellationToken>())).ReturnsAsync((AdditionalInfo?)null);
         var info = new AdditionalInfo { InfoId = infoId, UserId = userId, InfoText = TestInfoTexts.UpdatedInfo, CreatedBy = "creator2", CreatedAt = DateTimeOffset.UtcNow };
         var cmd = new UpdateAdditionalInfoCommand(info.InfoId, info.UserId, info.InfoText, info.CreatedBy);

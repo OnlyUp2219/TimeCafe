@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using TimeCafe.ServiceDefaults;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();

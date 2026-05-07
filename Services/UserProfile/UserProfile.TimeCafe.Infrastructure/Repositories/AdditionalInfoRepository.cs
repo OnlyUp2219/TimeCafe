@@ -5,7 +5,7 @@ public class AdditionalInfoRepository(ApplicationDbContext context, HybridCache 
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<IEnumerable<AdditionalInfo>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IEnumerable<AdditionalInfo>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         return await _cache.GetOrCreateAsync(
             CacheKeys.AdditionalInfo_ByUserId(userId),
@@ -15,27 +15,27 @@ public class AdditionalInfoRepository(ApplicationDbContext context, HybridCache 
             .OrderByDescending(i => i.CreatedAt)
             .ToListAsync(token),
         tags: [CacheTags.AdditionalInfos, CacheTags.AdditionalInfoByUser(userId)],
-        cancellationToken: ct);
+        cancellationToken: cancellationToken);
     }
 
     public async Task<(IEnumerable<AdditionalInfo> Items, int TotalCount)> GetPagedByUserIdAsync(
-    Guid userId, int pageNumber, int pageSize, CancellationToken ct = default)
+    Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         var query = _context.AdditionalInfos
             .AsNoTracking()
             .Where(i => i.UserId == userId);
 
-        var totalCount = await query.CountAsync(ct);
+        var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
             .OrderByDescending(i => i.CreatedAt)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
 
         return (items, totalCount);
     }
 
-    public async Task<AdditionalInfo?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<AdditionalInfo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _cache.GetOrCreateAsync(
             CacheKeys.AdditionalInfo_ById(id),
@@ -43,19 +43,19 @@ public class AdditionalInfoRepository(ApplicationDbContext context, HybridCache 
             .AsNoTracking()
             .FirstOrDefaultAsync(i => i.InfoId == id, token),
             tags: [CacheTags.AdditionalInfos],
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
     }
 
-    public async Task<AdditionalInfo> CreateAsync(AdditionalInfo entity, CancellationToken ct = default)
+    public async Task<AdditionalInfo> CreateAsync(AdditionalInfo entity, CancellationToken cancellationToken = default)
     {
         entity.CreatedAt = DateTimeOffset.UtcNow;
         _context.AdditionalInfos.Add(entity);
         return entity;
     }
 
-    public async Task<AdditionalInfo?> UpdateAsync(AdditionalInfo entity, CancellationToken ct = default)
+    public async Task<AdditionalInfo?> UpdateAsync(AdditionalInfo entity, CancellationToken cancellationToken = default)
     {
-        var existingInfo = await _context.AdditionalInfos.FindAsync([entity.InfoId], ct);
+        var existingInfo = await _context.AdditionalInfos.FindAsync([entity.InfoId], cancellationToken);
         if (existingInfo == null)
             return null;
 
@@ -64,9 +64,9 @@ public class AdditionalInfoRepository(ApplicationDbContext context, HybridCache 
         return existingInfo;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var info = await _context.AdditionalInfos.FindAsync([id], ct);
+        var info = await _context.AdditionalInfos.FindAsync([id], cancellationToken);
         if (info == null)
             return false;
 

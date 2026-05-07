@@ -1,5 +1,5 @@
 namespace UserProfile.TimeCafe.Test.Unit.AdditionalInfosCqrs.Commands;
- 
+
 public class CreateAdditionalInfoCommandHandlerTests
 {
     private readonly Mock<IAdditionalInfoRepository> _repoMock = new();
