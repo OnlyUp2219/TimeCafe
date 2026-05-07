@@ -57,7 +57,7 @@ public class AdjustBalanceCommandHandler(
     private readonly ITransactionRepository _transactionRepository = transactionRepository;
     private readonly IBillingTransactionExecutor _transactionExecutor = transactionExecutor;
 
-    public async Task<AdjustBalanceResult> Handle(AdjustBalanceCommand request, CancellationToken cancellationToken)
+    public async Task<AdjustBalanceResult> Handle(AdjustBalanceCommand request, CancellationToken cancellationToken = default)
     {
         try
         {

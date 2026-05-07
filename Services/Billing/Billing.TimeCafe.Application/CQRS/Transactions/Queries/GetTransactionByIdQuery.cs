@@ -28,7 +28,7 @@ public class GetTransactionByIdQueryHandler(ITransactionRepository repository) :
 {
     private readonly ITransactionRepository _repository = repository;
 
-    public async Task<GetTransactionByIdResult> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<GetTransactionByIdResult> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken = default)
     {
         var transaction = await _repository.GetByIdAsync(request.TransactionId, cancellationToken);
         if (transaction == null)

@@ -32,7 +32,7 @@ public class LogoutCommandHandler(IJwtService jwtService) : IRequestHandler<Logo
 {
     private readonly IJwtService _jwtService = jwtService;
 
-    public async Task<LogoutResult> Handle(LogoutCommand request, CancellationToken cancellationToken)
+    public async Task<LogoutResult> Handle(LogoutCommand request, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
             return LogoutResult.NoToken();

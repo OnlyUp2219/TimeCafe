@@ -79,7 +79,7 @@ public class UserRepository(
             async token =>
             {
                 var user = await _userManager.FindByIdAsync(userId.ToString());
-                return user != null ? (await _userManager.GetRolesAsync(user)).ToList() : new List<string>();
+                return user != null ? (await _userManager.GetRolesAsync(user)).ToList() : [];
             },
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
             tags: ["user_roles", $"user_{userId}"],
@@ -91,7 +91,7 @@ public class UserRepository(
         var stopwatch = Stopwatch.StartNew();
         var userIdList = userIds.ToList();
         if (userIdList.Count == 0)
-            return new Dictionary<Guid, List<string>>();
+            return [];
 
         var roleAssignments = await _context.UserRoles
             .Where(ur => userIdList.Contains(ur.UserId))

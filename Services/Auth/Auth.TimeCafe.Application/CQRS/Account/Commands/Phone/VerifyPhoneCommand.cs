@@ -60,7 +60,7 @@ public class VerifyPhoneCommandHandler(
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
     private readonly ICaptchaValidator _captchaValidator = captchaValidator;
 
-    public async Task<VerifyPhoneResult> Handle(VerifyPhoneCommand request, CancellationToken cancellationToken)
+    public async Task<VerifyPhoneResult> Handle(VerifyPhoneCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)

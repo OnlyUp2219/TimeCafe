@@ -54,7 +54,7 @@ public class ProcessStripeWebhookCommandHandler(
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
     private readonly ILogger _logger = logger;
 
-    public async Task<ProcessStripeWebhookResult> Handle(ProcessStripeWebhookCommand request, CancellationToken cancellationToken)
+    public async Task<ProcessStripeWebhookResult> Handle(ProcessStripeWebhookCommand request, CancellationToken cancellationToken = default)
     {
         if (request.Payload is null)
         {
@@ -174,7 +174,7 @@ public class ProcessStripeWebhookCommandHandler(
     private async Task<ProcessStripeWebhookResult> HandleCheckoutSessionCompleted(
         Payment payment,
         StripePaymentIntentObject session,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Stripe webhook: checkout.session.completed for payment {PaymentId}, amount_total={AmountTotal}",
             payment.PaymentId, session.AmountTotal);

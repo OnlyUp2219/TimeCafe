@@ -15,7 +15,7 @@ public sealed class GetRoleByNameQueryHandler(IRbacRepository rbacRepository) : 
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-    public async Task<Result<RolesResponse>> Handle(GetRoleByNameQuery request, CancellationToken cancellationToken)
+    public async Task<Result<RolesResponse>> Handle(GetRoleByNameQuery request, CancellationToken cancellationToken = default)
     {
         var roles = await _rbacRepository.GetRolesAsync();
 

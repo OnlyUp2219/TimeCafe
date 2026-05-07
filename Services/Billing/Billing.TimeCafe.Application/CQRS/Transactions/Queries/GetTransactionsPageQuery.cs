@@ -31,7 +31,7 @@ public class GetTransactionsPageQueryValidator : AbstractValidator<GetTransactio
 public class GetTransactionsPageQueryHandler(ITransactionRepository repository)
     : IRequestHandler<GetTransactionsPageQuery, GetTransactionsPageResult>
 {
-    public async Task<GetTransactionsPageResult> Handle(GetTransactionsPageQuery request, CancellationToken cancellationToken)
+    public async Task<GetTransactionsPageResult> Handle(GetTransactionsPageQuery request, CancellationToken cancellationToken = default)
     {
         var (items, totalCount) = await repository.GetPageAsync(request.Page, request.PageSize, request.UserId, cancellationToken);
 

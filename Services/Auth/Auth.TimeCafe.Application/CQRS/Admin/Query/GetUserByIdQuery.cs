@@ -13,7 +13,7 @@ public sealed class GetUserByIdQueryValidator : AbstractValidator<GetUserByIdQue
 public sealed class GetUserByIdQueryHandler(IUserRepository userRepository)
     : IRequestHandler<GetUserByIdQuery, Result<AdminUserResponse>>
 {
-    public async Task<Result<AdminUserResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<AdminUserResponse>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken = default)
     {
         var user = await userRepository.GetByIdAsync(request.UserId, cancellationToken);
         if (user is null)

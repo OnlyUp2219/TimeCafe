@@ -29,7 +29,7 @@ public class GetBalanceQueryHandler(IBalanceRepository repository) : IRequestHan
 {
     private readonly IBalanceRepository _repository = repository;
 
-    public async Task<GetBalanceResult> Handle(GetBalanceQuery request, CancellationToken cancellationToken)
+    public async Task<GetBalanceResult> Handle(GetBalanceQuery request, CancellationToken cancellationToken = default)
     {
         var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
 

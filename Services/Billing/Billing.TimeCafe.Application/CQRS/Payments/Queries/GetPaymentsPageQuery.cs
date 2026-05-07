@@ -31,7 +31,7 @@ public class GetPaymentsPageQueryValidator : AbstractValidator<GetPaymentsPageQu
 public class GetPaymentsPageQueryHandler(IPaymentRepository repository)
     : IRequestHandler<GetPaymentsPageQuery, GetPaymentsPageResult>
 {
-    public async Task<GetPaymentsPageResult> Handle(GetPaymentsPageQuery request, CancellationToken cancellationToken)
+    public async Task<GetPaymentsPageResult> Handle(GetPaymentsPageQuery request, CancellationToken cancellationToken = default)
     {
         var (items, totalCount) = await repository.GetPageAsync(request.Page, request.PageSize, request.UserId, cancellationToken);
 

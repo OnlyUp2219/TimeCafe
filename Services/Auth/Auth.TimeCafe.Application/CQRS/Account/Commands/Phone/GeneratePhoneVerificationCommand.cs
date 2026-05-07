@@ -54,7 +54,7 @@ ISmsVerificationAttemptTracker attemptTracker
     private readonly ISender _sender = sender;
     private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
 
-    public async Task<GeneratePhoneVerificationResult> Handle(GeneratePhoneVerificationCommand request, CancellationToken cancellationToken)
+    public async Task<GeneratePhoneVerificationResult> Handle(GeneratePhoneVerificationCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)

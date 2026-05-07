@@ -33,7 +33,7 @@ public class GetPhoneVerificationStatusQueryHandler(
     ISmsVerificationAttemptTracker attemptTracker
 ) : IRequestHandler<GetPhoneVerificationStatusQuery, GetPhoneVerificationStatusResult>
 {
-    public async Task<GetPhoneVerificationStatusResult> Handle(GetPhoneVerificationStatusQuery request, CancellationToken cancellationToken)
+    public async Task<GetPhoneVerificationStatusResult> Handle(GetPhoneVerificationStatusQuery request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(request.UserId);
         if (user == null)

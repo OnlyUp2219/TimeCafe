@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Infrastructure.Repositories;
+
 namespace UserProfile.TimeCafe.Test.Helpers;
 
 public abstract class BaseCqrsTest : IDisposable

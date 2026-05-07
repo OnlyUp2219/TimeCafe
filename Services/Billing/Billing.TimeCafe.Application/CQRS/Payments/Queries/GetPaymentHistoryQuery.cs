@@ -49,7 +49,7 @@ public class GetPaymentHistoryQueryHandler(
     private readonly IPaymentRepository _paymentRepository = paymentRepository;
     private readonly ILogger _logger = logger;
 
-    public async Task<GetPaymentHistoryResult> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken)
+    public async Task<GetPaymentHistoryResult> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken = default)
     {
         var page = Math.Max(1, request.Page);
         var pageSize = Math.Clamp(request.PageSize, 1, 100);

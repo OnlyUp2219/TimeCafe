@@ -16,7 +16,7 @@ public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : I
 {
     private readonly IUserRepository _userRepository = userRepository;
 
-    public async Task<Result<(List<AdminUserResponse> Users, int TotalCount)>> Handle(GetUsersPageQuery request, CancellationToken cancellationToken)
+    public async Task<Result<(List<AdminUserResponse> Users, int TotalCount)>> Handle(GetUsersPageQuery request, CancellationToken cancellationToken = default)
     {
         var (users, totalCount) = await _userRepository.GetUsersPageAsync(
             request.Page, request.Size, request.Search, request.Status, cancellationToken);

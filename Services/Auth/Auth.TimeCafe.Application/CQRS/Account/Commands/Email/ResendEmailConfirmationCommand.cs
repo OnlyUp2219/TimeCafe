@@ -46,7 +46,7 @@ public class ResendConfirmationCommandHandler(
     private readonly ILogger<ResendConfirmationCommandHandler> _logger = logger;
 
 
-    public async Task<ResendEmailConfirmationResult> Handle(ResendEmailConfirmationCommand request, CancellationToken cancellationToken)
+    public async Task<ResendEmailConfirmationResult> Handle(ResendEmailConfirmationCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

@@ -12,7 +12,7 @@ public sealed class CreateRoleClaimsValidator : AbstractValidator<CreateRoleClai
 
 public sealed class CreateRoleClaimsCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<CreateRoleClaimsCommand>
 {
-    public async Task<Result> Handle(CreateRoleClaimsCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(CreateRoleClaimsCommand request, CancellationToken cancellationToken = default)
     {
         if (await rbacRepository.RoleExistsAsync(request.RoleName))
             return Result.Fail(new RoleExistError(request.RoleName));

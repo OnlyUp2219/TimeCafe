@@ -18,7 +18,7 @@ public class GetTransactionHistory : ICarterModule
                 pagination = new
                 {
                     currentPage = page,
-                    pageSize = pageSize,
+                    pageSize,
                     totalCount = r.TotalCount,
                     totalPages = r.TotalPages
                 }

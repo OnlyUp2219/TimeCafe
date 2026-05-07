@@ -5,7 +5,7 @@ public class ErrorHandlingBehavior<TRequest, TResponse>(ILogger<ErrorHandlingBeh
 {
     private readonly ILogger<ErrorHandlingBehavior<TRequest, TResponse>> _logger = logger;
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         try
         {

@@ -13,7 +13,7 @@ public sealed class GetRolesQueryHandler(IRbacRepository rbacRepository) : IQuer
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-    public async Task<Result<List<RolesResponse>>> Handle(GetRolesQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<RolesResponse>>> Handle(GetRolesQuery request, CancellationToken cancellationToken = default)
     {
         var roles = await _rbacRepository.GetRolesAsync();
 

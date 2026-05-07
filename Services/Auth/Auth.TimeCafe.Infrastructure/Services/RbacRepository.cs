@@ -66,7 +66,7 @@ public class RbacRepository : IRbacRepository
 
     public async Task<Result> CreateRoleClaimsAsync(string roleName, List<string> claims)
     {
-        var uniqueClaims = claims == null ? new List<string>() : NormalizeClaims(claims);
+        var uniqueClaims = claims == null ? [] : NormalizeClaims(claims);
 
         var useTransaction = !string.Equals(_context.Database.ProviderName, "Microsoft.EntityFrameworkCore.InMemory", StringComparison.Ordinal);
         await using var transaction = useTransaction ? await _context.Database.BeginTransactionAsync() : null;

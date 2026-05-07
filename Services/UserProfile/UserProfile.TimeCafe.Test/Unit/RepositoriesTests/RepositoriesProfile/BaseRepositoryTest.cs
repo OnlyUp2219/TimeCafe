@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Infrastructure.Repositories;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesProfile;
 
 public abstract class BaseRepositoryTest : IDisposable

@@ -12,7 +12,7 @@ public sealed class RoleExistsQueryValidator : AbstractValidator<RoleExistsQuery
 
 public sealed class RoleExistsQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<RoleExistsQuery, bool>
 {
-    public async Task<Result<bool>> Handle(RoleExistsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<bool>> Handle(RoleExistsQuery request, CancellationToken cancellationToken = default)
     {
         var exists = await rbacRepository.RoleExistsAsync(request.RoleName);
         return Result.Ok(exists);

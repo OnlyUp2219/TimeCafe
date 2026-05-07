@@ -1,3 +1,5 @@
+using UserProfile.TimeCafe.Infrastructure.Repositories;
+
 namespace UserProfile.TimeCafe.Test.Unit.RepositoriesTests.RepositoriesAditionalInfo;
 
 public abstract class BaseAdditionalInfoRepositoryTest : IDisposable

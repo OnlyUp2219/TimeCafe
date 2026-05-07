@@ -51,8 +51,8 @@ public class AdminUsersCompositeEndpoint : ICarterModule
                 }
             }
 
-            var profilesMap = profiles?.ToDictionary(p => p.UserId) ?? new Dictionary<Guid, ProfileDto>();
-            var balancesMap = balances?.ToDictionary(b => b.UserId) ?? new Dictionary<Guid, BalanceDto>();
+            var profilesMap = profiles?.ToDictionary(p => p.UserId) ?? [];
+            var balancesMap = balances?.ToDictionary(b => b.UserId) ?? [];
 
             var compositeUsers = authResponse.Users.Select(user => new
             {

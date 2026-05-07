@@ -39,7 +39,7 @@ public class LoginUserCommandHandler(UserManager<ApplicationUser> userManager, I
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtService _jwtService = jwtService;
 
-    public async Task<LoginUserResult> Handle(LoginUserCommand request, CancellationToken cancellationToken)
+    public async Task<LoginUserResult> Handle(LoginUserCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))

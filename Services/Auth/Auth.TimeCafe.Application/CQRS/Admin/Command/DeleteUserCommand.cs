@@ -15,7 +15,7 @@ public sealed class DeleteUserCommandHandler(
     IUserContext userContext)
     : IRequestHandler<DeleteUserCommand, Result>
 {
-    public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken = default)
     {
         if (request.UserId == userContext.UserId)
             return Result.Fail(new Error("Нельзя удалить собственный аккаунт").WithMetadata("StatusCode", 403));

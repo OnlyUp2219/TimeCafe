@@ -31,7 +31,7 @@ public class GetBalancesPageQueryValidator : AbstractValidator<GetBalancesPageQu
 public class GetBalancesPageQueryHandler(IBalanceRepository repository)
     : IRequestHandler<GetBalancesPageQuery, GetBalancesPageResult>
 {
-    public async Task<GetBalancesPageResult> Handle(GetBalancesPageQuery request, CancellationToken cancellationToken)
+    public async Task<GetBalancesPageResult> Handle(GetBalancesPageQuery request, CancellationToken cancellationToken = default)
     {
         var (items, totalCount) = await repository.GetPageAsync(request.Page, request.PageSize, cancellationToken);
 

@@ -38,7 +38,7 @@ public class SavePhoneCommandHandler(
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-    public async Task<SavePhoneResult> Handle(SavePhoneCommand request, CancellationToken cancellationToken)
+    public async Task<SavePhoneResult> Handle(SavePhoneCommand request, CancellationToken cancellationToken = default)
     {
         try
         {

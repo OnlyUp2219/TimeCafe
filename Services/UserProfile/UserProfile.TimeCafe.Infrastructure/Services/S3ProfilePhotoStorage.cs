@@ -10,7 +10,7 @@ public class S3ProfilePhotoStorage(
 {
     private readonly IAmazonS3 _s3 = s3;
     private readonly S3Options _s3Options = s3Options;
-    public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken)
+    public async Task<PhotoUploadDto> UploadAsync(Guid userId, Stream data, string contentType, string fileName, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(userId);
         try
@@ -46,7 +46,7 @@ public class S3ProfilePhotoStorage(
         }
     }
 
-    public async Task<PhotoStreamDto?> GetAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<PhotoStreamDto?> GetAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(userId);
         try
@@ -66,7 +66,7 @@ public class S3ProfilePhotoStorage(
         }
     }
 
-    public async Task<bool> DeleteAsync(Guid userId, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid userId, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(userId);
         try

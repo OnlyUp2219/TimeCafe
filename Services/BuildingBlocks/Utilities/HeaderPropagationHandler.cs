@@ -4,7 +4,7 @@ public class HeaderPropagationHandler(IHttpContextAccessor httpContextAccessor) 
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken = default)
     {
         var context = _httpContextAccessor.HttpContext;
         if (context == null)

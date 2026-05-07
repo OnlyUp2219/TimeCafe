@@ -36,17 +36,11 @@ public static class ServiceDefaultsExtensions
         });
 
         builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddAspNetCoreInstrumentation()
+            .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
-            })
-            .WithTracing(tracing =>
-            {
-                tracing.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation();
-            });
+                    .AddRuntimeInstrumentation())
+            .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation());
 
         builder.AddOpenTelemetryExporters();
 

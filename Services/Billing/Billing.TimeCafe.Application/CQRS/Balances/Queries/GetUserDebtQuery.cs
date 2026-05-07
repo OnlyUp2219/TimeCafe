@@ -30,7 +30,7 @@ public class GetUserDebtQueryHandler(IBalanceRepository repository) : IRequestHa
 {
     private readonly IBalanceRepository _repository = repository;
 
-    public async Task<GetUserDebtResult> Handle(GetUserDebtQuery request, CancellationToken cancellationToken)
+    public async Task<GetUserDebtResult> Handle(GetUserDebtQuery request, CancellationToken cancellationToken = default)
     {
         var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
         if (balance == null)

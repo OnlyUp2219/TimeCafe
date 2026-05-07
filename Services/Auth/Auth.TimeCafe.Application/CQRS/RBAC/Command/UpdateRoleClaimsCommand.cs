@@ -13,7 +13,7 @@ public sealed class UpdateRoleClaimsCommandValidator : AbstractValidator<UpdateR
 
 public sealed class UpdateRoleClaimsCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<UpdateRoleClaimsCommand>
 {
-    public async Task<Result> Handle(UpdateRoleClaimsCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateRoleClaimsCommand request, CancellationToken cancellationToken = default)
     {
         if (Roles.IsSystemRole(request.RoleName))
             return Result.Fail(new SystemRoleModificationError(request.RoleName));

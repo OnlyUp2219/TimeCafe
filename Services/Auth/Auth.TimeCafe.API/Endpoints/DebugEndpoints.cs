@@ -65,11 +65,9 @@ public class DebugEndpoints : ICarterModule
             return result.ToHttpResult(data => Results.Ok(new { message = "Данные успешно сохранены", data }));
         });
 
-        group.MapGet("/info", () => 
-        {
+        group.MapGet("/info", () =>
             // Эмуляция информационного ответа через метаданные успеха или кастомный объект
-            return Results.Ok(new { message = "Ваш пробный период истекает. Пожалуйста, обновите тариф.", statusCode = 200, code = "SubscriptionInfo" });
-        });
+            Results.Ok(new { message = "Ваш пробный период истекает. Пожалуйста, обновите тариф.", statusCode = 200, code = "SubscriptionInfo" }));
             
         group.MapGet("/legacy-result", () => 
         {
@@ -79,11 +77,11 @@ public class DebugEndpoints : ICarterModule
                 StatusCode = 400,
                 Code = "Legacy_InvalidOperation",
                 Message = "Ошибка, возвращенная через ICqrsResult.ToHttpResult",
-                Errors = new List<ErrorItem>
-                {
+                Errors =
+                [
                     new("Field1", "Описание ошибки 1"),
                     new("Field2", "Описание ошибки 2")
-                }
+                ]
             };
             
             return result.ToHttpResult(r => Results.Ok(r));

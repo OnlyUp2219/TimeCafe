@@ -22,7 +22,7 @@ public sealed class UpdateUserCommandHandler(
     UserManager<ApplicationUser> userManager)
     : IRequestHandler<UpdateUserCommand, Result>
 {
-    public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(request.UserId.ToString());
         if (user is null)

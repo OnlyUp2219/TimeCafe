@@ -13,7 +13,7 @@ public sealed class GetRoleClaimsQueryHandler(IRbacRepository rbacRepository) : 
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-    public async Task<Result<List<RoleClaimsResponse>>> Handle(GetRoleClaimsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<RoleClaimsResponse>>> Handle(GetRoleClaimsQuery request, CancellationToken cancellationToken = default)
     {
         var roleClaims = await _rbacRepository.GetRoleClaimsAsync();
 

@@ -34,7 +34,7 @@ public class ClearPhoneCommandHandler(
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-    public async Task<ClearPhoneResult> Handle(ClearPhoneCommand request, CancellationToken cancellationToken)
+    public async Task<ClearPhoneResult> Handle(ClearPhoneCommand request, CancellationToken cancellationToken = default)
     {
         try
         {

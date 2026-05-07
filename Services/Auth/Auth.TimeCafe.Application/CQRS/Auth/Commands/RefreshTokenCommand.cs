@@ -30,7 +30,7 @@ public class RefreshTokenCommandHandler(IJwtService jwtService) : IRequestHandle
 {
     private readonly IJwtService _jwtService = jwtService;
 
-    public async Task<RefreshTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
+    public async Task<RefreshTokenResult> Handle(RefreshTokenCommand request, CancellationToken cancellationToken = default)
     {
         var tokens = await _jwtService.RefreshTokens(request.RefreshToken);
         if (tokens == null)

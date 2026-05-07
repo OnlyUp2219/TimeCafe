@@ -6,7 +6,7 @@ public class GetBalancesByIdsQueryHandler(IBalanceRepository repository) : IQuer
 {
     private readonly IBalanceRepository _repository = repository;
 
-    public async Task<Result<List<Balance>>> Handle(GetBalancesByIdsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<List<Balance>>> Handle(GetBalancesByIdsQuery request, CancellationToken cancellationToken = default)
     {
         try
         {

@@ -27,7 +27,7 @@ public class SendSmsCommandHendler(ITwilioSender twilioSender, ILogger<SendSmsCo
     private readonly ITwilioSender _twilioSender = twilioSender;
     private readonly ILogger<SendSmsCommandHendler> _logger = logger;
 
-    public async Task<PhoneVerificationResult?> Handle(SendSmsCommand request, CancellationToken cancellationToken)
+    public async Task<PhoneVerificationResult?> Handle(SendSmsCommand request, CancellationToken cancellationToken = default)
     {
         var result = await _twilioSender.SendAsync(
             request.AccountSid,

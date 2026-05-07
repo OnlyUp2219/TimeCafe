@@ -13,7 +13,7 @@ public sealed class AssignRoleToUserCommandValidator : AbstractValidator<AssignR
 
 public sealed class AssignRoleToUserCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<AssignRoleToUserCommand>
 {
-    public async Task<Result> Handle(AssignRoleToUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(AssignRoleToUserCommand request, CancellationToken cancellationToken = default)
     {
         if (request.RoleName.Equals(BuildingBlocks.Permissions.Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase))
             return Result.Fail(new SuperAdminModificationError());

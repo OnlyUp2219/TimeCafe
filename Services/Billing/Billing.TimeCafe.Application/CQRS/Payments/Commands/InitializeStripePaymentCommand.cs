@@ -53,7 +53,7 @@ public class InitializeStripePaymentCommandHandler(
     private readonly IStripePaymentClient _stripeClient = stripeClient;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
 
-    public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken)
+    public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken = default)
     {
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;

@@ -40,7 +40,7 @@ public class ResetPasswordCommandHandler(UserManager<ApplicationUser> userManage
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-    public async Task<ResetPasswordResult> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+    public async Task<ResetPasswordResult> Handle(ResetPasswordCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

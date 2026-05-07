@@ -30,7 +30,7 @@ public class CreateBalanceCommandHandler(IBalanceRepository repository) : IReque
 {
     private readonly IBalanceRepository _repository = repository;
 
-    public async Task<CreateBalanceResult> Handle(CreateBalanceCommand request, CancellationToken cancellationToken)
+    public async Task<CreateBalanceResult> Handle(CreateBalanceCommand request, CancellationToken cancellationToken = default)
     {
         var exists = await _repository.ExistsAsync(request.UserId, cancellationToken);
         if (exists)

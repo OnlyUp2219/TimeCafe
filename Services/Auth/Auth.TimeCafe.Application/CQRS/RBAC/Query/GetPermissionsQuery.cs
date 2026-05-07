@@ -13,7 +13,7 @@ public sealed class GetPermissionsQueryHandler(IRbacRepository rbacRepository) :
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-    public Task<Result<List<string>>> Handle(GetPermissionsQuery request, CancellationToken cancellationToken)
+    public Task<Result<List<string>>> Handle(GetPermissionsQuery request, CancellationToken cancellationToken = default)
     {
         var permissions = _rbacRepository.GetPermissions();
 

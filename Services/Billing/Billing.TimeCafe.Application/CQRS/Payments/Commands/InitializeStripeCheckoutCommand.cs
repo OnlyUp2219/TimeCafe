@@ -56,7 +56,7 @@ public class InitializeStripeCheckoutCommandHandler(
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
     private readonly ILogger _logger = logger;
 
-    public async Task<InitializeStripeCheckoutResult> Handle(InitializeStripeCheckoutCommand request, CancellationToken cancellationToken)
+    public async Task<InitializeStripeCheckoutResult> Handle(InitializeStripeCheckoutCommand request, CancellationToken cancellationToken = default)
     {
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;

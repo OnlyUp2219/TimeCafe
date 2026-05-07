@@ -6,7 +6,7 @@ public class PerformanceBehavior<TRequest, TResponse>(ILogger<PerformanceBehavio
     private readonly ILogger<PerformanceBehavior<TRequest, TResponse>> _logger = logger;
     private readonly TimeSpan _warningThreshold = TimeSpan.FromMilliseconds(500);
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken = default)
     {
         var sw = Stopwatch.StartNew();
         var response = await next();

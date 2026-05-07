@@ -38,7 +38,7 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
 {
     private readonly ITransactionRepository _repository = repository;
 
-    public async Task<GetTransactionHistoryResult> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken)
+    public async Task<GetTransactionHistoryResult> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken = default)
     {
         var totalCount = await _repository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
 

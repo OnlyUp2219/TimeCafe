@@ -52,7 +52,7 @@ public class RequestEmailChangeCommandHandler(
     private readonly IHostEnvironment _environment = environment;
     private readonly ILogger<RequestEmailChangeCommandHandler> _logger = logger;
 
-    public async Task<RequestEmailChangeResult> Handle(RequestEmailChangeCommand request, CancellationToken cancellationToken)
+    public async Task<RequestEmailChangeResult> Handle(RequestEmailChangeCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)

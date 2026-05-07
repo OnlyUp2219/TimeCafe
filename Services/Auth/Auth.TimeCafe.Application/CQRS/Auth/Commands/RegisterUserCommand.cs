@@ -46,7 +46,7 @@ public class RegisterUserCommandHandler(
     private readonly HybridCache _cache = cache;
 
     // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
-    public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+    public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken = default)
     {
         ApplicationUser? user = null;
 
@@ -99,7 +99,7 @@ public class RegisterUserCommandHandler(
             {
                 await _userManager.DeleteAsync(user);
             }
-            return RegisterUserResult.Error(new List<ErrorItem> { new("Ошибка ", ex.ToString()) });
+            return RegisterUserResult.Error([new("Ошибка ", ex.ToString())]);
         }
     }
 }

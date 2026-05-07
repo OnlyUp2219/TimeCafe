@@ -37,7 +37,7 @@ public class ConfirmEmailChangeCommandHandler(
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
 
-    public async Task<ConfirmEmailChangeResult> Handle(ConfirmEmailChangeCommand request, CancellationToken cancellationToken)
+    public async Task<ConfirmEmailChangeResult> Handle(ConfirmEmailChangeCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)

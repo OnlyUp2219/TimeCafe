@@ -39,7 +39,7 @@ public class ChangePasswordCommandHandler(UserManager<ApplicationUser> userManag
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtService _jwt = jwt;
 
-    public async Task<ChangePasswordResult> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+    public async Task<ChangePasswordResult> Handle(ChangePasswordCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByIdAsync(request.UserId);
         if (user == null)

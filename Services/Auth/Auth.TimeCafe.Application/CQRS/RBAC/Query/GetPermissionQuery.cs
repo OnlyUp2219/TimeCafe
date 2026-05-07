@@ -15,7 +15,7 @@ public sealed class GetPermissionQueryHandler(IRbacRepository rbacRepository) : 
 {
     private readonly IRbacRepository _rbacRepository = rbacRepository;
 
-    public Task<Result<string>> Handle(GetPermissionQuery request, CancellationToken cancellationToken)
+    public Task<Result<string>> Handle(GetPermissionQuery request, CancellationToken cancellationToken = default)
     {
         var permissions = _rbacRepository.GetPermissions();
 

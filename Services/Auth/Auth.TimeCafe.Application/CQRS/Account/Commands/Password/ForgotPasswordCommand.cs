@@ -42,7 +42,7 @@ public class ForgotPasswordCommandHandler(
     private readonly PostmarkOptions _postmarkOptions = postmarkOptions.Value;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger = logger;
 
-    public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
+    public async Task<ForgotPasswordResult> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

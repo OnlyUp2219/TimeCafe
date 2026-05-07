@@ -16,7 +16,7 @@ public sealed class RemoveRoleFromUserCommandHandler(
     IUserContext userContext,
     IUserRepository userRepository) : ICommandHandler<RemoveRoleFromUserCommand>
 {
-    public async Task<Result> Handle(RemoveRoleFromUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(RemoveRoleFromUserCommand request, CancellationToken cancellationToken = default)
     {
         if (request.RoleName.Equals(BuildingBlocks.Permissions.Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase))
             return Result.Fail(new SuperAdminModificationError());
