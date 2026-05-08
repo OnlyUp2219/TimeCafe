@@ -17,12 +17,14 @@ public class UserLoyaltyRepository(ApplicationDbContext context, HybridCache cac
 
     public async Task<UserLoyalty> CreateAsync(UserLoyalty entity, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(entity);
         _context.UserLoyalties.Add(entity);
         return entity;
     }
 
     public async Task<UserLoyalty?> UpdateAsync(UserLoyalty entity, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(entity);
         var existing = await _context.UserLoyalties.FindAsync([entity.UserId], cancellationToken);
         if (existing == null) return null;
 

@@ -6,8 +6,11 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/Services/">
-    <Project Path="Services/BuildingBlocks/BuildingBlocks.csproj" />
     <Project Path="Services/TimeCafe.ServiceDefaults/TimeCafe.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Services/BuildingBlocks/">
+    <Project Path="Services/BuildingBlocks/BuildingBlocks.csproj" />
+    <Project Path="Services/BuildingBlocks.Test/BuildingBlocks.Test.csproj" />
   </Folder>
   <Folder Name="/Services/Auth/">
     <Project Path="Services/Auth/Auth.TimeCafe.API/Auth.TimeCafe.API.csproj" />

@@ -1,7 +1,5 @@
 namespace Billing.TimeCafe.Infrastructure.Consumers;
 
-using Npgsql;
-
 public class VisitCompletedEventConsumer(
     ApplicationDbContext db,
     IBalanceRepository balanceRepository,

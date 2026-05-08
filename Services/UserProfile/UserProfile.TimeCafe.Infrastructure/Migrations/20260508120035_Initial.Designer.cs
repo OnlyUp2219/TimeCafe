@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Venue.TimeCafe.Infrastructure.Data;
+using UserProfile.TimeCafe.Infrastructure.Data;
 
 #nullable disable
 
-namespace Venue.TimeCafe.Infrastructure.Migrations
+namespace UserProfile.TimeCafe.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260508120035_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -190,203 +193,87 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                     b.ToTable("OutboxState");
                 });
 
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Promotion", b =>
+            modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.AdditionalInfo", b =>
                 {
-                    b.Property<Guid>("PromotionId")
+                    b.Property<Guid>("InfoId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("InfoText")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
 
-                    b.Property<decimal?>("DiscountPercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("numeric(5,2)");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<Guid?>("TariffId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
+                    b.HasKey("InfoId");
 
-                    b.Property<DateTimeOffset>("ValidFrom")
-                        .HasColumnType("timestamp with time zone");
+                    b.HasIndex("UserId");
 
-                    b.Property<DateTimeOffset>("ValidTo")
-                        .HasColumnType("timestamp with time zone");
+                    b.HasIndex("UserId", "CreatedAt");
 
-                    b.HasKey("PromotionId");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("IsActive", "CreatedAt");
-
-                    b.HasIndex("ValidFrom", "ValidTo");
-
-                    b.HasIndex("IsActive", "ValidFrom", "ValidTo", "DiscountPercent");
-
-                    b.ToTable("Promotions", (string)null);
+                    b.ToTable("AdditionalInfo", (string)null);
                 });
 
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Tariff", b =>
+            modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.Profile", b =>
                 {
-                    b.Property<Guid>("TariffId")
+                    b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("BillingType")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
+                    b.Property<string>("BanReason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date");
 
-                    b.Property<DateTimeOffset>("LastModified")
+                    b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.Property<decimal>("PricePerMinute")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
+                    b.Property<byte>("Gender")
+                        .HasColumnType("smallint");
 
-                    b.Property<Guid?>("ThemeId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("TariffId");
-
-                    b.HasIndex("BillingType");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("IsActive");
-
-                    b.HasIndex("ThemeId");
-
-                    b.HasIndex("IsActive", "Name");
-
-                    b.HasIndex("BillingType", "IsActive", "PricePerMinute");
-
-                    b.ToTable("Tariffs", (string)null);
-                });
-
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Theme", b =>
-                {
-                    b.Property<Guid>("ThemeId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Colors")
-                        .HasColumnType("jsonb");
-
-                    b.Property<string>("Emoji")
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
-                    b.HasKey("ThemeId");
+                    b.Property<string>("MiddleName")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.Property<decimal?>("PersonalDiscountPercent")
+                        .HasColumnType("numeric");
 
-                    b.ToTable("Themes", (string)null);
-                });
+                    b.Property<string>("PhotoUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.UserLoyalty", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                    b.Property<byte>("ProfileStatus")
+                        .HasColumnType("smallint");
 
-                    b.Property<DateTimeOffset>("LastUpdated")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("PersonalDiscountPercent")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("VisitCount")
+                        .HasColumnType("integer");
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserLoyalties");
-                });
+                    b.HasIndex("CreatedAt");
 
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Visit", b =>
-                {
-                    b.Property<Guid>("VisitId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal?>("CalculatedCost")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<DateTimeOffset>("EntryTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTimeOffset?>("ExitTime")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(1);
-
-                    b.Property<Guid>("TariffId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("VisitId");
-
-                    b.HasIndex("EntryTime");
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("TariffId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique()
-                        .HasFilter("\"Status\" = 1");
-
-                    b.HasIndex("Status", "EntryTime");
-
-                    b.HasIndex("UserId", "EntryTime");
-
-                    b.HasIndex("UserId", "Status");
-
-                    b.ToTable("Visits", (string)null);
+                    b.ToTable("Profiles", (string)null);
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
@@ -401,31 +288,13 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                         .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Tariff", b =>
+            modelBuilder.Entity("UserProfile.TimeCafe.Domain.Models.AdditionalInfo", b =>
                 {
-                    b.HasOne("Venue.TimeCafe.Domain.Models.Theme", null)
-                        .WithMany("Tariffs")
-                        .HasForeignKey("ThemeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-                });
-
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Visit", b =>
-                {
-                    b.HasOne("Venue.TimeCafe.Domain.Models.Tariff", null)
-                        .WithMany("Visits")
-                        .HasForeignKey("TariffId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("UserProfile.TimeCafe.Domain.Models.Profile", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Tariff", b =>
-                {
-                    b.Navigation("Visits");
-                });
-
-            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Theme", b =>
-                {
-                    b.Navigation("Tariffs");
                 });
 #pragma warning restore 612, 618
         }

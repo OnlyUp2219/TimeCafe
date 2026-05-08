@@ -10,6 +10,7 @@ public abstract class BaseCqrsTest : IDisposable
     protected readonly IPromotionRepository PromotionRepository;
     protected readonly IThemeRepository ThemeRepository;
     protected readonly IVisitRepository VisitRepository;
+    protected readonly IUserLoyaltyRepository UserLoyaltyRepository;
     private bool _disposed;
 
     protected BaseCqrsTest()
@@ -33,6 +34,7 @@ public abstract class BaseCqrsTest : IDisposable
         PromotionRepository = new PromotionRepository(Context, HybridCache);
         ThemeRepository = new ThemeRepository(Context, HybridCache);
         VisitRepository = new VisitRepository(Context, HybridCache);
+        UserLoyaltyRepository = new UserLoyaltyRepository(Context, HybridCache);
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m)
@@ -100,6 +102,20 @@ public abstract class BaseCqrsTest : IDisposable
         Context.Visits.Add(visit);
         await Context.SaveChangesAsync();
         return visit;
+    }
+
+    protected async Task<UserLoyalty> SeedUserLoyaltyAsync(Guid? userId = null, decimal discount = 0m)
+    {
+        var loyalty = new UserLoyalty
+        {
+            UserId = userId ?? Guid.NewGuid(),
+            PersonalDiscountPercent = discount,
+            LastUpdated = DateTimeOffset.UtcNow
+        };
+
+        Context.UserLoyalties.Add(loyalty);
+        await Context.SaveChangesAsync();
+        return loyalty;
     }
 
     public void Dispose()

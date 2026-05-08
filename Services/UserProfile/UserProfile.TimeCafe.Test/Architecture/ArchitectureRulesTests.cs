@@ -1,7 +1,3 @@
-using System.Reflection;
-using System.Text.RegularExpressions;
-using FluentValidation;
-
 namespace UserProfile.TimeCafe.Test.Architecture;
 
 public partial class ArchitectureRulesTests

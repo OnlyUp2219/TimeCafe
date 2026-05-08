@@ -68,5 +68,43 @@ public class GetAdditionalInfoRepositoryTests : BaseAdditionalInfoRepositoryTest
 
         result.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task Repository_GetPagedByUserIdAsync_Should_ReturnPagedInfos()
+    {
+        await SeedAsync();
+        var userId = TestInfos[0].UserId;
+
+        var (items, totalCount) = await Repository.GetPagedByUserIdAsync(userId, 1, 1);
+
+        totalCount.Should().Be(2);
+        items.Should().HaveCount(1);
+        items.First().InfoText.Should().Be("Second info");
+    }
+
+    [Fact]
+    public async Task Repository_GetPagedByUserIdAsync_Should_ReturnSecondPage()
+    {
+        await SeedAsync();
+        var userId = TestInfos[0].UserId;
+
+        var (items, totalCount) = await Repository.GetPagedByUserIdAsync(userId, 2, 1);
+
+        totalCount.Should().Be(2);
+        items.Should().HaveCount(1);
+        items.First().InfoText.Should().Be("First info");
+    }
+
+    [Fact]
+    public async Task Repository_GetPagedByUserIdAsync_Should_ReturnEmpty_WhenPageOutOfBounds()
+    {
+        await SeedAsync();
+        var userId = TestInfos[0].UserId;
+
+        var (items, totalCount) = await Repository.GetPagedByUserIdAsync(userId, 3, 1);
+
+        totalCount.Should().Be(2);
+        items.Should().BeEmpty();
+    }
 }
 

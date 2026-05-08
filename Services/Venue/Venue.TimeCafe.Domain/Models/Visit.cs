@@ -59,7 +59,7 @@ public class Visit
         var bestPromotion = Math.Max(globalDiscount, tariffDiscount);
         var totalDiscount = Math.Min(bestPromotion + personalDiscount, maxDiscountPercent);
 
-        return baseCost * (1m - (totalDiscount / 100m));
+        return baseCost * (1m - totalDiscount / 100m);
     }
 }
 

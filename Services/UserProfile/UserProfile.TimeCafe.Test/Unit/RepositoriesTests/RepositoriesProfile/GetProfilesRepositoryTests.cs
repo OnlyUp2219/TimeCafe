@@ -83,5 +83,29 @@ public class GetProfilesRepositoryTests : BaseRepositoryTest
 
         result.Should().Be(0);
     }
+
+    [Fact]
+    public async Task Repository_GetByIdsAsync_Should_ReturnProfiles_WhenIdsMatch()
+    {
+        await SeedProfilesAsync();
+        var ids = TestProfiles.Select(p => p.UserId).Take(2).ToList();
+
+        var result = (await Repository.GetByIdsAsync(ids, CancellationToken.None)).ToList();
+
+        result.Should().NotBeNull();
+        result.Should().HaveCount(2);
+        result.Select(p => p.UserId).Should().Contain(ids);
+    }
+
+    [Fact]
+    public async Task Repository_GetByIdsAsync_Should_ReturnEmpty_WhenNoIdsMatch()
+    {
+        await SeedProfilesAsync();
+        var ids = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+
+        var result = await Repository.GetByIdsAsync(ids, CancellationToken.None);
+
+        result.Should().BeEmpty();
+    }
 }
 
