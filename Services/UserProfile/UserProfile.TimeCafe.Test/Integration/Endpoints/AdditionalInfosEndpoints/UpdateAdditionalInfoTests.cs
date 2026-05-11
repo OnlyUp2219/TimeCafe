@@ -48,7 +48,7 @@ public class UpdateAdditionalInfoTests(IntegrationApiFactory factory) : BaseEndp
         {
             var json = JsonDocument.Parse(jsonString).RootElement;
             if (json.TryGetProperty("code", out var code))
-                code.GetString()!.Should().Be("AdditionalInfoNotFound");
+                code.GetString()!.Should().Be("InfoNotFound");
         }
     }
 

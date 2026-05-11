@@ -49,7 +49,7 @@ public class GetAdditionalInfoByIdTests(IntegrationApiFactory factory) : BaseEnd
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             var json = JsonDocument.Parse(jsonString).RootElement;
             if (json.TryGetProperty("code", out var code))
-                code.GetString()!.Should().Be("AdditionalInfoNotFound");
+                code.GetString()!.Should().Be("InfoNotFound");
         }
         catch (Exception)
         {

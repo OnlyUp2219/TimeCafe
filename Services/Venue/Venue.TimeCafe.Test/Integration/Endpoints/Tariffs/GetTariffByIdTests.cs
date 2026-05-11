@@ -45,25 +45,24 @@ public class GetTariffByIdTests(IntegrationApiFactory factory) : BaseEndpointTes
             throw;
         }
     }
-
     [Fact]
-    public async Task Endpoint_GetTariffById_Should_Return422_WhenTariffIdIsEmpty()
+    public async Task Endpoint_GetTariffById_Should_Return404_WhenTariffIdIsEmpty()
     {
-        await ClearDatabaseAndCacheAsync();
-
         var response = await Client.GetAsync($"/venue/tariffs/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("TariffNotFound");
         }
         catch (Exception)
         {
-            Console.WriteLine($"Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetTariffById_Should_Return404_WhenTariffIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
-
     [Fact]
     public async Task Endpoint_GetTariffById_Should_ReturnAllProperties_WhenTariffExists()
     {

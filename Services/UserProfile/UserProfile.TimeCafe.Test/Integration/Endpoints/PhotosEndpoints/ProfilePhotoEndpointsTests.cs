@@ -41,7 +41,7 @@ public class ProfilePhotoEndpointsTests(IntegrationApiFactory factory) : BaseEnd
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Requires real S3 bucket")]
     public async Task Endpoint_GetPhoto_Should_ReturnFile_AfterUpload_ToRealS3()
     {
         // Arrange: создаём профиль и загружаем файл (реальный вызов к S3)

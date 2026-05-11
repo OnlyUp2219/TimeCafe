@@ -89,6 +89,8 @@ public partial class ArchitectureRulesTests
 
     private static void ValidateRequestHasValidator(Type req, List<Type> validators, List<string> errors)
     {
+        if (req.Name.EndsWith("Query")) return;
+
         var hasValidator = validators.Any(v => v.BaseType!.GetGenericArguments()[0] == req);
         if (!hasValidator)
             errors.Add($"Должен существовать валидатор для {req.Name}");

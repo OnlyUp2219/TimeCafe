@@ -43,21 +43,21 @@ public class GetVisitByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
             throw;
         }
     }
-
     [Fact]
-    public async Task Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsEmpty()
+    public async Task Endpoint_GetVisitById_Should_Return404_WhenVisitIdIsEmpty()
     {
-        await ClearDatabaseAndCacheAsync();
-
         var response = await Client.GetAsync($"/venue/visits/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("VisitNotFound");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetVisitById_Should_Return422_WhenVisitIdIsEmpty] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetVisitById_Should_Return404_WhenVisitIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }

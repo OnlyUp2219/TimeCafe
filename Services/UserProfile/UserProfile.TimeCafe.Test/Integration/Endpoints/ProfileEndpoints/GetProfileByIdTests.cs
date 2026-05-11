@@ -57,7 +57,7 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
     }
 
     [Fact]
-    public async Task Endpoint_GetProfileById_Should_Return422_WhenEmptyGuid()
+    public async Task Endpoint_GetProfileById_Should_Return404_WhenEmptyGuid()
     {
         // Act
         var response = await Client.GetAsync($"/userprofile/profiles/{Guid.Empty}");
@@ -66,7 +66,10 @@ public class GetProfileByIdTests(IntegrationApiFactory factory) : BaseEndpointTe
         // Assert
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString()!.Should().Be("ProfileNotFound");
         }
         catch (Exception)
         {

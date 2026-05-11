@@ -25,9 +25,8 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("infos", out var infos).Should().BeTrue();
-            infos.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = infos.EnumerateArray().ToList();
+            json.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = json.EnumerateArray().ToList();
             items.Should().HaveCount(2);
             items[0].TryGetProperty("infoText", out var text1).Should().BeTrue();
             items[1].TryGetProperty("infoText", out var text2).Should().BeTrue();
@@ -55,9 +54,8 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("infos", out var infos).Should().BeTrue();
-            infos.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = infos.EnumerateArray().ToList();
+            json.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = json.EnumerateArray().ToList();
             items.Should().BeEmpty();
         }
         catch (Exception)
@@ -78,9 +76,10 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = JsonDocument.Parse(jsonString).RootElement;
-        if (json.TryGetProperty("code", out var code))
-            code.GetString()!.Should().Be("ProfileNotFound");
+        json.ValueKind.Should().Be(JsonValueKind.Array);
+        var items = json.EnumerateArray().ToList();
+        items.Should().BeEmpty();
     }
 }

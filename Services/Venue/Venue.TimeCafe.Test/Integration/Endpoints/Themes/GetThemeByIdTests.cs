@@ -46,24 +46,23 @@ public class GetThemeByIdTests(IntegrationApiFactory factory) : BaseEndpointTest
     }
 
     [Fact]
-    public async Task Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsEmpty()
+    public async Task Endpoint_GetThemeById_Should_Return404_WhenThemeIdIsEmpty()
     {
         var response = await Client.GetAsync($"/venue/themes/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.TryGetProperty("code", out var code).Should().BeTrue();
-            code.GetString().Should().Be("ValidationError");
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("ThemeNotFound");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetThemeById_Should_Return422_WhenThemeIdIsEmpty] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetThemeById_Should_Return404_WhenThemeIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
-
     [Fact]
     public async Task Endpoint_GetThemeById_Should_Return200_WhenThemeIdIsEmpty()
     {

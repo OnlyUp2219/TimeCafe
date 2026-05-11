@@ -19,8 +19,6 @@ public class CreateProfileTests(IntegrationApiFactory factory) : BaseEndpointTes
             response.StatusCode.Should().Be(HttpStatusCode.Created);
             var json = JsonDocument.Parse(jsonString).RootElement;
 
-
-
             json.ValueKind.Should().Be(JsonValueKind.Object);
             Guid.Parse(json.GetProperty("userId").GetString()!).Should().Be(userId);
         }

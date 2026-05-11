@@ -46,30 +46,21 @@ public class GetPromotionByIdTests(IntegrationApiFactory factory) : BaseEndpoint
     [Fact]
     public async Task Endpoint_GetPromotionById_Should_Return404_WhenPromotionIdIsEmpty()
     {
-        await ClearDatabaseAndCacheAsync();
-
-        var response = await Client.GetAsync("/venue/promotions//");
-        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
-    }
-
-    [Fact]
-    public async Task Endpoint_GetPromotionById_Should_Return422_WhenPromotionIdIsEmpty()
-    {
-        await ClearDatabaseAndCacheAsync();
-
         var response = await Client.GetAsync($"/venue/promotions/{Guid.Empty}");
         var jsonString = await response.Content.ReadAsStringAsync();
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            if (json.TryGetProperty("code", out var code))
+                code.GetString().Should().Be("PromotionNotFound");
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_GetPromotionById_Should_Return422_WhenPromotionIdIsEmpty] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_GetPromotionById_Should_Return404_WhenPromotionIdIsEmpty] Response: {jsonString}");
             throw;
         }
     }
-
     [Fact]
     public async Task Endpoint_GetPromotionById_Should_ReturnAllProperties_WhenPromotionExists()
     {

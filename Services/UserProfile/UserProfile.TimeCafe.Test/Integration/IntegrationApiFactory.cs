@@ -42,11 +42,16 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 ["Kestrel:Endpoints:Https:Certificate:Path"] = string.Empty,
                 ["Kestrel:Endpoints:Https:Certificate:Password"] = string.Empty,
                 ["ConnectionStrings:DefaultConnection"] = string.Empty,
+                ["CORS:PolicyName"] = "TestPolicy",
+                ["Jwt:SigningKey"] = "test-signing-key-minimum-32-characters-long-for-hmacsha256",
+                ["Jwt:Issuer"] = "test-issuer",
+                ["Jwt:Audience"] = "test-audience",
                 ["Redis:ConnectionString"] = _redisConnectionString,
                 ["RabbitMQ:Host"] = _rabbitHost,
                 ["RabbitMQ:Port"] = _rabbitPort.ToString(),
                 ["RabbitMQ:Username"] = RabbitUser,
                 ["RabbitMQ:Password"] = RabbitPassword,
+                ["Services:AuthGrpc"] = "http://localhost:1111",
                 ["IntegrationTests:UseRealInfrastructure"] = "true"
             };
             cfg.AddInMemoryCollection(overrides);
@@ -87,6 +92,23 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 var mock = new Mock<IPhotoModerationService>();
                 mock.Setup(m => m.ModeratePhotoAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new ModerationResult(true, null, null));
+                return mock.Object;
+            });
+
+            // Mock profile photo storage
+            var storageDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IProfilePhotoStorage));
+            if (storageDescriptor != null)
+            {
+                services.Remove(storageDescriptor);
+            }
+            services.AddScoped<IProfilePhotoStorage>(_ =>
+            {
+                var mock = new Mock<IProfilePhotoStorage>();
+                mock.Setup(m => m.UploadAsync(It.IsAny<Guid>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync((Guid userId, Stream stream, string contentType, string fileName, CancellationToken ct) => 
+                        new PhotoUploadDto(true, $"{userId}/{fileName}", $"https://test-bucket.s3.amazonaws.com/{userId}/{fileName}", 1024, contentType));
+                mock.Setup(m => m.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(true);
                 return mock.Object;
             });
 
