@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Serilog;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
@@ -30,7 +31,6 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         EnsureInfrastructure();
 
         builder.UseEnvironment("Testing");
-
         builder.UseSetting("SkipMigrations", "true");
 
         builder.ConfigureAppConfiguration((_, cfg) =>
@@ -47,6 +47,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 ["RabbitMQ:Port"] = _rabbitPort.ToString(),
                 ["RabbitMQ:Username"] = RabbitUser,
                 ["RabbitMQ:Password"] = RabbitPassword,
+                ["Services:AuthGrpc"] = "http://localhost:1111",
                 ["IntegrationTests:UseRealInfrastructure"] = "true"
             };
             cfg.AddInMemoryCollection(overrides);
@@ -121,7 +122,11 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             services.Remove(descriptor);
         }
 
-        services.AddMassTransit(cfg => cfg.UsingInMemory((context, busCfg) => busCfg.ConfigureEndpoints(context)));
+        services.AddMassTransit(cfg =>
+        {
+            cfg.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>();
+            cfg.UsingInMemory((context, busCfg) => busCfg.ConfigureEndpoints(context));
+        });
     }
 
     private static void ReplaceRedis(IServiceCollection services)
