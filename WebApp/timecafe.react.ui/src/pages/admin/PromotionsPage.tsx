@@ -201,9 +201,9 @@ export const PromotionsPage = () => {
                 renderHeaderCell: () => "Акция",
                 renderCell: (promo) => (
                     <TableCellLayout truncate>
-                        <div>
-                            <Body1 block>{promo.name}</Body1>
-                            {promo.description && <Body2 block className="text-[var(--colorNeutralForeground3)]">{promo.description}</Body2>}
+                        <div className="flex flex-col">
+                            <Body1>{promo.name}</Body1>
+                            {promo.description && <Body2 className="text-[var(--colorNeutralForeground3)]">{promo.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -321,9 +321,9 @@ export const PromotionsPage = () => {
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
+                <div className="flex flex-col">
                     <Title2>Акции</Title2>
-                    <Body2 block>{totalCount} акций</Body2>
+                    <Body2>{totalCount} акций</Body2>
                 </div>
                 <div className="flex gap-2">
                     <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
@@ -387,7 +387,7 @@ export const PromotionsPage = () => {
                                     <Radio value="2" label="Для тарифа" />
                                 </RadioGroup>
                                 {form.type === 1 && form.isActive && hasActiveGlobal && (
-                                    <Caption1 className="text-[var(--colorPaletteRedForeground1)] mt-1 block">
+                                    <Caption1 className="text-[var(--colorPaletteRedForeground1)] mt-1 flex">
                                         Внимание: уже существует другая активная глобальная акция. Сначала деактивируйте её, либо сохраните эту как неактивную.
                                     </Caption1>
                                 )}

@@ -224,8 +224,8 @@ export const TariffsPage = () => {
 
                     return (
                         <TableCellLayout truncate>
-                            <div>
-                                <Body1 block>
+                            <div className="flex flex-col">
+                                <Body1>
                                     {hasDiscount ? (
                                         <span className="flex items-center gap-2">
                                             <span className="line-through text-[var(--colorNeutralForeground4)] text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
@@ -235,7 +235,7 @@ export const TariffsPage = () => {
                                         <span>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</span>
                                     )}
                                 </Body1>
-                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                <Caption1 style={{ color: "var(--colorNeutralForeground3)" }}>
                                     {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
                                     {hasDiscount && (
                                         <Tooltip content={maxCap !== undefined && bestPromo > maxCap ? `Акция ${bestPromo}% ограничена системным лимитом ${maxCap}%` : "Применена лучшая акция"} relationship="label">
@@ -323,9 +323,9 @@ export const TariffsPage = () => {
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
-                <div>
+                <div className="flex flex-col">
                     <Title2>Тарифы</Title2>
-                    <Body2 block>{totalCount} тарифов</Body2>
+                    <Body2>{totalCount} тарифов</Body2>
                 </div>
                 <div className="flex gap-2">
                     <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
