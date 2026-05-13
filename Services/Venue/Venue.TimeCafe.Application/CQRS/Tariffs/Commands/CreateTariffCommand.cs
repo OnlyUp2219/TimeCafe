@@ -6,7 +6,16 @@ public record CreateTariffCommand(
     decimal PricePerMinute,
     BillingType BillingType,
     Guid? ThemeId,
-    bool IsActive = true) : ICommand<Tariff>;
+    bool IsActive = true,
+    string? Summary = null,
+    List<string>? Features = null,
+    List<string>? AudienceTags = null,
+    int? MinSessionMinutes = null,
+    string? RoundingRule = null,
+    int? MaxGuests = null,
+    string? CancellationPolicy = null,
+    bool IsRecommended = false,
+    int SortOrder = 0) : ICommand<Tariff>;
 
 public class CreateTariffCommandValidator : AbstractValidator<CreateTariffCommand>
 {
@@ -22,6 +31,13 @@ public class CreateTariffCommandValidator : AbstractValidator<CreateTariffComman
             .IsInEnum().WithMessage("Неверный тип биллинга");
 
         RuleFor(x => x.ThemeId).ValidOptionalGuidEntityId("Неверный идентификатор темы");
+
+        RuleFor(x => x.MinSessionMinutes).ValidMinSessionMinutes();
+        RuleFor(x => x.MaxGuests).ValidMaxGuests();
+        RuleFor(x => x.RoundingRule).ValidRoundingRule();
+        RuleFor(x => x.SortOrder).ValidSortOrder();
+        RuleFor(x => x.Summary).ValidSummary();
+        RuleFor(x => x.CancellationPolicy).ValidCancellationPolicy();
     }
 }
 
@@ -49,6 +65,15 @@ public class CreateTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) :
                 BillingType = request.BillingType,
                 ThemeId = request.ThemeId,
                 IsActive = request.IsActive,
+                Summary = request.Summary,
+                Features = request.Features ?? [],
+                AudienceTags = request.AudienceTags ?? [],
+                MinSessionMinutes = request.MinSessionMinutes,
+                RoundingRule = request.RoundingRule,
+                MaxGuests = request.MaxGuests,
+                CancellationPolicy = request.CancellationPolicy,
+                IsRecommended = request.IsRecommended,
+                SortOrder = request.SortOrder
             };
 
             var created = await _uow.Tariffs.CreateAsync(tariff, cancellationToken);

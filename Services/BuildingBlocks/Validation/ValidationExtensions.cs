@@ -140,4 +140,46 @@ public static class ValidationExtensions
             .NotEmpty().WithMessage(message)
             .NotEqual(Guid.Empty).WithMessage(message);
     }
+    public static IRuleBuilderOptions<T, int?> ValidMinSessionMinutes<T>(
+        this IRuleBuilder<T, int?> ruleBuilder)
+    {
+        return ruleBuilder
+            .Must(x => !x.HasValue || x.Value > 0).WithMessage("Минимальное время сессии должно быть больше 0");
+    }
+
+    public static IRuleBuilderOptions<T, string?> ValidRoundingRule<T>(
+        this IRuleBuilder<T, string?> ruleBuilder)
+    {
+        return ruleBuilder
+            .Must(x => string.IsNullOrEmpty(x) || x == "none" || x == "5min" || x == "15min" || x == "60min")
+            .WithMessage("Неверное правило округления");
+    }
+
+    public static IRuleBuilderOptions<T, int?> ValidMaxGuests<T>(
+        this IRuleBuilder<T, int?> ruleBuilder)
+    {
+        return ruleBuilder
+            .Must(x => !x.HasValue || x.Value > 0).WithMessage("Максимальное количество гостей должно быть больше 0");
+    }
+
+    public static IRuleBuilderOptions<T, int> ValidSortOrder<T>(
+        this IRuleBuilder<T, int> ruleBuilder)
+    {
+        return ruleBuilder
+            .GreaterThanOrEqualTo(0).WithMessage("Порядок сортировки не может быть отрицательным");
+    }
+
+    public static IRuleBuilderOptions<T, string?> ValidSummary<T>(
+        this IRuleBuilder<T, string?> ruleBuilder, int maxLength = 200)
+    {
+        return ruleBuilder
+            .MaximumLength(maxLength).WithMessage($"Краткое описание не может превышать {maxLength} символов");
+    }
+
+    public static IRuleBuilderOptions<T, string?> ValidCancellationPolicy<T>(
+        this IRuleBuilder<T, string?> ruleBuilder, int maxLength = 500)
+    {
+        return ruleBuilder
+            .MaximumLength(maxLength).WithMessage($"Правила отмены не могут превышать {maxLength} символов");
+    }
 }

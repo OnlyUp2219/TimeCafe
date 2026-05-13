@@ -48,9 +48,27 @@ public class Visit
     }
 
 
-    public static decimal CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime, decimal maxDiscountPercent = 50m, decimal globalDiscount = 0m, decimal tariffDiscount = 0m, decimal personalDiscount = 0m)
+    public static decimal CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime, int? minSessionMinutes = null, string? roundingRule = null, decimal maxDiscountPercent = 50m, decimal globalDiscount = 0m, decimal tariffDiscount = 0m, decimal personalDiscount = 0m)
     {
         var duration = (exitTime - entryTime).TotalMinutes;
+
+        if (minSessionMinutes.HasValue && duration < minSessionMinutes.Value)
+        {
+            duration = minSessionMinutes.Value;
+        }
+
+        switch (roundingRule)
+        {
+            case "5min":
+                duration = Math.Ceiling(duration / 5) * 5;
+                break;
+            case "15min":
+                duration = Math.Ceiling(duration / 15) * 15;
+                break;
+            case "60min":
+                duration = Math.Ceiling(duration / 60) * 60;
+                break;
+        }
 
         var baseCost = tariffBillingType == BillingType.Hourly
                 ? (decimal)Math.Ceiling(duration / 60) * tariffPricePerMinute * 60

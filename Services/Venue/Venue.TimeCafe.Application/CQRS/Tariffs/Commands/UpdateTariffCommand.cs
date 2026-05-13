@@ -1,6 +1,22 @@
 namespace Venue.TimeCafe.Application.CQRS.Tariffs.Commands;
 
-public record UpdateTariffCommand(Guid TariffId, string Name, string Description, decimal PricePerMinute, BillingType BillingType, Guid? ThemeId, bool IsActive) : ICommand<Tariff>;
+public record UpdateTariffCommand(
+    Guid TariffId, 
+    string Name, 
+    string Description, 
+    decimal PricePerMinute, 
+    BillingType BillingType, 
+    Guid? ThemeId, 
+    bool IsActive,
+    string? Summary = null,
+    List<string>? Features = null,
+    List<string>? AudienceTags = null,
+    int? MinSessionMinutes = null,
+    string? RoundingRule = null,
+    int? MaxGuests = null,
+    string? CancellationPolicy = null,
+    bool IsRecommended = false,
+    int SortOrder = 0) : ICommand<Tariff>;
 
 public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffCommand>
 {
@@ -19,6 +35,13 @@ public class UpdateTariffCommandValidator : AbstractValidator<UpdateTariffComman
 
         RuleFor(x => x.ThemeId).ValidOptionalGuidEntityId("Темы не существует")
             .When(x => x.ThemeId.HasValue);
+
+        RuleFor(x => x.MinSessionMinutes).ValidMinSessionMinutes();
+        RuleFor(x => x.MaxGuests).ValidMaxGuests();
+        RuleFor(x => x.RoundingRule).ValidRoundingRule();
+        RuleFor(x => x.SortOrder).ValidSortOrder();
+        RuleFor(x => x.Summary).ValidSummary();
+        RuleFor(x => x.CancellationPolicy).ValidCancellationPolicy();
     }
 }
 

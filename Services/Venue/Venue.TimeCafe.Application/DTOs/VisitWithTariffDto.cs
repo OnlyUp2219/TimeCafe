@@ -14,5 +14,7 @@ public class VisitWithTariffDto
     public decimal TariffPricePerMinute { get; set; }
     public string TariffDescription { get; set; } = string.Empty;
     public BillingType TariffBillingType { get; set; }
+    public int? TariffMinSessionMinutes { get; set; }
+    public string? TariffRoundingRule { get; set; }
 }
 

@@ -4,6 +4,7 @@ public record CreateVisitCommand(
     Guid UserId,
     Guid TariffId,
     int? PlannedMinutes = null,
+    int GuestsCount = 1,
     bool RequirePositiveBalance = true,
     bool RequireEnoughForPlanned = false) : ICommand<Visit>;
 
@@ -17,6 +18,8 @@ public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 
         RuleFor(x => x.PlannedMinutes).ValidPlannedMinutes()
             .When(x => x.PlannedMinutes.HasValue);
+            
+        RuleFor(x => x.GuestsCount).GreaterThan(0).WithMessage("Количество гостей должно быть больше нуля");
     }
 }
 
@@ -33,6 +36,9 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             var tariff = await _uow.Tariffs.GetWithThemeByIdAsync(request.TariffId, cancellationToken);
             if (tariff == null)
                 return Result.Fail(new TariffNotFoundError());
+
+            if (tariff.MaxGuests.HasValue && request.GuestsCount > tariff.MaxGuests.Value)
+                return Result.Fail(new Error("Превышено максимальное количество гостей для данного тарифа"));
 
             if (request.RequirePositiveBalance || request.RequireEnoughForPlanned)
             {

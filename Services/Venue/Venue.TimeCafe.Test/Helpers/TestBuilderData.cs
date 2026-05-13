@@ -45,7 +45,7 @@ public class CreateVisitCommandBuilder
     public CreateVisitCommandBuilder WithRequirePositiveBalance(bool v) { _requirePositiveBalance = v; return this; }
     public CreateVisitCommandBuilder WithRequireEnoughForPlanned(bool v) { _requireEnoughForPlanned = v; return this; }
 
-    public CreateVisitCommand Build() => new(_userId, _tariffId, _plannedMinutes, _requirePositiveBalance, _requireEnoughForPlanned);
+    public CreateVisitCommand Build() => new(_userId, _tariffId, _plannedMinutes, 1, _requirePositiveBalance, _requireEnoughForPlanned);
 }
 
 public class PromotionBuilder

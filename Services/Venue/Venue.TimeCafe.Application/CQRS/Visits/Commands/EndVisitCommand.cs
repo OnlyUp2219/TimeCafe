@@ -49,6 +49,8 @@ public class EndVisitCommandHandler(
                     tariffPricePerMinute: existing.TariffPricePerMinute,
                     exitTime: exitTime,
                     entryTime: existing.EntryTime,
+                    minSessionMinutes: existing.TariffMinSessionMinutes,
+                    roundingRule: existing.TariffRoundingRule,
                     maxDiscountPercent: _options.MaxTotalDiscountPercent,
                     globalDiscount: globalDiscount,
                     tariffDiscount: tariffDiscount,

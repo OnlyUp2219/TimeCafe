@@ -8,9 +8,12 @@ public record CreateVisitRequest(
     /// <example>120</example>
     int? PlannedMinutes = null,
     /// <example>false</example>
+    /// <example>false</example>
     bool? RequirePositiveBalance = null,
     /// <example>false</example>
-    bool? RequireEnoughForPlanned = null);
+    bool? RequireEnoughForPlanned = null,
+    /// <example>1</example>
+    int GuestsCount = 1);
 
 public class CreateVisit : ICarterModule
 {
@@ -24,6 +27,7 @@ public class CreateVisit : ICarterModule
                 request.UserId,
                 request.TariffId,
                 request.PlannedMinutes,
+                request.GuestsCount,
                 request.RequirePositiveBalance ?? true,
                 request.RequireEnoughForPlanned ?? false);
             var result = await sender.Send(command);

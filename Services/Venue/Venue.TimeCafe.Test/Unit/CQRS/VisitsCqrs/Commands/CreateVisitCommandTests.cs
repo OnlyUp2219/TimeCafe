@@ -100,7 +100,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId, tariffId, 120, true, true);
+        var command = new CreateVisitCommand(userId, tariffId, 120, 1, true, true);
 
         VisitBalancePolicyServiceMock
             .Setup(x => x.CheckBeforeStartAsync(
@@ -123,7 +123,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     {
         var userId = TestData.ExistingVisits.Visit1UserId;
         var tariffId = TestData.DefaultValues.DefaultTariffId;
-        var command = new CreateVisitCommand(userId, tariffId, 90, true, true);
+        var command = new CreateVisitCommand(userId, tariffId, 90, 1, true, true);
 
         VisitBalancePolicyServiceMock
             .Setup(x => x.CheckBeforeStartAsync(
@@ -148,7 +148,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
     [InlineData("11111111-1111-1111-1111-111111111111", "22222222-2222-2222-2222-222222222222", true)]
     public async Task Validator_Should_ValidateCorrectly(string userIdStr, string tariffIdStr, bool isValid, int? plannedMinutes = null)
     {
-        var command = new CreateVisitCommand(Guid.Parse(userIdStr), Guid.Parse(tariffIdStr), plannedMinutes, true, plannedMinutes.HasValue);
+        var command = new CreateVisitCommand(Guid.Parse(userIdStr), Guid.Parse(tariffIdStr), plannedMinutes, 1, true, plannedMinutes.HasValue);
         var validator = new CreateVisitCommandValidator();
 
         var result = await validator.ValidateAsync(command);

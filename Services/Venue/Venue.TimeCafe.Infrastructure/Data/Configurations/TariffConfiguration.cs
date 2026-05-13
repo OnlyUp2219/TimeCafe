@@ -23,6 +23,21 @@ public class TariffConfiguration : IEntityTypeConfiguration<Tariff>
             .HasConversion<int>()
             .IsRequired();
 
+        builder.Property(t => t.Summary)
+            .HasMaxLength(200);
+
+        builder.Property(t => t.Features)
+            .HasColumnType("text[]");
+
+        builder.Property(t => t.AudienceTags)
+            .HasColumnType("text[]");
+
+        builder.Property(t => t.RoundingRule)
+            .HasMaxLength(20);
+
+        builder.Property(t => t.CancellationPolicy)
+            .HasMaxLength(1000);
+
         builder.Property(t => t.IsActive)
             .HasDefaultValue(true);
 

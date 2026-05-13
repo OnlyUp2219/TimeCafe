@@ -15,6 +15,15 @@ public class TariffWithThemeDto
     public string ThemeName { get; set; } = string.Empty;
     public string? ThemeEmoji { get; set; }
     public string? ThemeColors { get; set; }
-
+    
+    public string? Summary { get; set; }
+    public List<string>? Features { get; set; }
+    public List<string>? AudienceTags { get; set; }
+    public int? MinSessionMinutes { get; set; }
+    public string? RoundingRule { get; set; }
+    public int? MaxGuests { get; set; }
+    public string? CancellationPolicy { get; set; }
+    public bool IsRecommended { get; set; }
+    public int SortOrder { get; set; }
 }
 
