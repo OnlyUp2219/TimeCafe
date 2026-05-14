@@ -25,6 +25,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     const location = useLocation();
     const userId = useAppSelector((state) => state.auth.userId);
     const authEmail = useAppSelector((state) => state.auth.email);
+    const authDisplayName = useAppSelector((state) => state.auth.displayName);
 
     const {data: profile} = useGetProfileByUserIdQuery(userId!, {skip: !userId});
     const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
@@ -107,7 +108,8 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
 
     const isPublic = variant === "public";
     const isActiveVisitPage = location.pathname.startsWith("/visit/active");
-    const displayName = `${profile?.firstName?.trim() ?? ""} ${profile?.lastName?.trim() ?? ""}`.trim() || authEmail?.trim() || "Пользователь";
+    const profileDisplayName = profile ? `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim() : null;
+    const displayName = profileDisplayName || authDisplayName || authEmail?.trim() || "Пользователь";
     return (
         <header className="w-full border-b border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
           

@@ -29,6 +29,7 @@ import { AdminRoute } from "@components/AdminRoute/AdminRoute";
 import { UsersListPage } from "@pages/admin/UsersListPage";
 import { UserDetailPage } from "@pages/admin/UserDetailPage";
 import { TariffsPage } from "@pages/admin/TariffsPage";
+import { TariffEditorPage } from "@pages/admin/TariffEditorPage";
 import { DashboardPage } from "@pages/admin/DashboardPage";
 import { PromotionsPage } from "@pages/admin/PromotionsPage";
 import { ThemesPage } from "@pages/admin/ThemesPage";
@@ -107,6 +108,8 @@ const AppRoutes = () => {
                     <Route path="/admin/users" element={<UsersListPage />} />
                     <Route path="/admin/users/:id" element={<UserDetailPage />} />
                     <Route path="/admin/tariffs" element={<TariffsPage />} />
+                    <Route path="/admin/tariffs/create" element={<TariffEditorPage />} />
+                    <Route path="/admin/tariffs/:id/edit" element={<TariffEditorPage />} />
                     <Route path="/admin/promotions" element={<PromotionsPage />} />
                     <Route path="/admin/themes" element={<ThemesPage />} />
                     <Route path="/admin/themes/create" element={<ThemeEditorPage />} />

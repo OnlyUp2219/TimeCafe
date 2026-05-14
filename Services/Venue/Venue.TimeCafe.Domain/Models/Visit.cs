@@ -57,17 +57,17 @@ public class Visit
             duration = minSessionMinutes.Value;
         }
 
-        switch (roundingRule)
+        var roundInterval = roundingRule switch
         {
-            case "5min":
-                duration = Math.Ceiling(duration / 5) * 5;
-                break;
-            case "15min":
-                duration = Math.Ceiling(duration / 15) * 15;
-                break;
-            case "60min":
-                duration = Math.Ceiling(duration / 60) * 60;
-                break;
+            Constants.TariffRoundingRules.FiveMinutes => 5,
+            Constants.TariffRoundingRules.FifteenMinutes => 15,
+            Constants.TariffRoundingRules.SixtyMinutes => 60,
+            _ => 1
+        };
+
+        if (roundInterval > 1)
+        {
+            duration = Math.Ceiling(duration / roundInterval) * roundInterval;
         }
 
         var baseCost = tariffBillingType == BillingType.Hourly

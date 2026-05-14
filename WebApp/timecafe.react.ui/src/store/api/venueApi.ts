@@ -21,6 +21,15 @@ interface TariffApiResponse {
     billingType: 1 | 2;
     themeId?: string | null;
     isActive: boolean;
+    summary?: string | null;
+    features?: string[] | null;
+    audienceTags?: string[] | null;
+    minSessionMinutes?: number | null;
+    roundingRule?: string | null;
+    maxGuests?: number | null;
+    cancellationPolicy?: string | null;
+    isRecommended?: boolean;
+    sortOrder?: number;
 }
 
 interface VisitsResponse {
@@ -80,6 +89,15 @@ interface CreateTariffRequest {
     billingType: 1 | 2;
     themeId?: string;
     isActive: boolean;
+    summary?: string;
+    features?: string[];
+    audienceTags?: string[];
+    minSessionMinutes?: number;
+    roundingRule?: string;
+    maxGuests?: number;
+    cancellationPolicy?: string;
+    isRecommended?: boolean;
+    sortOrder?: number;
 }
 
 interface UpdateTariffRequest {
@@ -90,6 +108,15 @@ interface UpdateTariffRequest {
     billingType: 1 | 2;
     themeId?: string;
     isActive: boolean;
+    summary?: string;
+    features?: string[];
+    audienceTags?: string[];
+    minSessionMinutes?: number;
+    roundingRule?: string;
+    maxGuests?: number;
+    cancellationPolicy?: string;
+    isRecommended?: boolean;
+    sortOrder?: number;
 }
 
 export interface Promotion {

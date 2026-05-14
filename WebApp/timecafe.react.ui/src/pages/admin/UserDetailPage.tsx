@@ -19,17 +19,16 @@ import {
     DialogSurface,
     DialogTitle,
     DialogTrigger,
-    Field,
     MessageBar,
     MessageBarBody,
     Spinner,
     TableCellLayout,
-    Textarea,
     Title2,
     Title3,
 } from "@fluentui/react-components";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
+import { TextareaWithCounter } from "@components/FormFields";
 import { useGetUserByIdQuery } from "@store/api/adminApi";
 import { useGetBalanceQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
 import { useGetVisitHistoryQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
@@ -474,33 +473,19 @@ export const UserDetailPage = () => {
                                         <DialogBody>
                                             <DialogTitle>Новая заметка</DialogTitle>
                                             <DialogContent>
-                                                <Field
+                                                <TextareaWithCounter
                                                     label="Текст заметки"
+                                                    value={newNoteText}
+                                                    onChange={(val) => {
+                                                        setNewNoteText(val);
+                                                        if (noteError) setNoteError(null);
+                                                    }}
+                                                    maxLength={2000}
+                                                    placeholder="Введите текст заметки..."
+                                                    rows={6}
                                                     validationMessage={noteError}
                                                     validationState={noteError ? "error" : "none"}
-                                                    hint={{
-                                                        children: (
-                                                            <div className="flex justify-end">
-                                                                <Caption1 style={{ color: newNoteText.length >= 2000 ? "var(--colorPaletteRedForeground1)" : "var(--colorNeutralForeground3)" }}>
-                                                                    {newNoteText.length}/2000
-                                                                </Caption1>
-                                                            </div>
-                                                        )
-                                                    }}
-                                                >
-                                                    <Textarea
-                                                        value={newNoteText}
-                                                        onChange={(_e, data) => {
-                                                            if (data.value.length <= 2000) {
-                                                                setNewNoteText(data.value);
-                                                                if (noteError) setNoteError(null);
-                                                            }
-                                                        }}
-                                                        placeholder="Введите текст заметки..."
-                                                        rows={6}
-                                                        style={{ width: "100%" }}
-                                                    />
-                                                </Field>
+                                                />
                                             </DialogContent>
                                             <DialogActions>
                                                 <DialogTrigger disableButtonEnhancement>

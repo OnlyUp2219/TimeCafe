@@ -12,6 +12,7 @@ export type Tariff = {
     billingType: BillingType;
     pricePerMinute: number;
     isActive: boolean;
+    themeId?: string | null;
 
     accent?: "brand" | "green" | "pink" | "purple";
     recommended?: boolean;
@@ -20,4 +21,14 @@ export type Tariff = {
     themeEmoji?: string | null;
     themeColors?: string | null;
     colors?: string | null;
+
+    summary?: string | null;
+    features?: string[] | null;
+    audienceTags?: string[] | null;
+    minSessionMinutes?: number | null;
+    roundingRule?: string | null;
+    maxGuests?: number | null;
+    cancellationPolicy?: string | null;
+    isRecommended?: boolean;
+    sortOrder?: number;
 };

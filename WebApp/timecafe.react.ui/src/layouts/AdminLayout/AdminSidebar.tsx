@@ -22,6 +22,8 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const email = useAppSelector((state) => state.auth.email);
+    const displayName = useAppSelector((state) => state.auth.displayName);
+    const avatarName = displayName || email?.trim() || "Admin";
 
     const { has } = usePermissions();
 
@@ -79,7 +81,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
         <>
             {compact ? (
                 <div className="admin-sidebar__bottom-compact">
-                    <Avatar name={email ?? "Admin"} size={28} />
+                    <Avatar name={avatarName} size={28} />
                     <Tooltip content="Вид клиента" relationship="label" positioning="after">
                         <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")} />
                     </Tooltip>
@@ -90,9 +92,9 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
             ) : (
                 <>
                     <div className="admin-sidebar__bottom-user">
-                        <Avatar name={email ?? "Admin"} size={32} />
+                        <Avatar name={avatarName} size={32} />
                         <div className="min-w-0">
-                            <Body1 truncate wrap={false} block>Админ</Body1>
+                            <Body1 truncate wrap={false} block>{displayName || "Админ"}</Body1>
                             <Caption1 truncate wrap={false} block>{email ?? "—"}</Caption1>
                         </div>
                     </div>
@@ -107,7 +109,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
 
     const renderMobileFooter = () => (
         <>
-            <Avatar name={email ?? "Admin"} size={28} />
+            <Avatar name={avatarName} size={28} />
             <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => { onOpenChange(false); navigate("/home"); }}>Вид клиента</Button>
             <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
         </>

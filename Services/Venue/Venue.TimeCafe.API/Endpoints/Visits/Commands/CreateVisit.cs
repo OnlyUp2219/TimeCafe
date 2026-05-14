@@ -8,7 +8,6 @@ public record CreateVisitRequest(
     /// <example>120</example>
     int? PlannedMinutes = null,
     /// <example>false</example>
-    /// <example>false</example>
     bool? RequirePositiveBalance = null,
     /// <example>false</example>
     bool? RequireEnoughForPlanned = null,

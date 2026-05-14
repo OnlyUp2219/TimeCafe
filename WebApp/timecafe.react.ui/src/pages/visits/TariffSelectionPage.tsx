@@ -3,7 +3,6 @@ import {
     Button,
     Card,
     Divider,
-    Text,
     Title2,
     Tooltip,
     Image,
@@ -26,6 +25,7 @@ import "./visits.css";
 import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard";
 import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection";
 import {VisitParamsCard} from "@components/Tariff/VisitParamsCard";
+import {TariffDetailsDrawer} from "@components/Tariff/TariffDetailsDrawer";
 import {useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
@@ -67,6 +67,14 @@ export const TariffSelectionPage = () => {
     const {data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs} = useGetActiveTariffsQuery();
     const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
     const [createVisit, {isLoading: startingVisit}] = useCreateVisitMutation();
+    
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [selectedTariffForDetails, setSelectedTariffForDetails] = useState<Tariff | null>(null);
+
+    const handleOpenDetails = useCallback((tariff: Tariff) => {
+        setSelectedTariffForDetails(tariff);
+        setDetailsOpen(true);
+    }, []);
 
     const tariffsList = useMemo<Tariff[]>(() => {
         if (!tariffsData) return [];
@@ -163,6 +171,36 @@ export const TariffSelectionPage = () => {
 
     const showEmptyTariffs = !loadingTariffs && visibleTariffs.length === 0;
 
+    let tariffContent;
+    if (loadingTariffs && visibleTariffs.length === 0) {
+        tariffContent = (
+            <Card data-testid="visit-start-loading">
+                <Body1 block>Загружаем доступные тарифы...</Body1>
+            </Card>
+        );
+    } else if (showEmptyTariffs) {
+        tariffContent = (
+            <Card className="flex flex-col gap-3" data-testid="visit-start-empty">
+                <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
+                <Button appearance="primary" onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
+                    Обновить тарифы
+                </Button>
+            </Card>
+        );
+    } else {
+        tariffContent = (
+            <TariffCarouselSection
+                visibleTariffs={visibleTariffs}
+                totalCount={visibleTariffs.length}
+                activeIndex={activeIndex}
+                onActiveIndexChange={setActiveTariff}
+                selectedTariffId={selectedTariffId}
+                onSelectTariff={onSelectTariff}
+                onOpenDetails={handleOpenDetails}
+            />
+        );
+    }
+
     return (
         <div className="tc-noise-overlay relative overflow-hidden min-h-full">
             {ToasterElement}
@@ -213,27 +251,7 @@ export const TariffSelectionPage = () => {
 
                         <Divider/>
 
-                        {loadingTariffs && visibleTariffs.length === 0 ? (
-                            <Card data-testid="visit-start-loading">
-                                <Body1 block>Загружаем доступные тарифы...</Body1>
-                            </Card>
-                        ) : showEmptyTariffs ? (
-                            <Card className="flex flex-col gap-3" data-testid="visit-start-empty">
-                                <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
-                                <Button appearance="primary" onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
-                                    Обновить тарифы
-                                </Button>
-                            </Card>
-                        ) : (
-                            <TariffCarouselSection
-                                visibleTariffs={visibleTariffs}
-                                totalCount={visibleTariffs.length}
-                                activeIndex={activeIndex}
-                                onActiveIndexChange={setActiveTariff}
-                                selectedTariffId={selectedTariffId}
-                                onSelectTariff={onSelectTariff}
-                            />
-                        )}
+                        {tariffContent}
 
                         <Divider/>
 
@@ -257,13 +275,19 @@ export const TariffSelectionPage = () => {
                                     disabled={!selectedTariff || loadingTariffs || startingVisit || showEmptyTariffs}
                                     onClick={() => void onStartVisit()}
                                 >
-                                    <Text truncate wrap={false}>{startingVisit ? "Запуск..." : "Начать визит"}</Text>
+                                    <Body1 truncate wrap={false}>{startingVisit ? "Запуск..." : "Начать визит"}</Body1>
                                 </Button>
                             </Tooltip>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <TariffDetailsDrawer
+                open={detailsOpen}
+                onOpenChange={setDetailsOpen}
+                tariff={selectedTariffForDetails}
+            />
         </div>
     );
 };

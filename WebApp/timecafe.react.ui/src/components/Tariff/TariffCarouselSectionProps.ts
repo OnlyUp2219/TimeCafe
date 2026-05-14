@@ -7,4 +7,5 @@ export type TariffCarouselSectionProps = {
     onActiveIndexChange: (nextIndex: number) => void;
     selectedTariffId: string | null;
     onSelectTariff: (tariffId: string) => void;
+    onOpenDetails?: (tariff: Tariff) => void;
 };

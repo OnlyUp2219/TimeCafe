@@ -48,7 +48,7 @@ export const VisitDetailPage = () => {
     const { data: visitData, isLoading, error } = useGetVisitByIdQuery(id!, { skip: !id });
     const [endVisit, { isLoading: ending }] = useEndVisitMutation();
 
-    const visit = visitData?.visit;
+    const visit = visitData;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const handleEnd = async () => {

@@ -59,12 +59,9 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
         return value.toISOString();
     };
 
-    const displayName =
-        `${profile.lastName ?? ""} ${profile.firstName ?? ""}${profile.middleName ? ` ${profile.middleName}` : ""}`.trim() ||
-        profile.email ||
-        "";
+    const displayName = `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim() || profile.email || "Пользователь";
 
-    const fullName = `${lastName} ${firstName}${middleName ? ` ${middleName}` : ""}`.trim();
+    const fullName = `${firstName} ${lastName}${middleName ? ` ${middleName}` : ""}`.trim();
     const genderText = genderId === 1 ? "Мужчина" : genderId === 2 ? "Женщина" : "Не указан";
     const birthDateText = birthDate ? birthDate.toLocaleDateString() : "—";
 

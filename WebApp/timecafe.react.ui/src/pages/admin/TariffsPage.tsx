@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Avatar,
     Badge,
@@ -7,15 +8,6 @@ import {
     Button,
     Card,
     Caption1,
-    Dialog,
-    DialogActions,
-    DialogBody,
-    DialogContent,
-    DialogSurface,
-    DialogTitle,
-    DialogTrigger,
-    Field,
-    Input,
     MessageBar,
     MessageBarBody,
     Spinner,
@@ -23,21 +15,16 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
-    Dropdown,
-    Option,
     Tooltip,
     MessageBarTitle,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular } from "@fluentui/react-icons";
+import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";
 import {
     useGetTariffsPageQuery,
-    useCreateTariffMutation,
-    useUpdateTariffMutation,
     useDeleteTariffMutation,
     useActivateTariffMutation,
     useDeactivateTariffMutation,
-    useGetAllThemesQuery,
     useGetAllPromotionsQuery,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
@@ -51,36 +38,14 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
-
-interface TariffFormState {
-    name: string;
-    description: string;
-    pricePerMinute: string;
-    billingType: 1 | 2;
-    themeId: string;
-    isActive: boolean;
-}
-
-const emptyForm: TariffFormState = {
-    name: "",
-    description: "",
-    pricePerMinute: "",
-    billingType: 2,
-    themeId: "",
-    isActive: true,
-};
-
-const calcPerHour = (perMinute: string): string => {
-    const v = parseFloat(perMinute);
-    if (!v || isNaN(v)) return "";
-    return (v * 60).toFixed(2);
-};
 
 import { usePagination } from "@hooks/usePagination";
 
 export const TariffsPage = () => {
+    const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminTariffs");
@@ -88,7 +53,6 @@ export const TariffsPage = () => {
         { pageNumber: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
-    const { data: themes = [], isLoading: themesLoading } = useGetAllThemesQuery();
     const { data: promotions = [] } = useGetAllPromotionsQuery();
 
     const tariffs = data?.tariffs ?? [];
@@ -97,63 +61,21 @@ export const TariffsPage = () => {
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
-    const [createTariff] = useCreateTariffMutation();
-    const [updateTariff] = useUpdateTariffMutation();
     const [deleteTariff] = useDeleteTariffMutation();
     const [activateTariff] = useActivateTariffMutation();
     const [deactivateTariff] = useDeactivateTariffMutation();
 
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [editingTariff, setEditingTariff] = useState<TariffWithTheme | null>(null);
-    const [form, setForm] = useState<TariffFormState>(emptyForm);
     const [mutationError, setMutationError] = useState<string | null>(null);
-    const [saving, setSaving] = useState(false);
+    const [detailsTariff, setDetailsTariff] = useState<TariffWithTheme | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
 
     const openCreate = useCallback(() => {
-        setEditingTariff(null);
-        setForm(emptyForm);
-        setMutationError(null);
-        setDialogOpen(true);
-    }, []);
+        navigate("/admin/tariffs/create");
+    }, [navigate]);
 
     const openEdit = useCallback((t: TariffWithTheme) => {
-        setEditingTariff(t);
-        setForm({
-            name: t.name,
-            description: t.description ?? "",
-            pricePerMinute: String(t.pricePerMinute),
-            billingType: t.billingType,
-            themeId: t.themeId ?? "",
-            isActive: t.isActive,
-        });
-        setMutationError(null);
-        setDialogOpen(true);
-    }, []);
-
-    const handleSave = useCallback(async () => {
-        setSaving(true);
-        setMutationError(null);
-        try {
-            const body = {
-                name: form.name,
-                description: form.description || undefined,
-                pricePerMinute: parseFloat(form.pricePerMinute) || 0,
-                billingType: form.billingType,
-                themeId: form.themeId || undefined,
-                isActive: form.isActive,
-            };
-            if (editingTariff) {
-                await updateTariff({ tariffId: editingTariff.tariffId, ...body }).unwrap();
-            } else {
-                await createTariff(body).unwrap();
-            }
-            setDialogOpen(false);
-        } catch (err) {
-            setMutationError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось сохранить тариф");
-        } finally {
-            setSaving(false);
-        }
-    }, [form, editingTariff, createTariff, updateTariff]);
+        navigate(`/admin/tariffs/${t.tariffId}/edit`);
+    }, [navigate]);
 
     const handleDelete = useCallback(async (tariffId: string) => {
         try {
@@ -180,8 +102,8 @@ export const TariffsPage = () => {
         price: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
         billingType: { minWidth: 100, defaultWidth: 140, idealWidth: 160 },
         theme: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
-        status: { minWidth: 100, defaultWidth: 150, idealWidth: 180 },
-        actions: { minWidth: 140, defaultWidth: 180, idealWidth: 160 },
+        status: { minWidth: 150, defaultWidth: 250, idealWidth: 280 },
+        actions: { minWidth: 160, defaultWidth: 180, idealWidth: 160 },
     }), []);
 
     const columns: TableColumnDefinition<TariffWithTheme>[] = useMemo(() => {
@@ -212,9 +134,9 @@ export const TariffsPage = () => {
                 compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
                 renderHeaderCell: () => "Цена",
                 renderCell: (tariff) => {
-                    const activePromos = promotions.filter(p => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
-                    const globalPromo = activePromos.filter(p => p.type === 1).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
-                    const tariffPromo = activePromos.filter(p => p.type === 2 && p.tariffId === tariff.tariffId).sort((a, b) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const activePromos = promotions.filter((p: any) => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
+                    const globalPromo = activePromos.filter((p: any) => p.type === 1).sort((a: any, b: any) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const tariffPromo = activePromos.filter((p: any) => p.type === 2 && p.tariffId === tariff.tariffId).sort((a: any, b: any) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
                     const bestPromo = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
 
 
@@ -292,6 +214,16 @@ export const TariffsPage = () => {
                 renderHeaderCell: () => "Действия",
                 renderCell: (tariff) => (
                     <div className="flex gap-1">
+                        <Tooltip content="Просмотр деталей" relationship="label">
+                            <Button
+                                appearance="subtle"
+                                icon={<Eye20Regular />}
+                                onClick={() => {
+                                    setDetailsTariff(tariff);
+                                    setDetailsOpen(true);
+                                }}
+                            />
+                        </Tooltip>
                         <HasPermission can={Permissions.VenueTariffUpdate}>
                             <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(tariff)} />
                         </HasPermission>
@@ -305,8 +237,6 @@ export const TariffsPage = () => {
 
         return allColumns.filter(col => !col.permission || has(col.permission as any));
     }, [sizes, handleToggleActive, openEdit, handleDelete, has, promotions, maxCap]);
-
-    const perHour = calcPerHour(form.pricePerMinute);
 
     if (isLoading) {
         return <div className="flex justify-center p-12"><Spinner label="Загрузка тарифов..." /></div>;
@@ -383,84 +313,11 @@ export const TariffsPage = () => {
                 />
             </div>
 
-            <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
-                <DialogSurface>
-                    <DialogBody>
-                        <DialogTitle>{editingTariff ? "Редактировать тариф" : "Новый тариф"}</DialogTitle>
-                        <DialogContent className="flex flex-col gap-4">
-                            <Field label="Название" required>
-                                <Input value={form.name} onChange={(_, d) => setForm(f => ({ ...f, name: d.value }))} size={sizes.input} />
-                            </Field>
-                            <Field label="Описание">
-                                <Input value={form.description} onChange={(_, d) => setForm(f => ({ ...f, description: d.value }))} size={sizes.input} />
-                            </Field>
-                            <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined}>
-                                <Input
-                                    type="number"
-                                    value={form.pricePerMinute}
-                                    onChange={(_, d) => setForm(f => ({ ...f, pricePerMinute: d.value }))}
-                                    size={sizes.input}
-                                />
-                            </Field>
-                            <Field label="Тип тарификации">
-                                <div className="flex gap-4">
-                                    <Button
-                                        appearance={form.billingType === 2 ? "primary" : "secondary"}
-                                        onClick={() => setForm(f => ({ ...f, billingType: 2 }))}
-                                        size={sizes.button}
-                                    >
-                                        Поминутный
-                                    </Button>
-                                    <Button
-                                        appearance={form.billingType === 1 ? "primary" : "secondary"}
-                                        onClick={() => setForm(f => ({ ...f, billingType: 1 }))}
-                                        size={sizes.button}
-                                    >
-                                        Почасовой
-                                    </Button>
-                                </div>
-                            </Field>
-                            <Field label="Тема оформления">
-                                <Dropdown
-                                    placeholder="Выберите тему"
-                                    value={themes.find(t => t.themeId === form.themeId)?.name ?? (form.themeId === "" ? "Без темы" : "")}
-                                    selectedOptions={form.themeId ? [form.themeId] : []}
-                                    onOptionSelect={(_, data) => setForm(f => ({ ...f, themeId: data.optionValue ?? "" }))}
-                                    disabled={themesLoading}
-                                    size={sizes.dropdown}
-                                >
-                                    <Option key="none" value="" text="Без темы">
-                                        Без темы
-                                    </Option>
-                                    {themes.map((theme) => (
-                                        <Option key={theme.themeId} value={theme.themeId} text={theme.name}>
-                                            {theme.emoji} {theme.name}
-                                        </Option>
-                                    ))}
-                                </Dropdown>
-                            </Field>
-                            <Switch
-                                checked={form.isActive}
-                                onChange={(_, d) => setForm(f => ({ ...f, isActive: d.checked }))}
-                                label="Активен"
-                            />
-                            {mutationError && (
-                                <MessageBar intent="error">
-                                    <MessageBarBody>{mutationError}</MessageBarBody>
-                                </MessageBar>
-                            )}
-                        </DialogContent>
-                        <DialogActions>
-                            <DialogTrigger disableButtonEnhancement>
-                                <Button appearance="secondary" size={sizes.button}>Отмена</Button>
-                            </DialogTrigger>
-                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.pricePerMinute} size={sizes.button}>
-                                {saving ? <Spinner size="tiny" /> : (editingTariff ? "Сохранить" : "Создать")}
-                            </Button>
-                        </DialogActions>
-                    </DialogBody>
-                </DialogSurface>
-            </Dialog>
+            <TariffDetailsDrawer
+                open={detailsOpen}
+                onOpenChange={setDetailsOpen}
+                tariff={detailsTariff as any}
+            />
         </div>
     );
 };

@@ -19,7 +19,8 @@ import {
     setPhoneNumber,
     setPhoneNumberConfirmed,
     setRole,
-    setUserId
+    setUserId,
+    setDisplayName
 } from "@store/authSlice";
 import {Gender} from "@app-types/profile";
 import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
@@ -141,6 +142,11 @@ export const ProfileCompletionGate: FC = () => {
         setLastName(profile.lastName ?? "");
         setMiddleName(profile.middleName ?? "");
         setBirthDate(normalizeDate(profile.birthDate));
+        
+        const profileDisplayName = `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim();
+        if (profileDisplayName) {
+            dispatch(setDisplayName(profileDisplayName));
+        }
         setPhoneDraft((prev) => {
             const profilePhone = (profile.phoneNumber ?? "").trim();
             if (profilePhone) return profilePhone;

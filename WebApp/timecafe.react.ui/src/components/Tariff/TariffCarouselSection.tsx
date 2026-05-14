@@ -21,6 +21,7 @@ export const TariffCarouselSection = ({
                                           onActiveIndexChange,
                                           selectedTariffId,
                                           onSelectTariff,
+                                          onOpenDetails,
                                       }: TariffCarouselSectionProps) => {
     return (
         <Card className="flex flex-col gap-3">
@@ -59,6 +60,7 @@ export const TariffCarouselSection = ({
                                         tariff={tariff}
                                         selected={tariff.tariffId === selectedTariffId}
                                         onSelect={onSelectTariff}
+                                        onOpenDetails={onOpenDetails}
                                     />
                                 </div>
                             </CarouselCard>

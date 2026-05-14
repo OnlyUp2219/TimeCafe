@@ -1,5 +1,5 @@
 import { type FC, useEffect, useMemo } from "react";
-import { Avatar, Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
+import { Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
 import { useLocation, useNavigate } from "react-router-dom";
 import { clearTokens, selectUserId } from "@store/authSlice";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
@@ -9,6 +9,8 @@ import { Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Eye20Re
 import { usePermissions } from "@hooks/usePermissions";
 import { AdminPanelPermission } from "@shared/auth/permissions";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "./BaseSidebar";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 
 export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
@@ -16,11 +18,16 @@ export const Sidebar: FC = () => {
     const userId = useAppSelector(selectUserId);
     const email = useAppSelector((state) => state.auth.email);
     const role = useAppSelector((state) => state.auth.role);
+    const authDisplayName = useAppSelector((state) => state.auth.displayName);
     const location = useLocation();
     const navigate = useNavigate();
     const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
+    const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
     const { has: hasPerm } = usePermissions();
     const canAccessAdmin = hasPerm(AdminPanelPermission);
+
+    const profileDisplayName = profile ? `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim() : null;
+    const displayName = profileDisplayName || authDisplayName || email?.trim() || "Пользователь";
 
     const sections: NavSectionType[] = useMemo(() => {
         const visitItem = hasActive
@@ -66,7 +73,7 @@ export const Sidebar: FC = () => {
         <>
             {compact ? (
                 <div className="user-sidebar__bottom-compact">
-                    <Avatar name={email || role || "User"} size={28} />
+                    <SecureAvatar name={displayName} photoUrl={profile?.photoUrl} size={28} />
                     {canAccessAdmin && (
                         <Tooltip content="Вид админа" relationship="label" positioning="after">
                             <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={handleAdminView} />
@@ -79,9 +86,9 @@ export const Sidebar: FC = () => {
             ) : (
                 <>
                     <div className="user-sidebar__bottom-user">
-                        <Avatar name={email || role || "User"} size={32} />
+                        <SecureAvatar name={displayName} photoUrl={profile?.photoUrl} size={32} />
                         <div className="min-w-0">
-                            <Body1 truncate wrap={false} block>Пользователь</Body1>
+                            <Body1 truncate wrap={false} block>{displayName}</Body1>
                             <Caption1 truncate wrap={false} block>{email || role || "—"}</Caption1>
                         </div>
                     </div>
@@ -98,7 +105,7 @@ export const Sidebar: FC = () => {
 
     const renderMobileFooter = () => (
         <>
-            <Avatar name={email || role || "User"} size={28} />
+            <SecureAvatar name={displayName} photoUrl={profile?.photoUrl} size={28} />
             {canAccessAdmin && (
                 <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={handleAdminView}>Вид админа</Button>
             )}
@@ -122,3 +129,4 @@ export const Sidebar: FC = () => {
         />
     );
 };
+

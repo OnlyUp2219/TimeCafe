@@ -1,5 +1,6 @@
 import {
     Badge,
+    Body1,
     Body2,
     Button,
     Card,
@@ -8,7 +9,6 @@ import {
     Caption1,
     Divider,
     Tag,
-    Text,
     Title3,
     Tooltip,
     tokens,
@@ -23,9 +23,10 @@ type Props = {
     tariff: Tariff;
     selected?: boolean;
     onSelect?: (tariffId: string) => void;
+    onOpenDetails?: (tariff: Tariff) => void;
 };
 
-export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) => {
+export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOpenDetails }) => {
 
     const config = useMemo(() => parseThemeConfig(tariff.themeColors || tariff.colors), [tariff]);
     const themeStyles = useMemo(() => getThemeStyles(config), [config]);
@@ -53,7 +54,7 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) =>
                 image={tariff.themeEmoji && <span className="text-3xl">{tariff.themeEmoji}</span>}
                 header={
                     <div className="flex items-center gap-2 flex-wrap">
-                        <Title3 truncate wrap={false} block style={{ color: themeStyles.color }}>
+                        <Title3 truncate wrap={false} style={{ color: themeStyles.color }}>
                             {tariff.name}
                         </Title3>
                         {tariff.recommended && (
@@ -90,7 +91,7 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) =>
 
             <div className="flex flex-col gap-1 px-3 relative z-10">
                 <Caption1 style={{ color: themeStyles.color, opacity: 0.7 }}>{rateLabel}</Caption1>
-                <Title3 block style={{ color: themeStyles.color }}>
+                <Title3 style={{ color: themeStyles.color }}>
                     {formatMoneyByN(rateValue)} {unitLabel}
                 </Title3>
             </div>
@@ -104,10 +105,14 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect }) =>
                 >
                     {selected ? "Выбран" : "Выбрать"}
                 </Button>
-                <Tooltip content="Детали (скоро)" relationship="label">
+                <Tooltip content="Подробная информация о тарифе" relationship="label">
                     <span>
-                        <Button appearance="secondary" disabled style={{ backgroundColor: "rgba(255,255,255,0.05)", color: themeStyles.color, border: "none" }}>
-                            <Text truncate wrap={false}>Детали</Text>
+                        <Button 
+                            appearance="secondary" 
+                            style={{ backgroundColor: "rgba(255,255,255,0.05)", color: themeStyles.color, border: "none" }}
+                            onClick={() => onOpenDetails?.(tariff)}
+                        >
+                            <Body1 truncate wrap={false}>Детали</Body1>
                         </Button>
                     </span>
                 </Tooltip>

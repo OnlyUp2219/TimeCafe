@@ -8,6 +8,7 @@ interface AuthState {
     emailConfirmed: boolean;
     phoneNumber: string;
     phoneNumberConfirmed: boolean;
+    displayName: string;
 }
 
 const initialState: AuthState = {
@@ -17,7 +18,8 @@ const initialState: AuthState = {
     email: "",
     emailConfirmed: false,
     phoneNumber: "",
-    phoneNumberConfirmed: false
+    phoneNumberConfirmed: false,
+    displayName: ""
 }
 
 const authSlice = createSlice({
@@ -45,6 +47,9 @@ const authSlice = createSlice({
         setPhoneNumberConfirmed: (state, action) => {
             state.phoneNumberConfirmed = action.payload;
         },
+        setDisplayName: (state, action) => {
+            state.displayName = action.payload;
+        },
         clearTokens: (state) => {
             state.accessToken = "";
             state.userId = "";
@@ -53,6 +58,7 @@ const authSlice = createSlice({
             state.emailConfirmed = false;
             state.phoneNumber = "";
             state.phoneNumberConfirmed = false;
+            state.displayName = "";
         }
     }
 })
@@ -65,9 +71,11 @@ export const {
     setEmailConfirmed,
     setPhoneNumber,
     setPhoneNumberConfirmed,
+    setDisplayName,
     clearTokens
 } = authSlice.actions;
 
 export const selectUserId = (state: { auth: AuthState }) => state.auth.userId;
 
 export default authSlice.reducer;
+
