@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-
+#pragma warning disable
 #nullable disable
 
 namespace UserProfile.TimeCafe.Infrastructure.Migrations

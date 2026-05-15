@@ -67,7 +67,7 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             var created = await _uow.Visits.CreateAsync(visit, cancellationToken);
 
             if (created == null)
-                return Result.Fail(new CreateFailedError());
+                return Result.Fail(new CreateVisitFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(created.VisitId, created.UserId), cancellationToken);

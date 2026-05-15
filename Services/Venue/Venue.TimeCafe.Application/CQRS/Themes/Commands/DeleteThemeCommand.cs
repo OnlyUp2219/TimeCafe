@@ -27,7 +27,7 @@ public class DeleteThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : 
             await _uow.SaveChangesAsync(cancellationToken);
 
             if (!result)
-                return Result.Fail(new DeleteFailedError());
+                return Result.Fail(new ThemeDeleteFailedError());
 
             await _publisher.Publish(new ThemeChangedEvent(request.ThemeId), cancellationToken);
 

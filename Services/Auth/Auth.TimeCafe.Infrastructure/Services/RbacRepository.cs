@@ -243,21 +243,21 @@ public class RbacRepository : IRbacRepository
         return Result.Ok();
     }
 
-    private async Task InvalidatePermissionsCacheAsync(CancellationToken ct = default)
+    private async Task InvalidatePermissionsCacheAsync(CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.PermissionsTag, ct);
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.PermissionsTag, cancellationToken);
     }
 
-    private async Task InvalidatePermissionsCacheByRoleAsync(string roleName, CancellationToken ct = default)
+    private async Task InvalidatePermissionsCacheByRoleAsync(string roleName, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.RolePermissionsTag(roleName), ct);
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.RolePermissionsTag(roleName), cancellationToken);
     }
 
-    private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken ct = default)
+    private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(PermissionClaimsCacheKeys.UserPermissionsKey(userId), ct);
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), ct);
-        await _cache.RemoveByTagAsync($"user_{userId}", ct);
+        await _cache.RemoveAsync(PermissionClaimsCacheKeys.UserPermissionsKey(userId), cancellationToken);
+        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), cancellationToken);
+        await _cache.RemoveByTagAsync($"user_{userId}", cancellationToken);
     }
 
     private static List<string> NormalizeClaims(List<string> claims)

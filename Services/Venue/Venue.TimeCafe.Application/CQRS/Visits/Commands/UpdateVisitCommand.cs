@@ -47,7 +47,7 @@ public class UpdateVisitCommandHandler(IUnitOfWork uow, IMapper mapper, IPublish
             var updated = await _uow.Visits.UpdateAsync(visit, cancellationToken);
 
             if (updated == null)
-                return Result.Fail(new UpdateFailedError());
+                return Result.Fail(new VisitUpdateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);

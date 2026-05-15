@@ -26,7 +26,7 @@ public class DeleteTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) :
             var result = await _uow.Tariffs.DeleteAsync(request.TariffId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new DeleteFailedError());
+                return Result.Fail(new TariffDeleteFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new TariffChangedEvent(request.TariffId), cancellationToken);

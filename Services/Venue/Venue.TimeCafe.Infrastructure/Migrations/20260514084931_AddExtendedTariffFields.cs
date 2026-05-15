@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
+#pragma warning disable
 #nullable disable
 
 namespace Venue.TimeCafe.Infrastructure.Migrations

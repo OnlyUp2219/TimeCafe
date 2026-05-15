@@ -26,7 +26,7 @@ public class ActivateTariffCommandHandler(IUnitOfWork uow, IPublisher publisher)
             var result = await _uow.Tariffs.ActivateAsync(request.TariffId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new ActivateFailedError());
+                return Result.Fail(new TariffActivateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new TariffChangedEvent(request.TariffId), cancellationToken);

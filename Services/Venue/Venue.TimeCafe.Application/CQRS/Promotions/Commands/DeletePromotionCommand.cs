@@ -26,7 +26,7 @@ public class DeletePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher
             var result = await _uow.Promotions.DeleteAsync(request.PromotionId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new DeleteFailedError());
+                return Result.Fail(new PromotionDeleteFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new PromotionChangedEvent(request.PromotionId), cancellationToken);

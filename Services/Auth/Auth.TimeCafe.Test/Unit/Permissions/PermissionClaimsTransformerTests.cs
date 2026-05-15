@@ -45,9 +45,7 @@ public class PermissionClaimsTransformerTests
         await context.SaveChangesAsync();
 
         var services = new ServiceCollection();
-#pragma warning disable EXTEXP0018
         services.AddHybridCache();
-#pragma warning restore EXTEXP0018
         await using var provider = services.BuildServiceProvider();
         var cache = provider.GetRequiredService<HybridCache>();
 

@@ -1,7 +1,5 @@
 namespace BuildingBlocks.Test.Behaviors;
 
-using System.Text.Json;
-
 public class LoggingBehaviorTests
 {
     public class TestRequest : IRequest<string> { }

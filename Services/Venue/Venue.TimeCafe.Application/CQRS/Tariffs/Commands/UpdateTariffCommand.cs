@@ -72,7 +72,7 @@ public class UpdateTariffCommandHandler(IUnitOfWork uow, IMapper mapper, IPublis
             var updated = await _uow.Tariffs.UpdateAsync(tariff, cancellationToken);
 
             if (updated == null)
-                return Result.Fail(new UpdateFailedError());
+                return Result.Fail(new TariffUpdateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new TariffChangedEvent(updated.TariffId), cancellationToken);

@@ -56,7 +56,7 @@ public class EndVisitCommandTests : BaseCqrsHandlerTest
 
         var visit = new Visit { VisitId = visitId, EntryTime = DateTimeOffset.UtcNow.AddHours(-1), Status = VisitStatus.Active };
         VisitRepositoryMock.Setup(r => r.GetWithTariffByIdAsync(visitId, It.IsAny<CancellationToken>())).ReturnsAsync(visitDto);
-        PromotionRepositoryMock.Setup(r => r.GetActiveByDateAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<Promotion>());
+        PromotionRepositoryMock.Setup(r => r.GetActiveByDateAsync(It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>())).ReturnsAsync([]);
         UserLoyaltyRepositoryMock.Setup(r => r.GetByUserIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>())).ReturnsAsync((UserLoyalty?)null);
         VisitRepositoryMock.Setup(r => r.UpdateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync((Visit v, CancellationToken _) => v);
         UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);

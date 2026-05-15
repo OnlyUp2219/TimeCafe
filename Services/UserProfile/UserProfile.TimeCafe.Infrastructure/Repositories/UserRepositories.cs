@@ -20,7 +20,7 @@ public class UserRepositories(ApplicationDbContext context, HybridCache cache) :
     public async Task<IEnumerable<Profile?>> GetPageAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
         return await _cache.GetOrCreateAsync(
-            CacheKeys.Profile_Page(pageNumber),
+            CacheKeys.Profile_Page(pageNumber, pageSize),
             async token => await _context.Profiles
                 .AsNoTracking()
                 .OrderByDescending(c => c.CreatedAt)

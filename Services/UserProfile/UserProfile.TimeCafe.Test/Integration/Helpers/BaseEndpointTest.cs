@@ -5,8 +5,8 @@ namespace UserProfile.TimeCafe.Test.Integration.Helpers;
 public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>, IAsyncLifetime
 {
     protected readonly IntegrationApiFactory Factory = factory;
-    private HttpClient? _client;
-    protected HttpClient Client => _client ??= Factory.CreateClient();
+
+    protected HttpClient Client => field ??= Factory.CreateClient();
 
     public async Task InitializeAsync()
     {

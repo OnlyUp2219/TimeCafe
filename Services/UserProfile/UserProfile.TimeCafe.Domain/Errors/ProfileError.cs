@@ -1,8 +1,6 @@
-using FluentResults;
-
 namespace UserProfile.TimeCafe.Domain.Errors;
 
-public class ProfileNotFoundError : Error
+public sealed class ProfileNotFoundError : Error
 {
     public ProfileNotFoundError() : base("Пользователь не найден")
     {
@@ -10,15 +8,7 @@ public class ProfileNotFoundError : Error
     }
 }
 
-public class InfoNotFoundError : Error
-{
-    public InfoNotFoundError() : base("Информация не найдена")
-    {
-        Metadata.Add("ErrorCode", "404");
-    }
-}
-
-public class ProfileAlreadyExistsError : Error
+public sealed class ProfileAlreadyExistsError : Error
 {
     public ProfileAlreadyExistsError() : base("Пользователь уже существует")
     {
@@ -26,7 +16,7 @@ public class ProfileAlreadyExistsError : Error
     }
 }
 
-public class UpdateFailedError : Error
+public sealed class UpdateFailedError : Error
 {
     public UpdateFailedError() : base("Ошибка обновления")
     {
@@ -34,7 +24,7 @@ public class UpdateFailedError : Error
     }
 }
 
-public class CreateFailedError : Error
+public sealed class CreateFailedError : Error
 {
     public CreateFailedError() : base("Ошибка создания")
     {
@@ -42,15 +32,7 @@ public class CreateFailedError : Error
     }
 }
 
-public class PhotoNotFoundError : Error
-{
-    public PhotoNotFoundError() : base("Фотография не найдена")
-    {
-        Metadata.Add("ErrorCode", "404");
-    }
-}
-
-public class FailedError : Error
+public sealed class FailedError : Error
 {
     public FailedError() : base("Ошибка операции")
     {

@@ -79,7 +79,7 @@ public class CreateTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) :
             var created = await _uow.Tariffs.CreateAsync(tariff, cancellationToken);
 
             if (created == null)
-                return Result.Fail(new CreateFailedError());
+                return Result.Fail(new TariffCreateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new TariffChangedEvent(created.TariffId), cancellationToken);

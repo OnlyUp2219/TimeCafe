@@ -1,7 +1,5 @@
 namespace BuildingBlocks.Test.Behaviors;
 
-using FluentValidation.Results;
-
 public class ValidationBehaviorTests
 {
     public class TestRequest : IRequest<string> { }
@@ -31,7 +29,7 @@ public class ValidationBehaviorTests
     public async Task Handle_Should_ThrowValidationException_WhenValidationFails()
     {
         var validator = new Mock<IValidator<TestRequest>>();
-        var failures = new List<ValidationFailure> { new ValidationFailure("Prop", "Error") };
+        var failures = new List<ValidationFailure> { new("Prop", "Error") };
         validator.Setup(x => x.ValidateAsync(It.IsAny<ValidationContext<TestRequest>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult(failures));
 

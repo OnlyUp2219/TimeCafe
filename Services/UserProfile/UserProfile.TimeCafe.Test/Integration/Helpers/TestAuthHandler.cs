@@ -31,10 +31,10 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, CurrentUserId.ToString()),
-            new Claim(ClaimTypes.Name, "Test User"),
-            new Claim(ClaimTypes.Email, "test@example.com"),
-            new Claim(ClaimTypes.Role, CurrentRole)
+            new(ClaimTypes.NameIdentifier, CurrentUserId.ToString()),
+            new(ClaimTypes.Name, "Test User"),
+            new(ClaimTypes.Email, "test@example.com"),
+            new(ClaimTypes.Role, CurrentRole)
         };
 
         var permissions = typeof(Permissions)

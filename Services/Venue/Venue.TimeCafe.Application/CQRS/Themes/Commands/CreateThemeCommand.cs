@@ -33,7 +33,7 @@ public class CreateThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : 
             await _uow.SaveChangesAsync(cancellationToken);
 
             if (created == null)
-                return Result.Fail(new CreateFailedError());
+                return Result.Fail(new ThemeCreateFailedError());
 
             await _publisher.Publish(new ThemeChangedEvent(created.ThemeId), cancellationToken);
 

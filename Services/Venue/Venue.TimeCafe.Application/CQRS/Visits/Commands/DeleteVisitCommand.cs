@@ -26,7 +26,7 @@ public class DeleteVisitCommandHandler(IUnitOfWork uow, IPublisher publisher) : 
             var result = await _uow.Visits.DeleteAsync(request.VisitId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new DeleteFailedError());
+                return Result.Fail(new VisitDeleteFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(existing.VisitId, existing.UserId), cancellationToken);

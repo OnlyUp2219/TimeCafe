@@ -58,7 +58,7 @@ public class UpdateThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : 
             await _uow.SaveChangesAsync(cancellationToken);
 
             if (updated == null)
-                return Result.Fail(new UpdateFailedError());
+                return Result.Fail(new ThemeUpdateFailedError());
 
             await _publisher.Publish(new ThemeChangedEvent(updated.ThemeId), cancellationToken);
 

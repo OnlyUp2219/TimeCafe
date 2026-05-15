@@ -1,17 +1,31 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfileByIdQuery(Guid Id) : IQuery<Profile>;
+public record GetProfileByIdQuery(Guid Id) : IQuery<ProfileDto>;
 
-public class GetProfileByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfileByIdQuery, Profile>
+public class GetProfileByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfileByIdQuery, ProfileDto>
 {
-    public async Task<Result<Profile>> Handle(GetProfileByIdQuery request, CancellationToken cancellationToken = default)
+    public async Task<Result<ProfileDto>> Handle(GetProfileByIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
             var profile = await uow.Profiles.GetByIdAsync(request.Id, cancellationToken);
-            return profile != null
-                ? Result.Ok(ProfilePhotoUrlMapper.WithApiUrl(profile))
-                : Result.Fail(new ProfileNotFoundError());
+            if (profile == null)
+                return Result.Fail(new ProfileNotFoundError());
+
+            var mappedProfile = ProfilePhotoUrlMapper.WithApiUrl(profile);
+            
+            return Result.Ok(new ProfileDto(
+                mappedProfile.UserId,
+                mappedProfile.FirstName,
+                mappedProfile.LastName,
+                mappedProfile.MiddleName,
+                mappedProfile.Nickname,
+                mappedProfile.Bio,
+                mappedProfile.PhotoUrl,
+                mappedProfile.BirthDate,
+                (int)mappedProfile.Gender,
+                (int)mappedProfile.ProfileStatus,
+                mappedProfile.CreatedAt));
         }
         catch (Exception ex)
         {

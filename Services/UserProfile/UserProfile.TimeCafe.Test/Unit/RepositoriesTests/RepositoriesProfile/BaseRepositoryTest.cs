@@ -22,9 +22,7 @@ public abstract class BaseRepositoryTest : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddDistributedMemoryCache();
-#pragma warning disable EXTEXP0018
         services.AddHybridCache();
-#pragma warning restore EXTEXP0018
         HybridCache = services.BuildServiceProvider().GetRequiredService<HybridCache>();
 
         Repository = new UserRepositories(Context, HybridCache);

@@ -1,12 +1,12 @@
 namespace Venue.TimeCafe.Application.CQRS.Themes.Queries;
 
-public record GetThemeByIdQuery(Guid ThemeId) : IQuery<Theme>;
+public record GetThemeByIdQuery(Guid ThemeId) : IQuery<ThemeDto>;
 
-public class GetThemeByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetThemeByIdQuery, Theme>
+public class GetThemeByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetThemeByIdQuery, ThemeDto>
 {
     private readonly IUnitOfWork _uow = uow;
 
-    public async Task<Result<Theme>> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken = default)
+    public async Task<Result<ThemeDto>> Handle(GetThemeByIdQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -15,7 +15,11 @@ public class GetThemeByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetThemeB
             if (theme == null)
                 return Result.Fail(new ThemeNotFoundError());
 
-            return Result.Ok(theme);
+            return Result.Ok(new ThemeDto(
+                theme.ThemeId,
+                theme.Name,
+                theme.Emoji,
+                theme.Colors));
         }
         catch (Exception ex)
         {

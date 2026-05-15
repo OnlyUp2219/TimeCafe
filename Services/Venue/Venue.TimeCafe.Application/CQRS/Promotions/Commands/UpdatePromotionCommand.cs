@@ -60,7 +60,7 @@ public class UpdatePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher
             var updated = await _uow.Promotions.UpdateAsync(promotion, cancellationToken);
 
             if (updated == null)
-                return Result.Fail(new UpdateFailedError());
+                return Result.Fail(new PromotionUpdateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new PromotionChangedEvent(updated.PromotionId), cancellationToken);
@@ -69,7 +69,7 @@ public class UpdatePromotionCommandHandler(IUnitOfWork uow, IPublisher publisher
         }
         catch (Exception ex)
         {
-            return Result.Fail(new UpdateFailedError().CausedBy(ex));
+            return Result.Fail(new PromotionUpdateFailedError().CausedBy(ex));
         }
     }
 }

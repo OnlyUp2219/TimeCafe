@@ -35,7 +35,7 @@ public class ActivatePromotionCommandHandler(IUnitOfWork uow, IPublisher publish
             var result = await _uow.Promotions.ActivateAsync(request.PromotionId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new ActivateFailedError());
+                return Result.Fail(new PromotionActivateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new PromotionChangedEvent(request.PromotionId), cancellationToken);

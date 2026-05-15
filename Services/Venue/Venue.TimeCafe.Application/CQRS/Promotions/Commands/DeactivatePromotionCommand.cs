@@ -26,7 +26,7 @@ public class DeactivatePromotionCommandHandler(IUnitOfWork uow, IPublisher publi
             var result = await _uow.Promotions.DeactivateAsync(request.PromotionId, cancellationToken);
 
             if (!result)
-                return Result.Fail(new DeactivateFailedError());
+                return Result.Fail(new PromotionDeactivateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new PromotionChangedEvent(request.PromotionId), cancellationToken);

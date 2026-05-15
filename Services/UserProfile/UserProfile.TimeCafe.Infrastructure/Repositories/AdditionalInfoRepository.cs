@@ -21,18 +21,26 @@ public class AdditionalInfoRepository(ApplicationDbContext context, HybridCache 
     public async Task<(IEnumerable<AdditionalInfo> Items, int TotalCount)> GetPagedByUserIdAsync(
     Guid userId, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.AdditionalInfos
-            .AsNoTracking()
-            .Where(i => i.UserId == userId);
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.AdditionalInfo_Page(userId, pageNumber, pageSize),
+            async token =>
+            {
+                var query = _context.AdditionalInfos
+                    .AsNoTracking()
+                    .Where(i => i.UserId == userId);
 
-        var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(i => i.CreatedAt)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+                var totalCount = await query.CountAsync(token);
+                var items = await query
+                    .OrderByDescending(i => i.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync(token);
 
-        return (items, totalCount);
+                return (Items: (IEnumerable<AdditionalInfo>)items, TotalCount: totalCount);
+            },
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.AdditionalInfos, CacheTags.AdditionalInfoByUser(userId)],
+            cancellationToken: cancellationToken);
     }
 
     public async Task<AdditionalInfo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
