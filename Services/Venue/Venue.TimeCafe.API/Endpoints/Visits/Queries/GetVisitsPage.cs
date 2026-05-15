@@ -6,10 +6,10 @@ public class GetVisitsPage : ICarterModule
     {
         app.MapGet("/visits/page", async (
             [FromServices] ISender sender,
-            [FromQuery] int pageNumber,
-            [FromQuery] int pageSize) =>
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20) =>
         {
-            var query = new GetVisitsPageQuery(pageNumber, pageSize);
+            var query = new GetVisitsPageQuery(page, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })

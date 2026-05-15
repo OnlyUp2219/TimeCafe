@@ -56,13 +56,13 @@ export const ProfilesPage = () => {
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminProfiles");
 
     const { data, isLoading, error } = useGetProfilesPageQuery(
-        { pageNumber: currentPage, pageSize },
+        { page: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
 
     const profiles = data?.profiles ?? [];
     const totalCount = data?.totalCount ?? 0;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const totalPages = data?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({

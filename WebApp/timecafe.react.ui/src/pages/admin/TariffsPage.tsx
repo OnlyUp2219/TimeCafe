@@ -50,7 +50,7 @@ export const TariffsPage = () => {
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminTariffs");
     const { data, isLoading, error, refetch } = useGetTariffsPageQuery(
-        { pageNumber: currentPage, pageSize },
+        { page: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
     const { data: promotions = [] } = useGetAllPromotionsQuery();
@@ -58,7 +58,7 @@ export const TariffsPage = () => {
     const tariffs = data?.tariffs ?? [];
     const totalCount = data?.totalCount ?? 0;
     const maxCap = data?.maxTotalDiscountPercent;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const totalPages = data?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [deleteTariff] = useDeleteTariffMutation();

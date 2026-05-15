@@ -1,6 +1,8 @@
+using BuildingBlocks.Contracts.CQRS;
+
 namespace Auth.TimeCafe.Application.CQRS.Admin.Query;
 
-public sealed record GetUsersPageQuery(int Page, int Size, string? Search, string? Status) : IQuery<(List<AdminUserResponse> Users, int TotalCount)>;
+public sealed record GetUsersPageQuery(int Page, int Size, string? Search, string? Status) : IQuery<PagedResponse<AdminUserResponse>>;
 
 public sealed class GetUsersPageQueryValidator : AbstractValidator<GetUsersPageQuery>
 {
@@ -12,11 +14,11 @@ public sealed class GetUsersPageQueryValidator : AbstractValidator<GetUsersPageQ
     }
 }
 
-public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : IQueryHandler<GetUsersPageQuery, (List<AdminUserResponse> Users, int TotalCount)>
+public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : IQueryHandler<GetUsersPageQuery, PagedResponse<AdminUserResponse>>
 {
     private readonly IUserRepository _userRepository = userRepository;
 
-    public async Task<Result<(List<AdminUserResponse> Users, int TotalCount)>> Handle(GetUsersPageQuery request, CancellationToken cancellationToken = default)
+    public async Task<Result<PagedResponse<AdminUserResponse>>> Handle(GetUsersPageQuery request, CancellationToken cancellationToken = default)
     {
         var (users, totalCount) = await _userRepository.GetUsersPageAsync(
             request.Page, request.Size, request.Search, request.Status, cancellationToken);
@@ -42,6 +44,10 @@ public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : I
             };
         }).ToList();
 
-        return Result.Ok((userResponses, totalCount));
+        var totalPages = (totalCount + request.Size - 1) / request.Size;
+
+        return Result.Ok(new PagedResponse<AdminUserResponse>(
+            userResponses, 
+            new PageMetadata(request.Page, request.Size, totalCount, totalPages)));
     }
 }

@@ -1,15 +1,50 @@
 namespace UserProfile.TimeCafe.Application.CQRS.Profiles.Queries;
 
-public record GetProfilesPageQuery(int PageNumber, int PageSize) : IQuery<IEnumerable<Profile>>;
+public record GetProfilesPageQuery(int Page, int PageSize) : IQuery<PagedResponse<ProfileDto>>;
 
-public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfilesPageQuery, IEnumerable<Profile>>
+public record ProfileDto(
+    Guid UserId,
+    string FirstName,
+    string LastName,
+    string? MiddleName,
+    string? Nickname,
+    string? Bio,
+    string? PhotoUrl,
+    DateTime? BirthDate,
+    int Gender,
+    int ProfileStatus,
+    DateTimeOffset CreatedAt);
+
+public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfilesPageQuery, PagedResponse<ProfileDto>>
 {
-    public async Task<Result<IEnumerable<Profile>>> Handle(GetProfilesPageQuery request, CancellationToken cancellationToken = default)
+    private readonly IUnitOfWork _uow = uow;
+
+    public async Task<Result<PagedResponse<ProfileDto>>> Handle(GetProfilesPageQuery request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var profiles = await uow.Profiles.GetPageAsync(request.PageNumber, request.PageSize, cancellationToken);
-            return Result.Ok<IEnumerable<Profile>>(ProfilePhotoUrlMapper.WithApiUrl(profiles.Where(p => p != null)!));
+            var profiles = await _uow.Profiles.GetPageAsync(request.Page, request.PageSize, cancellationToken);
+            var totalCount = await _uow.Profiles.GetTotalPageAsync(cancellationToken);
+
+            var dtos = ProfilePhotoUrlMapper.WithApiUrl(profiles.Where(p => p != null)!)
+                .Select(p => new ProfileDto(
+                    p.UserId,
+                    p.FirstName,
+                    p.LastName,
+                    p.MiddleName,
+                    p.Nickname,
+                    p.Bio,
+                    p.PhotoUrl,
+                    p.BirthDate,
+                    (int)p.Gender,
+                    (int)p.ProfileStatus,
+                    p.CreatedAt));
+
+            var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
+
+            return Result.Ok(new PagedResponse<ProfileDto>(
+                dtos, 
+                new PageMetadata(request.Page, request.PageSize, totalCount, totalPages)));
         }
         catch (Exception ex)
         {

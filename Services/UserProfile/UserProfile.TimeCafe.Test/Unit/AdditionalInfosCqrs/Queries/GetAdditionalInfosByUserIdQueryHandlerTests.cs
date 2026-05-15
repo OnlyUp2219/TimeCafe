@@ -20,7 +20,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         _userRepoMock.Setup(r => r.GetByIdAsync(userId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new Profile { UserId = userId });
         _repoMock.Setup(r => r.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<AdditionalInfo>());
+            .ReturnsAsync([]);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(_uowMock.Object);
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId, 1, 10));
@@ -42,7 +42,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         var userId = Guid.Parse(NonExistingUsers.UserId1);
 
         _repoMock.Setup(r => r.GetByUserIdAsync(userId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<AdditionalInfo>());
+            .ReturnsAsync([]);
         var handler = new GetAdditionalInfosByUserIdQueryHandler(_uowMock.Object);
 
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId, 1, 10));

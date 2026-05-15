@@ -4,6 +4,7 @@ import type {Tariff} from "@app-types/tariff";
 import type {Visit} from "@app-types/visit";
 import type {VisitWithTariff} from "@app-types/visitWithTariff";
 import type {TariffWithTheme} from "@app-types/tariffWithTheme";
+import type {PagedResponse} from "@app-types/pagination";
 
 interface GetTariffsResponse {
     tariffs: TariffWithTheme[];
@@ -61,24 +62,19 @@ interface EndVisitResponse {
 
 
 
-interface GetTariffsPageResponse {
-    tariffs: TariffWithTheme[];
-    totalCount: number;
+interface GetTariffsPageResponse extends PagedResponse<TariffWithTheme> {
     maxTotalDiscountPercent: number;
 }
 
 interface GetTariffsPageArgs {
-    pageNumber: number;
+    page: number;
     pageSize: number;
 }
 
-interface GetVisitsPageResponse {
-    visits: VisitWithTariff[];
-    totalCount: number;
-}
+type GetVisitsPageResponse = PagedResponse<VisitWithTariff>;
 
 interface GetVisitsPageArgs {
-    pageNumber: number;
+    page: number;
     pageSize: number;
 }
 
@@ -197,9 +193,9 @@ export const venueApi = createApi({
         }),
 
         getTariffsPage: builder.query<GetTariffsPageResponse, GetTariffsPageArgs>({
-            query: ({pageNumber, pageSize}) => ({
+            query: ({page, pageSize}) => ({
                 url: "/venue/tariffs/page",
-                params: {pageNumber, pageSize},
+                params: {page, pageSize},
             }),
             providesTags: ["AllTariffs"],
             keepUnusedDataFor: 0,
@@ -235,9 +231,9 @@ export const venueApi = createApi({
         }),
 
         getVisitsPage: builder.query<GetVisitsPageResponse, GetVisitsPageArgs>({
-            query: ({pageNumber, pageSize}) => ({
+            query: ({page, pageSize}) => ({
                 url: "/venue/visits/page",
-                params: {pageNumber, pageSize},
+                params: {page, pageSize},
             }),
             providesTags: ["VisitsPage"],
         }),
@@ -309,10 +305,10 @@ export const venueApi = createApi({
             invalidatesTags: ["AllTariffs", "ActiveTariffs"],
         }),
 
-        getPromotionsPage: builder.query<{promotions: Promotion[]; totalCount: number}, {pageNumber: number; pageSize: number}>({
-            query: ({pageNumber, pageSize}) => ({
+        getPromotionsPage: builder.query<PagedResponse<Promotion>, {page: number; pageSize: number}>({
+            query: ({page, pageSize}) => ({
                 url: "/venue/promotions/page",
-                params: {pageNumber, pageSize},
+                params: {page, pageSize},
             }),
             providesTags: ["Promotions"],
         }),
@@ -364,10 +360,10 @@ export const venueApi = createApi({
             invalidatesTags: ["Promotions"],
         }),
 
-        getThemesPage: builder.query<{themes: Theme[]; totalCount: number}, {pageNumber: number; pageSize: number}>({
-            query: ({pageNumber, pageSize}) => ({
+        getThemesPage: builder.query<PagedResponse<Theme>, {page: number; pageSize: number}>({
+            query: ({page, pageSize}) => ({
                 url: "/venue/themes/page",
-                params: {pageNumber, pageSize},
+                params: {page, pageSize},
             }),
             providesTags: ["Themes"],
         }),

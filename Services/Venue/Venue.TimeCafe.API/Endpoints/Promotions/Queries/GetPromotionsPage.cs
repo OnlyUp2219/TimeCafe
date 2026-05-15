@@ -6,10 +6,10 @@ public class GetPromotionsPage : ICarterModule
     {
         app.MapGet("/promotions/page", async (
             [FromServices] ISender sender,
-            [FromQuery] int pageNumber = 1,
+            [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20) =>
         {
-            var query = new GetPromotionsPageQuery(pageNumber <= 0 ? 1 : pageNumber, pageSize <= 0 ? 20 : pageSize);
+            var query = new GetPromotionsPageQuery(page, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })

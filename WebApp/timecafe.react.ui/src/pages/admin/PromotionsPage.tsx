@@ -86,7 +86,7 @@ export const PromotionsPage = () => {
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminPromotions");
 
     const { data, isLoading, error, refetch } = useGetPromotionsPageQuery(
-        { pageNumber: currentPage, pageSize },
+        { page: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
     const { data: allPromotions = [] } = useGetAllPromotionsQuery();
@@ -94,7 +94,7 @@ export const PromotionsPage = () => {
 
     const promotions = data?.promotions ?? [];
     const totalCount = data?.totalCount ?? 0;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const totalPages = data?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [createPromotion] = useCreatePromotionMutation();

@@ -65,12 +65,12 @@ export const VisitsPage = () => {
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminVisits");
     const { data, isLoading, error } = useGetVisitsPageQuery(
-        { pageNumber: currentPage, pageSize },
+        { page: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
     const visits = data?.visits ?? [];
     const totalCount = data?.totalCount ?? 0;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const totalPages = data?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({

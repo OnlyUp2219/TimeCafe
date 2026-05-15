@@ -34,12 +34,12 @@ export const ThemesPage = () => {
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminThemes", 1, 12);
 
     const { data, isLoading, error: queryError, refetch } = useGetThemesPageQuery({
-        pageNumber: currentPage,
+        page: currentPage,
         pageSize
     });
     const themes = data?.themes ?? [];
     const totalCount = data?.totalCount ?? 0;
-    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const totalPages = data?.totalPages ?? 1;
     const [deleteTheme, { error: deleteError }] = useDeleteThemeMutation();
 
     const mutationError = deleteError ? getRtkErrorMessage(deleteError as FetchBaseQueryError) : null;

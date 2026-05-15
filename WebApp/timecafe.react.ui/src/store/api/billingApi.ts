@@ -1,6 +1,7 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {baseQueryWithReauth} from "@store/api/baseQuery";
-import type {BillingBalance, BillingPagination, BillingTransaction} from "@app-types/billing";
+import type {BillingBalance, BillingTransaction} from "@app-types/billing";
+import type {PagedResponse} from "@app-types/pagination";
 
 export interface InitializeStripeCheckoutRequest {
     userId: string;
@@ -24,10 +25,7 @@ interface GetDebtResponse {
     debt: number;
 }
 
-interface GetTransactionHistoryResponse {
-    transactions: BillingTransaction[];
-    pagination: BillingPagination;
-}
+type GetTransactionHistoryResponse = PagedResponse<BillingTransaction>;
 
 export interface GetTransactionHistoryArgs {
     userId: string;
@@ -47,22 +45,18 @@ export const billingApi = createApi({
         }),
 
         getDebt: builder.query<number, string>({
-            query: (userId) => `/billing/debt/${userId}`,
+            query: (userId) => `/billing/balance/${userId}/debt`,
             transformResponse: (response: GetDebtResponse) => response.debt,
             providesTags: (_result, _error, userId) => [{type: "Debt", id: userId}],
         }),
 
         getTransactionHistory: builder.query<
-            { transactions: BillingTransaction[]; pagination: BillingPagination },
+            GetTransactionHistoryResponse,
             GetTransactionHistoryArgs
         >({
             query: ({userId, page, pageSize}) => ({
                 url: `/billing/transactions/history/${userId}`,
                 params: {page, pageSize},
-            }),
-            transformResponse: (response: GetTransactionHistoryResponse) => ({
-                transactions: response.transactions,
-                pagination: response.pagination,
             }),
             providesTags: (_result, _error, arg) => [{type: "Transactions", id: arg.userId}],
         }),

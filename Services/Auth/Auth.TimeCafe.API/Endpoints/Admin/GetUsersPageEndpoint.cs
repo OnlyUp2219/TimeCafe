@@ -17,17 +17,7 @@ public class GetUsersPageEndpoint : ICarterModule
                 var query = new GetUsersPageQuery(request.Page, request.Size, request.Search, request.Status);
                 var result = await sender.Send(query);
 
-                return result.ToHttpResult(data => Results.Ok(new
-                {
-                    users = data.Users,
-                    pagination = new
-                    {
-                        currentPage = request.Page,
-                        pageSize = request.Size,
-                        totalCount = data.TotalCount,
-                        totalPages = (int)Math.Ceiling(data.TotalCount / (double)request.Size)
-                    }
-                }));
+                return result.ToHttpResult(data => Results.Ok(data));
             })
             .WithName("GetUsersPage")
             .WithSummary("Получение страницы пользователей для админки")

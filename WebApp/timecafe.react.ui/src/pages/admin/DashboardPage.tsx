@@ -47,9 +47,9 @@ export const DashboardPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 });
-    const { data: tariffsData, isLoading: tariffsLoading } = useGetTariffsPageQuery({ pageNumber: 1, pageSize: 20 });
+    const { data: tariffsData, isLoading: tariffsLoading } = useGetTariffsPageQuery({ page: 1, pageSize: 20 });
     const { data: promotionsData, isLoading: promotionsLoading } = useGetAllPromotionsQuery();
-    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ pageNumber: 1, pageSize: 20 });
+    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 20 });
     const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
     return (

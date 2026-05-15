@@ -7,10 +7,10 @@ public class GetAdditionalInfosByUserId : ICarterModule
         app.MapGet("/profiles/{userId:guid}/infos", async (
             [FromServices] ISender sender,
             Guid userId,
-            [FromQuery] int? pageNumber,
-            [FromQuery] int? pageSize) =>
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20) =>
         {
-            var query = new GetAdditionalInfosByUserIdQuery(userId, pageNumber ?? 1, pageSize ?? 10);
+            var query = new GetAdditionalInfosByUserIdQuery(userId, page, pageSize);
             var result = await sender.Send(query);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })

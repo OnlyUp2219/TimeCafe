@@ -144,7 +144,7 @@ export const UserDetailPage = () => {
     const { data: loyalty, } = useGetUserLoyaltyQuery(id!, { skip: !id });
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
     const { data: notesData, isLoading: notesLoading } = useGetAdditionalInfosByUserIdQuery(
-        { userId: id!, pageNumber: notesPage, pageSize: NOTES_PAGE_SIZE },
+        { userId: id!, page: notesPage, pageSize: NOTES_PAGE_SIZE },
         { skip: !id }
     );
     const adminNotes = notesData?.infos ?? [];

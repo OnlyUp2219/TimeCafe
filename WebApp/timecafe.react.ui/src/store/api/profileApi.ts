@@ -1,6 +1,7 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
 import {baseQueryWithReauth} from "@store/api/baseQuery";
 import type {Profile} from "@app-types/profile";
+import type {PagedResponse} from "@app-types/pagination";
 
 export interface UpdateProfileRequest {
     userId: string;
@@ -28,12 +29,7 @@ export interface UploadProfilePhotoResponse {
     contentType: string;
 }
 
-export interface GetProfilesPageResponse {
-    profiles: Profile[];
-    pageNumber: number;
-    pageSize: number;
-    totalCount: number;
-}
+export type GetProfilesPageResponse = PagedResponse<Profile>;
 
 export const profileApi = createApi({
     reducerPath: "profileApi",
@@ -116,10 +112,10 @@ export const profileApi = createApi({
                 {type: "ProfilePhoto", id: userId},
             ],
         }),
-        getAdditionalInfosByUserId: builder.query<{ infos: { infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string }[]; totalCount: number }, { userId: string; pageNumber: number; pageSize: number }>({
-            query: ({ userId, pageNumber, pageSize }) => ({
+        getAdditionalInfosByUserId: builder.query<PagedResponse<{ infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string }>, { userId: string; page: number; pageSize: number }>({
+            query: ({ userId, page, pageSize }) => ({
                 url: `/userprofile/profiles/${userId}/infos`,
-                params: { pageNumber, pageSize },
+                params: { page, pageSize },
             }),
             providesTags: (_result, _error, arg) => [{ type: "Profile", id: `infos-${arg.userId}` }],
         }),
@@ -144,10 +140,10 @@ export const profileApi = createApi({
             invalidatesTags: (_result, _error, arg) => [{type: "Profile", id: `infos-${arg.userId}`}],
         }),
 
-        getProfilesPage: builder.query<GetProfilesPageResponse, {pageNumber: number; pageSize: number}>({
-            query: ({pageNumber, pageSize}) => ({
+        getProfilesPage: builder.query<GetProfilesPageResponse, {page: number; pageSize: number}>({
+            query: ({page, pageSize}) => ({
                 url: "/userprofile/profiles/page",
-                params: {pageNumber, pageSize},
+                params: {page, pageSize},
             }),
             providesTags: ["ProfilesPage"],
         }),

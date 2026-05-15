@@ -42,11 +42,12 @@ export const AdditionalInfosPage = () => {
     }, [searchParams]);
 
     const {data: notesData, isLoading, error} = useGetAdditionalInfosByUserIdQuery(
-        {userId: searchUserId, pageNumber: page, pageSize: PAGE_SIZE},
+        {userId: searchUserId, page: page, pageSize: PAGE_SIZE},
         {skip: !searchUserId}
     );
-    const infos = notesData?.items ?? [];
+    const infos = notesData?.infos ?? [];
     const totalCount = notesData?.totalCount ?? 0;
+    const totalPages = notesData?.totalPages ?? 0;
 
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -124,7 +125,7 @@ export const AdditionalInfosPage = () => {
                         <div className="mt-4 flex justify-center">
                             <Pagination
                                 currentPage={page}
-                                totalPages={Math.ceil(totalCount / PAGE_SIZE)}
+                                totalPages={totalPages}
                                 onPageChange={setPage}
                             />
                         </div>
