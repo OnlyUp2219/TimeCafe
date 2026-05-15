@@ -1,44 +1,23 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetUserDebtQuery(Guid UserId) : IRequest<GetUserDebtResult>;
+public sealed record GetUserDebtQuery(Guid UserId) : IQuery<GetUserDebtResponse>;
 
-public record GetUserDebtResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    decimal? Debt = null) : ICqrsResult
+public sealed record GetUserDebtResponse(decimal Debt);
+
+public sealed class GetUserDebtQueryHandler(IUnitOfWork uow) : IQueryHandler<GetUserDebtQuery, GetUserDebtResponse>
 {
-    public static GetUserDebtResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 404);
+    private readonly IUnitOfWork _uow = uow;
 
-    public static GetUserDebtResult GetSuccess(decimal debt) =>
-        new(true, Message: "Долг получен", Debt: debt);
-}
-
-public class GetUserDebtQueryValidator : AbstractValidator<GetUserDebtQuery>
-{
-    public GetUserDebtQueryValidator()
+    public async Task<Result<GetUserDebtResponse>> Handle(GetUserDebtQuery request, CancellationToken cancellationToken = default)
     {
-        RuleFor(x => x.UserId)
-            .ValidGuidEntityId("Пользователь не найден");
-    }
-}
-
-public class GetUserDebtQueryHandler(IBalanceRepository repository) : IRequestHandler<GetUserDebtQuery, GetUserDebtResult>
-{
-    private readonly IBalanceRepository _repository = repository;
-
-    public async Task<GetUserDebtResult> Handle(GetUserDebtQuery request, CancellationToken cancellationToken = default)
-    {
-        var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var balance = await _uow.Balances.GetByIdAsync(request.UserId, cancellationToken);
         if (balance == null)
         {
-            balance = new Balance(request.UserId);
-            await _repository.CreateAsync(balance, cancellationToken);
+            balance = Balance.Create(request.UserId);
+            await _uow.Balances.CreateAsync(balance, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
         }
 
-        return GetUserDebtResult.GetSuccess(balance.Debt);
+        return Result.Ok(new GetUserDebtResponse(balance.Debt));
     }
 }

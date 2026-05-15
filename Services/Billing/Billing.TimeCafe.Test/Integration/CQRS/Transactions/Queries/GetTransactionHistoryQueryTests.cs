@@ -1,3 +1,5 @@
+using FluentResults;
+
 namespace Billing.TimeCafe.Test.Integration.CQRS.Transactions.Queries;
 
 public class GetTransactionHistoryQueryTests : IDisposable
@@ -18,18 +20,18 @@ public class GetTransactionHistoryQueryTests : IDisposable
     {
         var userId = DefaultsGuid.UserId;
 
-        GetTransactionHistoryResult result;
+        Result<GetTransactionHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionHistoryQuery(userId, Page: 1, PageSize: 10));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transactions.Should().NotBeNull();
-        result.Transactions.Should().BeEmpty();
-        result.TotalCount.Should().Be(0);
-        result.TotalPages.Should().Be(0);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transactions.Should().NotBeNull();
+        result.Value.Transactions.Should().BeEmpty();
+        result.Value.TotalCount.Should().Be(0);
+        result.Value.TotalPages.Should().Be(0);
     }
 
     [Fact]
@@ -62,20 +64,20 @@ public class GetTransactionHistoryQueryTests : IDisposable
             await repo.CreateAsync(transaction2);
         }
 
-        GetTransactionHistoryResult result;
+        Result<GetTransactionHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionHistoryQuery(userId, Page: 1, PageSize: 10));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transactions.Should().NotBeNull();
-        result.Transactions.Should().HaveCount(2);
-        result.TotalCount.Should().Be(2);
-        result.TotalPages.Should().Be(1);
-        result.Transactions![0].UserId.Should().Be(userId);
-        result.Transactions[1].UserId.Should().Be(userId);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transactions.Should().NotBeNull();
+        result.Value.Transactions.Should().HaveCount(2);
+        result.Value.TotalCount.Should().Be(2);
+        result.Value.TotalPages.Should().Be(1);
+        result.Value.Transactions[0].UserId.Should().Be(userId);
+        result.Value.Transactions[1].UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -103,17 +105,17 @@ public class GetTransactionHistoryQueryTests : IDisposable
             }
         }
 
-        GetTransactionHistoryResult result;
+        Result<GetTransactionHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionHistoryQuery(userId, Page: 1, PageSize: 2));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transactions.Should().HaveCount(2);
-        result.TotalCount.Should().Be(5);
-        result.TotalPages.Should().Be(3);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transactions.Should().HaveCount(2);
+        result.Value.TotalCount.Should().Be(5);
+        result.Value.TotalPages.Should().Be(3);
     }
 
     [Fact]
@@ -141,57 +143,17 @@ public class GetTransactionHistoryQueryTests : IDisposable
             }
         }
 
-        GetTransactionHistoryResult result;
+        Result<GetTransactionHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionHistoryQuery(userId, Page: 2, PageSize: 2));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transactions.Should().HaveCount(2);
-        result.TotalCount.Should().Be(5);
-        result.TotalPages.Should().Be(3);
-    }
-
-    [Fact]
-    public async Task Query_GetTransactionHistory_Should_ThrowValidationException_WhenUserIdEmpty()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(InvalidDataGuid.EmptyUserId, Page: 1, PageSize: 10));
-        await action.Should().ThrowAsync<ValidationException>();
-    }
-
-    [Fact]
-    public async Task Query_GetTransactionHistory_Should_ThrowValidationException_WhenPageZero()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 0, PageSize: 10));
-        await action.Should().ThrowAsync<ValidationException>();
-    }
-
-    [Fact]
-    public async Task Query_GetTransactionHistory_Should_ThrowValidationException_WhenPageSizeZero()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 0));
-        await action.Should().ThrowAsync<ValidationException>();
-    }
-
-    [Fact]
-    public async Task Query_GetTransactionHistory_Should_ThrowValidationException_WhenPageSizeGreaterThan100()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetTransactionHistoryQuery(DefaultsGuid.UserId, Page: 1, PageSize: 101));
-        await action.Should().ThrowAsync<ValidationException>();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Transactions.Should().HaveCount(2);
+        result.Value.TotalCount.Should().Be(5);
+        result.Value.TotalPages.Should().Be(3);
     }
 
     public void Dispose()

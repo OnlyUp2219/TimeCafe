@@ -1,92 +1,64 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
 
-public record InitializeStripeCheckoutCommand(
+public sealed record InitializeStripeCheckoutCommand(
     Guid UserId,
     decimal Amount,
     string? SuccessUrl,
     string? CancelUrl,
-    string? Description) : IRequest<InitializeStripeCheckoutResult>;
+    string? Description) : ICommand<InitializeStripeCheckoutResponse>;
 
-public record InitializeStripeCheckoutResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Guid? PaymentId = null,
-    string? SessionId = null,
-    string? CheckoutUrl = null) : ICqrsResult
-{
-    public static InitializeStripeCheckoutResult ConfigurationMissing() =>
-        new(false, Code: "StripeConfigurationMissing", Message: "Платежный провайдер не настроен", StatusCode: 500);
+public sealed record InitializeStripeCheckoutResponse(
+    Guid PaymentId,
+    string SessionId,
+    string CheckoutUrl);
 
-    public static InitializeStripeCheckoutResult ProviderError(string message) =>
-        new(false, Code: "StripeError", Message: message, StatusCode: 502);
-
-    public static InitializeStripeCheckoutResult CheckoutCreated(Payment payment, string sessionId, string checkoutUrl) =>
-        new(true,
-            Message: "Checkout сессия создана",
-            PaymentId: payment.PaymentId,
-            SessionId: sessionId,
-            CheckoutUrl: checkoutUrl);
-}
-
-public class InitializeStripeCheckoutCommandValidator : AbstractValidator<InitializeStripeCheckoutCommand>
+public sealed class InitializeStripeCheckoutCommandValidator : AbstractValidator<InitializeStripeCheckoutCommand>
 {
     public InitializeStripeCheckoutCommandValidator()
     {
         RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
-
         RuleFor(x => x.Amount).ValidPaymentAmount();
-
         RuleFor(x => x.SuccessUrl).ValidUrlWithPlaceholder("SuccessUrl");
-
         RuleFor(x => x.CancelUrl).ValidUrlWithPlaceholder("CancelUrl");
     }
 }
 
-public class InitializeStripeCheckoutCommandHandler(
-    IPaymentRepository paymentRepository,
+public sealed class InitializeStripeCheckoutCommandHandler(
+    IUnitOfWork uow,
     IStripePaymentClient stripeClient,
+    IPublisher publisher,
     IOptionsSnapshot<StripeOptions> options,
-    ILogger<InitializeStripeCheckoutCommandHandler> logger) : IRequestHandler<InitializeStripeCheckoutCommand, InitializeStripeCheckoutResult>
+    ILogger<InitializeStripeCheckoutCommandHandler> logger) : ICommandHandler<InitializeStripeCheckoutCommand, InitializeStripeCheckoutResponse>
 {
-    private readonly IPaymentRepository _paymentRepository = paymentRepository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly IStripePaymentClient _stripeClient = stripeClient;
+    private readonly IPublisher _publisher = publisher;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
     private readonly ILogger _logger = logger;
 
-    public async Task<InitializeStripeCheckoutResult> Handle(InitializeStripeCheckoutCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<InitializeStripeCheckoutResponse>> Handle(InitializeStripeCheckoutCommand request, CancellationToken cancellationToken = default)
     {
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;
 
-        var successUrl = string.IsNullOrWhiteSpace(request.SuccessUrl)
-            ? settings.CheckoutSuccessUrl
-            : request.SuccessUrl;
-
-        var cancelUrl = string.IsNullOrWhiteSpace(request.CancelUrl)
-            ? settings.CheckoutCancelUrl
-            : request.CancelUrl;
+        var successUrl = string.IsNullOrWhiteSpace(request.SuccessUrl) ? settings.CheckoutSuccessUrl : request.SuccessUrl;
+        var cancelUrl = string.IsNullOrWhiteSpace(request.CancelUrl) ? settings.CheckoutCancelUrl : request.CancelUrl;
 
         if (string.IsNullOrWhiteSpace(successUrl) || string.IsNullOrWhiteSpace(cancelUrl))
-            return InitializeStripeCheckoutResult.ConfigurationMissing();
+            return Result.Fail(new StripeWebhookError("Платежный провайдер не настроен (URL missing)"));
 
         var description = string.IsNullOrWhiteSpace(request.Description)
             ? $"Пополнение баланса пользователя {request.UserId}"
             : request.Description;
 
-        var payment = new Payment
+        var paymentResult = Payment.Create(request.UserId, request.Amount);
+        if (paymentResult.IsFailed)
         {
-            PaymentId = Guid.NewGuid(),
-            UserId = request.UserId,
-            Amount = request.Amount,
-            PaymentMethod = PaymentMethod.Online,
-            Status = PaymentStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
+            return paymentResult.ToResult<InitializeStripeCheckoutResponse>();
+        }
 
-        await _paymentRepository.CreateAsync(payment, cancellationToken);
+        var payment = paymentResult.Value;
+        await _uow.Payments.CreateAsync(payment, cancellationToken);
 
         var createRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
@@ -102,12 +74,15 @@ public class InitializeStripeCheckoutCommandHandler(
         if (!response.Success || string.IsNullOrWhiteSpace(response.SessionId))
         {
             _logger.LogError("Failed to create Stripe checkout session: {Error}", response.Error);
-            return InitializeStripeCheckoutResult.ProviderError(response.Error ?? "Unknown error");
+            return Result.Fail(new StripeWebhookError(response.Error ?? "Unknown error"));
         }
 
         payment.ExternalPaymentId = response.SessionId;
-        await _paymentRepository.UpdateAsync(payment, cancellationToken);
+        await _uow.Payments.UpdateAsync(payment, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
-        return InitializeStripeCheckoutResult.CheckoutCreated(payment, response.SessionId, response.CheckoutUrl!);
+        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId), cancellationToken);
+
+        return Result.Ok(new InitializeStripeCheckoutResponse(payment.PaymentId, response.SessionId, response.CheckoutUrl!));
     }
 }

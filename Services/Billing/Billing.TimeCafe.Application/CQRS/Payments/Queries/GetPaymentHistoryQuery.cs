@@ -1,61 +1,24 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Queries;
 
-public record GetPaymentHistoryQuery(
+public sealed record GetPaymentHistoryQuery(
     Guid UserId,
     int Page = 1,
-    int PageSize = 20) : IRequest<GetPaymentHistoryResult>;
+    int PageSize = 20) : IQuery<GetPaymentHistoryResponse>;
 
-public record GetPaymentHistoryResult(
-    bool Success,
-    List<PaymentDto>? Payments = null,
-    int TotalCount = 0,
-    int TotalPages = 0,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null) : ICqrsResult
+public sealed record GetPaymentHistoryResponse(
+    List<PaymentDto> Payments,
+    int TotalCount,
+    int TotalPages);
+
+public sealed class GetPaymentHistoryQueryHandler(
+    IUnitOfWork uow) : IQueryHandler<GetPaymentHistoryQuery, GetPaymentHistoryResponse>
 {
-    public static GetPaymentHistoryResult InvalidUserId() =>
-        new(false, Code: "InvalidUserId", Message: "Некорректный ID пользователя", StatusCode: 400);
+    private readonly IUnitOfWork _uow = uow;
 
-    public static GetPaymentHistoryResult WithPayments(List<PaymentDto> payments, int totalCount, int pageSize) =>
-        new(true, payments, totalCount, (totalCount + pageSize - 1) / pageSize);
-}
-public record PaymentDto(
-    Guid PaymentId,
-    string? ExternalPaymentId,
-    decimal Amount,
-    string Status,
-    DateTimeOffset CreatedAt,
-    DateTimeOffset? CompletedAt,
-    string? ErrorMessage);
-
-public class GetPaymentHistoryQueryValidator : AbstractValidator<GetPaymentHistoryQuery>
-{
-    public GetPaymentHistoryQueryValidator()
+    public async Task<Result<GetPaymentHistoryResponse>> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken = default)
     {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Некорректный ID пользователя");
-
-        RuleFor(x => x.Page).ValidPageNumber();
-
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
-
-public class GetPaymentHistoryQueryHandler(
-    IPaymentRepository paymentRepository,
-    ILogger<GetPaymentHistoryQueryHandler> logger) : IRequestHandler<GetPaymentHistoryQuery, GetPaymentHistoryResult>
-{
-    private readonly IPaymentRepository _paymentRepository = paymentRepository;
-    private readonly ILogger _logger = logger;
-
-    public async Task<GetPaymentHistoryResult> Handle(GetPaymentHistoryQuery request, CancellationToken cancellationToken = default)
-    {
-        var page = Math.Max(1, request.Page);
-        var pageSize = Math.Clamp(request.PageSize, 1, 100);
-
-        var totalCount = await _paymentRepository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
-        var payments = await _paymentRepository.GetByUserIdAsync(request.UserId, page, pageSize, cancellationToken);
+        var totalCount = await _uow.Payments.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
+        var payments = await _uow.Payments.GetByUserIdAsync(request.UserId, request.Page, request.PageSize, cancellationToken);
 
         var paymentDtos = payments.ConvertAll(p => new PaymentDto(
             p.PaymentId,
@@ -66,6 +29,8 @@ public class GetPaymentHistoryQueryHandler(
             p.CompletedAt,
             p.ErrorMessage));
 
-        return GetPaymentHistoryResult.WithPayments(paymentDtos, totalCount, pageSize);
+        var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
+
+        return Result.Ok(new GetPaymentHistoryResponse(paymentDtos, totalCount, totalPages));
     }
 }

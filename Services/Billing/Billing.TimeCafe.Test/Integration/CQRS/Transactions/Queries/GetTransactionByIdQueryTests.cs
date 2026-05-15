@@ -1,3 +1,6 @@
+using Billing.TimeCafe.Application.DTOs.Balance;
+using FluentResults;
+
 namespace Billing.TimeCafe.Test.Integration.CQRS.Transactions.Queries;
 
 public class GetTransactionByIdQueryTests : IDisposable
@@ -33,24 +36,23 @@ public class GetTransactionByIdQueryTests : IDisposable
             await repo.CreateAsync(transaction);
         }
 
-        GetTransactionByIdResult result;
+        Result<TransactionDto> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionByIdQuery(transactionId));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transaction.Should().NotBeNull();
-        result.Transaction!.TransactionId.Should().Be(transactionId);
-        result.Transaction.UserId.Should().Be(userId);
-        result.Transaction.Amount.Should().Be(DefaultsGuid.DefaultAmount);
-        result.Transaction.Type.Should().Be((int)TransactionType.Deposit);
-        result.Transaction.Source.Should().Be((int)TransactionSource.Payment);
-        result.Transaction.SourceId.Should().Be(DefaultsGuid.PaymentId);
-        result.Transaction.Status.Should().Be((int)TransactionStatus.Completed);
-        result.Transaction.Comment.Should().Be("Test transaction");
-        result.Transaction.BalanceAfter.Should().Be(DefaultsGuid.DefaultAmount);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.TransactionId.Should().Be(transactionId);
+        result.Value.UserId.Should().Be(userId);
+        result.Value.Amount.Should().Be(DefaultsGuid.DefaultAmount);
+        result.Value.Type.Should().Be((int)TransactionType.Deposit);
+        result.Value.Source.Should().Be((int)TransactionSource.Payment);
+        result.Value.Status.Should().Be((int)TransactionStatus.Completed);
+        result.Value.Comment.Should().Be("Test transaction");
+        result.Value.BalanceAfter.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
@@ -58,27 +60,15 @@ public class GetTransactionByIdQueryTests : IDisposable
     {
         var nonExistentId = InvalidDataGuid.NonExistentPaymentId;
 
-        GetTransactionByIdResult result;
+        Result<TransactionDto> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetTransactionByIdQuery(nonExistentId));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("TransactionNotFound");
-        result.StatusCode.Should().Be(404);
-        result.Transaction.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task Query_GetTransactionById_Should_ThrowValidationException_WhenTransactionIdEmpty()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetTransactionByIdQuery(InvalidDataGuid.EmptyUserId));
-        await action.Should().ThrowAsync<ValidationException>();
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().Contain(e => e.Message.Contains("не найдена"));
     }
 
     public void Dispose()

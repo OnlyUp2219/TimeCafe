@@ -1,25 +1,24 @@
 namespace Billing.TimeCafe.Infrastructure.Consumers;
 
-public class VisitCompletedEventConsumer(
+public sealed class VisitCompletedEventConsumer(
+    IUnitOfWork uow,
     ApplicationDbContext db,
-    IBalanceRepository balanceRepository,
-    ITransactionRepository transactionRepository,
     ILogger<VisitCompletedEventConsumer> logger) : IConsumer<VisitCompletedEvent>
 {
+    private readonly IUnitOfWork _uow = uow;
     private readonly ApplicationDbContext _db = db;
-    private readonly IBalanceRepository _balanceRepository = balanceRepository;
-    private readonly ITransactionRepository _transactionRepository = transactionRepository;
     private readonly ILogger _logger = logger;
 
     public async Task Consume(ConsumeContext<VisitCompletedEvent> context)
     {
         var evt = context.Message;
+        var cancellationToken = context.CancellationToken;
 
-        await using var dbTransaction = await _db.Database.BeginTransactionAsync(context.CancellationToken);
+        await using var dbTransaction = await _db.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             var saga = await _db.VisitBillingSagas
-                .FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, context.CancellationToken);
+                .FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, cancellationToken);
 
             if (saga is not null && (saga.Status == VisitBillingSagaStatus.Completed || saga.Status == VisitBillingSagaStatus.Compensated))
             {
@@ -40,121 +39,90 @@ public class VisitCompletedEventConsumer(
                 };
 
                 _db.VisitBillingSagas.Add(saga);
-                await _db.SaveChangesAsync(context.CancellationToken);
+                await _db.SaveChangesAsync(cancellationToken);
             }
             else
             {
                 saga.Status = VisitBillingSagaStatus.Pending;
                 saga.FailureReason = null;
                 saga.UpdatedAt = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync(context.CancellationToken);
+                await _db.SaveChangesAsync(cancellationToken);
             }
 
-            var balance = await _balanceRepository.GetByUserIdAsync(evt.UserId, context.CancellationToken);
+            var balance = await _uow.Balances.GetByIdAsync(evt.UserId, cancellationToken);
 
             if (balance == null)
             {
-                balance = new Balance(evt.UserId);
-                balance = await _balanceRepository.CreateAsync(balance, context.CancellationToken);
+                balance = Balance.Create(evt.UserId);
+                await _uow.Balances.CreateAsync(balance, cancellationToken);
             }
 
-            var duplicate = await _transactionRepository.ExistsBySourceAsync(
+            var duplicate = await _uow.Transactions.ExistsBySourceAsync(
                 TransactionSource.Visit,
                 evt.VisitId,
-                context.CancellationToken);
+                cancellationToken);
 
             if (duplicate)
             {
                 saga.Status = VisitBillingSagaStatus.Completed;
                 saga.CompletedAt = DateTimeOffset.UtcNow;
                 saga.UpdatedAt = DateTimeOffset.UtcNow;
-                await _db.SaveChangesAsync(context.CancellationToken);
-                await dbTransaction.CommitAsync(context.CancellationToken);
+                await _db.SaveChangesAsync(cancellationToken);
+                await dbTransaction.CommitAsync(cancellationToken);
 
-                _logger.LogWarning(
-                    "Транзакция для визита {VisitId} уже обработана",
-                    evt.VisitId);
+                _logger.LogWarning("Транзакция для визита {VisitId} уже обработана", evt.VisitId);
                 return;
             }
 
-            if (balance.CurrentBalance < evt.Amount)
+            var withdrawResult = balance.Withdraw(evt.Amount);
+            if (withdrawResult.IsFailed)
             {
-                balance.Debt += evt.Amount - balance.CurrentBalance;
-                balance.CurrentBalance = 0;
-            }
-            else
-            {
-                balance.CurrentBalance -= evt.Amount;
+                throw new InvalidOperationException($"Ошибка списания: {withdrawResult.Errors[0].Message}");
             }
 
-            balance.TotalSpent += evt.Amount;
-            balance.LastUpdated = DateTimeOffset.UtcNow;
+            var transaction = Transaction.CreateWithdrawal(evt.UserId, evt.Amount, TransactionSource.Visit, evt.VisitId, $"Оплата визита #{evt.VisitId}");
+            transaction.CreatedAt = evt.CompletedAt;
+            transaction.BalanceAfter = balance.CurrentBalance;
 
-            var transaction = new Transaction
-            {
-                TransactionId = Guid.NewGuid(),
-                UserId = evt.UserId,
-                Amount = evt.Amount,
-                Type = TransactionType.Withdrawal,
-                Source = TransactionSource.Visit,
-                SourceId = evt.VisitId,
-                Status = TransactionStatus.Completed,
-                Comment = $"Оплата визита #{evt.VisitId}",
-                CreatedAt = evt.CompletedAt,
-                BalanceAfter = balance.CurrentBalance
-            };
-
-            await _balanceRepository.UpdateAsync(balance, context.CancellationToken);
-            await _transactionRepository.CreateAsync(transaction, context.CancellationToken);
+            await _uow.Balances.UpdateAsync(balance, cancellationToken);
+            await _uow.Transactions.CreateAsync(transaction, cancellationToken);
 
             saga.Status = VisitBillingSagaStatus.Completed;
             saga.TransactionId = transaction.TransactionId;
             saga.CompletedAt = DateTimeOffset.UtcNow;
             saga.UpdatedAt = DateTimeOffset.UtcNow;
             saga.FailureReason = null;
-            await _db.SaveChangesAsync(context.CancellationToken);
+            await _db.SaveChangesAsync(cancellationToken);
 
-            await dbTransaction.CommitAsync(context.CancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            await dbTransaction.CommitAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Визит {VisitId} пользователя {UserId} успешно обработан. Списано: {Amount}₽, Баланс: {Balance}₽",
                 evt.VisitId, evt.UserId, evt.Amount, balance.CurrentBalance);
         }
-        catch (DbUpdateException ex) when (IsDuplicateSourceKeyViolation(ex))
+        catch (DbUpdateException ex) when (ex.IsUniqueConstraintViolation("UX_Transactions_Source_SourceId_NotNull"))
         {
-            await dbTransaction.RollbackAsync(context.CancellationToken);
+            await dbTransaction.RollbackAsync(cancellationToken);
             _db.ChangeTracker.Clear();
-            await MarkSagaCompensatedAsync(evt, "duplicate source transaction", context.CancellationToken);
+            await MarkSagaCompensatedAsync(evt, "duplicate source transaction", cancellationToken);
 
-            _logger.LogWarning(
-                "Дубликат транзакции для визита {VisitId}: компенсация применена",
-                evt.VisitId);
+            _logger.LogWarning("Дубликат транзакции для визита {VisitId}: компенсация применена", evt.VisitId);
         }
         catch (Exception ex)
         {
-            await dbTransaction.RollbackAsync(context.CancellationToken);
+            await dbTransaction.RollbackAsync(cancellationToken);
             _db.ChangeTracker.Clear();
-            await MarkSagaFailedAsync(evt, ex.Message, context.CancellationToken);
+            await MarkSagaFailedAsync(evt, ex.Message, cancellationToken);
 
-            _logger.LogError(ex,
-                "Ошибка при обработке завершённого визита {VisitId} пользователя {UserId}",
-                evt.VisitId, evt.UserId);
+            _logger.LogError(ex, "Ошибка при обработке завершённого визита {VisitId} пользователя {UserId}", evt.VisitId, evt.UserId);
             throw;
         }
     }
 
-    private static bool IsDuplicateSourceKeyViolation(DbUpdateException ex)
+    private async Task MarkSagaCompensatedAsync(VisitCompletedEvent evt, string reason, CancellationToken cancellationToken)
     {
-        if (ex.InnerException is not PostgresException postgres)
-            return false;
-
-        return postgres.SqlState == PostgresErrorCodes.UniqueViolation
-            && string.Equals(postgres.ConstraintName, "UX_Transactions_Source_SourceId_NotNull", StringComparison.Ordinal);
-    }
-
-    private async Task MarkSagaCompensatedAsync(VisitCompletedEvent evt, string reason, CancellationToken ct)
-    {
-        var saga = await _db.VisitBillingSagas.FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, ct);
+        var saga = await _db.VisitBillingSagas.FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, cancellationToken);
 
         if (saga is null)
         {
@@ -169,7 +137,6 @@ public class VisitCompletedEventConsumer(
                 UpdatedAt = DateTimeOffset.UtcNow,
                 CompensatedAt = DateTimeOffset.UtcNow
             };
-
             _db.VisitBillingSagas.Add(saga);
         }
         else
@@ -180,12 +147,12 @@ public class VisitCompletedEventConsumer(
             saga.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task MarkSagaFailedAsync(VisitCompletedEvent evt, string reason, CancellationToken ct)
+    private async Task MarkSagaFailedAsync(VisitCompletedEvent evt, string reason, CancellationToken cancellationToken)
     {
-        var saga = await _db.VisitBillingSagas.FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, ct);
+        var saga = await _db.VisitBillingSagas.FirstOrDefaultAsync(x => x.VisitId == evt.VisitId, cancellationToken);
 
         if (saga is null)
         {
@@ -199,7 +166,6 @@ public class VisitCompletedEventConsumer(
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             };
-
             _db.VisitBillingSagas.Add(saga);
         }
         else
@@ -209,6 +175,6 @@ public class VisitCompletedEventConsumer(
             saga.UpdatedAt = DateTimeOffset.UtcNow;
         }
 
-        await _db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(cancellationToken);
     }
 }

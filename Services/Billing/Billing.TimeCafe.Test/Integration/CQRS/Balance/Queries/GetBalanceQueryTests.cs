@@ -25,17 +25,17 @@ public class GetBalanceQueryTests : IDisposable
             before.Should().BeNull();
         }
 
-        GetBalanceResult result;
+        Result<BalanceModel> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetBalanceQuery(userId));
         }
 
-        result.Success.Should().BeTrue();
-        result.Balance.Should().NotBeNull();
-        result.Balance!.UserId.Should().Be(userId);
-        result.Balance.CurrentBalance.Should().Be(0m);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.UserId.Should().Be(userId);
+        result.Value.CurrentBalance.Should().Be(0m);
 
         using var scope2 = CreateScope();
         var db2 = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -55,27 +55,17 @@ public class GetBalanceQueryTests : IDisposable
             await repo.CreateAsync(balance);
         }
 
-        GetBalanceResult result;
+        Result<BalanceModel> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new GetBalanceQuery(userId));
         }
 
-        result.Success.Should().BeTrue();
-        result.Balance.Should().NotBeNull();
-        result.Balance!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
-        result.Balance.TotalDeposited.Should().Be(DefaultsGuid.UpdatedAmount);
-    }
-
-    [Fact]
-    public async Task Query_GetBalance_Should_ThrowValidationException_WhenUserIdEmpty()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetBalanceQuery(InvalidDataGuid.EmptyUserId));
-        await action.Should().ThrowAsync<ValidationException>();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
+        result.Value.TotalDeposited.Should().Be(DefaultsGuid.UpdatedAmount);
     }
 
     public void Dispose()

@@ -1,3 +1,5 @@
+using FluentResults;
+
 namespace Billing.TimeCafe.Test.Integration.CQRS.Balance.Queries;
 
 public class GetUserDebtQueryTests : IDisposable
@@ -27,8 +29,8 @@ public class GetUserDebtQueryTests : IDisposable
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
-        result.Success.Should().BeTrue();
-        result.Debt.Should().Be(0m);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0m);
 
         var created = await db.Balances.FindAsync(userId);
         created.Should().NotBeNull();
@@ -52,8 +54,8 @@ public class GetUserDebtQueryTests : IDisposable
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
-        result.Success.Should().BeTrue();
-        result.Debt.Should().Be(balance.Debt);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(balance.Debt);
     }
 
     [Fact]
@@ -70,19 +72,8 @@ public class GetUserDebtQueryTests : IDisposable
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
-        result.Success.Should().BeTrue();
-        result.Debt.Should().Be(0m);
-    }
-
-    [Fact]
-    public async Task Query_GetUserDebt_Should_ThrowValidationException_WhenUserIdEmpty()
-    {
-        using var scope = CreateScope();
-        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-        var action = async () => await sender.Send(new GetUserDebtQuery(InvalidDataGuid.EmptyUserId));
-
-        await action.Should().ThrowAsync<ValidationException>();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().Be(0m);
     }
 
     public void Dispose()

@@ -1,3 +1,6 @@
+using Billing.TimeCafe.Application.CQRS.Balances.Queries;
+using BuildingBlocks.Extensions;
+
 namespace Billing.TimeCafe.API.Endpoints.Admin.Balances;
 
 public class GetBalancesPageEndpoint : ICarterModule
@@ -11,13 +14,14 @@ public class GetBalancesPageEndpoint : ICarterModule
         {
             var query = new GetBalancesPageQuery(page <= 0 ? 1 : page, pageSize <= 0 ? 20 : pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(data => Results.Ok(new
+            
+            return result.ToHttpResult(data => TypedResults.Ok(new
             {
                 balances = data.Balances,
                 pagination = new
                 {
-                    currentPage = page,
-                    pageSize,
+                    currentPage = page <= 0 ? 1 : page,
+                    pageSize = pageSize <= 0 ? 20 : pageSize,
                     totalCount = data.TotalCount,
                     totalPages = data.TotalPages
                 }

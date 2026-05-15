@@ -20,7 +20,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         PaymentStatus status = PaymentStatus.Pending,
         string? externalPaymentId = null,
         DateTimeOffset? createdAt = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
@@ -38,7 +38,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         return await repository.CreateAsync(payment, ct);
     }
 
-    protected async Task ClearCacheAsync(CancellationToken ct = default)
+    protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
@@ -69,7 +69,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         }
     }
 
-    protected async Task ClearDatabaseAsync(CancellationToken ct = default)
+    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

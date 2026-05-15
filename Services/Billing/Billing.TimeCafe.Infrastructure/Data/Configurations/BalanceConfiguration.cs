@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-
 namespace Billing.TimeCafe.Infrastructure.Data.Configurations;
 
 public class BalanceConfiguration : IEntityTypeConfiguration<Balance>

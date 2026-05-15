@@ -1,85 +1,58 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
 
-public record InitializeStripePaymentCommand(
+public sealed record InitializeStripePaymentCommand(
     Guid UserId,
     decimal Amount,
     string? ReturnUrl,
-    string? Description) : IRequest<InitializeStripePaymentResult>;
+    string? Description) : ICommand<InitializeStripePaymentResponse>;
 
-public record InitializeStripePaymentResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Guid? PaymentId = null,
-    string? ExternalPaymentId = null,
-    string? ClientSecret = null,
-    string? PublishableKey = null) : ICqrsResult
-{
-    public static InitializeStripePaymentResult ConfigurationMissing() =>
-        new(false, Code: "StripeConfigurationMissing", Message: "Платежный провайдер не настроен", StatusCode: 500);
+public sealed record InitializeStripePaymentResponse(
+    Guid PaymentId,
+    string? ExternalPaymentId,
+    string? ClientSecret,
+    string? PublishableKey);
 
-    public static InitializeStripePaymentResult ProviderError(string message) =>
-        new(false, Code: "StripeError", Message: message, StatusCode: 502);
-
-    public static InitializeStripePaymentResult PaymentCreated(Payment payment, string? clientSecret, string? publishableKey) =>
-        new(true,
-            Message: "Платёж инициализирован",
-            PaymentId: payment.PaymentId,
-            ExternalPaymentId: payment.ExternalPaymentId,
-            ClientSecret: clientSecret,
-            PublishableKey: publishableKey);
-}
-
-public class InitializeStripePaymentCommandValidator : AbstractValidator<InitializeStripePaymentCommand>
+public sealed class InitializeStripePaymentCommandValidator : AbstractValidator<InitializeStripePaymentCommand>
 {
     public InitializeStripePaymentCommandValidator()
     {
         RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
-
         RuleFor(x => x.Amount).ValidPaymentAmount();
-
         RuleFor(x => x.ReturnUrl).ValidUrl("ReturnUrl");
     }
 }
 
-public class InitializeStripePaymentCommandHandler(
-    IPaymentRepository paymentRepository,
+public sealed class InitializeStripePaymentCommandHandler(
+    IUnitOfWork uow,
     IStripePaymentClient stripeClient,
-    IOptionsSnapshot<StripeOptions> options) : IRequestHandler<InitializeStripePaymentCommand, InitializeStripePaymentResult>
+    IOptionsSnapshot<StripeOptions> options) : ICommandHandler<InitializeStripePaymentCommand, InitializeStripePaymentResponse>
 {
-    private readonly IPaymentRepository _paymentRepository = paymentRepository;
+    private readonly IUnitOfWork _uow = uow;
     private readonly IStripePaymentClient _stripeClient = stripeClient;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
 
-    public async Task<InitializeStripePaymentResult> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<InitializeStripePaymentResponse>> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken = default)
     {
         var settings = _options.Value;
         var currency = settings.DefaultCurrency;
 
-        var returnUrl = string.IsNullOrWhiteSpace(request.ReturnUrl)
-            ? settings.DefaultReturnUrl
-            : request.ReturnUrl;
+        var returnUrl = string.IsNullOrWhiteSpace(request.ReturnUrl) ? settings.DefaultReturnUrl : request.ReturnUrl;
 
         if (string.IsNullOrWhiteSpace(returnUrl))
-            return InitializeStripePaymentResult.ConfigurationMissing();
+            return Result.Fail(new StripeCheckoutError("Платежный провайдер не настроен (ReturnUrl missing)"));
 
         var description = string.IsNullOrWhiteSpace(request.Description)
             ? $"Пополнение баланса пользователя {request.UserId}"
             : request.Description;
 
-        var payment = new Payment
+        var paymentResult = Payment.Create(request.UserId, request.Amount);
+        if (paymentResult.IsFailed)
         {
-            PaymentId = Guid.NewGuid(),
-            UserId = request.UserId,
-            Amount = request.Amount,
-            PaymentMethod = PaymentMethod.Online,
-            Status = PaymentStatus.Pending,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
+            return paymentResult.ToResult<InitializeStripePaymentResponse>();
+        }
 
-        await _paymentRepository.CreateAsync(payment, cancellationToken);
+        var payment = paymentResult.Value;
+        await _uow.Payments.CreateAsync(payment, cancellationToken);
 
         var createRequest = new StripeCreatePaymentRequest(
             payment.PaymentId,
@@ -93,17 +66,20 @@ public class InitializeStripePaymentCommandHandler(
 
         if (!providerResponse.Success)
         {
-            payment.Status = PaymentStatus.Failed;
-            payment.ErrorMessage = providerResponse.Error;
-            await _paymentRepository.UpdateAsync(payment, cancellationToken);
-            return InitializeStripePaymentResult.ProviderError(providerResponse.Error ?? "Stripe возвращает ошибку");
+            payment.MarkAsFailed(providerResponse.Error ?? "Stripe returns error");
+            await _uow.Payments.UpdateAsync(payment, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
+            return Result.Fail(new StripeCheckoutError(providerResponse.Error ?? "Stripe returns error"));
         }
 
         payment.ExternalPaymentId = providerResponse.ExternalPaymentId;
-        payment.Status = PaymentStatus.Pending;
+        await _uow.Payments.UpdateAsync(payment, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
-        await _paymentRepository.UpdateAsync(payment, cancellationToken);
-
-        return InitializeStripePaymentResult.PaymentCreated(payment, providerResponse.ClientSecret, providerResponse.PublishableKey);
+        return Result.Ok(new InitializeStripePaymentResponse(
+            payment.PaymentId, 
+            payment.ExternalPaymentId, 
+            providerResponse.ClientSecret, 
+            providerResponse.PublishableKey));
     }
 }

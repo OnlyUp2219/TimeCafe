@@ -1,3 +1,10 @@
 global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
 global using Billing.TimeCafe.Domain.Enums;
 global using Billing.TimeCafe.Domain.Models;
+global using Billing.TimeCafe.Domain.Errors;
+global using FluentResults;
+global using BuildingBlocks.Contracts;

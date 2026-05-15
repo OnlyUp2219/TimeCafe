@@ -13,7 +13,7 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
 
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
-    protected async Task<BalanceModel> CreateTestBalanceAsync(Guid? userId = null, decimal? amount = null, CancellationToken ct = default)
+    protected async Task<BalanceModel> CreateTestBalanceAsync(Guid? userId = null, decimal? amount = null, CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
@@ -29,7 +29,7 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
         return await repository.CreateAsync(balance, ct);
     }
 
-    protected async Task ClearCacheAsync(CancellationToken ct = default)
+    protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
@@ -52,7 +52,7 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
         }
     }
 
-    protected async Task ClearDatabaseAsync(CancellationToken ct = default)
+    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

@@ -28,7 +28,8 @@ public class InitializeStripeCheckout : ICarterModule
                 request.Description);
 
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new
+            
+            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new
             {
                 paymentId = r.PaymentId,
                 sessionId = r.SessionId,

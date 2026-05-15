@@ -1,12 +1,10 @@
 namespace Billing.TimeCafe.Domain.Contracts;
 
-public interface ITransactionRepository
+public interface ITransactionRepository : IRepository<Transaction, Guid>
 {
-    Task<Transaction?> GetByIdAsync(Guid transactionId, CancellationToken ct = default);
-    Task<Transaction> CreateAsync(Transaction transaction, CancellationToken ct = default);
-    Task<List<Transaction>> GetByUserIdAsync(Guid userId, int page, int pageSize, CancellationToken ct = default);
-    Task<List<Transaction>> GetBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken ct = default);
-    Task<bool> ExistsBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken ct = default);
-    Task<int> GetTotalCountByUserIdAsync(Guid userId, CancellationToken ct = default);
-    Task<(List<Transaction> Items, int TotalCount)> GetPageAsync(int page, int pageSize, Guid? userId, CancellationToken ct = default);
+    Task<List<Transaction>> GetByUserIdAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default);
+    Task<List<Transaction>> GetBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken cancellationToken = default);
+    Task<bool> ExistsBySourceAsync(TransactionSource source, Guid sourceId, CancellationToken cancellationToken = default);
+    Task<int> GetTotalCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<(List<Transaction> Items, int TotalCount)> GetPageAsync(int page, int pageSize, Guid? userId, CancellationToken cancellationToken = default);
 }

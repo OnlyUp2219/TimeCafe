@@ -1,3 +1,6 @@
+using Billing.TimeCafe.Application.CQRS.Balances.Commands;
+using BuildingBlocks.Extensions;
+
 namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
 public record CreateTransactionRequest(
@@ -31,26 +34,19 @@ public class CreateTransaction : ICarterModule
                 request.Comment);
 
             var result = await sender.Send(command);
-            // TODO : Add Mapping
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new
+            
+            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new
             {
                 balance = new
                 {
-                    r.Balance!.UserId,
-                    r.Balance!.CurrentBalance,
-                    r.Balance!.TotalDeposited,
-                    r.Balance!.TotalSpent,
-                    r.Balance!.Debt
+                    userId = r.UserId,
+                    amount = r.CurrentBalance
                 },
                 transaction = new
                 {
-                    r.Transaction!.TransactionId,
-                    r.Transaction!.UserId,
-                    r.Transaction!.Amount,
-                    r.Transaction!.Type,
-                    r.Transaction!.Source,
-                    r.Transaction!.BalanceAfter,
-                    r.Transaction!.CreatedAt
+                    id = r.TransactionId,
+                    amount = r.TransactionAmount,
+                    type = r.TransactionType
                 }
             }));
         })

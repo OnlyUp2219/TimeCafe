@@ -1,57 +1,20 @@
 namespace Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 
-public record GetTransactionHistoryQuery(Guid UserId, int Page = 1, int PageSize = 10) : IRequest<GetTransactionHistoryResult>;
+public sealed record GetTransactionHistoryQuery(Guid UserId, int Page, int PageSize) : IQuery<PagedResponse<TransactionDto>>;
 
-public record GetTransactionHistoryResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    List<TransactionDto>? Transactions = null,
-    int? TotalCount = null,
-    int? TotalPages = null) : ICqrsResult
+public sealed class GetTransactionHistoryQueryHandler(IUnitOfWork uow) : IQueryHandler<GetTransactionHistoryQuery, PagedResponse<TransactionDto>>
 {
-    public static GetTransactionHistoryResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 404);
+    private readonly IUnitOfWork _uow = uow;
 
-    public static GetTransactionHistoryResult GetSuccess(List<TransactionDto> transactions, int totalCount, int pageSize) =>
-        new(true, Message: "История транзакций получена",
-            Transactions: transactions,
-            TotalCount: totalCount,
-            TotalPages: (totalCount + pageSize - 1) / pageSize);
-}
-
-public class GetTransactionHistoryQueryValidator : AbstractValidator<GetTransactionHistoryQuery>
-{
-    public GetTransactionHistoryQueryValidator()
+    public async Task<Result<PagedResponse<TransactionDto>>> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken = default)
     {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
+        var totalCount = await _uow.Transactions.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
 
-        RuleFor(x => x.Page).ValidPageNumber();
-
-        RuleFor(x => x.PageSize).ValidPageSize();
-    }
-}
-
-public class GetTransactionHistoryQueryHandler(ITransactionRepository repository) : IRequestHandler<GetTransactionHistoryQuery, GetTransactionHistoryResult>
-{
-    private readonly ITransactionRepository _repository = repository;
-
-    public async Task<GetTransactionHistoryResult> Handle(GetTransactionHistoryQuery request, CancellationToken cancellationToken = default)
-    {
-        var totalCount = await _repository.GetTotalCountByUserIdAsync(request.UserId, cancellationToken);
-
-        var transactions = await _repository.GetByUserIdAsync(
+        var transactions = await _uow.Transactions.GetByUserIdAsync(
             request.UserId,
             request.Page,
             request.PageSize,
             cancellationToken);
-
-        if (transactions == null || transactions.Count == 0)
-        {
-            return GetTransactionHistoryResult.GetSuccess([], totalCount, request.PageSize);
-        }
 
         var dtos = transactions.ConvertAll(t => new TransactionDto(
             t.TransactionId,
@@ -64,6 +27,10 @@ public class GetTransactionHistoryQueryHandler(ITransactionRepository repository
             t.CreatedAt,
             t.BalanceAfter));
 
-        return GetTransactionHistoryResult.GetSuccess(dtos, totalCount, request.PageSize);
+        var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
+
+        return Result.Ok(new PagedResponse<TransactionDto>(
+            dtos,
+            new PageMetadata(request.Page, request.PageSize, totalCount, totalPages)));
     }
 }

@@ -4,11 +4,11 @@ public interface IStripePaymentClient
 {
     Task<StripeCreatePaymentResponse> CreatePaymentAsync(
         StripeCreatePaymentRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 
     Task<StripeCreateCheckoutSessionResponse> CreateCheckoutSessionAsync(
         StripeCreateCheckoutSessionRequest request,
-        CancellationToken ct = default);
+        CancellationToken cancellationToken = default);
 }
 
 public record StripeCreatePaymentRequest(

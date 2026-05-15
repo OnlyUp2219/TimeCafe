@@ -19,7 +19,7 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         TransactionType type = TransactionType.Deposit,
         TransactionSource source = TransactionSource.Manual,
         Guid? sourceId = null,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
@@ -42,7 +42,7 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         return await repository.CreateAsync(transaction, ct);
     }
 
-    protected async Task ClearCacheAsync(CancellationToken ct = default)
+    protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
@@ -59,7 +59,7 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId3), ct);
     }
 
-    protected async Task ClearDatabaseAsync(CancellationToken ct = default)
+    protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

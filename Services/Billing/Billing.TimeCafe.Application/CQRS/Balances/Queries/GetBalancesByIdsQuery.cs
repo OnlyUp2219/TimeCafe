@@ -1,21 +1,25 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetBalancesByIdsQuery(IEnumerable<Guid> UserIds) : IQuery<List<Balance>>;
+public sealed record GetBalancesByIdsQuery(IEnumerable<Guid> UserIds) : IQuery<GetBalancesByIdsResponse>;
 
-public class GetBalancesByIdsQueryHandler(IBalanceRepository repository) : IQueryHandler<GetBalancesByIdsQuery, List<Balance>>
+public sealed record GetBalancesByIdsResponse(List<GetBalanceResponse> Balances);
+
+public sealed class GetBalancesByIdsQueryHandler(IUnitOfWork uow) : IQueryHandler<GetBalancesByIdsQuery, GetBalancesByIdsResponse>
 {
-    private readonly IBalanceRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
 
-    public async Task<Result<List<Balance>>> Handle(GetBalancesByIdsQuery request, CancellationToken cancellationToken = default)
+    public async Task<Result<GetBalancesByIdsResponse>> Handle(GetBalancesByIdsQuery request, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var balances = await _repository.GetByUserIdsAsync(request.UserIds, cancellationToken);
-            return Result.Ok(balances);
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(new Error("Не удалось получить балансы").CausedBy(ex));
-        }
+        var balances = await _uow.Balances.GetByUserIdsAsync(request.UserIds, cancellationToken);
+        
+        var dtos = balances.Select(b => new GetBalanceResponse(
+            b.UserId,
+            b.CurrentBalance,
+            b.TotalDeposited,
+            b.TotalSpent,
+            b.Debt,
+            b.LastUpdated)).ToList();
+
+        return Result.Ok(new GetBalancesByIdsResponse(dtos));
     }
 }

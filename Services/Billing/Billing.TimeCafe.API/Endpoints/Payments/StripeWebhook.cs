@@ -12,7 +12,8 @@ public class StripeWebhook : ICarterModule
             var signature = request.Headers["Stripe-Signature"].ToString();
             var command = new ProcessStripeWebhookCommand(payload, signature);
             var result = await sender.Send(command);
-            return result.ToHttpResult(onSuccess: _ => Results.Ok());
+            
+            return result.ToHttpResult(onSuccess: () => TypedResults.Ok());
         })
         .WithTags("Payments")
         .WithName("StripeWebhook")

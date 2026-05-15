@@ -10,25 +10,17 @@ public class GetBalance : ICarterModule
         {
             var query = new GetBalanceQuery(userId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r =>
+            
+            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new
             {
-                if (r.Balance == null)
+                balance = new
                 {
-                    return Results.Ok(new { balance = (object?)null });
+                    userId = r.UserId,
+                    amount = r.CurrentBalance,
+                    debt = r.Debt,
+                    lastUpdated = r.LastUpdated
                 }
-
-                return Results.Ok(new
-                {
-                    balance = new
-                    {
-                        r.Balance.UserId,
-                        r.Balance.CurrentBalance,
-                        r.Balance.TotalDeposited,
-                        r.Balance.TotalSpent,
-                        r.Balance.Debt
-                    }
-                });
-            });
+            }));
         })
         .WithTags("Balance")
         .WithName("GetBalance")

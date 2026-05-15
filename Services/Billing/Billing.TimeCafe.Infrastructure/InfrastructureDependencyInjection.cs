@@ -1,5 +1,3 @@
-using BuildingBlocks.Extensions;
-
 namespace Billing.TimeCafe.Infrastructure;
 
 public static class InfrastructureDependencyInjection
@@ -10,6 +8,7 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IBillingTransactionExecutor, BillingTransactionExecutor>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddValidatedOptions<StripeOptions>(
             configuration,

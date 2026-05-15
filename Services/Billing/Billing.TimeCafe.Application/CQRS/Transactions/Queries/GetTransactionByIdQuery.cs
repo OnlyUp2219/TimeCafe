@@ -1,38 +1,20 @@
 namespace Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 
-public record GetTransactionByIdQuery(Guid TransactionId) : IRequest<GetTransactionByIdResult>;
+public sealed record GetTransactionByIdQuery(Guid Id) : IQuery<GetTransactionByIdResponse>;
 
-public record GetTransactionByIdResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    TransactionDetailDto? Transaction = null) : ICqrsResult
-{
-    public static GetTransactionByIdResult TransactionNotFound() =>
-        new(false, Code: "TransactionNotFound", Message: "Транзакция не найдена", StatusCode: 404);
+public sealed record GetTransactionByIdResponse(TransactionDetailDto Transaction);
 
-    public static GetTransactionByIdResult GetSuccess(TransactionDetailDto transaction) =>
-        new(true, Message: "Транзакция получена", Transaction: transaction);
-}
-public class GetTransactionByIdQueryValidator : AbstractValidator<GetTransactionByIdQuery>
+public sealed class GetTransactionByIdQueryHandler(IUnitOfWork uow)
+    : IQueryHandler<GetTransactionByIdQuery, GetTransactionByIdResponse>
 {
-    public GetTransactionByIdQueryValidator()
+    private readonly IUnitOfWork _uow = uow;
+
+    public async Task<Result<GetTransactionByIdResponse>> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken = default)
     {
-        RuleFor(x => x.TransactionId).ValidGuidEntityId("Транзакция не найдена");
-    }
-}
-
-public class GetTransactionByIdQueryHandler(ITransactionRepository repository) : IRequestHandler<GetTransactionByIdQuery, GetTransactionByIdResult>
-{
-    private readonly ITransactionRepository _repository = repository;
-
-    public async Task<GetTransactionByIdResult> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken = default)
-    {
-        var transaction = await _repository.GetByIdAsync(request.TransactionId, cancellationToken);
+        var transaction = await _uow.Transactions.GetByIdAsync(request.Id, cancellationToken);
+        
         if (transaction == null)
-            return GetTransactionByIdResult.TransactionNotFound();
+            return Result.Fail(new TransactionNotFoundError(request.Id));
 
         var dto = new TransactionDetailDto(
             transaction.TransactionId,
@@ -46,6 +28,6 @@ public class GetTransactionByIdQueryHandler(ITransactionRepository repository) :
             transaction.CreatedAt,
             transaction.BalanceAfter);
 
-        return GetTransactionByIdResult.GetSuccess(dto);
+        return Result.Ok(new GetTransactionByIdResponse(dto));
     }
 }

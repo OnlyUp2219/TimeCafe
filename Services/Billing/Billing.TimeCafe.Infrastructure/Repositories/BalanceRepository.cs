@@ -1,93 +1,42 @@
 namespace Billing.TimeCafe.Infrastructure.Repositories;
 
-public class BalanceRepository(
+public sealed class BalanceRepository(
     ApplicationDbContext context,
     HybridCache cache) : IBalanceRepository
 {
     private readonly ApplicationDbContext _context = context;
     private readonly HybridCache _cache = cache;
 
-    public async Task<Balance?> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
+    public async Task<Balance?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _cache.GetOrCreateAsync(
-            CacheKeys.Balance_ByUserId(userId),
+            CacheKeys.Balance_ByUserId(id),
             async token => await _context.Balances
                 .AsNoTracking()
-                .FirstOrDefaultAsync(b => b.UserId == userId, token),
-            tags: [CacheTags.Balances, CacheTags.Balance(userId)],
-            cancellationToken: ct);
+                .FirstOrDefaultAsync(b => b.UserId == id, token),
+            tags: [CacheTags.Balances, CacheTags.Balance(id)],
+            cancellationToken: cancellationToken);
     }
 
-    //   Microsoft.EntityFrameworkCore.DbUpdateException
-    //    HResult=0x80131500
-    //  Сообщение = An error occurred while saving the entity changes.See the inner exception for details.
-    //  Источник = Microsoft.EntityFrameworkCore.Relational
-    //  Трассировка стека:
-    //   в Microsoft.EntityFrameworkCore.Update.ReaderModificationCommandBatch.<ExecuteAsync>d__50.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.Update.Internal.BatchExecutor.<ExecuteAsync>d__9.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.Storage.RelationalDatabase.<SaveChangesAsync>d__8.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__113.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.<SaveChangesAsync>d__117.MoveNext()
-    //   в Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.<ExecuteAsync>d__7`2.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
-    //   в Microsoft.EntityFrameworkCore.DbContext.<SaveChangesAsync>d__63.MoveNext()
-    //   в Billing.TimeCafe.Infrastructure.Repositories.BalanceRepository.<CreateAsync>d__4.MoveNext() в D:\IT\TimeCafe\Services\Billing\Billing.TimeCafe.Infrastructure\Repositories\BalanceRepository.cs:строка 28
-    //   в Billing.TimeCafe.Application.CQRS.Balances.Queries.GetUserDebtQueryHandler.<Handle>d__2.MoveNext() в D:\IT\TimeCafe\Services\Billing\Billing.TimeCafe.Application\CQRS\Balances\Queries\GetUserDebtQuery.cs:строка 39
-    //   в BuildingBlocks.Behaviors.ErrorHandlingBehavior`2.<Handle>d__2.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\ErrorHandlingBehavior.cs:строка 12
-    //   в BuildingBlocks.Behaviors.PerformanceBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\PerformanceBehavior.cs:строка 12
-    //   в BuildingBlocks.Behaviors.LoggingBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\LoggingBehavior.cs:строка 29
-    //   в BuildingBlocks.Behaviors.ValidationBehavior`2.<Handle>d__3.MoveNext() в D:\IT\TimeCafe\Services\BuildingBlocks\Behaviors\ValidationBehavior.cs:строка 30
-    //   в MediatR.Pipeline.RequestExceptionProcessorBehavior`2.<Handle>d__2.MoveNext()
-
-    //  Изначально это исключение было создано в этом стеке вызовов: 
-    //    [Внешний код]
-
-    //Внутреннее исключение 1:
-    //PostgresException: 23505: duplicate key value violates unique constraint "PK_Balances"
-
-    //DETAIL: Detail redacted as it may contain sensitive data.Specify 'Include Error Detail' in the connection string to include this information.
-    public async Task<Balance> CreateAsync(Balance balance, CancellationToken ct = default)
+    public async Task<Balance> CreateAsync(Balance balance, CancellationToken cancellationToken = default)
     {
-        var existingBalance = await GetByUserIdAsync(balance.UserId, ct);
-        if (existingBalance != null)
-            return existingBalance;
-
-        try
-        {
-            _context.Balances.Add(balance);
-            await _context.SaveChangesAsync(ct);
-            await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
-            return balance;
-        }
-        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: "23505" })
-        {
-            _context.Entry(balance).State = EntityState.Detached;
-            await _cache.RemoveByTagAsync(CacheTags.Balance(balance.UserId), ct);
-            return await GetByUserIdAsync(balance.UserId, ct) ?? balance;
-        }
+        _context.Balances.Add(balance);
+        return await Task.FromResult(balance);
     }
 
-    public async Task<Balance> UpdateAsync(Balance balance, CancellationToken ct = default)
+    public async Task<Balance> UpdateAsync(Balance balance, CancellationToken cancellationToken = default)
     {
         _context.Balances.Update(balance);
-        await _context.SaveChangesAsync(ct);
-
-        await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
-        await _cache.RemoveByTagAsync(CacheTags.Transactions, ct);
-        await _cache.RemoveByTagAsync(CacheTags.TransactionByUser(balance.UserId), ct);
-
-        return balance;
+        return await Task.FromResult(balance);
     }
 
-    public async Task<bool> ExistsAsync(Guid userId, CancellationToken ct = default)
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Balances
-            .AnyAsync(b => b.UserId == userId, ct);
+            .AnyAsync(b => b.UserId == id, cancellationToken);
     }
 
-    public async Task<List<Balance>> GetUsersWithDebtAsync(CancellationToken ct = default)
+    public async Task<List<Balance>> GetUsersWithDebtAsync(CancellationToken cancellationToken = default)
     {
         return await _cache.GetOrCreateAsync(
             CacheKeys.Debtors_All,
@@ -98,34 +47,41 @@ public class BalanceRepository(
                 .ToListAsync(token),
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(10) },
             tags: [CacheTags.Balances],
-            cancellationToken: ct);
+            cancellationToken: cancellationToken);
     }
 
-    public async Task<(List<Balance> Items, int TotalCount)> GetPageAsync(int page, int pageSize, CancellationToken ct = default)
+    public async Task<(List<Balance> Items, int TotalCount)> GetPageAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
-        var query = _context.Balances.AsNoTracking().OrderByDescending(b => b.LastUpdated);
-        var totalCount = await query.CountAsync(ct);
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
-        return (items, totalCount);
+        return await _cache.GetOrCreateAsync(
+            CacheKeys.Balance_Page(page, pageSize),
+            async token =>
+            {
+                var query = _context.Balances.AsNoTracking().OrderByDescending(b => b.LastUpdated);
+                var totalCount = await query.CountAsync(token);
+                var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(token);
+                return (Items: items, TotalCount: totalCount);
+            },
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
+            tags: [CacheTags.Balances],
+            cancellationToken: cancellationToken);
     }
 
-    public async Task DeleteAsync(Guid userId, CancellationToken ct = default)
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var balance = await _context.Balances.FirstOrDefaultAsync(b => b.UserId == userId, ct);
+        var balance = await _context.Balances.FirstOrDefaultAsync(b => b.UserId == id, cancellationToken);
         if (balance is not null)
         {
             _context.Balances.Remove(balance);
-            await _context.SaveChangesAsync(ct);
-            await _cache.RemoveByTagAsync(CacheTags.Balances, ct);
-            await _cache.RemoveByTagAsync(CacheTags.Balance(userId), ct);
+            return true;
         }
+        return false;
     }
 
-    public async Task<List<Balance>> GetByUserIdsAsync(IEnumerable<Guid> userIds, CancellationToken ct = default)
+    public async Task<List<Balance>> GetByUserIdsAsync(IEnumerable<Guid> userIds, CancellationToken cancellationToken = default)
     {
         return await _context.Balances
             .AsNoTracking()
             .Where(b => userIds.Contains(b.UserId))
-            .ToListAsync(ct);
+            .ToListAsync(cancellationToken);
     }
 }

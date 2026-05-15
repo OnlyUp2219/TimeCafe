@@ -1,6 +1,3 @@
-using Stripe;
-using Stripe.Checkout;
-
 namespace Billing.TimeCafe.Infrastructure.Services.Stripe;
 
 public class StripePaymentClient : IStripePaymentClient
@@ -18,7 +15,7 @@ public class StripePaymentClient : IStripePaymentClient
 
     public async Task<StripeCreatePaymentResponse> CreatePaymentAsync(
         StripeCreatePaymentRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -39,7 +36,7 @@ public class StripePaymentClient : IStripePaymentClient
             };
 
             var service = new PaymentIntentService();
-            var paymentIntent = await service.CreateAsync(options, null, ct);
+            var paymentIntent = await service.CreateAsync(options, null, cancellationToken);
 
             if (paymentIntent == null)
                 return new StripeCreatePaymentResponse(false, Error: "Failed to create payment intent");
@@ -67,7 +64,7 @@ public class StripePaymentClient : IStripePaymentClient
 
     public async Task<StripeCreateCheckoutSessionResponse> CreateCheckoutSessionAsync(
         StripeCreateCheckoutSessionRequest request,
-        CancellationToken ct = default)
+        CancellationToken cancellationToken = default)
     {
         try
         {
@@ -112,7 +109,7 @@ public class StripePaymentClient : IStripePaymentClient
             };
 
             var service = new SessionService();
-            var session = await service.CreateAsync(options, null, ct);
+            var session = await service.CreateAsync(options, null, cancellationToken);
 
             if (session == null)
                 return new StripeCreateCheckoutSessionResponse(false, Error: "Failed to create checkout session");

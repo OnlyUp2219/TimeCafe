@@ -19,6 +19,8 @@ public class Balance
         UserId = guid;
     }
 
+    public static Balance Create(Guid userId) => new(userId);
+
     public Guid UserId { get; set; }
     public decimal CurrentBalance { get; set; } = 0;
     public decimal TotalDeposited { get; set; } = 0;
@@ -27,20 +29,25 @@ public class Balance
     public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 
-    public void Deposit(decimal amount)
+    public Result Deposit(decimal amount)
     {
         if (amount <= 0)
-            throw new ArgumentException("Сумма пополнения должна быть больше нуля", nameof(amount));
+            return Result.Fail(new InvalidAmountError(amount));
 
         CurrentBalance += amount;
         TotalDeposited += amount;
         LastUpdated = DateTimeOffset.UtcNow;
+
+        return Result.Ok();
     }
 
-    public void Withdraw(decimal amount)
+    public Result Withdraw(decimal amount, bool allowDebt = false)
     {
         if (amount <= 0)
-            throw new ArgumentException("Сумма списания должна быть больше нуля", nameof(amount));
+            return Result.Fail(new InvalidAmountError(amount));
+
+        if (!allowDebt && CurrentBalance < amount)
+            return Result.Fail(new InsufficientFundsError(UserId, CurrentBalance));
 
         CurrentBalance -= amount;
         TotalSpent += amount;
@@ -52,6 +59,7 @@ public class Balance
         }
 
         LastUpdated = DateTimeOffset.UtcNow;
+        return Result.Ok();
     }
 
     public void ForgiveDebt()

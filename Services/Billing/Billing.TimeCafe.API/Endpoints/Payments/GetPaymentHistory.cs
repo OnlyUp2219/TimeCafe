@@ -10,15 +10,16 @@ public class GetPaymentHistory : ICarterModule
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20) =>
         {
-            var query = new GetPaymentHistoryQuery(userId, page, pageSize);
+            var query = new GetPaymentHistoryQuery(userId, page <= 0 ? 1 : page, pageSize <= 0 ? 20 : pageSize);
             var result = await sender.Send(query);
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new
+            
+            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new
             {
                 payments = r.Payments,
                 pagination = new
                 {
-                    currentPage = page,
-                    pageSize,
+                    currentPage = page <= 0 ? 1 : page,
+                    pageSize = pageSize <= 0 ? 20 : pageSize,
                     totalCount = r.TotalCount,
                     totalPages = r.TotalPages
                 }

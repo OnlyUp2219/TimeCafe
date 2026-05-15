@@ -5,24 +5,15 @@ public class GetTransactionsPageEndpoint : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         app.MapGet("/admin/transactions", async (
-            [FromQuery] int page,
-            [FromQuery] int pageSize,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
             [FromQuery] Guid? userId,
             [FromServices] ISender sender) =>
         {
-            var query = new GetTransactionsPageQuery(page <= 0 ? 1 : page, pageSize <= 0 ? 20 : pageSize, userId);
+            var query = new GetTransactionsPageQuery(page, pageSize, userId);
             var result = await sender.Send(query);
-            return result.ToHttpResult(data => Results.Ok(new
-            {
-                transactions = data.Transactions,
-                pagination = new
-                {
-                    currentPage = page,
-                    pageSize,
-                    totalCount = data.TotalCount,
-                    totalPages = data.TotalPages
-                }
-            }));
+            
+            return result.ToHttpResult(data => TypedResults.Ok(data));
         })
         .WithTags("Admin - Billing")
         .WithName("GetTransactionsPage")

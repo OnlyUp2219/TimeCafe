@@ -1,53 +1,34 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Commands;
 
-public record CreateBalanceCommand(Guid UserId) : IRequest<CreateBalanceResult>;
+public sealed record CreateBalanceCommand(Guid UserId) : ICommand<CreateBalanceResponse>;
 
-public record CreateBalanceResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Balance? Balance = null) : ICqrsResult
-{
-    public static CreateBalanceResult AlreadyExists() =>
-        new(false, Code: "BalanceAlreadyExists", Message: "Баланс уже существует", StatusCode: 409);
+public sealed record CreateBalanceResponse(Guid UserId, decimal CurrentBalance);
 
-    public static CreateBalanceResult CreateSuccess(Balance balance) =>
-        new(true, Message: "Баланс создан", Balance: balance);
-}
-
-public class CreateBalanceCommandValidator : AbstractValidator<CreateBalanceCommand>
+public sealed class CreateBalanceCommandValidator : AbstractValidator<CreateBalanceCommand>
 {
     public CreateBalanceCommandValidator()
     {
-        RuleFor(x => x.UserId)
-            .ValidGuidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
     }
 }
 
-public class CreateBalanceCommandHandler(IBalanceRepository repository) : IRequestHandler<CreateBalanceCommand, CreateBalanceResult>
+public sealed class CreateBalanceCommandHandler(IUnitOfWork uow) : ICommandHandler<CreateBalanceCommand, CreateBalanceResponse>
 {
-    private readonly IBalanceRepository _repository = repository;
+    private readonly IUnitOfWork _uow = uow;
 
-    public async Task<CreateBalanceResult> Handle(CreateBalanceCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<CreateBalanceResponse>> Handle(CreateBalanceCommand request, CancellationToken cancellationToken = default)
     {
-        var exists = await _repository.ExistsAsync(request.UserId, cancellationToken);
+        var exists = await _uow.Balances.ExistsAsync(request.UserId, cancellationToken);
         if (exists)
-            return CreateBalanceResult.AlreadyExists();
-
-        var balance = new Balance
         {
-            UserId = request.UserId,
-            CurrentBalance = 0,
-            TotalDeposited = 0,
-            TotalSpent = 0,
-            Debt = 0,
-            LastUpdated = DateTimeOffset.UtcNow,
-            CreatedAt = DateTimeOffset.UtcNow
-        };
+            var existing = await _uow.Balances.GetByIdAsync(request.UserId, cancellationToken);
+            return Result.Ok(new CreateBalanceResponse(existing!.UserId, existing.CurrentBalance));
+        }
 
-        var created = await _repository.CreateAsync(balance, cancellationToken);
-        return CreateBalanceResult.CreateSuccess(created);
+        var balance = Balance.Create(request.UserId);
+        await _uow.Balances.CreateAsync(balance, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+        
+        return Result.Ok(new CreateBalanceResponse(balance.UserId, balance.CurrentBalance));
     }
 }

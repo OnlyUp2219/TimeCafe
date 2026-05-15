@@ -1,44 +1,36 @@
 namespace Billing.TimeCafe.Application.CQRS.Balances.Queries;
 
-public record GetBalanceQuery(Guid UserId) : IRequest<GetBalanceResult>;
+public sealed record GetBalanceQuery(Guid UserId) : IQuery<GetBalanceResponse>;
 
-public record GetBalanceResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    Balance? Balance = null) : ICqrsResult
+public sealed record GetBalanceResponse(
+    Guid UserId,
+    decimal CurrentBalance,
+    decimal TotalDeposited,
+    decimal TotalSpent,
+    decimal Debt,
+    DateTimeOffset LastUpdated);
+
+public sealed class GetBalanceQueryHandler(IUnitOfWork uow) : IQueryHandler<GetBalanceQuery, GetBalanceResponse>
 {
-    public static GetBalanceResult BalanceNotFound() =>
-        new(false, Code: "BalanceNotFound", Message: "Баланс не найден", StatusCode: 404);
+    private readonly IUnitOfWork _uow = uow;
 
-    public static GetBalanceResult GetSuccess(Balance balance) =>
-        new(true, Message: "Баланс получен", Balance: balance);
-}
-
-public class GetBalanceQueryValidator : AbstractValidator<GetBalanceQuery>
-{
-    public GetBalanceQueryValidator()
+    public async Task<Result<GetBalanceResponse>> Handle(GetBalanceQuery request, CancellationToken cancellationToken = default)
     {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Баланс не найден");
-    }
-}
-
-public class GetBalanceQueryHandler(IBalanceRepository repository) : IRequestHandler<GetBalanceQuery, GetBalanceResult>
-{
-    private readonly IBalanceRepository _repository = repository;
-
-    public async Task<GetBalanceResult> Handle(GetBalanceQuery request, CancellationToken cancellationToken = default)
-    {
-        var balance = await _repository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var balance = await _uow.Balances.GetByIdAsync(request.UserId, cancellationToken);
 
         if (balance == null)
         {
-            balance = new Balance(request.UserId);
-            await _repository.CreateAsync(balance, cancellationToken);
+            balance = Balance.Create(request.UserId);
+            await _uow.Balances.CreateAsync(balance, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
         }
 
-        return GetBalanceResult.GetSuccess(balance);
+        return Result.Ok(new GetBalanceResponse(
+            balance.UserId,
+            balance.CurrentBalance,
+            balance.TotalDeposited,
+            balance.TotalSpent,
+            balance.Debt,
+            balance.LastUpdated));
     }
 }

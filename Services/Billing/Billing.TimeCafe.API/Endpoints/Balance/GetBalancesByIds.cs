@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.API.Endpoints.Balance;
 
-public class GetBalancesByIds : ICarterModule
+public sealed class GetBalancesByIds : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
@@ -11,9 +11,9 @@ public class GetBalancesByIds : ICarterModule
             var query = new GetBalancesByIdsQuery(userIds);
             var result = await sender.Send(query);
 
-            return result.ToHttpResult(r => TypedResults.Ok(r));
+            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new { balances = r.Balances }));
         })
-        .WithTags("Balances")
+        .WithTags("Balance")
         .WithName("GetBalancesByIds")
         .WithSummary("Получить список балансов по массиву UserId")
         .WithDescription("Возвращает список балансов для указанных идентификаторов пользователей.")

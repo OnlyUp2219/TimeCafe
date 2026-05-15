@@ -2,12 +2,12 @@ namespace Billing.TimeCafe.Test.Integration.Fakes;
 
 public class FakeStripePaymentClient : IStripePaymentClient
 {
-    public Task<StripeCreateCheckoutSessionResponse> CreateCheckoutSessionAsync(StripeCreateCheckoutSessionRequest request, CancellationToken ct = default)
+    public Task<StripeCreateCheckoutSessionResponse> CreateCheckoutSessionAsync(StripeCreateCheckoutSessionRequest request, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task<StripeCreatePaymentResponse> CreatePaymentAsync(StripeCreatePaymentRequest request, CancellationToken ct = default)
+    public Task<StripeCreatePaymentResponse> CreatePaymentAsync(StripeCreatePaymentRequest request, CancellationToken cancellationToken = default)
     {
         var response = new StripeCreatePaymentResponse(
             true,
