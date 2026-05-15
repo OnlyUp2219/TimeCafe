@@ -41,10 +41,7 @@ public class EndVisitCommandHandler(
             var userLoyalty = await _uow.UserLoyalties.GetByUserIdAsync(existing.UserId, cancellationToken);
             var personalDiscount = userLoyalty?.PersonalDiscountPercent ?? 0m;
 
-            var visit = Visit.Update(
-                existingVisit: _mapper.Map<Visit>(existing),
-                exitTime: exitTime,
-                calculatedCost: Visit.CalculateCost(
+            var breakdown = Visit.CalculateCost(
                     tariffBillingType: existing.TariffBillingType,
                     tariffPricePerMinute: existing.TariffPricePerMinute,
                     exitTime: exitTime,
@@ -54,7 +51,12 @@ public class EndVisitCommandHandler(
                     maxDiscountPercent: _options.MaxTotalDiscountPercent,
                     globalDiscount: globalDiscount,
                     tariffDiscount: tariffDiscount,
-                    personalDiscount: personalDiscount),
+                    personalDiscount: personalDiscount);
+
+            var visit = Visit.Update(
+                existingVisit: _mapper.Map<Visit>(existing),
+                exitTime: exitTime,
+                calculatedCost: breakdown.FinalCost,
                 status: VisitStatus.Completed);
 
             var updated = await _uow.Visits.UpdateAsync(visit, cancellationToken);
@@ -72,7 +74,16 @@ public class EndVisitCommandHandler(
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);
 
-            return Result.Ok(new EndVisitResponse(updated, visit.CalculatedCost ?? 0));
+            var breakdownDto = new CostBreakdownDto
+            {
+                ActualMinutes = breakdown.ActualMinutes,
+                BillableMinutes = breakdown.BillableMinutes,
+                BaseCost = breakdown.BaseCost,
+                FinalCost = breakdown.FinalCost,
+                OptimizationGain = breakdown.OptimizationGain
+            };
+
+            return Result.Ok(new EndVisitResponse(updated, visit.CalculatedCost ?? 0, breakdownDto));
         }
         catch (Exception ex)
         {

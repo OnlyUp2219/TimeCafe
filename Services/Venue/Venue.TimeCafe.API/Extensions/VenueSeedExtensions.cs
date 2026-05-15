@@ -76,6 +76,13 @@ public static class VenueSeedExtensions
                 PricePerMinute = 3.60m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Базовая"),
+                Summary = "Классический тариф для отдыха и общения.",
+                Features = ["Бесплатный чай и кофе", "Настольные игры", "Wi-Fi"],
+                AudienceTags = ["Популярный", "Для компаний"],
+                MinSessionMinutes = 30,
+                RoundingRule = "5min",
+                IsRecommended = true,
+                SortOrder = 1,
                 CreatedAt = now,
                 LastModified = now,
             },
@@ -87,6 +94,12 @@ public static class VenueSeedExtensions
                 PricePerMinute = 3.00m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Тихая"),
+                Summary = "Идеально для работы и учебы в тишине.",
+                Features = ["Тихая атмосфера", "Розетки у каждого стола", "Чай включен"],
+                AudienceTags = ["Для работы", "Для учебы"],
+                MinSessionMinutes = 60,
+                RoundingRule = "15min",
+                SortOrder = 2,
                 CreatedAt = now,
                 LastModified = now,
             },
@@ -95,9 +108,16 @@ public static class VenueSeedExtensions
                 Name = "Ночной",
                 Description = "Для поздних визитов: мягкий свет, меньше людей и приятный темп.",
                 BillingType = BillingType.Hourly,
-                PricePerMinute = 180m,
+                PricePerMinute = 3.00m, // 180 rub per hour
                 IsActive = true,
                 ThemeId = ResolveThemeId("Ночная"),
+                Summary = "Для тех, кто любит ночную атмосферу.",
+                Features = ["Мягкий свет", "Приятная музыка", "Настолки"],
+                AudienceTags = ["Ночь", "Атмосфера"],
+                MinSessionMinutes = 120,
+                RoundingRule = "60min",
+                MaxGuests = 4,
+                SortOrder = 3,
                 CreatedAt = now,
                 LastModified = now,
             },
@@ -106,9 +126,15 @@ public static class VenueSeedExtensions
                 Name = "Промо",
                 Description = "Тариф для акций и промокодов.",
                 BillingType = BillingType.Hourly,
-                PricePerMinute = 666m,
+                PricePerMinute = 4.00m, // 240 rub per hour
                 IsActive = true,
                 ThemeId = ResolveThemeId("Промо"),
+                Summary = "Специальный тариф для мероприятий.",
+                Features = ["Особые условия"],
+                AudienceTags = ["Акции"],
+                MinSessionMinutes = 60,
+                RoundingRule = "60min",
+                SortOrder = 4,
                 CreatedAt = now,
                 LastModified = now,
             },
@@ -120,23 +146,42 @@ public static class VenueSeedExtensions
                 PricePerMinute = 2.40m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Базовая"),
+                Summary = "Скидка для жаворонков.",
+                Features = ["Утренний кофе"],
+                AudienceTags = ["Утро"],
+                MinSessionMinutes = 15,
+                RoundingRule = "5min",
+                SortOrder = 5,
                 CreatedAt = now,
                 LastModified = now,
             },
         };
 
-        var existingNames = await dbContext.Tariffs
-            .Select(x => x.Name)
-            .ToListAsync();
+        foreach (var required in requiredTariffs)
+        {
+            var existing = await dbContext.Tariffs.FirstOrDefaultAsync(x => x.Name == required.Name);
+            if (existing != null)
+            {
+                existing.Description = required.Description;
+                existing.BillingType = required.BillingType;
+                existing.PricePerMinute = required.PricePerMinute;
+                existing.ThemeId = required.ThemeId;
+                existing.Summary = required.Summary;
+                existing.Features = required.Features;
+                existing.AudienceTags = required.AudienceTags;
+                existing.MinSessionMinutes = required.MinSessionMinutes;
+                existing.RoundingRule = required.RoundingRule;
+                existing.MaxGuests = required.MaxGuests;
+                existing.IsRecommended = required.IsRecommended;
+                existing.SortOrder = required.SortOrder;
+                existing.LastModified = now;
+            }
+            else
+            {
+                await dbContext.Tariffs.AddAsync(required);
+            }
+        }
 
-        var missing = requiredTariffs
-            .Where(item => existingNames.All(existing => !string.Equals(existing, item.Name, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        if (missing.Count == 0)
-            return;
-
-        await dbContext.Tariffs.AddRangeAsync(missing);
         await dbContext.SaveChangesAsync();
     }
 

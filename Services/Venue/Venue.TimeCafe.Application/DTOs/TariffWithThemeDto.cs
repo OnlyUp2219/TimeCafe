@@ -25,5 +25,6 @@ public class TariffWithThemeDto
     public string? CancellationPolicy { get; set; }
     public bool IsRecommended { get; set; }
     public int SortOrder { get; set; }
+    public List<CostBreakdownDto>? CalculationExamples { get; set; }
 }
 

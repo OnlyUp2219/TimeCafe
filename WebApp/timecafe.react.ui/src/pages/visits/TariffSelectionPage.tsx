@@ -69,10 +69,10 @@ export const TariffSelectionPage = () => {
     const [createVisit, {isLoading: startingVisit}] = useCreateVisitMutation();
     
     const [detailsOpen, setDetailsOpen] = useState(false);
-    const [selectedTariffForDetails, setSelectedTariffForDetails] = useState<Tariff | null>(null);
+    const [selectedTariffIdForDetails, setSelectedTariffIdForDetails] = useState<string | null>(null);
 
     const handleOpenDetails = useCallback((tariff: Tariff) => {
-        setSelectedTariffForDetails(tariff);
+        setSelectedTariffIdForDetails(tariff.tariffId);
         setDetailsOpen(true);
     }, []);
 
@@ -286,7 +286,7 @@ export const TariffSelectionPage = () => {
             <TariffDetailsDrawer
                 open={detailsOpen}
                 onOpenChange={setDetailsOpen}
-                tariff={selectedTariffForDetails}
+                tariffId={selectedTariffIdForDetails}
             />
         </div>
     );

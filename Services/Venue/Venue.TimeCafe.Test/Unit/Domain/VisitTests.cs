@@ -24,10 +24,11 @@ public class VisitTests
         );
 
         // Assert
-        // Base cost = 100 * 1 = 100
-        // Discount = 10%
-        // Expected = 90
-        cost.Should().Be(90m);
+        cost.ActualMinutes.Should().Be(100);
+        cost.BillableMinutes.Should().Be(100);
+        cost.BaseCost.Should().Be(100m);
+        cost.FinalCost.Should().Be(90m);
+        cost.OptimizationGain.Should().Be(-10m);
     }
 
     [Fact]
@@ -50,11 +51,11 @@ public class VisitTests
         );
 
         // Assert
-        // Base cost = 100
-        // Best promo = 20% (Tariff)
-        // Total discount = 20 + 10 = 30%
-        // Expected = 70
-        cost.Should().Be(70m);
+        cost.ActualMinutes.Should().Be(100);
+        cost.BillableMinutes.Should().Be(100);
+        cost.BaseCost.Should().Be(100m);
+        cost.FinalCost.Should().Be(70m);
+        cost.OptimizationGain.Should().Be(-30m);
     }
 
     [Fact]
@@ -77,11 +78,11 @@ public class VisitTests
         );
 
         // Assert
-        // Base cost = 100
-        // Best promo = 25% (Global)
-        // Total discount = 25 + 10 = 35%
-        // Expected = 65
-        cost.Should().Be(65m);
+        cost.ActualMinutes.Should().Be(100);
+        cost.BillableMinutes.Should().Be(100);
+        cost.BaseCost.Should().Be(100m);
+        cost.FinalCost.Should().Be(65m);
+        cost.OptimizationGain.Should().Be(-35m);
     }
 
     [Fact]
@@ -104,11 +105,11 @@ public class VisitTests
         );
 
         // Assert
-        // Base cost = 100
-        // Sum = 60%
-        // Capped = 50%
-        // Expected = 50
-        cost.Should().Be(50m);
+        cost.ActualMinutes.Should().Be(100);
+        cost.BillableMinutes.Should().Be(100);
+        cost.BaseCost.Should().Be(100m);
+        cost.FinalCost.Should().Be(50m);
+        cost.OptimizationGain.Should().Be(-50m);
     }
 
     [Fact]
@@ -128,11 +129,11 @@ public class VisitTests
         );
 
         // Assert
-        // Hours = ceil(65/60) = 2
-        // Base cost = 2 * 1 * 60 = 120
-        // Discount = 0
-        // Expected = 120
-        cost.Should().Be(120m);
+        cost.ActualMinutes.Should().Be(65);
+        cost.BillableMinutes.Should().Be(120);
+        cost.BaseCost.Should().Be(120m);
+        cost.FinalCost.Should().Be(120m);
+        cost.OptimizationGain.Should().Be(0m);
     }
 
     [Fact]
@@ -152,10 +153,10 @@ public class VisitTests
         );
 
         // Assert
-        // Minutes = ceil(65.5) = 66
-        // Base cost = 66 * 1 = 66
-        // Discount = 0
-        // Expected = 66
-        cost.Should().Be(66m);
+        cost.ActualMinutes.Should().Be(66);
+        cost.BillableMinutes.Should().Be(66);
+        cost.BaseCost.Should().Be(66m);
+        cost.FinalCost.Should().Be(66m);
+        cost.OptimizationGain.Should().Be(0m);
     }
 }

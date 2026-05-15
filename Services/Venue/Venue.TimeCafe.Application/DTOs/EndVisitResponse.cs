@@ -2,6 +2,7 @@ namespace Venue.TimeCafe.Application.DTOs;
 
 public record EndVisitResponse(
     Visit Visit,
-    decimal CalculatedCost
+    decimal CalculatedCost,
+    CostBreakdownDto Breakdown
 );
 

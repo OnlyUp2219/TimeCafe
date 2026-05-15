@@ -14,9 +14,9 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-
-
+            
             json.TryGetProperty("calculatedCost", out _).Should().BeTrue();
+            json.TryGetProperty("breakdown", out _).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -76,6 +76,9 @@ public class EndVisitTests(IntegrationApiFactory factory) : BaseEndpointTest(fac
             var json = JsonDocument.Parse(jsonString).RootElement;
             var calculatedCost = json.GetProperty("calculatedCost").GetDecimal();
             calculatedCost.Should().BeGreaterThan(0);
+            
+            var breakdown = json.GetProperty("breakdown");
+            breakdown.GetProperty("actualMinutes").GetInt32().Should().BeGreaterThanOrEqualTo(0);
         }
         catch (Exception)
         {

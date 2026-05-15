@@ -5,6 +5,14 @@ export const BillingType = {
 
 export type BillingType = (typeof BillingType)[keyof typeof BillingType];
 
+export type CostBreakdown = {
+    actualMinutes: number;
+    billableMinutes: number;
+    baseCost: number;
+    finalCost: number;
+    optimizationGain: number;
+};
+
 export type Tariff = {
     tariffId: string;
     name: string;
@@ -31,4 +39,5 @@ export type Tariff = {
     cancellationPolicy?: string | null;
     isRecommended?: boolean;
     sortOrder?: number;
+    calculationExamples?: CostBreakdown[] | null;
 };

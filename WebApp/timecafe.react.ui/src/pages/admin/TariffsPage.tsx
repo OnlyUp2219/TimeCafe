@@ -316,7 +316,7 @@ export const TariffsPage = () => {
             <TariffDetailsDrawer
                 open={detailsOpen}
                 onOpenChange={setDetailsOpen}
-                tariff={detailsTariff as any}
+                tariffId={detailsTariff?.tariffId ?? null}
             />
         </div>
     );

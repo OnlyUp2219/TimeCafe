@@ -48,9 +48,12 @@ public class Visit
     }
 
 
-    public static decimal CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime, int? minSessionMinutes = null, string? roundingRule = null, decimal maxDiscountPercent = 50m, decimal globalDiscount = 0m, decimal tariffDiscount = 0m, decimal personalDiscount = 0m)
+    public static CostBreakdown CalculateCost(BillingType tariffBillingType, decimal tariffPricePerMinute, DateTimeOffset exitTime, DateTimeOffset entryTime, int? minSessionMinutes = null, string? roundingRule = null, decimal maxDiscountPercent = 50m, decimal globalDiscount = 0m, decimal tariffDiscount = 0m, decimal personalDiscount = 0m)
     {
-        var duration = (exitTime - entryTime).TotalMinutes;
+        var actualDuration = (exitTime - entryTime).TotalMinutes;
+        var actualMinutes = (int)Math.Ceiling(actualDuration);
+
+        var duration = actualDuration;
 
         if (minSessionMinutes.HasValue && duration < minSessionMinutes.Value)
         {
@@ -70,14 +73,31 @@ public class Visit
             duration = Math.Ceiling(duration / roundInterval) * roundInterval;
         }
 
-        var baseCost = tariffBillingType == BillingType.Hourly
+        var billableMinutes = tariffBillingType == BillingType.Hourly
+                ? (int)Math.Ceiling(duration / 60) * 60
+                : (int)Math.Ceiling(duration);
+
+        var pureTimeCost = tariffBillingType == BillingType.Hourly
+                ? (decimal)Math.Ceiling(actualDuration / 60) * tariffPricePerMinute * 60
+                : (decimal)Math.Ceiling(actualDuration) * tariffPricePerMinute;
+
+        var billableCost = tariffBillingType == BillingType.Hourly
                 ? (decimal)Math.Ceiling(duration / 60) * tariffPricePerMinute * 60
                 : (decimal)Math.Ceiling(duration) * tariffPricePerMinute;
 
         var bestPromotion = Math.Max(globalDiscount, tariffDiscount);
         var totalDiscount = Math.Min(bestPromotion + personalDiscount, maxDiscountPercent);
 
-        return baseCost * (1m - totalDiscount / 100m);
+        var finalCost = billableCost * (1m - totalDiscount / 100m);
+
+        return new CostBreakdown
+        {
+            ActualMinutes = actualMinutes,
+            BillableMinutes = billableMinutes,
+            BaseCost = pureTimeCost,
+            FinalCost = finalCost,
+            OptimizationGain = finalCost - pureTimeCost
+        };
     }
 }
 
