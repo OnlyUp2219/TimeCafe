@@ -13,6 +13,16 @@ public abstract class BasePaymentRepositoryTest : IDisposable
 
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
+    protected async Task SaveAndInvalidateCacheAsync(IServiceScope scope, Guid paymentId, Guid userId)
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.SaveChangesAsync();
+        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        await cache.RemoveByTagAsync(CacheTags.Payments);
+        await cache.RemoveByTagAsync(CacheTags.Payment(paymentId));
+        await cache.RemoveByTagAsync(CacheTags.PaymentByUser(userId));
+    }
+
     protected async Task<PaymentModel> CreateTestPaymentAsync(
         Guid? paymentId = null,
         Guid? userId = null,
@@ -24,6 +34,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var payment = new PaymentModel(paymentId ?? DefaultsGuid.PaymentId)
         {
@@ -35,7 +46,9 @@ public abstract class BasePaymentRepositoryTest : IDisposable
             CreatedAt = createdAt ?? DateTimeOffset.UtcNow
         };
 
-        return await repository.CreateAsync(payment, ct);
+        var created = await repository.CreateAsync(payment, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return created;
     }
 
     protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
@@ -49,23 +62,23 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         foreach (var payment in payments)
         {
             var cacheKey = CacheKeys.Payment_ById(payment.PaymentId);
-            await cache.RemoveAsync(cacheKey, ct);
+            await cache.RemoveAsync(cacheKey, cancellationToken);
         }
 
-        await cache.RemoveAsync(CacheKeys.Payment_All, ct);
-        await cache.RemoveAsync(CacheKeys.Payment_Pending, ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId), ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId2), ct);
-        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId3), ct);
+        await cache.RemoveAsync(CacheKeys.Payment_All, cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Payment_Pending, cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId2), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Payment_ByUserId(DefaultsGuid.UserId3), cancellationToken);
 
-        await hybridCache.RemoveByTagAsync(CacheTags.Payments, ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId), ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId2), ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId3), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.Payments, cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId), cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId2), cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(DefaultsGuid.UserId3), cancellationToken);
 
         foreach (var payment in payments)
         {
-            await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(payment.UserId), ct);
+            await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(payment.UserId), cancellationToken);
         }
     }
 
@@ -74,7 +87,7 @@ public abstract class BasePaymentRepositoryTest : IDisposable
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Payments.RemoveRange(db.Payments);
-        await db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     public void Dispose()

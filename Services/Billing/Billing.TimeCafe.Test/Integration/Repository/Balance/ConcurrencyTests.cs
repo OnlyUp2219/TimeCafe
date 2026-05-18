@@ -17,7 +17,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             {
                 using var scope = CreateScope();
                 var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                return await repository.GetByUserIdAsync(userId);
+                return await repository.GetByIdAsync(userId);
             }));
         }
 
@@ -43,7 +43,9 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                     CurrentBalance = DefaultsGuid.DefaultAmount,
                     TotalDeposited = DefaultsGuid.DefaultAmount
                 };
-                return await repository.CreateAsync(balance);
+                var result = await repository.CreateAsync(balance);
+                await SaveAndInvalidateCacheAsync(scope, userId);
+                return result;
             })).ToList();
 
         var results = await Task.WhenAll(createTasks);
@@ -71,17 +73,19 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var current = await repository.GetByUserIdAsync(userId);
+            var current = await repository.GetByIdAsync(userId);
             current!.CurrentBalance = DefaultsGuid.DefaultAmount + i * DefaultsGuid.SmallAmount;
             current.LastUpdated = DateTimeOffset.UtcNow;
-            return await repository.UpdateAsync(current);
+            var result = await repository.UpdateAsync(current);
+            await SaveAndInvalidateCacheAsync(scope, userId);
+            return result;
         }).ToList();
 
         var results = await Task.WhenAll(updateTasks);
 
         using var finalScope = CreateScope();
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var final = await finalRepo.GetByUserIdAsync(userId);
+        var final = await finalRepo.GetByIdAsync(userId);
         final.Should().NotBeNull();
         final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
@@ -103,7 +107,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                 {
                     using var scope = CreateScope();
                     var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                    await repository.GetByUserIdAsync(userId);
+                    await repository.GetByIdAsync(userId);
                 }));
             }
             else if (i % 3 == 1)
@@ -112,12 +116,13 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                 {
                     using var scope = CreateScope();
                     var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                    var current = await repository.GetByUserIdAsync(userId);
+                    var current = await repository.GetByIdAsync(userId);
                     if (current != null)
                     {
                         current.CurrentBalance += DefaultsGuid.SmallAmount;
                         current.LastUpdated = DateTimeOffset.UtcNow;
                         await repository.UpdateAsync(current);
+                        await SaveAndInvalidateCacheAsync(scope, userId);
                     }
                 }));
             }
@@ -136,7 +141,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
 
         using var finalScope = CreateScope();
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var final = await finalRepo.GetByUserIdAsync(userId);
+        var final = await finalRepo.GetByIdAsync(userId);
         final.Should().NotBeNull();
         final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
@@ -151,6 +156,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             await repository.CreateAsync(new BalanceModel(debtorId) { Debt = DefaultsGuid.DebtAmount });
+            await SaveAndInvalidateCacheAsync(scope, debtorId);
         }
 
         using (var cacheScope = CreateScope())
@@ -182,6 +188,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount };
             await repository.CreateAsync(balance);
+            await SaveAndInvalidateCacheAsync(scope, userId);
         })).ToList();
 
         await Task.WhenAll(createTasks);
@@ -190,12 +197,13 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = await repository.GetByUserIdAsync(userId);
+            var balance = await repository.GetByIdAsync(userId);
             if (balance != null)
             {
                 balance.CurrentBalance = DefaultsGuid.DefaultAmount;
                 balance.LastUpdated = DateTimeOffset.UtcNow;
                 await repository.UpdateAsync(balance);
+                await SaveAndInvalidateCacheAsync(scope, userId);
             }
         })).ToList();
 
@@ -205,7 +213,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = await repository.GetByUserIdAsync(userId);
+            var balance = await repository.GetByIdAsync(userId);
             balance.Should().NotBeNull();
             balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.SmallAmount);
         })).ToList();
@@ -219,7 +227,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
             var exists = await repository.ExistsAsync(userId);
             exists.Should().BeTrue();
 
-            var balance = await repository.GetByUserIdAsync(userId);
+            var balance = await repository.GetByIdAsync(userId);
             balance.Should().NotBeNull();
             balance!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.SmallAmount);
         }
@@ -236,12 +244,13 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = await repository.GetByUserIdAsync(userId);
+            var balance = await repository.GetByIdAsync(userId);
             if (balance != null)
             {
                 balance.CurrentBalance = DefaultsGuid.DefaultAmount + i * DefaultsGuid.SmallAmount;
                 balance.LastUpdated = DateTimeOffset.UtcNow;
                 await repository.UpdateAsync(balance);
+                await SaveAndInvalidateCacheAsync(scope, userId);
             }
         }).ToList();
 
@@ -249,14 +258,14 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
         {
             using var scope = CreateScope();
             var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            return await repository.GetByUserIdAsync(userId);
+            return await repository.GetByIdAsync(userId);
         }).ToList();
 
         await Task.WhenAll(updateTasks.Concat(readTasks));
 
         using var finalScope = CreateScope();
         var finalRepo = finalScope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var final = await finalRepo.GetByUserIdAsync(userId);
+        var final = await finalRepo.GetByIdAsync(userId);
         final.Should().NotBeNull();
         final!.CurrentBalance.Should().BeGreaterThanOrEqualTo(DefaultsGuid.DefaultAmount);
     }
@@ -287,6 +296,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                             try
                             {
                                 await repository.CreateAsync(new BalanceModel(userId) { CurrentBalance = DefaultsGuid.SmallAmount });
+                                await SaveAndInvalidateCacheAsync(scope, userId);
                             }
                             catch (DbUpdateException)
                             {
@@ -303,7 +313,7 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                     {
                         using var scope = CreateScope();
                         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                        await repository.GetByUserIdAsync(userId);
+                        await repository.GetByIdAsync(userId);
                     }));
                     break;
 
@@ -312,12 +322,13 @@ public class ConcurrencyTests : BaseBalanceRepositoryTest
                     {
                         using var scope = CreateScope();
                         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-                        var balance = await repository.GetByUserIdAsync(userId);
+                        var balance = await repository.GetByIdAsync(userId);
                         if (balance != null)
                         {
                             balance.CurrentBalance += DefaultsGuid.SmallAmount;
                             balance.LastUpdated = DateTimeOffset.UtcNow;
                             await repository.UpdateAsync(balance);
+                            await SaveAndInvalidateCacheAsync(scope, userId);
                         }
                     }));
                     break;

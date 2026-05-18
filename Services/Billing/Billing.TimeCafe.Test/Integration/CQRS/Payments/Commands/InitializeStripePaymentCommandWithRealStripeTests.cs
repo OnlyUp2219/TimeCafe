@@ -20,7 +20,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
         var amount = DefaultsGuid.DefaultAmount;
         var returnUrl = StripeTestData.Configuration.DefaultReturnUrl;
 
-        InitializeStripePaymentResult result;
+        Result<InitializeStripePaymentResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -31,13 +31,13 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
                 StripeTestData.Descriptions.BalanceReplenishment));
         }
 
-        result.Success.Should().BeTrue();
-        result.PaymentId.Should().NotBe(Guid.Empty);
-        result.ExternalPaymentId.Should().NotBeNullOrEmpty();
-        result.ClientSecret.Should().NotBeNullOrEmpty();
-        result.PublishableKey.Should().NotBeNullOrEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PaymentId.Should().NotBe(Guid.Empty);
+        result.Value.ExternalPaymentId.Should().NotBeNullOrEmpty();
+        result.Value.ClientSecret.Should().NotBeNullOrEmpty();
+        result.Value.PublishableKey.Should().NotBeNullOrEmpty();
 
-        result.ExternalPaymentId.Should().StartWith("pi_");
+        result.Value.ExternalPaymentId.Should().StartWith("pi_");
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
     {
         var userId = DefaultsGuid.UserId2;
 
-        InitializeStripePaymentResult result1;
+        Result<InitializeStripePaymentResponse> result1;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -71,7 +71,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
                 "First payment"));
         }
 
-        InitializeStripePaymentResult result2;
+        Result<InitializeStripePaymentResponse> result2;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -82,12 +82,12 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
                 "Second payment"));
         }
 
-        result1.Success.Should().BeTrue();
-        result2.Success.Should().BeTrue();
-        result1.ExternalPaymentId.Should().NotBe(result2.ExternalPaymentId);
+        result1.IsSuccess.Should().BeTrue();
+        result2.IsSuccess.Should().BeTrue();
+        result1.Value.ExternalPaymentId.Should().NotBe(result2.Value.ExternalPaymentId);
 
-        result1.ExternalPaymentId.Should().StartWith("pi_");
-        result2.ExternalPaymentId.Should().StartWith("pi_");
+        result1.Value.ExternalPaymentId.Should().StartWith("pi_");
+        result2.Value.ExternalPaymentId.Should().StartWith("pi_");
     }
 
     [Fact]
@@ -96,7 +96,7 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
         var userId = DefaultsGuid.UserId3;
         var amount = DefaultsGuid.DefaultAmount;
 
-        InitializeStripePaymentResult result;
+        Result<InitializeStripePaymentResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -107,12 +107,12 @@ public class InitializeStripePaymentCommandWithRealStripeTests : IDisposable
                 "Metadata test"));
         }
 
-        result.Success.Should().BeTrue();
-        result.PaymentId.Should().NotBe(Guid.Empty);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PaymentId.Should().NotBe(Guid.Empty);
 
-        var payment = await GetPaymentByIdAsync(result.PaymentId.Value);
+        var payment = await GetPaymentByIdAsync(result.Value.PaymentId);
         payment.Should().NotBeNull();
-        payment!.PaymentId.Should().Be(result.PaymentId.Value.ToString());
+        payment!.PaymentId.Should().Be(result.Value.PaymentId);
         payment.UserId.Should().Be(userId);
     }
 

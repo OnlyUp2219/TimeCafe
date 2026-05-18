@@ -1,3 +1,6 @@
+using FluentValidation;
+using FluentResults;
+
 namespace Billing.TimeCafe.Test.Integration.CQRS.Balance.Commands;
 
 public class AdjustBalanceCommandTests : IDisposable
@@ -22,22 +25,24 @@ public class AdjustBalanceCommandTests : IDisposable
         {
             var balances = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             await balances.CreateAsync(new BalanceModel(userId));
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        AdjustBalanceResult result;
+        Result<AdjustBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Manual));
         }
 
-        result.Success.Should().BeTrue();
-        result.Transaction!.Type.Should().Be(TransactionType.Deposit);
-        result.Transaction.Amount.Should().Be(DefaultsGuid.SmallAmount);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.TransactionType.Should().Be(TransactionType.Deposit.ToString());
+        result.Value.TransactionAmount.Should().Be(DefaultsGuid.SmallAmount);
 
         using var scope2 = CreateScope();
         var balances2 = scope2.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        var fetched = await balances2.GetByUserIdAsync(userId);
+        var fetched = await balances2.GetByIdAsync(userId);
         fetched!.CurrentBalance.Should().Be(DefaultsGuid.SmallAmount);
     }
 
@@ -50,18 +55,19 @@ public class AdjustBalanceCommandTests : IDisposable
         {
             var balances = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             await balances.CreateAsync(new BalanceModel(userId));
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        AdjustBalanceResult result;
+        Result<AdjustBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.DefaultAmount, TransactionType.Withdrawal, TransactionSource.Manual));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("InsufficientFunds");
-        result.StatusCode.Should().Be(400);
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e.Metadata.Contains(new KeyValuePair<string, object>("ErrorCode", "400")));
     }
 
     [Fact]
@@ -72,23 +78,28 @@ public class AdjustBalanceCommandTests : IDisposable
         using (var scope = CreateScope())
         {
             var balances = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            var balance = await balances.CreateAsync(new BalanceModel(userId));
-            balance.CurrentBalance = DefaultsGuid.UpdatedAmount;
-            balance.TotalDeposited = DefaultsGuid.UpdatedAmount;
-            await balances.UpdateAsync(balance);
+            var balance = new BalanceModel(userId)
+            {
+                CurrentBalance = DefaultsGuid.UpdatedAmount,
+                TotalDeposited = DefaultsGuid.UpdatedAmount,
+                Debt = 0m
+            };
+            await balances.CreateAsync(balance);
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        AdjustBalanceResult result;
+        Result<AdjustBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Withdrawal, TransactionSource.Manual));
         }
 
-        result.Success.Should().BeTrue();
-        result.Balance!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount - DefaultsGuid.SmallAmount);
-        result.Transaction!.Type.Should().Be(TransactionType.Withdrawal);
-        result.Transaction.Amount.Should().Be(DefaultsGuid.SmallAmount);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount - DefaultsGuid.SmallAmount);
+        result.Value.TransactionType.Should().Be(TransactionType.Withdrawal.ToString());
+        result.Value.TransactionAmount.Should().Be(-DefaultsGuid.SmallAmount);
     }
 
     [Fact]
@@ -101,26 +112,27 @@ public class AdjustBalanceCommandTests : IDisposable
         {
             var balances = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             await balances.CreateAsync(new BalanceModel(userId));
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        AdjustBalanceResult first;
+        Result<AdjustBalanceResponse> first;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             first = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
         }
-        first.Success.Should().BeTrue();
+        first.IsSuccess.Should().BeTrue();
 
-        AdjustBalanceResult second;
+        Result<AdjustBalanceResponse> second;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             second = await sender.Send(new AdjustBalanceCommand(userId, DefaultsGuid.SmallAmount, TransactionType.Deposit, TransactionSource.Payment, SourceId: sourceId));
         }
 
-        second.Success.Should().BeFalse();
-        second.Code.Should().Be("DuplicateTransaction");
-        second.StatusCode.Should().Be(409);
+        second.IsFailed.Should().BeTrue();
+        second.Errors.Should().ContainSingle(e => e.Metadata.Contains(new KeyValuePair<string, object>("ErrorCode", "409")));
     }
 
     [Fact]

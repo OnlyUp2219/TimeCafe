@@ -1,6 +1,3 @@
-using Billing.TimeCafe.Application.CQRS.Balances.Commands;
-using BuildingBlocks.Extensions;
-
 namespace Billing.TimeCafe.API.Endpoints.Transactions;
 
 public record CreateTransactionRequest(
@@ -34,7 +31,7 @@ public class CreateTransaction : ICarterModule
                 request.Comment);
 
             var result = await sender.Send(command);
-            
+
             return result.ToHttpResult(onSuccess: r => TypedResults.Ok(new
             {
                 balance = new

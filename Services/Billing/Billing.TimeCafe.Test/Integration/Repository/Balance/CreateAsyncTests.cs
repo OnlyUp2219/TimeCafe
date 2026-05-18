@@ -53,8 +53,9 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
         await repository.CreateAsync(balance);
+        await SaveAndInvalidateCacheAsync(scope, userId);
 
-        var retrieved = await repository.GetByUserIdAsync(userId);
+        var retrieved = await repository.GetByIdAsync(userId);
 
         retrieved.Should().NotBeNull();
         retrieved.UserId.Should().Be(userId);
@@ -174,6 +175,7 @@ public class CreateAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         var result1 = await repository.CreateAsync(balance1);
+        await SaveAndInvalidateCacheAsync(scope, userId);
         var result2 = await repository.CreateAsync(balance2);
 
         result1.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);

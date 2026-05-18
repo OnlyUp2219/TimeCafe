@@ -1,6 +1,6 @@
 namespace Billing.TimeCafe.Test.Integration.Repository.Balance;
 
-public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
+public class GetByIdAsyncTests : BaseBalanceRepositoryTest
 {
     [Fact]
     public async Task Repository_GetByUserId_Should_ReturnBalance_WhenExists()
@@ -12,7 +12,7 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result = await repository.GetByUserIdAsync(userId);
+        var result = await repository.GetByIdAsync(userId);
 
         result.Should().NotBeNull();
         result.UserId.Should().Be(userId);
@@ -28,7 +28,7 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result = await repository.GetByUserIdAsync(nonExistentUserId);
+        var result = await repository.GetByIdAsync(nonExistentUserId);
 
         result.Should().BeNull();
     }
@@ -42,7 +42,7 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result = await repository.GetByUserIdAsync(emptyUserId);
+        var result = await repository.GetByIdAsync(emptyUserId);
 
         result.Should().BeNull();
     }
@@ -57,8 +57,8 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(userId);
-        var result2 = await repository.GetByUserIdAsync(userId);
+        var result1 = await repository.GetByIdAsync(userId);
+        var result2 = await repository.GetByIdAsync(userId);
 
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
@@ -76,14 +76,15 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(userId);
+        var result1 = await repository.GetByIdAsync(userId);
         result1!.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
 
         testBalance.CurrentBalance = DefaultsGuid.UpdatedAmount;
         testBalance.LastUpdated = DateTimeOffset.UtcNow;
         await repository.UpdateAsync(testBalance);
+        await SaveAndInvalidateCacheAsync(scope, userId);
 
-        var result2 = await repository.GetByUserIdAsync(userId);
+        var result2 = await repository.GetByIdAsync(userId);
 
         result2!.CurrentBalance.Should().Be(DefaultsGuid.UpdatedAmount);
     }
@@ -98,12 +99,12 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(userId);
+        var result1 = await repository.GetByIdAsync(userId);
 
         var cacheKey = CacheKeys.Balance_ByUserId(userId);
         await scope.ServiceProvider.GetRequiredService<IDistributedCache>().RemoveAsync(cacheKey);
 
-        var result2 = await repository.GetByUserIdAsync(userId);
+        var result2 = await repository.GetByIdAsync(userId);
 
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
@@ -124,16 +125,16 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(userId1);
-        var result2 = await repository.GetByUserIdAsync(userId2);
+        var result1 = await repository.GetByIdAsync(userId1);
+        var result2 = await repository.GetByIdAsync(userId2);
 
         result1.Should().NotBeNull();
         result2.Should().NotBeNull();
         result1.UserId.Should().Be(userId1);
         result2.UserId.Should().Be(userId2);
 
-        var result1SecondCall = await repository.GetByUserIdAsync(userId1);
-        var result2SecondCall = await repository.GetByUserIdAsync(userId2);
+        var result1SecondCall = await repository.GetByIdAsync(userId1);
+        var result2SecondCall = await repository.GetByIdAsync(userId2);
 
         result1SecondCall.Should().NotBeNull();
         result2SecondCall.Should().NotBeNull();
@@ -155,9 +156,9 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(userId1);
-        var result2 = await repository.GetByUserIdAsync(userId2);
-        var result3 = await repository.GetByUserIdAsync(nonExistentUserId);
+        var result1 = await repository.GetByIdAsync(userId1);
+        var result2 = await repository.GetByIdAsync(userId2);
+        var result3 = await repository.GetByIdAsync(nonExistentUserId);
 
         result1.Should().NotBeNull();
         result1.CurrentBalance.Should().Be(DefaultsGuid.DefaultAmount);
@@ -177,8 +178,8 @@ public class GetByUserIdAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
 
-        var result1 = await repository.GetByUserIdAsync(nonExistentUserId);
-        var result2 = await repository.GetByUserIdAsync(nonExistentUserId);
+        var result1 = await repository.GetByIdAsync(nonExistentUserId);
+        var result2 = await repository.GetByIdAsync(nonExistentUserId);
 
         result1.Should().BeNull();
         result2.Should().BeNull();

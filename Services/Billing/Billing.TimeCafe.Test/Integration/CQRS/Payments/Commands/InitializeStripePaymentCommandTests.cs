@@ -10,7 +10,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var returnUrl = StripeTestData.Configuration.DefaultReturnUrl;
         var description = StripeTestData.Descriptions.BalanceReplenishment;
 
-        InitializeStripePaymentResult result;
+        Result<InitializeStripePaymentResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -21,20 +21,18 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
                 description));
         }
 
-        result.Success.Should().BeTrue();
-        result.Code.Should().BeNull();
-        result.StatusCode.Should().BeNull();
-        result.PaymentId.Should().NotBe(Guid.Empty);
-        result.ExternalPaymentId.Should().NotBeNullOrEmpty();
-        result.ClientSecret.Should().NotBeNullOrEmpty();
-        result.PublishableKey.Should().NotBeNullOrEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PaymentId.Should().NotBe(Guid.Empty);
+        result.Value.ExternalPaymentId.Should().NotBeNullOrEmpty();
+        result.Value.ClientSecret.Should().NotBeNullOrEmpty();
+        result.Value.PublishableKey.Should().NotBeNullOrEmpty();
 
-        var createdPayment = await GetPaymentByIdAsync(result.PaymentId!.Value);
+        var createdPayment = await GetPaymentByIdAsync(result.Value.PaymentId);
         createdPayment.Should().NotBeNull();
         createdPayment!.UserId.Should().Be(userId);
         createdPayment.Amount.Should().Be(amount);
         createdPayment.Status.Should().Be(PaymentStatus.Pending);
-        createdPayment.ExternalPaymentId.Should().Be(result.ExternalPaymentId);
+        createdPayment.ExternalPaymentId.Should().Be(result.Value.ExternalPaymentId);
     }
 
     [Fact]
@@ -43,7 +41,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var userId = DefaultsGuid.UserId2;
         var amount = DefaultsGuid.DefaultAmount;
 
-        InitializeStripePaymentResult result;
+        Result<InitializeStripePaymentResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -54,9 +52,9 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
                 "Default URL test"));
         }
 
-        result.Success.Should().BeTrue();
-        result.PaymentId.Should().NotBe(Guid.Empty);
-        result.ExternalPaymentId.Should().NotBeNullOrEmpty();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.PaymentId.Should().NotBe(Guid.Empty);
+        result.Value.ExternalPaymentId.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -142,9 +140,9 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var result1 = await CreatePaymentAndInitializeAsync(userId, DefaultsGuid.SmallAmount);
         var result2 = await CreatePaymentAndInitializeAsync(userId, Defaults.MediumAmount);
 
-        result1.Success.Should().BeTrue();
-        result2.Success.Should().BeTrue();
-        result1.PaymentId.Should().NotBe(result2.PaymentId!.Value);
+        result1.IsSuccess.Should().BeTrue();
+        result2.IsSuccess.Should().BeTrue();
+        result1.Value.PaymentId.Should().NotBe(result2.Value.PaymentId);
 
         var payments = await GetPaymentsByUserIdAsync(userId);
         payments.Should().HaveCount(2);
@@ -158,7 +156,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var amount = Defaults.PremiumSubscriptionAmount;
         var description = StripeTestData.Descriptions.PremiumSubscription;
 
-        InitializeStripePaymentResult result;
+        Result<InitializeStripePaymentResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -169,7 +167,7 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
                 description));
         }
 
-        var payment = await GetPaymentByIdAsync(result.PaymentId!.Value);
+        var payment = await GetPaymentByIdAsync(result.Value.PaymentId);
         payment.Should().NotBeNull();
         payment!.PaymentMethod.Should().Be(PaymentMethod.Online);
         payment.CreatedAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
@@ -183,10 +181,10 @@ public class InitializeStripePaymentCommandTests : BasePaymentTest
         var result1 = await CreatePaymentAndInitializeAsync(userId, 100m);
         var result2 = await CreatePaymentAndInitializeAsync(userId, 100m);
 
-        result1.ExternalPaymentId.Should().NotBe(result2.ExternalPaymentId);
+        result1.Value.ExternalPaymentId.Should().NotBe(result2.Value.ExternalPaymentId);
     }
 
-    private async Task<InitializeStripePaymentResult> CreatePaymentAndInitializeAsync(
+    private async Task<Result<InitializeStripePaymentResponse>> CreatePaymentAndInitializeAsync(
         Guid userId,
         decimal amount)
     {

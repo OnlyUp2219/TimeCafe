@@ -11,7 +11,7 @@ public class ProcessStripeWebhookCommandWithRealStripeTests : BasePaymentTest
 
         await CreateBalanceAsync(userId);
 
-        InitializeStripePaymentResult initResult;
+        Result<InitializeStripePaymentResponse> initResult;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -22,21 +22,21 @@ public class ProcessStripeWebhookCommandWithRealStripeTests : BasePaymentTest
                 "Webhook test"));
         }
 
-        initResult.Success.Should().BeTrue();
-        var externalPaymentId = initResult.ExternalPaymentId;
+        initResult.IsSuccess.Should().BeTrue();
+        var externalPaymentId = initResult.Value.ExternalPaymentId;
 
         var webhook = CreateStripeSuccessWebhook(externalPaymentId!, (long)(amount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
-        var payment = await GetPaymentByIdAsync(initResult.PaymentId!.Value);
+        var payment = await GetPaymentByIdAsync(initResult.Value.PaymentId);
         payment.Should().NotBeNull();
         payment!.ExternalPaymentId.Should().Be(externalPaymentId);
 
@@ -61,14 +61,14 @@ public class ProcessStripeWebhookCommandWithRealStripeTests : BasePaymentTest
     {
         var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.NonExistent, 50000);
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PaymentNotFound");
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e.Message.Contains("не найден"));
     }
 }

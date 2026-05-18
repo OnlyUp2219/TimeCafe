@@ -1,4 +1,3 @@
-using Billing.TimeCafe.Application.DTOs.Balance;
 using FluentResults;
 
 namespace Billing.TimeCafe.Test.Integration.CQRS.Transactions.Queries;
@@ -34,9 +33,11 @@ public class GetTransactionByIdQueryTests : IDisposable
             transaction.TransactionId = transactionId;
             transaction.BalanceAfter = DefaultsGuid.DefaultAmount;
             await repo.CreateAsync(transaction);
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        Result<TransactionDto> result;
+        Result<GetTransactionByIdResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -45,14 +46,14 @@ public class GetTransactionByIdQueryTests : IDisposable
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.TransactionId.Should().Be(transactionId);
-        result.Value.UserId.Should().Be(userId);
-        result.Value.Amount.Should().Be(DefaultsGuid.DefaultAmount);
-        result.Value.Type.Should().Be((int)TransactionType.Deposit);
-        result.Value.Source.Should().Be((int)TransactionSource.Payment);
-        result.Value.Status.Should().Be((int)TransactionStatus.Completed);
-        result.Value.Comment.Should().Be("Test transaction");
-        result.Value.BalanceAfter.Should().Be(DefaultsGuid.DefaultAmount);
+        result.Value.Transaction.TransactionId.Should().Be(transactionId);
+        result.Value.Transaction.UserId.Should().Be(userId);
+        result.Value.Transaction.Amount.Should().Be(DefaultsGuid.DefaultAmount);
+        result.Value.Transaction.Type.Should().Be((int)TransactionType.Deposit);
+        result.Value.Transaction.Source.Should().Be((int)TransactionSource.Payment);
+        result.Value.Transaction.Status.Should().Be((int)TransactionStatus.Completed);
+        result.Value.Transaction.Comment.Should().Be("Test transaction");
+        result.Value.Transaction.BalanceAfter.Should().Be(DefaultsGuid.DefaultAmount);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class GetTransactionByIdQueryTests : IDisposable
     {
         var nonExistentId = InvalidDataGuid.NonExistentPaymentId;
 
-        Result<TransactionDto> result;
+        Result<GetTransactionByIdResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();

@@ -84,6 +84,7 @@ public class GetByIdAsyncTests : BasePaymentRepositoryTest
             };
 
             await repository.CreateAsync(payment);
+            await SaveAndInvalidateCacheAsync(scope, DefaultsGuid.PaymentId, DefaultsGuid.UserId);
         }
 
         using var scope2 = CreateScope();

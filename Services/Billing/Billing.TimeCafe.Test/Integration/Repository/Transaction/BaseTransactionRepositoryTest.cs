@@ -13,6 +13,16 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
 
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
+    protected async Task SaveAndInvalidateCacheAsync(IServiceScope scope, Guid transactionId, Guid userId)
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.SaveChangesAsync();
+        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        await cache.RemoveByTagAsync(CacheTags.Transactions);
+        await cache.RemoveByTagAsync(CacheTags.Transaction(transactionId));
+        await cache.RemoveByTagAsync(CacheTags.TransactionByUser(userId));
+    }
+
     protected async Task<TransactionModel> CreateTestTransactionAsync(
         Guid? userId = null,
         decimal? amount = null,
@@ -23,6 +33,7 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var transaction = type switch
         {
@@ -39,7 +50,9 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
             _ => throw new ArgumentException($"Unsupported type: {type}")
         };
 
-        return await repository.CreateAsync(transaction, ct);
+        var created = await repository.CreateAsync(transaction, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return created;
     }
 
     protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
@@ -48,15 +61,15 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         var cache = scope.ServiceProvider.GetRequiredService<IDistributedCache>();
         var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
 
-        await cache.RemoveAsync(CacheKeys.Transaction_All, ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId), ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId2), ct);
-        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId3), ct);
+        await cache.RemoveAsync(CacheKeys.Transaction_All, cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId2), cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Transaction_ByUserId(DefaultsGuid.UserId3), cancellationToken);
 
-        await hybridCache.RemoveByTagAsync(CacheTags.Transactions, ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId), ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId2), ct);
-        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId3), ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.Transactions, cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId), cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId2), cancellationToken);
+        await hybridCache.RemoveByTagAsync(CacheTags.TransactionByUser(DefaultsGuid.UserId3), cancellationToken);
     }
 
     protected async Task ClearDatabaseAsync(CancellationToken cancellationToken = default)
@@ -64,7 +77,7 @@ public abstract class BaseTransactionRepositoryTest : IDisposable
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         db.Transactions.RemoveRange(db.Transactions);
-        await db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     public void Dispose()

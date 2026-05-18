@@ -59,6 +59,7 @@ public sealed class InitializeStripeCheckoutCommandHandler(
 
         var payment = paymentResult.Value;
         await _uow.Payments.CreateAsync(payment, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
         var createRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
@@ -74,6 +75,9 @@ public sealed class InitializeStripeCheckoutCommandHandler(
         if (!response.Success || string.IsNullOrWhiteSpace(response.SessionId))
         {
             _logger.LogError("Failed to create Stripe checkout session: {Error}", response.Error);
+            payment.MarkAsFailed(response.Error ?? "Stripe returns error");
+            await _uow.Payments.UpdateAsync(payment, cancellationToken);
+            await _uow.SaveChangesAsync(cancellationToken);
             return Result.Fail(new StripeWebhookError(response.Error ?? "Unknown error"));
         }
 

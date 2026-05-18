@@ -140,9 +140,9 @@ export const UsersListPage = () => {
         status: statusFilter || undefined,
     });
 
-    const users = data?.users ?? [];
-    const totalPages = data?.pagination.totalPages ?? 1;
-    const totalCount = data?.pagination.totalCount ?? 0;
+    const users = data?.items ?? [];
+    const totalPages = data?.metadata.totalPages ?? 1;
+    const totalCount = data?.metadata.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const handleClearFilters = useCallback(() => {

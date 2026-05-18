@@ -15,14 +15,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeCheckoutCompletedWebhook(checkoutSessionId, amount * 100, "pi_test_123");
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Completed);
@@ -46,15 +46,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeSuccessWebhook(externalPaymentId, (long)(amount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
-        result.StatusCode.Should().BeNull();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Completed);
@@ -76,14 +75,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeFailedWebhook(externalPaymentId);
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Failed);
@@ -101,14 +100,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeCancelledWebhook(externalPaymentId);
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Cancelled);
@@ -130,15 +129,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeSuccessWebhook(externalPaymentId, (long)(DefaultsGuid.DefaultAmount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
-        result.Message.Should().Contain("уже");
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -146,15 +144,15 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     {
         var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.NonExistent, (long)(DefaultsGuid.DefaultAmount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PaymentNotFound");
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e.Message.Contains("не найден"));
     }
 
     [Fact]
@@ -181,15 +179,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
             }
         };
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
-        result.Message.Should().Contain("проигнорировано");
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
@@ -217,14 +214,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeSuccessWebhook(externalPaymentId, (long)(stripeAmount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Completed);
@@ -238,15 +235,15 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
     {
         var webhook = CreateStripeSuccessWebhook(StripeTestData.PaymentIntents.Default, (long)(DefaultsGuid.DefaultAmount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("PaymentNotFound");
+        result.IsFailed.Should().BeTrue();
+        result.Errors.Should().ContainSingle(e => e.Message.Contains("не найден"));
     }
 
     [Fact]
@@ -276,14 +273,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
             }
         };
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.Status.Should().Be(PaymentStatus.Completed);
@@ -302,14 +299,14 @@ public class ProcessStripeWebhookCommandTests : BasePaymentTest
 
         var webhook = CreateStripeSuccessWebhook(newExternalPaymentId, (long)(DefaultsGuid.DefaultAmount * 100));
 
-        ProcessStripeWebhookResult result;
+        Result result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new ProcessStripeWebhookCommand(webhook, null));
         }
 
-        result.Success.Should().BeTrue();
+        result.IsSuccess.Should().BeTrue();
 
         var payment = await GetPaymentByIdAsync(paymentId);
         payment!.ExternalPaymentId.Should().Be(newExternalPaymentId);

@@ -44,21 +44,23 @@ public sealed class AdjustBalanceCommandHandler(
     {
         try
         {
-            return await _transactionExecutor.ExecuteAsync(async (token) =>
+            return await _transactionExecutor.ExecuteAsync(async (transactionToken) =>
             {
                 if (request.SourceId.HasValue)
                 {
                     var duplicate = await _uow.Transactions.ExistsBySourceAsync(
-                        request.Source, request.SourceId.Value, token);
+                        request.Source, request.SourceId.Value, transactionToken);
                     if (duplicate)
                         return Result.Fail<AdjustBalanceResponse>(new DuplicateTransactionError(request.SourceId));
                 }
 
-                var balance = await _uow.Balances.GetByIdAsync(request.UserId, token);
+                var isNew = false;
+                var balance = await _uow.Balances.GetByIdAsync(request.UserId, transactionToken);
                 if (balance == null)
                 {
                     balance = Balance.Create(request.UserId);
-                    await _uow.Balances.CreateAsync(balance, token);
+                    await _uow.Balances.CreateAsync(balance, transactionToken);
+                    isNew = true;
                 }
 
                 var result = request.Type switch
@@ -83,13 +85,16 @@ public sealed class AdjustBalanceCommandHandler(
 
                 transaction.BalanceAfter = balance.CurrentBalance;
 
-                await _uow.Balances.UpdateAsync(balance, token);
-                await _uow.Transactions.CreateAsync(transaction, token);
+                if (!isNew)
+                {
+                    await _uow.Balances.UpdateAsync(balance, transactionToken);
+                }
+                await _uow.Transactions.CreateAsync(transaction, transactionToken);
 
-                await _uow.SaveChangesAsync(token);
-                
-                await _publisher.Publish(new BalanceChangedEvent(balance.UserId), token);
-                await _publisher.Publish(new TransactionChangedEvent(transaction.TransactionId, balance.UserId), token);
+                await _uow.SaveChangesAsync(transactionToken);
+
+                await _publisher.Publish(new BalanceChangedEvent(balance.UserId), transactionToken);
+                await _publisher.Publish(new TransactionChangedEvent(transaction.TransactionId, balance.UserId), transactionToken);
 
                 return Result.Ok(new AdjustBalanceResponse(
                     balance.UserId,

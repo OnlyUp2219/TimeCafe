@@ -75,7 +75,8 @@ public class CreateAsyncTests : BaseTransactionRepositoryTest
             DefaultsGuid.SmallAmount,
             TransactionSource.Manual);
 
-        await repository.CreateAsync(transaction2);
+        var result2 = await repository.CreateAsync(transaction2);
+        await SaveAndInvalidateCacheAsync(scope, result2.TransactionId, DefaultsGuid.UserId);
 
         var historyAfter = await repository.GetByUserIdAsync(DefaultsGuid.UserId, 1, 10);
 

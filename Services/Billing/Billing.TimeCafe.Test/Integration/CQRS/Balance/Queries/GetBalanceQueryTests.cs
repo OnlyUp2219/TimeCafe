@@ -1,3 +1,5 @@
+using FluentResults;
+
 namespace Billing.TimeCafe.Test.Integration.CQRS.Balance.Queries;
 
 public class GetBalanceQueryTests : IDisposable
@@ -25,7 +27,7 @@ public class GetBalanceQueryTests : IDisposable
             before.Should().BeNull();
         }
 
-        Result<BalanceModel> result;
+        Result<GetBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -53,9 +55,11 @@ public class GetBalanceQueryTests : IDisposable
             var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
             var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.UpdatedAmount, TotalDeposited = DefaultsGuid.UpdatedAmount };
             await repo.CreateAsync(balance);
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        Result<BalanceModel> result;
+        Result<GetBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();

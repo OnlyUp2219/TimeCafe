@@ -40,7 +40,9 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     userId,
                     DefaultsGuid.DefaultAmount,
                     TransactionSource.Manual);
-                return await repository.CreateAsync(transaction);
+                var result = await repository.CreateAsync(transaction);
+                await SaveAndInvalidateCacheAsync(scope, result.TransactionId, userId);
+                return result;
             })).ToList();
 
         var results = await Task.WhenAll(createTasks);
@@ -71,7 +73,9 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     userId,
                     DefaultsGuid.SmallAmount * (i + 1),
                     TransactionSource.Manual);
-                return await repository.CreateAsync(transaction);
+                var result = await repository.CreateAsync(transaction);
+                await SaveAndInvalidateCacheAsync(scope, result.TransactionId, userId);
+                return result;
             })).ToList();
 
         var results = await Task.WhenAll(createTasks);
@@ -115,7 +119,8 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                         DefaultsGuid.SmallAmount,
                         TransactionSource.Visit,
                         DefaultsGuid.TariffId);
-                    await repository.CreateAsync(transaction);
+                    var result = await repository.CreateAsync(transaction);
+                    await SaveAndInvalidateCacheAsync(scope, result.TransactionId, userId);
                 }));
             }
         }
@@ -142,6 +147,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
         {
             var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
             await repository.CreateAsync(transaction);
+            await SaveAndInvalidateCacheAsync(scope, transaction.TransactionId, DefaultsGuid.UserId);
         }
 
         var tasks = Enumerable.Range(0, 8).Select(_ => Task.Run(async () =>
@@ -175,6 +181,7 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
         {
             var repository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
             await repository.CreateAsync(transaction);
+            await SaveAndInvalidateCacheAsync(scope, transaction.TransactionId, DefaultsGuid.UserId);
         }
 
         var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(async () =>
@@ -204,7 +211,8 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     DefaultsGuid.SmallAmount,
                     TransactionSource.Visit,
                     sourceId);
-                await repository.CreateAsync(transaction);
+                var result = await repository.CreateAsync(transaction);
+                await SaveAndInvalidateCacheAsync(scope, result.TransactionId, DefaultsGuid.UserId);
             }),
             Task.Run(async () =>
             {
@@ -237,7 +245,8 @@ public class ConcurrencyTests : BaseTransactionRepositoryTest
                     userId,
                     DefaultsGuid.SmallAmount,
                     TransactionSource.Manual);
-                await repository.CreateAsync(transaction);
+                var result = await repository.CreateAsync(transaction);
+                await SaveAndInvalidateCacheAsync(scope, result.TransactionId, userId);
             }));
         }
 

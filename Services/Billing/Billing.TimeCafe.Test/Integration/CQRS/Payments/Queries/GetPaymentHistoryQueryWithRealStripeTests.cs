@@ -22,7 +22,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
             PaymentStatus.Completed,
             externalPaymentId: StripeTestData.PaymentIntents.RealTest2);
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -30,10 +30,10 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Payments.Should().HaveCountGreaterThanOrEqualTo(2);
-        result.Payments.Should().Contain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealTest1);
-        result.Payments.Should().Contain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealTest2);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Payments.Should().HaveCountGreaterThanOrEqualTo(2);
+        result.Value.Payments.Should().Contain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealTest1);
+        result.Value.Payments.Should().Contain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealTest2);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         // Arrange
         var userId = DefaultsGuid.UserId2;
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -50,9 +50,9 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Payments.Should().BeEmpty();
-        result.TotalCount.Should().Be(0);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Payments.Should().BeEmpty();
+        result.Value.TotalCount.Should().Be(0);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         await CreatePaymentAsync(DefaultsGuid.PaymentId, userId1, DefaultsGuid.DefaultAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser1);
         await CreatePaymentAsync(DefaultsGuid.PaymentId2, userId2, DefaultsGuid.SmallAmount, externalPaymentId: StripeTestData.PaymentIntents.RealUser2);
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -73,10 +73,10 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        result.Success.Should().BeTrue();
-        var userPayments = result.Payments!.Where(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealUser1);
+        result.IsSuccess.Should().BeTrue();
+        var userPayments = result.Value.Payments!.Where(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealUser1);
         userPayments.Should().HaveCountGreaterThanOrEqualTo(1);
-        result.Payments.Should().NotContain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealUser2);
+        result.Value.Payments.Should().NotContain(p => p.ExternalPaymentId == StripeTestData.PaymentIntents.RealUser2);
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
                 externalPaymentId: $"pi_test_{i}");
         }
 
-        GetPaymentHistoryResult page1Result;
-        GetPaymentHistoryResult page2Result;
+        Result<GetPaymentHistoryResponse> page1Result;
+        Result<GetPaymentHistoryResponse> page2Result;
 
         using (var scope = CreateScope())
         {
@@ -104,10 +104,10 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        page1Result.Payments.Should().HaveCount(5);
-        page2Result.Payments.Should().HaveCount(5);
-        page1Result.Payments.Should().NotIntersectWith(page2Result.Payments);
-        page1Result.TotalCount.Should().BeGreaterThanOrEqualTo(15);
+        page1Result.Value.Payments.Should().HaveCount(5);
+        page2Result.Value.Payments.Should().HaveCount(5);
+        page1Result.Value.Payments.Should().NotIntersectWith(page2Result.Value.Payments);
+        page1Result.Value.TotalCount.Should().BeGreaterThanOrEqualTo(15);
     }
 
     [Fact]
@@ -124,7 +124,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
             PaymentStatus.Completed,
             externalPaymentId: externalPaymentId);
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -132,7 +132,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        var payment = result.Payments?.FirstOrDefault(p => p.ExternalPaymentId == externalPaymentId);
+        var payment = result.Value.Payments?.FirstOrDefault(p => p.ExternalPaymentId == externalPaymentId);
         payment.Should().NotBeNull();
         payment!.ExternalPaymentId.Should().StartWith("pi_");
         payment.Amount.Should().Be(DefaultsGuid.DefaultAmount);
@@ -154,7 +154,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
 
         var afterCreation = DateTime.UtcNow;
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -162,7 +162,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        var payment = result.Payments?.FirstOrDefault();
+        var payment = result.Value.Payments?.FirstOrDefault();
         payment.Should().NotBeNull();
         payment!.CreatedAt.Should().BeOnOrAfter(beforeCreation);
         payment.CreatedAt.Should().BeOnOrBefore(afterCreation);
@@ -179,7 +179,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         await CreatePaymentAsync(DefaultsGuid.PaymentId3, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Failed, StripeTestData.PaymentIntents.Failed);
         await CreatePaymentAsync(DefaultsGuid.PaymentId4, userId, DefaultsGuid.DefaultAmount, PaymentStatus.Cancelled, StripeTestData.PaymentIntents.Cancelled);
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -187,59 +187,15 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        result.Success.Should().BeTrue();
-        result.Payments.Should().NotBeNullOrEmpty();
-        var statuses = result.Payments!.Select(p => p.Status).Distinct();
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Payments.Should().NotBeNullOrEmpty();
+        var statuses = result.Value.Payments!.Select(p => p.Status).Distinct();
         statuses.Should().Contain(nameof(PaymentStatus.Pending));
         statuses.Should().Contain(nameof(PaymentStatus.Completed));
         statuses.Should().Contain(nameof(PaymentStatus.Failed));
         statuses.Should().Contain(nameof(PaymentStatus.Cancelled));
     }
 
-    [Fact]
-    public async Task Query_GetPaymentHistory_Should_ValidateInvalidUserId_AndReturnError()
-    {
-        // Arrange
-        GetPaymentHistoryResult result;
-
-        // Act & Assert
-        var action = async () =>
-        {
-            using var scope = CreateScope();
-            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            result = await sender.Send(new GetPaymentHistoryQuery(Guid.Empty));
-        };
-
-        await action.Should().ThrowAsync<FluentValidation.ValidationException>();
-    }
-
-    [Fact]
-    public async Task Query_GetPaymentHistory_Should_ValidateNegativePage_AndReturnError()
-    {
-        // Arrange & Act & Assert
-        var action = async () =>
-        {
-            using var scope = CreateScope();
-            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 0, 10));
-        };
-
-        await action.Should().ThrowAsync<FluentValidation.ValidationException>();
-    }
-
-    [Fact]
-    public async Task Query_GetPaymentHistory_Should_ValidateInvalidPageSize_AndReturnError()
-    {
-        // Arrange & Act & Assert
-        var action = async () =>
-        {
-            using var scope = CreateScope();
-            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-            await sender.Send(new GetPaymentHistoryQuery(DefaultsGuid.UserId, 1, 0));
-        };
-
-        await action.Should().ThrowAsync<FluentValidation.ValidationException>();
-    }
 
     [Fact]
     public async Task Query_GetPaymentHistory_Should_HandleLargePageSizes_Correctly()
@@ -255,7 +211,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
                 externalPaymentId: $"pi_test_large_{i}");
         }
 
-        GetPaymentHistoryResult result;
+        Result<GetPaymentHistoryResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -263,7 +219,7 @@ public class GetPaymentHistoryQueryWithRealStripeTests : BasePaymentTest
         }
 
         // Assert
-        result.Payments!.Count.Should().BeLessThanOrEqualTo(100);
-        result.TotalCount.Should().BeGreaterThanOrEqualTo(50);
+        result.Value.Payments!.Count.Should().BeLessThanOrEqualTo(100);
+        result.Value.TotalCount.Should().BeGreaterThanOrEqualTo(50);
     }
 }

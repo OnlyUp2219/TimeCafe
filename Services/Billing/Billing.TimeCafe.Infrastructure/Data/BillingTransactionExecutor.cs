@@ -11,7 +11,7 @@ public class BillingTransactionExecutor(ApplicationDbContext db) : IBillingTrans
             return await action(cancellationToken);
         }
 
-        await using var transaction = await _db.Database.BeginTransactionAsync(ct);
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
@@ -21,7 +21,7 @@ public class BillingTransactionExecutor(ApplicationDbContext db) : IBillingTrans
         }
         catch
         {
-            await transaction.RollbackAsync(ct);
+            await transaction.RollbackAsync(cancellationToken);
             throw;
         }
     }

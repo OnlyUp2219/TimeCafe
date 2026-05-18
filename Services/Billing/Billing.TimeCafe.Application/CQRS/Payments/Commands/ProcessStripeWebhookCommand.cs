@@ -2,7 +2,8 @@ namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
 
 public sealed record ProcessStripeWebhookCommand(
     StripeWebhookPayload Payload,
-    string? SignatureHeader) : ICommand;
+    string? SignatureHeader,
+    bool BypassSignature = false) : ICommand;
 
 public sealed class ProcessStripeWebhookCommandValidator : AbstractValidator<ProcessStripeWebhookCommand>
 {
@@ -40,10 +41,13 @@ public sealed class ProcessStripeWebhookCommandHandler(
             return Result.Ok(); // Ignored
         }
 
-        var webhookSecret = _options.Value.WebhookSecret;
-        if (!string.IsNullOrWhiteSpace(webhookSecret) && string.IsNullOrWhiteSpace(request.SignatureHeader))
+        if (!request.BypassSignature)
         {
-            return Result.Fail(new StripeWebhookError("Missing signature header"));
+            var webhookSecret = _options.Value.WebhookSecret;
+            if (!string.IsNullOrWhiteSpace(webhookSecret) && string.IsNullOrWhiteSpace(request.SignatureHeader))
+            {
+                return Result.Fail(new StripeWebhookError("Missing signature header"));
+            }
         }
 
         var paymentIntent = payload.Data?.Object;
@@ -52,9 +56,11 @@ public sealed class ProcessStripeWebhookCommandHandler(
 
         var stripeObjectId = paymentIntent.Id.Trim();
         var stripePaymentIntentId = paymentIntent.PaymentIntentId?.Trim();
-        
-        paymentIntent.Metadata?.TryGetValue("paymentId", out var metadataPaymentId);
-        paymentIntent.Metadata?.TryGetValue("userId", out var metadataUserId);
+
+        string? metadataPaymentId = null;
+        string? metadataUserId = null;
+        paymentIntent.Metadata?.TryGetValue("paymentId", out metadataPaymentId);
+        paymentIntent.Metadata?.TryGetValue("userId", out metadataUserId);
 
         var payment = await FindPaymentAsync(stripeObjectId, stripePaymentIntentId, metadataPaymentId, metadataUserId, paymentIntent, cancellationToken);
 
@@ -65,20 +71,28 @@ public sealed class ProcessStripeWebhookCommandHandler(
             return Result.Fail(new PaymentNotFoundError(pid != Guid.Empty ? pid : null));
         }
 
-        if (payment.Status == PaymentStatus.Completed)
-            return Result.Ok(); // Already processed
+        if (payment.Status != PaymentStatus.Pending)
+        {
+            if (payment.Status == PaymentStatus.Completed)
+                return Result.Ok();
+
+            _logger.LogWarning("Stripe webhook received {Type} for payment {PaymentId} in final status {Status}", 
+                payload.Type, payment.PaymentId, payment.Status);
+
+            return Result.Fail(new Error($"Нельзя изменить статус платежа из {payment.Status}"));
+        }
 
         var result = payload.Type.ToLower() switch
         {
-            "checkout.session.completed" or "checkout.session.async_payment_succeeded" 
+            "checkout.session.completed" or "checkout.session.async_payment_succeeded"
                 => await HandleSuccess(payment, paymentIntent, cancellationToken),
-            
-            "checkout.session.async_payment_failed" 
+
+            "checkout.session.async_payment_failed"
                 => await HandleFailure(payment, "Stripe: асинхронный платёж отклонён", cancellationToken),
-            
-            "checkout.session.expired" 
-                => await HandleFailure(payment, "Сессия оплаты истекла", cancellationToken),
-            
+
+            "checkout.session.expired"
+                => await HandleCancellation(payment, "Сессия оплаты истекла", cancellationToken),
+
             _ => Result.Ok()
         };
 
@@ -92,12 +106,12 @@ public sealed class ProcessStripeWebhookCommandHandler(
     }
 
     private async Task<Payment?> FindPaymentAsync(
-        string objectId, 
-        string? intentId, 
-        string? metadataPaymentId, 
-        string? metadataUserId, 
-        StripePaymentIntentObject intent, 
-        CancellationToken cancellationToken)
+        string objectId,
+        string? intentId,
+        string? metadataPaymentId,
+        string? metadataUserId,
+        StripePaymentIntentObject intent,
+        CancellationToken cancellationToken = default)
     {
         var payment = await _uow.Payments.GetByExternalPaymentIdAsync(objectId, cancellationToken);
 
@@ -117,7 +131,7 @@ public sealed class ProcessStripeWebhookCommandHandler(
         return payment;
     }
 
-    private async Task<Result> HandleSuccess(Payment payment, StripePaymentIntentObject session, CancellationToken cancellationToken)
+    private async Task<Result> HandleSuccess(Payment payment, StripePaymentIntentObject session, CancellationToken cancellationToken = default)
     {
         var amount = session.AmountTotal > 0 ? session.AmountTotal / 100m : payment.Amount;
 
@@ -141,7 +155,7 @@ public sealed class ProcessStripeWebhookCommandHandler(
         }
 
         payment.MarkAsSucceeded(
-            adjustResult.ValueOrDefault.Transaction?.TransactionId ?? Guid.Empty, 
+            adjustResult.ValueOrDefault?.TransactionId ?? Guid.Empty,
             session.Created > 0 ? DateTimeOffset.FromUnixTimeSeconds(session.Created) : null);
 
         if (!string.IsNullOrWhiteSpace(session.PaymentIntentId))
@@ -153,9 +167,16 @@ public sealed class ProcessStripeWebhookCommandHandler(
         return Result.Ok();
     }
 
-    private async Task<Result> HandleFailure(Payment payment, string message, CancellationToken cancellationToken)
+    private async Task<Result> HandleFailure(Payment payment, string message, CancellationToken cancellationToken = default)
     {
         payment.MarkAsFailed(message);
+        await _uow.Payments.UpdateAsync(payment, cancellationToken);
+        return Result.Ok();
+    }
+
+    private async Task<Result> HandleCancellation(Payment payment, string message, CancellationToken cancellationToken = default)
+    {
+        payment.MarkAsCancelled(message);
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
         return Result.Ok();
     }

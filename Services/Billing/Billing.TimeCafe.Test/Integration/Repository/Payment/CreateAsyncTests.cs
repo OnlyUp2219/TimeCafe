@@ -19,6 +19,7 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
         };
 
         var result = await repository.CreateAsync(payment);
+        await SaveAndInvalidateCacheAsync(scope, result.PaymentId, DefaultsGuid.UserId);
 
         result.Should().NotBeNull();
         result.PaymentId.Should().NotBe(Guid.Empty);
@@ -46,6 +47,7 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
         };
 
         var result = await repository.CreateAsync(payment);
+        await SaveAndInvalidateCacheAsync(scope, result.PaymentId, DefaultsGuid.UserId);
 
         result.Status.Should().Be(PaymentStatus.Pending);
 
@@ -125,6 +127,7 @@ public class CreateAsyncTests : BasePaymentRepositoryTest
         };
 
         await repository.CreateAsync(payment);
+        await SaveAndInvalidateCacheAsync(scope, DefaultsGuid.PaymentId, DefaultsGuid.UserId);
 
         var read1 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);
         var read2 = await repository.GetByIdAsync(DefaultsGuid.PaymentId);

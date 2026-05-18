@@ -30,7 +30,7 @@ public class GetUserDebtQueryTests : IDisposable
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(0m);
+        result.Value.Debt.Should().Be(0m);
 
         var created = await db.Balances.FindAsync(userId);
         created.Should().NotBeNull();
@@ -48,14 +48,17 @@ public class GetUserDebtQueryTests : IDisposable
         var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
         var balance = await repository.CreateAsync(new BalanceModel(userId));
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.SaveChangesAsync();
         balance.Deposit(DefaultsGuid.SmallAmount);
         balance.Withdraw(DefaultsGuid.DefaultAmount);
         await repository.UpdateAsync(balance);
+        await db.SaveChangesAsync();
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(balance.Debt);
+        result.Value.Debt.Should().Be(balance.Debt);
     }
 
     [Fact]
@@ -69,11 +72,13 @@ public class GetUserDebtQueryTests : IDisposable
 
         var balance = new BalanceModel(userId) { CurrentBalance = DefaultsGuid.DefaultAmount };
         await repository.CreateAsync(balance);
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.SaveChangesAsync();
 
         var result = await sender.Send(new GetUserDebtQuery(userId));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().Be(0m);
+        result.Value.Debt.Should().Be(0m);
     }
 
     public void Dispose()

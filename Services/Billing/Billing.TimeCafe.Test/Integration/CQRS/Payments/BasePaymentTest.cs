@@ -22,6 +22,7 @@ public abstract class BasePaymentTest : IDisposable
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<Billing.TimeCafe.Infrastructure.Data.ApplicationDbContext>();
 
         var payment = new PaymentModel
         {
@@ -35,6 +36,7 @@ public abstract class BasePaymentTest : IDisposable
         };
 
         await repo.CreateAsync(payment, CancellationToken.None);
+        await db.SaveChangesAsync();
         return payment;
     }
 
@@ -104,6 +106,7 @@ public abstract class BasePaymentTest : IDisposable
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<Billing.TimeCafe.Infrastructure.Data.ApplicationDbContext>();
 
         var balanceModel = new BalanceModel(userId)
         {
@@ -113,6 +116,7 @@ public abstract class BasePaymentTest : IDisposable
         };
 
         await repo.CreateAsync(balanceModel);
+        await db.SaveChangesAsync();
         return balanceModel;
     }
 
@@ -133,7 +137,7 @@ public abstract class BasePaymentTest : IDisposable
     {
         using var scope = CreateScope();
         var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-        return await repo.GetByUserIdAsync(userId, CancellationToken.None);
+        return await repo.GetByIdAsync(userId, CancellationToken.None);
     }
 
     protected async Task<BalanceModel?> GetBalanceByUserIdAsync(string userId)

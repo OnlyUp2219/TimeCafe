@@ -13,10 +13,20 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
 
     protected IServiceScope CreateScope() => Factory.Services.CreateScope();
 
+    protected async Task SaveAndInvalidateCacheAsync(IServiceScope scope, Guid userId)
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.SaveChangesAsync();
+        var cache = scope.ServiceProvider.GetRequiredService<HybridCache>();
+        await cache.RemoveByTagAsync(CacheTags.Balances);
+        await cache.RemoveByTagAsync(CacheTags.Balance(userId));
+    }
+
     protected async Task<BalanceModel> CreateTestBalanceAsync(Guid? userId = null, decimal? amount = null, CancellationToken cancellationToken = default)
     {
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         var balance = new BalanceModel(userId ?? DefaultsGuid.UserId)
         {
@@ -26,7 +36,9 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
             Debt = 0m
         };
 
-        return await repository.CreateAsync(balance, ct);
+        var created = await repository.CreateAsync(balance, cancellationToken);
+        await db.SaveChangesAsync(cancellationToken);
+        return created;
     }
 
     protected async Task ClearCacheAsync(CancellationToken cancellationToken = default)
@@ -36,19 +48,19 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
         var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        var balances = await db.Balances.AsNoTracking().ToListAsync(ct);
+        var balances = await db.Balances.AsNoTracking().ToListAsync(cancellationToken);
         foreach (var balance in balances)
         {
             var cacheKey = CacheKeys.Balance_ByUserId(balance.UserId);
-            await cache.RemoveAsync(cacheKey, ct);
+            await cache.RemoveAsync(cacheKey, cancellationToken);
         }
-        await cache.RemoveAsync(CacheKeys.Debtors_All, ct);
-        await cache.RemoveAsync(CacheKeys.Balance_All, ct);
+        await cache.RemoveAsync(CacheKeys.Debtors_All, cancellationToken);
+        await cache.RemoveAsync(CacheKeys.Balance_All, cancellationToken);
 
-        await hybridCache.RemoveByTagAsync(CacheTags.Balances, ct);
+        await hybridCache.RemoveByTagAsync(CacheTags.Balances, cancellationToken);
         foreach (var balance in balances)
         {
-            await hybridCache.RemoveByTagAsync(CacheTags.Balance(balance.UserId), ct);
+            await hybridCache.RemoveByTagAsync(CacheTags.Balance(balance.UserId), cancellationToken);
         }
     }
 
@@ -56,9 +68,9 @@ public abstract class BaseBalanceRepositoryTest : IDisposable
     {
         using var scope = CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var balances = await db.Balances.ToListAsync(ct);
+        var balances = await db.Balances.ToListAsync(cancellationToken);
         db.Balances.RemoveRange(balances);
-        await db.SaveChangesAsync(ct);
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     public void Dispose()

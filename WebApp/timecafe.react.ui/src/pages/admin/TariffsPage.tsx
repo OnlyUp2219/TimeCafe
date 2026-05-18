@@ -55,10 +55,10 @@ export const TariffsPage = () => {
     );
     const { data: promotions = [] } = useGetAllPromotionsQuery();
 
-    const tariffs = data?.tariffs ?? [];
-    const totalCount = data?.totalCount ?? 0;
+    const tariffs = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
     const maxCap = data?.maxTotalDiscountPercent;
-    const totalPages = data?.totalPages ?? 1;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [deleteTariff] = useDeleteTariffMutation();

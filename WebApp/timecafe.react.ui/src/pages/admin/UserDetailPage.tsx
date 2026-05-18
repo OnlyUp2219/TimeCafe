@@ -176,9 +176,9 @@ export const UserDetailPage = () => {
         } catch { /* error handled by RTK */ }
     }, [id, deleteNote]);
 
-    const transactions = txData?.transactions ?? [];
-    const txTotalPages = txData?.pagination.totalPages ?? 1;
-    const txTotalCount = txData?.pagination.totalCount ?? 0;
+    const transactions = txData?.items ?? [];
+    const txTotalPages = txData?.metadata.totalPages ?? 1;
+    const txTotalCount = txData?.metadata.totalCount ?? 0;
 
     const errorMessage = userError ? getRtkErrorMessage(userError as FetchBaseQueryError) : null;
     const txErrorMessage = txError ? getRtkErrorMessage(txError as FetchBaseQueryError) : null;

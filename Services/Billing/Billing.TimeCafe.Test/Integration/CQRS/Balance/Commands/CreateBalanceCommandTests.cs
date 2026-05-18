@@ -18,19 +18,17 @@ public class CreateBalanceCommandTests : IDisposable
     {
         var userId = DefaultsGuid.UserId;
 
-        CreateBalanceResult result;
+        Result<CreateBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new CreateBalanceCommand(userId));
         }
 
-        result.Success.Should().BeTrue();
-        result.Balance.Should().NotBeNull();
-        result.Balance!.UserId.Should().Be(userId);
-        result.Balance.CurrentBalance.Should().Be(0m);
-        result.Balance.TotalDeposited.Should().Be(0m);
-        result.Balance.Debt.Should().Be(0m);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNull();
+        result.Value.UserId.Should().Be(userId);
+        result.Value.CurrentBalance.Should().Be(0m);
 
         using var scope2 = CreateScope();
         var db = scope2.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -40,26 +38,28 @@ public class CreateBalanceCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task Command_CreateBalance_Should_ReturnError_WhenAlreadyExists()
+    public async Task Command_CreateBalance_Should_ReturnExistingBalance_WhenAlreadyExists()
     {
         var userId = DefaultsGuid.UserId2;
 
         using (var scope = CreateScope())
         {
             var repo = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
-            await repo.CreateAsync(new BalanceModel(userId));
+            await repo.CreateAsync(new BalanceModel(userId) { CurrentBalance = 100m });
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        CreateBalanceResult result;
+        Result<CreateBalanceResponse> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
             result = await sender.Send(new CreateBalanceCommand(userId));
         }
 
-        result.Success.Should().BeFalse();
-        result.Code.Should().Be("BalanceAlreadyExists");
-        result.StatusCode.Should().Be(409);
+        result.IsSuccess.Should().BeTrue();
+        result.Value.UserId.Should().Be(userId);
+        result.Value.CurrentBalance.Should().Be(100m);
     }
 
     [Fact]

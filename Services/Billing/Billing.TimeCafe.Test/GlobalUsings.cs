@@ -1,8 +1,11 @@
 global using Billing.TimeCafe.Application.CQRS.Balances.Commands;
+global using Billing.TimeCafe.Application.CQRS.Balances.Events;
+global using FluentResults;
 global using Billing.TimeCafe.Application.CQRS.Balances.Queries;
 global using Billing.TimeCafe.Application.CQRS.Payments.Commands;
 global using Billing.TimeCafe.Application.CQRS.Payments.Queries;
 global using Billing.TimeCafe.Application.CQRS.Transactions.Queries;
+global using Billing.TimeCafe.Application.CQRS.Transactions.Events;
 global using Billing.TimeCafe.Application.Services.Payments;
 global using Billing.TimeCafe.Domain.Constants;
 global using Billing.TimeCafe.Domain.Contracts;

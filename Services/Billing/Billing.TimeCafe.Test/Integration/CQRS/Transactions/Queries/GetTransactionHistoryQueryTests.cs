@@ -1,4 +1,6 @@
 using FluentResults;
+using Billing.TimeCafe.Application.DTOs.Balance;
+using BuildingBlocks.Contracts.CQRS;
 
 namespace Billing.TimeCafe.Test.Integration.CQRS.Transactions.Queries;
 
@@ -20,7 +22,7 @@ public class GetTransactionHistoryQueryTests : IDisposable
     {
         var userId = DefaultsGuid.UserId;
 
-        Result<GetTransactionHistoryResponse> result;
+        Result<PagedResponse<TransactionDto>> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -28,10 +30,10 @@ public class GetTransactionHistoryQueryTests : IDisposable
         }
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Transactions.Should().NotBeNull();
-        result.Value.Transactions.Should().BeEmpty();
-        result.Value.TotalCount.Should().Be(0);
-        result.Value.TotalPages.Should().Be(0);
+        result.Value.Items.Should().NotBeNull();
+        result.Value.Items.Should().BeEmpty();
+        result.Value.Metadata.TotalCount.Should().Be(0);
+        result.Value.Metadata.TotalPages.Should().Be(0);
     }
 
     [Fact]
@@ -62,9 +64,11 @@ public class GetTransactionHistoryQueryTests : IDisposable
 
             await repo.CreateAsync(transaction1);
             await repo.CreateAsync(transaction2);
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        Result<GetTransactionHistoryResponse> result;
+        Result<PagedResponse<TransactionDto>> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -72,12 +76,12 @@ public class GetTransactionHistoryQueryTests : IDisposable
         }
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Transactions.Should().NotBeNull();
-        result.Value.Transactions.Should().HaveCount(2);
-        result.Value.TotalCount.Should().Be(2);
-        result.Value.TotalPages.Should().Be(1);
-        result.Value.Transactions[0].UserId.Should().Be(userId);
-        result.Value.Transactions[1].UserId.Should().Be(userId);
+        result.Value.Items.Should().NotBeNull();
+        result.Value.Items.Should().HaveCount(2);
+        result.Value.Metadata.TotalCount.Should().Be(2);
+        result.Value.Metadata.TotalPages.Should().Be(1);
+        result.Value.Items.ElementAt(0).UserId.Should().Be(userId);
+        result.Value.Items.ElementAt(1).UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -103,9 +107,11 @@ public class GetTransactionHistoryQueryTests : IDisposable
 
                 await repo.CreateAsync(transaction);
             }
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        Result<GetTransactionHistoryResponse> result;
+        Result<PagedResponse<TransactionDto>> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -113,9 +119,9 @@ public class GetTransactionHistoryQueryTests : IDisposable
         }
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Transactions.Should().HaveCount(2);
-        result.Value.TotalCount.Should().Be(5);
-        result.Value.TotalPages.Should().Be(3);
+        result.Value.Items.Should().HaveCount(2);
+        result.Value.Metadata.TotalCount.Should().Be(5);
+        result.Value.Metadata.TotalPages.Should().Be(3);
     }
 
     [Fact]
@@ -141,9 +147,11 @@ public class GetTransactionHistoryQueryTests : IDisposable
 
                 await repo.CreateAsync(transaction);
             }
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            await db.SaveChangesAsync();
         }
 
-        Result<GetTransactionHistoryResponse> result;
+        Result<PagedResponse<TransactionDto>> result;
         using (var scope = CreateScope())
         {
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
@@ -151,9 +159,9 @@ public class GetTransactionHistoryQueryTests : IDisposable
         }
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Transactions.Should().HaveCount(2);
-        result.Value.TotalCount.Should().Be(5);
-        result.Value.TotalPages.Should().Be(3);
+        result.Value.Items.Should().HaveCount(2);
+        result.Value.Metadata.TotalCount.Should().Be(5);
+        result.Value.Metadata.TotalPages.Should().Be(3);
     }
 
     public void Dispose()

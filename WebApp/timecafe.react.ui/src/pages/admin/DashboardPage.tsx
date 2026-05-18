@@ -68,21 +68,21 @@ export const DashboardPage = () => {
             <div className="flex gap-4 flex-wrap mb-6">
                 <StatCard
                     title="Пользователи"
-                    value={usersLoading ? "..." : (usersData?.pagination.totalCount ?? "—")}
+                    value={usersLoading ? "..." : (usersData?.metadata.totalCount ?? "—")}
                     icon={<People20Regular />}
                     onClick={() => navigate("/admin/users")}
                     cardSize={sizes.card}
                 />
                 <StatCard
                     title="Тарифы"
-                    value={tariffsLoading ? "..." : (tariffsData?.totalCount ?? "—")}
+                    value={tariffsLoading ? "..." : (tariffsData?.metadata?.totalCount ?? "—")}
                     icon={<Money20Regular />}
                     onClick={() => navigate("/admin/tariffs")}
                     cardSize={sizes.card}
                 />
                 <StatCard
                     title="Визиты"
-                    value={visitsLoading ? "..." : (visitsData?.totalCount ?? "—")}
+                    value={visitsLoading ? "..." : (visitsData?.metadata?.totalCount ?? "—")}
                     icon={<Clock20Regular />}
                     onClick={() => navigate("/admin/visits")}
                     cardSize={sizes.card}

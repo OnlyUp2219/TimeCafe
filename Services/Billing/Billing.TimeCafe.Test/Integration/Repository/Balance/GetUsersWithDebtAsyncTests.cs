@@ -28,6 +28,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         await repository.CreateAsync(balance1);
         await repository.CreateAsync(balance2);
+        await SaveAndInvalidateCacheAsync(scope, debtorUserId);
 
         var result = await repository.GetUsersWithDebtAsync();
 
@@ -49,6 +50,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         await repository.CreateAsync(new BalanceModel(userId1) { Debt = 30m });
         await repository.CreateAsync(new BalanceModel(userId2) { Debt = 100m });
         await repository.CreateAsync(new BalanceModel(userId3) { Debt = 50m });
+        await SaveAndInvalidateCacheAsync(scope, userId1);
 
         await scope.ServiceProvider.GetRequiredService<IDistributedCache>().RemoveAsync(CacheKeys.Debtors_All);
 
@@ -76,6 +78,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         await repository.CreateAsync(balance);
+        await SaveAndInvalidateCacheAsync(scope, userId);
 
         var result1 = await repository.GetUsersWithDebtAsync();
         var result2 = await repository.GetUsersWithDebtAsync();
@@ -97,10 +100,12 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
 
         var balance1 = new BalanceModel(userId1) { Debt = DefaultsGuid.DebtAmount };
         await repository.CreateAsync(balance1);
+        await SaveAndInvalidateCacheAsync(scope, userId1);
         var result1 = await repository.GetUsersWithDebtAsync();
 
         var balance2 = new BalanceModel(userId2) { Debt = 75m };
         await repository.CreateAsync(balance2);
+        await SaveAndInvalidateCacheAsync(scope, userId2);
         var result2 = await repository.GetUsersWithDebtAsync();
 
         result1.Should().HaveCount(1);
@@ -117,6 +122,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         using var scope = CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         await repository.CreateAsync(balance);
+        await SaveAndInvalidateCacheAsync(scope, userId);
 
         var result1 = await repository.GetUsersWithDebtAsync();
         result1.Should().HaveCount(1);
@@ -125,6 +131,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         balance.Debt = DefaultsGuid.UpdatedAmount;
         balance.LastUpdated = DateTimeOffset.UtcNow;
         await repository.UpdateAsync(balance);
+        await SaveAndInvalidateCacheAsync(scope, userId);
 
         var result2 = await repository.GetUsersWithDebtAsync();
 
@@ -143,6 +150,7 @@ public class GetUsersWithDebtAsyncTests : BaseBalanceRepositoryTest
         var repository = scope.ServiceProvider.GetRequiredService<IBalanceRepository>();
         await repository.CreateAsync(new BalanceModel(userId1) { Debt = DefaultsGuid.DebtAmount });
         await repository.CreateAsync(new BalanceModel(userId2) { Debt = 0m });
+        await SaveAndInvalidateCacheAsync(scope, userId1);
 
         var result = await repository.GetUsersWithDebtAsync();
 

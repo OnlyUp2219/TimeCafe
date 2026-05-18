@@ -53,6 +53,7 @@ public sealed class InitializeStripePaymentCommandHandler(
 
         var payment = paymentResult.Value;
         await _uow.Payments.CreateAsync(payment, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
         var createRequest = new StripeCreatePaymentRequest(
             payment.PaymentId,
