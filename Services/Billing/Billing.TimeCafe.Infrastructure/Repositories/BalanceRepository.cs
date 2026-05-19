@@ -20,14 +20,25 @@ public sealed class BalanceRepository(
 
     public async Task<Balance> CreateAsync(Balance balance, CancellationToken cancellationToken = default)
     {
+        var existing = await _context.Balances.FindAsync([balance.UserId], cancellationToken);
+        if (existing is not null)
+        {
+            return existing;
+        }
         _context.Balances.Add(balance);
-        return await Task.FromResult(balance);
+        return balance;
     }
 
-    public async Task<Balance> UpdateAsync(Balance balance, CancellationToken cancellationToken = default)
+    public async Task<Balance?> UpdateAsync(Balance balance, CancellationToken cancellationToken = default)
     {
-        _context.Balances.Update(balance);
-        return await Task.FromResult(balance);
+        ArgumentNullException.ThrowIfNull(balance);
+        var existingBalance = await _context.Balances.FindAsync([balance.UserId], cancellationToken);
+        if (existingBalance == null)
+            return null;
+
+        _context.Entry(existingBalance).CurrentValues.SetValues(balance);
+
+        return existingBalance;
     }
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)

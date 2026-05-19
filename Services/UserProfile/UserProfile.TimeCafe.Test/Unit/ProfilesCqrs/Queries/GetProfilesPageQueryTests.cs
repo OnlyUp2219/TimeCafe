@@ -20,7 +20,7 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.Should().HaveCount(10);
+        result.Value.Items.Should().HaveCount(10);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public class GetProfilesPageQueryTests : BaseCqrsTest
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.Should().HaveCount(5);
+        result.Value.Items.Should().HaveCount(5);
     }
 
     [Fact]

@@ -88,8 +88,14 @@ public sealed class TransactionRepository(
 
     public async Task<Transaction?> UpdateAsync(Transaction transaction, CancellationToken cancellationToken = default)
     {
-        _context.Transactions.Update(transaction);
-        return await Task.FromResult(transaction);
+        ArgumentNullException.ThrowIfNull(transaction);
+        var existingTransaction = await _context.Transactions.FindAsync([transaction.TransactionId], cancellationToken);
+        if (existingTransaction == null)
+            return null;
+
+        _context.Entry(existingTransaction).CurrentValues.SetValues(transaction);
+
+        return existingTransaction;
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)

@@ -57,3 +57,11 @@ public sealed class ActiveGlobalPromotionAlreadyExistsError : Error
         Metadata.Add("ErrorCode", "409");
     }
 }
+
+public sealed class PromotionUpdateFailedError : Error
+{
+    public PromotionUpdateFailedError() : base("Не удалось обновить акцию")
+    {
+        Metadata.Add("ErrorCode", "500");
+    }
+}

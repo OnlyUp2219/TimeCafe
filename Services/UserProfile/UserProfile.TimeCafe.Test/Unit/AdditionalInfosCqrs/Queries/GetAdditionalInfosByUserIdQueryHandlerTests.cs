@@ -27,7 +27,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.Any().Should().BeFalse();
+        result.Value.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId, 1, 10));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
+        result.Value.Items.Should().BeEmpty();
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class GetAdditionalInfosByUserIdQueryHandlerTests
         var result = await handler.Handle(new GetAdditionalInfosByUserIdQuery(userId, 1, 10));
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
+        result.Value.Items.Should().HaveCount(2);
     }
 
     [Fact]

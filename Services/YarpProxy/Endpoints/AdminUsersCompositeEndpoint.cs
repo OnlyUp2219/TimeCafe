@@ -22,10 +22,10 @@ public class AdminUsersCompositeEndpoint : ICarterModule
                 authUrl += $"&status={status}";
 
             var authResponse = await authClient.GetFromJsonAsync<AuthUsersResponse>(authUrl);
-            if (authResponse == null || authResponse.Users == null)
+            if (authResponse == null || authResponse.Items == null)
                 return Results.Problem("Не удалось получить список пользователей из сервиса Auth");
 
-            var userIds = authResponse.Users.Select(u => u.Id).ToList();
+            var userIds = authResponse.Items.Select(u => u.Id).ToList();
 
             List<ProfileDto>? profiles = null;
             List<BalanceDto>? balances = null;
@@ -54,7 +54,7 @@ public class AdminUsersCompositeEndpoint : ICarterModule
             var profilesMap = profiles?.ToDictionary(p => p.UserId) ?? [];
             var balancesMap = balances?.ToDictionary(b => b.UserId) ?? [];
 
-            var compositeUsers = authResponse.Users.Select(user => new
+            var compositeUsers = authResponse.Items.Select(user => new
             {
                 user.Id,
                 user.Email,
@@ -70,8 +70,8 @@ public class AdminUsersCompositeEndpoint : ICarterModule
 
             return Results.Ok(new
             {
-                Users = compositeUsers,
-                authResponse.Pagination
+                Items = compositeUsers,
+                authResponse.Metadata
             });
         })
         .WithTags("AdminComposite")
@@ -80,9 +80,9 @@ public class AdminUsersCompositeEndpoint : ICarterModule
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountAdminRead));
     }
 
-    private record AuthUsersResponse(List<AuthUserDto> Users, PaginationDto Pagination);
+    private record AuthUsersResponse(List<AuthUserDto> Items, PageMetadataDto Metadata);
     private record AuthUserDto(Guid Id, string Email, string? Name, string Role, string Status, bool EmailConfirmed, bool PhoneNumberConfirmed, string? PhoneNumber);
-    private record PaginationDto(int CurrentPage, int PageSize, int TotalCount, int TotalPages);
+    private record PageMetadataDto(int Page, int PageSize, int TotalCount, int TotalPages);
 
     private record ProfileDto(Guid UserId, string FirstName, string LastName, string? MiddleName, string? PhotoUrl, int ProfileStatus);
     private record BalanceDto(Guid UserId, decimal CurrentBalance, decimal Debt);

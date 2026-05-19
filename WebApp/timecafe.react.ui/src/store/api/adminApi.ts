@@ -2,21 +2,14 @@ import {createApi} from "@reduxjs/toolkit/query/react";
 import {baseQueryWithReauth} from "@store/api/baseQuery";
 import type {User} from "@app-types/user";
 import type {BillingTransaction} from "@app-types/billing";
+import type {PagedResponse} from "@app-types/pagination";
 
 export interface RoleDto {
     roleId: string;
     roleName: string;
 }
 
-export interface GetUsersResponse {
-    users: User[];
-    pagination: {
-        currentPage: number;
-        pageSize: number;
-        totalCount: number;
-        totalPages: number;
-    };
-}
+export type GetUsersResponse = PagedResponse<User>;
 
 export interface GetUsersArgs {
     page: number;

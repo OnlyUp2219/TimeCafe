@@ -32,8 +32,8 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.Tariffs.Should().HaveCount(2);
-        result.Value.TotalCount.Should().Be(15);
+        result.Value.Items.Should().HaveCount(2);
+        result.Value.Metadata.TotalCount.Should().Be(15);
     }
 
     [Fact]
@@ -49,8 +49,8 @@ public class GetTariffsPageQueryTests : BaseCqrsHandlerTest
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
-        result.Value.Tariffs.Should().BeEmpty();
-        result.Value.TotalCount.Should().Be(5);
+        result.Value.Items.Should().BeEmpty();
+        result.Value.Metadata.TotalCount.Should().Be(5);
     }
 
     [Fact]

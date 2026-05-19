@@ -13,6 +13,8 @@ import {
     Divider,
     Badge,
     Body1Strong,
+    Input,
+    Field,
 } from "@fluentui/react-components";
 import {
     Bug24Regular,
@@ -21,7 +23,8 @@ import {
     Warning24Regular,
     ArrowSync24Regular,
     Document24Regular,
-    DismissRegular
+    DismissRegular,
+    CreditCardClock24Regular,
 } from "@fluentui/react-icons";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import {
@@ -35,6 +38,8 @@ import {
     useLazyGetLegacyResultQuery
 } from "@store/api/debugApi";
 import { extractRtkError, getRtkErrorMessage, getRtkErrorTitle, normalizeUnknownError } from "@shared/api/errors/extractRtkError";
+import { useAppSelector } from "@store/hooks";
+import { useSimulateStripeWebhookMutation, useInitializeStripeCheckoutMutation } from "@store/api/billingApi";
 
 export const DevDebugPage: React.FC = () => {
     const { showToast, ToasterElement } = useProgressToast();
@@ -43,6 +48,119 @@ export const DevDebugPage: React.FC = () => {
     const [lastResponse, setLastResponse] = useState<any>(null);
     const [extractedInfo, setExtractedInfo] = useState<any>(null);
     const [currentIntent, setCurrentIntent] = useState<"success" | "info" | "warning" | "error">("error");
+
+    const currentUserId = useAppSelector((state) => state.auth.userId) || "";
+    const [stripeUserId, setStripeUserId] = useState("");
+    const [stripePaymentId, setStripePaymentId] = useState(() => crypto.randomUUID());
+    const [stripeExtId, setStripeExtId] = useState(() => `pi_test_${Math.random().toString(36).substring(2, 10)}`);
+    const [stripeAmount, setStripeAmount] = useState(1000);
+    const [simulateWebhook, { isLoading: isSimulating }] = useSimulateStripeWebhookMutation();
+    const [checkoutAmount, setCheckoutAmount] = useState(100);
+    const [checkoutDescription, setCheckoutDescription] = useState("Тестовое пополнение через DevDebugPage");
+    const [initializeCheckout, { isLoading: isInitializingCheckout }] = useInitializeStripeCheckoutMutation();
+
+    React.useEffect(() => {
+        if (currentUserId && !stripeUserId) {
+            setStripeUserId(currentUserId);
+        }
+    }, [currentUserId, stripeUserId]);
+
+    const handleSimulateWebhook = useCallback(async (eventType: string) => {
+        setLocalError(null);
+        setLastResponse(null);
+        setExtractedInfo(null);
+
+        if (!stripeUserId) {
+            showToast("UserId обязателен", "error", "Ошибка валидации");
+            return;
+        }
+        if (!stripePaymentId) {
+            showToast("PaymentId обязателен", "error", "Ошибка валидации");
+            return;
+        }
+
+        try {
+            const result = await simulateWebhook({
+                eventType,
+                userId: stripeUserId,
+                paymentId: stripePaymentId,
+                externalPaymentId: stripeExtId,
+                amount: stripeAmount,
+            }).unwrap();
+
+            setLastResponse(result);
+            setExtractedInfo({
+                statusCode: 200,
+                message: result.message || "Webhook simulated successfully",
+                errors: []
+            });
+            setCurrentIntent("success");
+            showToast(`Успешно отправлен вебхук ${eventType}`, "success", "Stripe Webhook");
+        } catch (err: any) {
+            const extracted = extractRtkError(err);
+            setLastResponse(err);
+            if (extracted) {
+                setExtractedInfo(extracted);
+                setLocalError(extracted.message);
+                showToast(extracted.message, "error", "Ошибка симуляции");
+            } else {
+                const msg = err.message || "Неизвестная ошибка при отправке вебхука";
+                setLocalError(msg);
+                showToast(msg, "error", "Ошибка симуляции");
+            }
+            setCurrentIntent("error");
+        }
+    }, [stripeUserId, stripePaymentId, stripeExtId, stripeAmount, simulateWebhook, showToast]);
+
+    const handleCreateCheckoutLink = useCallback(async () => {
+        setLocalError(null);
+        setLastResponse(null);
+        setExtractedInfo(null);
+
+        if (!stripeUserId) {
+            showToast("UserId обязателен", "error", "Ошибка валидации");
+            return;
+        }
+
+        try {
+            const successUrl = window.location.href;
+            const cancelUrl = window.location.href;
+            
+            const result = await initializeCheckout({
+                userId: stripeUserId,
+                amount: checkoutAmount,
+                successUrl,
+                cancelUrl,
+                description: checkoutDescription,
+            }).unwrap();
+
+            setLastResponse(result);
+            setExtractedInfo({
+                statusCode: 200,
+                message: "Ссылка на оплату успешно создана",
+                errors: []
+            });
+            setCurrentIntent("success");
+            showToast("Ссылка на оплату успешно создана! Открываем в новой вкладке...", "success", "Stripe Checkout");
+            
+            if (result.checkoutUrl) {
+                window.open(result.checkoutUrl, "_blank");
+            }
+        } catch (err: any) {
+            const extracted = extractRtkError(err);
+            setLastResponse(err);
+            if (extracted) {
+                setExtractedInfo(extracted);
+                setLocalError(extracted.message);
+                showToast(extracted.message, "error", "Ошибка создания ссылки");
+            } else {
+                const msg = err.message || "Неизвестная ошибка при создании сессии Checkout";
+                setLocalError(msg);
+                showToast(msg, "error", "Ошибка создания ссылки");
+            }
+            setCurrentIntent("error");
+        }
+    }, [stripeUserId, checkoutAmount, checkoutDescription, initializeCheckout, showToast]);
 
     const [trigger404Single] = useLazyGetError404SingleQuery();
     const [trigger422Multiple] = useLazyGetError404MultipleQuery();
@@ -211,6 +329,138 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
             </div>
+
+            <Card className="p-5 flex flex-col gap-4 border border-[var(--colorNeutralStrokeAccessible)] shadow-md">
+                <div className="flex items-center gap-2 mb-2">
+                    <CreditCardClock24Regular className="text-[var(--colorBrandForeground1)]" />
+                    <Title3>Реальная оплата Stripe (Checkout Link)</Title3>
+                </div>
+                <Body1>
+                    Создает настоящую сессию Stripe Checkout и открывает страницу оплаты Stripe в новой вкладке.
+                    Вы сможете совершить тестовую оплату с помощью тестовой карты Stripe.
+                </Body1>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
+                    <Field label="Идентификатор пользователя (UserId GUID)" required>
+                        <Input
+                            value={stripeUserId}
+                            onChange={(_, data) => setStripeUserId(data.value)}
+                            placeholder="00000000-0000-0000-0000-000000000000"
+                        />
+                    </Field>
+
+                    <Field label="Сумма оплаты (в рублях)" required>
+                        <Input
+                            type="number"
+                            value={String(checkoutAmount)}
+                            onChange={(_, data) => setCheckoutAmount(Number(data.value) || 0)}
+                            placeholder="100"
+                        />
+                    </Field>
+
+                    <Field label="Описание платежа" className="sm:col-span-2">
+                        <Input
+                            value={checkoutDescription}
+                            onChange={(_, data) => setCheckoutDescription(data.value)}
+                            placeholder="Пополнение баланса"
+                        />
+                    </Field>
+                </div>
+
+                <Divider />
+
+                <div className="flex justify-end">
+                    <Button
+                        appearance="primary"
+                        disabled={isInitializingCheckout}
+                        onClick={handleCreateCheckoutLink}
+                    >
+                        {isInitializingCheckout ? "Создание ссылки..." : "Создать ссылку и оплатить"}
+                    </Button>
+                </div>
+            </Card>
+
+            <Card className="p-5 flex flex-col gap-4 border border-[var(--colorNeutralStrokeAccessible)] shadow-md">
+                <div className="flex items-center gap-2 mb-2">
+                    <CreditCardClock24Regular className="text-[var(--colorBrandForeground1)]" />
+                    <Title3>Симулятор Stripe Webhooks</Title3>
+                </div>
+                <Body1>
+                    Позволяет отправлять тестовые события Stripe (вебхуки) напрямую в Billing API для проверки зачисления средств и отмены сессий.
+                </Body1>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
+                    <Field label="Идентификатор пользователя (UserId GUID)" required>
+                        <Input
+                            value={stripeUserId}
+                            onChange={(_, data) => setStripeUserId(data.value)}
+                            placeholder="00000000-0000-0000-0000-000000000000"
+                        />
+                    </Field>
+
+                    <Field label="Идентификатор платежа (PaymentId GUID)" required>
+                        <div className="flex gap-2 w-full">
+                            <Input
+                                value={stripePaymentId}
+                                onChange={(_, data) => setStripePaymentId(data.value)}
+                                placeholder="00000000-0000-0000-0000-000000000000"
+                                style={{ flexGrow: 1 }}
+                            />
+                            <Button
+                                appearance="secondary"
+                                onClick={() => setStripePaymentId(crypto.randomUUID())}
+                            >
+                                Сгенерировать
+                            </Button>
+                        </div>
+                    </Field>
+
+                    <Field label="Внешний ID платежа (Stripe PaymentIntent ID)">
+                        <div className="flex gap-2 w-full">
+                            <Input
+                                value={stripeExtId}
+                                onChange={(_, data) => setStripeExtId(data.value)}
+                                placeholder="pi_xxxxxx"
+                                style={{ flexGrow: 1 }}
+                            />
+                            <Button
+                                appearance="secondary"
+                                onClick={() => setStripeExtId(`pi_test_${Math.random().toString(36).substring(2, 10)}`)}
+                            >
+                                Сгенерировать
+                            </Button>
+                        </div>
+                    </Field>
+
+                    <Field label="Сумма пополнения (в рублях)">
+                        <Input
+                            type="number"
+                            value={String(stripeAmount)}
+                            onChange={(_, data) => setStripeAmount(Number(data.value) || 0)}
+                            placeholder="1000"
+                        />
+                    </Field>
+                </div>
+
+                <Divider />
+
+                <div className="flex flex-wrap gap-3 justify-end">
+                    <Button
+                        appearance="outline"
+                        disabled={isSimulating}
+                        onClick={() => handleSimulateWebhook("checkout.session.expired")}
+                    >
+                        Симулировать: Сессия истекла (checkout.session.expired)
+                    </Button>
+                    <Button
+                        appearance="primary"
+                        disabled={isSimulating}
+                        onClick={() => handleSimulateWebhook("checkout.session.completed")}
+                    >
+                        Симулировать: Успешная оплата (checkout.session.completed)
+                    </Button>
+                </div>
+            </Card>
 
             <Divider />
 

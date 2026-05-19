@@ -22,7 +22,7 @@ public class Payment
     public static Result<Payment> Create(Guid userId, decimal amount, PaymentMethod method = PaymentMethod.Online)
     {
         if (amount <= 0)
-            return Result.Fail<Payment>(new InvalidAmountError());
+            return Result.Fail<Payment>(new InvalidAmountError(amount));
 
         if (userId == Guid.Empty)
             return Result.Fail<Payment>(new Error("UserId не может быть пустым").WithMetadata("ErrorCode", "400"));
@@ -51,6 +51,8 @@ public class Payment
     public void MarkAsSucceeded(Guid transactionId, DateTimeOffset? completedAt = null)
     {
         if (Status == PaymentStatus.Completed) return;
+        if (Status != PaymentStatus.Pending)
+            throw new InvalidOperationException($"Нельзя перевести платёж из статуса {Status} в статус Completed");
         
         Status = PaymentStatus.Completed;
         TransactionId = transactionId;
@@ -60,7 +62,9 @@ public class Payment
 
     public void MarkAsFailed(string message)
     {
-        if (Status == PaymentStatus.Completed) return;
+        if (Status == PaymentStatus.Failed) return;
+        if (Status != PaymentStatus.Pending)
+            throw new InvalidOperationException($"Нельзя перевести платёж из статуса {Status} в статус Failed");
         
         Status = PaymentStatus.Failed;
         ErrorMessage = message;
@@ -68,7 +72,9 @@ public class Payment
 
     public void MarkAsCancelled(string? message = null)
     {
-        if (Status == PaymentStatus.Completed) return;
+        if (Status == PaymentStatus.Cancelled) return;
+        if (Status != PaymentStatus.Pending)
+            throw new InvalidOperationException($"Нельзя перевести платёж из статуса {Status} в статус Cancelled");
         
         Status = PaymentStatus.Cancelled;
         ErrorMessage = message ?? "Платёж отменён";

@@ -7,13 +7,13 @@ public record ProfileDto(
     string FirstName,
     string LastName,
     string? MiddleName,
-    string? Nickname,
-    string? Bio,
     string? PhotoUrl,
-    DateTime? BirthDate,
+    DateOnly? BirthDate,
     int Gender,
     int ProfileStatus,
-    DateTimeOffset CreatedAt);
+    DateTimeOffset CreatedAt,
+    int VisitCount,
+    decimal? PersonalDiscountPercent);
 
 public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfilesPageQuery, PagedResponse<ProfileDto>>
 {
@@ -32,13 +32,13 @@ public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetPro
                     p.FirstName,
                     p.LastName,
                     p.MiddleName,
-                    p.Nickname,
-                    p.Bio,
                     p.PhotoUrl,
                     p.BirthDate,
                     (int)p.Gender,
                     (int)p.ProfileStatus,
-                    p.CreatedAt));
+                    p.CreatedAt,
+                    p.VisitCount,
+                    p.PersonalDiscountPercent));
 
             var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
 

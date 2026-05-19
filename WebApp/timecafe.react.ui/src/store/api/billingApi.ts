@@ -75,6 +75,28 @@ export const billingApi = createApi({
                 {type: "Transactions", id: arg.userId},
             ],
         }),
+
+        simulateStripeWebhook: builder.mutation<
+            { message: string },
+            {
+                eventType: string;
+                userId: string;
+                paymentId: string;
+                externalPaymentId: string;
+                amount: number;
+            }
+        >({
+            query: (body) => ({
+                url: "/billing/stripe/debug-webhook",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: (_result, _error, arg) => [
+                {type: "Balance", id: arg.userId},
+                {type: "Transactions", id: arg.userId},
+                {type: "Debt", id: arg.userId},
+            ],
+        }),
     }),
 });
 
@@ -83,4 +105,5 @@ export const {
     useGetDebtQuery,
     useGetTransactionHistoryQuery,
     useInitializeStripeCheckoutMutation,
+    useSimulateStripeWebhookMutation,
 } = billingApi;

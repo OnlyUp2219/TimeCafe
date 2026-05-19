@@ -118,7 +118,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        _logger.LogError(exception, "Unhandled exception occurred");
+        _logger.LogError(exception, "Unhandled 500 Exception on {Method} {Path}: {Message}", context.Request.Method, context.Request.Path, exception.Message);
 
         const string code = "InternalServerError";
         const int statusCode = (int)HttpStatusCode.InternalServerError;

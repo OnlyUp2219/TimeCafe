@@ -20,8 +20,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Billing.TimeCafe.Domain\Billing.TimeCafe.Domain.csproj" />
-		<ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
+	  <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
+	  <ProjectReference Include="..\Billing.TimeCafe.Domain\Billing.TimeCafe.Domain.csproj" />
 	</ItemGroup>
+
+
 
 </Project>

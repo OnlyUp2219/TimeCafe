@@ -1,5 +1,3 @@
-using TimeCafe.ServiceDefaults;
-
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
@@ -36,6 +34,8 @@ builder.Services.AddCarter();
 
 // HealthChecks
 builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+
+builder.Services.AddHostedService<Billing.TimeCafe.API.Services.StripeCliRunner>();
 
 var app = builder.Build();
 

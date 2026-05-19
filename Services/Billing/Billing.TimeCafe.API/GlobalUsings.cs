@@ -6,23 +6,25 @@ global using Billing.TimeCafe.Application.CQRS.Payments.Queries;
 global using Billing.TimeCafe.Application.CQRS.Transactions.Queries;
 global using Billing.TimeCafe.Application.DependencyInjection;
 global using Billing.TimeCafe.Application.Services.Payments;
+global using Billing.TimeCafe.Domain.Constants;
+global using Billing.TimeCafe.Domain.Contracts;
 global using Billing.TimeCafe.Domain.Enums;
+global using Billing.TimeCafe.Domain.Models;
 global using Billing.TimeCafe.Infrastructure;
 global using Billing.TimeCafe.Infrastructure.Data;
-
 global using BuildingBlocks.Events;
 global using BuildingBlocks.Extensions;
 global using BuildingBlocks.Middleware;
 global using BuildingBlocks.Permissions;
-
 global using Carter;
-
 global using MassTransit;
-
 global using MediatR;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.EntityFrameworkCore;
-
+global using Microsoft.Extensions.Caching.Hybrid;
+global using Microsoft.Extensions.Logging;
 global using Scalar.AspNetCore;
-
 global using Serilog;
+global using TimeCafe.ServiceDefaults;

@@ -34,10 +34,16 @@ public sealed class PaymentRepository(
         return await Task.FromResult(payment);
     }
 
-    public async Task<Payment> UpdateAsync(Payment payment, CancellationToken cancellationToken = default)
+    public async Task<Payment?> UpdateAsync(Payment payment, CancellationToken cancellationToken = default)
     {
-        _context.Payments.Update(payment);
-        return await Task.FromResult(payment);
+        ArgumentNullException.ThrowIfNull(payment);
+        var existingPayment = await _context.Payments.FindAsync([payment.PaymentId], cancellationToken);
+        if (existingPayment == null)
+            return null;
+
+        _context.Entry(existingPayment).CurrentValues.SetValues(payment);
+
+        return existingPayment;
     }
 
     public async Task<List<Payment>> GetByUserIdAsync(Guid userId, int page, int pageSize, CancellationToken cancellationToken = default)

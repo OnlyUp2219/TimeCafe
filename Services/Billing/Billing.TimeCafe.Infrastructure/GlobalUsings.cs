@@ -25,3 +25,4 @@ global using Npgsql;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
 global using Stripe;
 global using Stripe.Checkout;
+global using Balance = Billing.TimeCafe.Domain.Models.Balance;

@@ -19,13 +19,13 @@ public class GetProfileByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProf
                 mappedProfile.FirstName,
                 mappedProfile.LastName,
                 mappedProfile.MiddleName,
-                mappedProfile.Nickname,
-                mappedProfile.Bio,
                 mappedProfile.PhotoUrl,
                 mappedProfile.BirthDate,
                 (int)mappedProfile.Gender,
                 (int)mappedProfile.ProfileStatus,
-                mappedProfile.CreatedAt));
+                mappedProfile.CreatedAt,
+                mappedProfile.VisitCount,
+                mappedProfile.PersonalDiscountPercent));
         }
         catch (Exception ex)
         {

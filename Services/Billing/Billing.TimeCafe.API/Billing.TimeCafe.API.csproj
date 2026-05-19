@@ -43,6 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Billing.TimeCafe.Domain\Billing.TimeCafe.Domain.csproj" />
 		<ProjectReference Include="..\Billing.TimeCafe.Infrastructure\Billing.TimeCafe.Infrastructure.csproj" />
 		<ProjectReference Include="..\Billing.TimeCafe.Application\Billing.TimeCafe.Application.csproj" />
 		<ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
