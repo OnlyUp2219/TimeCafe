@@ -15,13 +15,11 @@ public static class RedisExtensions
         services.AddSingleton<StackExchange.Redis.IConnectionMultiplexer>(_ =>
             StackExchange.Redis.ConnectionMultiplexer.Connect(connectionString));
 
-
         services.AddHybridCache(options => options.DefaultEntryOptions = new HybridCacheEntryOptions
         {
             Expiration = TimeSpan.FromMinutes(30),
             LocalCacheExpiration = TimeSpan.FromMinutes(5)
         });
-
 
         return services;
     }

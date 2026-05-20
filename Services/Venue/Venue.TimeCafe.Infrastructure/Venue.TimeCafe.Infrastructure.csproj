@@ -7,6 +7,8 @@
   </PropertyGroup>
 
 <ItemGroup>
+	<PackageReference Include="Audit.EntityFramework.Core" />
+	<PackageReference Include="Audit.NET" />
 	<PackageReference Include="FluentResults" />
 	<PackageReference Include="MassTransit.EntityFrameworkCore" />
 	<PackageReference Include="Microsoft.CodeAnalysis.Common" />

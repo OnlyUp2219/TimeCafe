@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-
 namespace BuildingBlocks.Extensions;
 
 public static class DatabaseExtensions
@@ -10,13 +8,40 @@ public static class DatabaseExtensions
         var connectionString = configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-        services.AddDbContext<TContext>(options =>
+        services.AddDbContext<TContext>((sp, options) =>
         {
             // TODO : убрать в проде.
             options.UseNpgsql(connectionString).ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 
-            options.UseNpgsql(connectionString);
+            var auditInterceptor = sp.GetRequiredService<AuditSaveChangesInterceptor>();
+            options.AddInterceptors(auditInterceptor);
+
         });
+
+        return services;
+    }
+
+    public static IServiceCollection AddAuditDatabase<TContext>(this IServiceCollection services)
+    where TContext : DbContext
+    {
+        services.AddScoped<AuditSaveChangesInterceptor>();
+
+        Audit.EntityFramework.Configuration.Setup()
+            .ForContext<TContext>(config => config
+                .IncludeEntityObjects()
+            )
+            .UseOptOut()
+            .IgnoreAny(type => type == typeof(InboxState)
+                        || type == typeof(OutboxState)
+                        || type == typeof(OutboxMessage));
+
+        Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, auditEvent =>
+        {
+            var commandName = AuditCommandContext.CurrentCommandName ?? "UnknownCommand";
+            auditEvent.SetCustomField("CommandName", commandName);
+        });
+
+        Audit.Core.Configuration.CreationPolicy = EventCreationPolicy.InsertOnEnd;
 
         return services;
     }
@@ -43,12 +68,12 @@ public static class DatabaseExtensions
         await dbContext.Database.MigrateAsync();
     }
 
-    private class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
+    private sealed class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
     {
         public UtcDateTimeConverter() : base(v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(), v => DateTime.SpecifyKind(v, DateTimeKind.Utc)) { }
     }
 
-    private class UtcDateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
+    private sealed class UtcDateTimeOffsetConverter : ValueConverter<DateTimeOffset, DateTimeOffset>
     {
         public UtcDateTimeOffsetConverter() : base(v => v.ToUniversalTime(), v => v) { }
     }

@@ -17,6 +17,7 @@ builder.Services.AddHttpContextAccessor();
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration);
+builder.Services.AddAuditConsumer();
 
 // Redis
 builder.Services.AddRedis(builder.Configuration);
@@ -34,7 +35,8 @@ builder.Services.AddHttpClient("BillingApi", (sp, client) =>
 })
 .AddHttpMessageHandler<AuthorizationDelegatingHandler>();
 
-// DbContext
+// DbContext and Auditing
+builder.Services.AddAuditDatabase<ApplicationDbContext>();
 builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // AutoMapper

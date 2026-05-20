@@ -8,7 +8,8 @@ builder.AddSharedConfiguration();
 builder.Services.AddSerilogConfiguration(builder.Configuration);
 builder.Host.UseSerilog();
 
-// DbContext
+// DbContext and Auditing
+builder.Services.AddAuditDatabase<ApplicationDbContext>();
 builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // Infrastructure
@@ -48,6 +49,7 @@ builder.Services.AddCarter();
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
+builder.Services.AddAuditConsumer();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {

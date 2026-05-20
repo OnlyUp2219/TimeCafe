@@ -17,6 +17,7 @@
     <PackageReference Include="Aspire.Hosting.RabbitMQ" />
     <PackageReference Include="Aspire.Hosting.Redis" />
     <PackageReference Include="Aspire.Hosting.Testing" />
+
     <PackageReference Include="Serilog.AspNetCore" />
     <PackageReference Include="Serilog.Sinks.Async" />
     <PackageReference Include="Serilog.Sinks.Console" />
@@ -25,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Services\Audit\Audit.TimeCafe.API\Audit.TimeCafe.API.csproj" />
     <ProjectReference Include="..\Services\Auth\Auth.TimeCafe.API\Auth.TimeCafe.API.csproj" />
     <ProjectReference Include="..\Services\Billing\Billing.TimeCafe.API\Billing.TimeCafe.API.csproj" />
     <ProjectReference Include="..\Services\UserProfile\UserProfile.TimeCafe.API\UserProfile.TimeCafe.API.csproj" />

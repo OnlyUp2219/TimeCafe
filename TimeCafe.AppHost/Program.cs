@@ -84,6 +84,7 @@ var authDb = postgres.AddDatabase("AuthDb", databaseName: "timecafe_auth");
 var userProfileDb = postgres.AddDatabase("UserProfileDb", databaseName: "timecafe_userprofile");
 var venueDb = postgres.AddDatabase("VenueDb", databaseName: "timecafe_venue");
 var billingDb = postgres.AddDatabase("BillingDb", databaseName: "timecafe_billing");
+var auditDb = postgres.AddDatabase("AuditDb", databaseName: "timecafe_audit");
 
 // Auth Service
 var authApi = builder.AddProject<Projects.Auth_TimeCafe_API>("auth-api")
@@ -145,11 +146,19 @@ billingApi
     .WithEnvironment("Stripe__WebhookSecret", builder.Configuration["STRIPE_WEBHOOK_SECRET"])
     .WaitFor(billingDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
 
+// Audit Service
+var auditApi = builder.AddProject<Projects.Audit_TimeCafe_API>("audit-api")
+    .WithHttpEndpoint(name: "api")
+    .WithHttpHealthCheck("/health", endpointName: "api");
+ApplyTimeCafeReferences(auditApi, auditDb, rabbitUser, rabbitPass, authApi);
+auditApi.WaitFor(auditDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
+
 // YARP Proxy
 var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WithReference(authApi)
     .WithReference(userProfileApi)
     .WithReference(venueApi)
+    .WithReference(auditApi)
     .WithReference(billingApi)
     .WithReference(redis)
     .WithEnvironment("Redis__ConnectionString", redis)
@@ -158,10 +167,12 @@ var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WithEnvironment("Services__UserProfile", userProfileApi.GetEndpoint("api"))
     .WithEnvironment("Services__Venue", venueApi.GetEndpoint("api"))
     .WithEnvironment("Services__Billing", billingApi.GetEndpoint("api"))
+    .WithEnvironment("Services__Audit", auditApi.GetEndpoint("api"))
     .WithEnvironment("ReverseProxy__Clusters__auth__Destinations__destination1__Address", authApi.GetEndpoint("api"))
     .WithEnvironment("ReverseProxy__Clusters__userprofile__Destinations__destination1__Address", userProfileApi.GetEndpoint("api"))
     .WithEnvironment("ReverseProxy__Clusters__venue__Destinations__destination1__Address", venueApi.GetEndpoint("api"))
     .WithEnvironment("ReverseProxy__Clusters__billing__Destinations__destination1__Address", billingApi.GetEndpoint("api"))
+    .WithEnvironment("ReverseProxy__Clusters__audit__Destinations__destination1__Address", auditApi.GetEndpoint("api"))
     .WithHttpEndpoint(port: 8010, name: "api")
     .WithHttpsEndpoint(port: 8011, name: "api-secure")
     .WithHttpHealthCheck("/health", endpointName: "api")
@@ -169,7 +180,8 @@ var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WaitFor(authApi)
     .WaitFor(userProfileApi)
     .WaitFor(venueApi)
-    .WaitFor(billingApi);
+    .WaitFor(billingApi)
+    .WaitFor(auditApi);
 
 builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
     .WithReference(yarpProxy)

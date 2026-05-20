@@ -9,6 +9,7 @@ public static class CqrsDependencyInjection
         services.AddMediatR(assembly);
         services.AddValidatorsFromAssembly(assembly);
 
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(AuditCommandBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));

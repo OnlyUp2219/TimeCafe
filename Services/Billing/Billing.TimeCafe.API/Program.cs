@@ -11,11 +11,13 @@ var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration
 
 // MassTransit with RabbitMQ
 builder.Services.AddRabbitMqMessaging(builder.Configuration, builder.Environment);
+builder.Services.AddAuditConsumer();
 
 // Redis
 builder.Services.AddRedis(builder.Configuration);
 
-// DbContext
+// DbContext and Auditing
+builder.Services.AddAuditDatabase<ApplicationDbContext>();
 builder.Services.AddPostgresDatabase<ApplicationDbContext>(builder.Configuration);
 
 // Infrastructure (repositories)
