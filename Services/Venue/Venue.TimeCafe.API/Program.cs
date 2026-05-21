@@ -58,6 +58,8 @@ builder.Services.AddHealthChecksConfiguration(builder.Configuration);
 
 var app = builder.Build();
 
+app.ConfigureAuditProvider();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 await app.ApplyMigrationsAsync<ApplicationDbContext>();

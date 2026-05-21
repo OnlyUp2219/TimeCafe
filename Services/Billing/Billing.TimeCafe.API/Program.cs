@@ -41,6 +41,8 @@ builder.Services.AddHostedService<Billing.TimeCafe.API.Services.StripeCliRunner>
 
 var app = builder.Build();
 
+app.ConfigureAuditProvider();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 await app.ApplyMigrationsAsync<ApplicationDbContext>();

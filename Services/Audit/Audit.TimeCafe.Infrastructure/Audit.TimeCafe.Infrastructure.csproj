@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Audit.EntityFramework.Core" />
+		<PackageReference Include="Audit.NET" />
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="MassTransit.EntityFrameworkCore" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.UI" />
+		<PackageReference Include="Microsoft.Extensions.Http" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+		<PackageReference Include="Microsoft.Extensions.Options" />
+		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+		<PackageReference Include="FluentResults" />
+
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Twilio" />
+
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\BuildingBlocks.csproj" />
+    <ProjectReference Include="..\Audit.TimeCafe.Application\Audit.TimeCafe.Application.csproj" />
+    <ProjectReference Include="..\Audit.TimeCafe.Domain\Audit.TimeCafe.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

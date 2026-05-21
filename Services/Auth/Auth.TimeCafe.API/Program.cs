@@ -63,6 +63,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+app.ConfigureAuditProvider();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseForwardedHeaders();

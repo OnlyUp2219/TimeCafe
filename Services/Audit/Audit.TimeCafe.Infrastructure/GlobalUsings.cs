@@ -1,0 +1,15 @@
+global using Audit.TimeCafe.Application.Contracts;
+global using Audit.TimeCafe.Domain.Constants;
+global using Audit.Core;
+global using Audit.TimeCafe.Domain.Models;
+global using Audit.TimeCafe.Infrastructure.Data;
+global using System.Text.Json;
+global using Audit.TimeCafe.Infrastructure.Repositories;
+global using BuildingBlocks.Contracts;
+global using BuildingBlocks.Extensions;
+global using MassTransit;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Caching.Hybrid;
+global using Microsoft.Extensions.Logging;
+global using IUnitOfWork = Audit.TimeCafe.Application.Contracts.IUnitOfWork;

@@ -9,8 +9,14 @@
     <Project Path="Services/TimeCafe.ServiceDefaults/TimeCafe.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/Services/BuildingBlocks/">
-    <Project Path="Services/BuildingBlocks/BuildingBlocks.csproj" />
     <Project Path="Services/BuildingBlocks.Test/BuildingBlocks.Test.csproj" />
+    <Project Path="Services/BuildingBlocks/BuildingBlocks.csproj" />
+  </Folder>
+  <Folder Name="/Services/Audit/">
+    <Project Path="Services/Audit/Audit.TimeCafe.API/Audit.TimeCafe.API.csproj" />
+    <Project Path="Services/Audit/Audit.TimeCafe.Application/Audit.TimeCafe.Application.csproj" Id="e169e605-9e2b-47e5-81ce-e6de1c42a287" />
+    <Project Path="Services/Audit/Audit.TimeCafe.Domain/Audit.TimeCafe.Domain.csproj" Id="b50d54cb-7b4e-4cbc-a9c4-db4f413d6040" />
+    <Project Path="Services/Audit/Audit.TimeCafe.Infrastructure/Audit.TimeCafe.Infrastructure.csproj" Id="de044260-1d7f-4b13-9877-69046e4a4832" />
   </Folder>
   <Folder Name="/Services/Auth/">
     <Project Path="Services/Auth/Auth.TimeCafe.API/Auth.TimeCafe.API.csproj" />

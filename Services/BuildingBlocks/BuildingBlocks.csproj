@@ -9,6 +9,8 @@
 
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="Audit.EntityFramework.Core" />
+		<PackageReference Include="Audit.NET" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
 		<PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" />
@@ -19,7 +21,8 @@
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
 		<PackageReference Include="FluentResults" />
 		<PackageReference Include="Yarp.ReverseProxy" />
-
+		<PackageReference Include="MassTransit" />
+		<PackageReference Include="MassTransit.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" PrivateAssets="All" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
 		<PackageReference Include="Scalar.AspNetCore" PrivateAssets="All" />

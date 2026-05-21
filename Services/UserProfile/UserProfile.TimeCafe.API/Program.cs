@@ -48,6 +48,8 @@ builder.Services.ConfigureHttpJsonOptions(options => options.SerializerOptions.C
 
 var app = builder.Build();
 
+app.ConfigureAuditProvider();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 await app.ApplyMigrationsAsync<ApplicationDbContext>();

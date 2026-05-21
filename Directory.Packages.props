@@ -12,6 +12,8 @@
     <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.4" />
     <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.4" />
     <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4" />
+    <PackageVersion Include="Audit.EntityFramework.Core" Version="32.1.0" />
+    <PackageVersion Include="Audit.NET" Version="32.1.0" />
     <PackageVersion Include="AutoMapper" Version="16.1.1" />
     <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.35" />
     <PackageVersion Include="AWSSDK.S3" Version="4.0.22.1" />

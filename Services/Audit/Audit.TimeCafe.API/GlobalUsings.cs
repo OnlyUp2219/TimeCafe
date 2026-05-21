@@ -1,0 +1,13 @@
+global using Audit.TimeCafe.API.Extensions;
+global using Audit.TimeCafe.Application;
+global using Audit.TimeCafe.Infrastructure;
+global using Audit.TimeCafe.Infrastructure.Data;
+global using BuildingBlocks.Extensions;
+global using BuildingBlocks.Middleware;
+global using BuildingBlocks.Permissions;
+global using Carter;
+global using MediatR;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.EntityFrameworkCore.Diagnostics;
+global using Serilog;

@@ -1,0 +1,12 @@
+global using Audit.TimeCafe.Application.DTOs;
+global using Audit.TimeCafe.Domain.Models;
+global using BuildingBlocks.Contracts;
+global using BuildingBlocks.Contracts.CQRS;
+global using BuildingBlocks.Extensions;
+global using BuildingBlocks.Validation;
+global using FluentResults;
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.Extensions.DependencyInjection;
+global using System.Reflection;
+global using IUnitOfWork = Audit.TimeCafe.Application.Contracts.IUnitOfWork;
