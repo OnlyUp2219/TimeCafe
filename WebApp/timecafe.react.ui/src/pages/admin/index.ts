@@ -12,3 +12,4 @@ export {RolesPage} from "./RolesPage";
 export {RoleClaimsPage} from "./RoleClaimsPage";
 export {UserRolesPage} from "./UserRolesPage";
 export {VisitDetailPage} from "./VisitDetailPage";
+export {AuditLogsPage} from "./AuditLogsPage";

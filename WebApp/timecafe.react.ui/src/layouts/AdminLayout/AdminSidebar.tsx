@@ -7,7 +7,8 @@ import { setSidebarCollapsed } from "@store/uiSlice";
 import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
-    SignOut20Regular, Eye20Regular, Bug24Regular, ShieldSettings20Regular
+    SignOut20Regular, Eye20Regular, Bug24Regular, ShieldSettings20Regular,
+    DocumentText20Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
@@ -57,6 +58,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
             {
                 title: "Система",
                 items: [
+                    { id: "audit-logs", label: "Аудит-логи", path: "/admin/audit-logs", icon: <DocumentText20Regular />, permission: Permissions.AuditLogAdminRead },
                     { id: "debug", label: "Debug Errors", path: "/admin/dev-debug", icon: <Bug24Regular /> },
                 ],
             },

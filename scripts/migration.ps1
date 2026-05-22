@@ -6,7 +6,8 @@ $services = @(
     @("Auth", "Services\Auth\Auth.TimeCafe.Infrastructure", "Services\Auth\Auth.TimeCafe.API"),
     @("Billing", "Services\Billing\Billing.TimeCafe.Infrastructure", "Services\Billing\Billing.TimeCafe.API"),
     @("Venue", "Services\Venue\Venue.TimeCafe.Infrastructure", "Services\Venue\Venue.TimeCafe.API"),
-    @("UserProfile", "Services\UserProfile\UserProfile.TimeCafe.Infrastructure", "Services\UserProfile\UserProfile.TimeCafe.API")
+    @("UserProfile", "Services\UserProfile\UserProfile.TimeCafe.Infrastructure", "Services\UserProfile\UserProfile.TimeCafe.API"),
+    @("Audit", "Services\Audit\Audit.TimeCafe.Infrastructure", "Services\Audit\Audit.TimeCafe.API")
 )
 
 foreach ($service in $services) {

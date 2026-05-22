@@ -4,6 +4,27 @@ import type {User} from "@app-types/user";
 import type {BillingTransaction} from "@app-types/billing";
 import type {PagedResponse} from "@app-types/pagination";
 
+export interface AuditLogDto {
+    id: string;
+    eventType: string;
+    action: string;
+    userName: string;
+    machineName: string;
+    domainName: string;
+    duration: number;
+    createdAt: string;
+    startDate: string | null;
+    endDate: string | null;
+    correlationId: string | null;
+}
+
+export interface GetAuditLogsArgs {
+    page: number;
+    pageSize: number;
+    eventType?: string;
+    userName?: string;
+}
+
 export interface RoleDto {
     roleId: string;
     roleName: string;
@@ -55,7 +76,7 @@ export interface GetPaymentsPageArgs { page: number; pageSize: number; userId?: 
 export const adminApi = createApi({
     reducerPath: "adminApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Users", "AdminBalances", "AdminTransactions", "AdminPayments"],
+    tagTypes: ["Users", "AdminBalances", "AdminTransactions", "AdminPayments", "AuditLogs"],
     endpoints: (builder) => ({
         getUsers: builder.query<GetUsersResponse, GetUsersArgs>({
             query: ({page, size, search, status}) => ({
@@ -175,6 +196,19 @@ export const adminApi = createApi({
             }),
             providesTags: ["AdminPayments"],
         }),
+
+        getAuditLogs: builder.query<PagedResponse<AuditLogDto>, GetAuditLogsArgs>({
+            query: ({page, pageSize, eventType, userName}) => ({
+                url: "/audit/logs",
+                params: {page, pageSize, eventType, userName},
+            }),
+            providesTags: ["AuditLogs"],
+        }),
+
+        getAuditLogById: builder.query<AuditLogDto, string>({
+            query: (id) => `/audit/logs/${id}`,
+            providesTags: (_result, _error, id) => [{type: "AuditLogs", id}],
+        }),
     }),
 });
 
@@ -195,4 +229,6 @@ export const {
     useGetAdminBalancesQuery,
     useGetAdminTransactionsQuery,
     useGetAdminPaymentsQuery,
+    useGetAuditLogsQuery,
+    useGetAuditLogByIdQuery,
 } = adminApi;
