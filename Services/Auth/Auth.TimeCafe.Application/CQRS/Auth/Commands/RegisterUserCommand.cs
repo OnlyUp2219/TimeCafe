@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Caching.Hybrid;
+using Auth.TimeCafe.Application.Metrics;
 
 namespace Auth.TimeCafe.Application.CQRS.Auth.Commands;
 
@@ -90,6 +91,8 @@ public class RegisterUserCommandHandler(
                 UserId = user.Id,
                 Email = user.Email ?? string.Empty
             }, cancellationToken);
+
+            AuthMetrics.RegisteredUsers.Inc();
 
             return RegisterUserResult.SuccessResult(callbackUrl);
         }

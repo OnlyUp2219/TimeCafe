@@ -18,7 +18,10 @@ public class Visit
     public DateTimeOffset EntryTime { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ExitTime { get; set; }
     public decimal? CalculatedCost { get; set; }
-    public VisitStatus Status { get; set; } = VisitStatus.Active;
+    public VisitStatus Status { get; set; } = VisitStatus.Pending;
+    public Guid? ApprovedByUserId { get; set; }
+    public DateTimeOffset? ApprovedAt { get; set; }
+    public string? RejectionReason { get; set; }
 
     public static Visit Create(Guid? visitId, Guid userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, DateTimeOffset? exitTime = null, decimal? calculatedCost = null)
     {
@@ -34,7 +37,7 @@ public class Visit
         };
     }
 
-    public static Visit Update(Visit existingVisit, Guid? userId = null, Guid? tariffId = null, DateTimeOffset? entryTime = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, VisitStatus? status = null)
+    public static Visit Update(Visit existingVisit, Guid? userId = null, Guid? tariffId = null, DateTimeOffset? entryTime = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, VisitStatus? status = null, Guid? approvedByUserId = null, DateTimeOffset? approvedAt = null, string? rejectionReason = null)
     {
         return new Visit(existingVisit.VisitId)
         {
@@ -43,8 +46,41 @@ public class Visit
             EntryTime = entryTime ?? existingVisit.EntryTime,
             ExitTime = exitTime ?? existingVisit.ExitTime,
             CalculatedCost = calculatedCost ?? existingVisit.CalculatedCost,
-            Status = status ?? existingVisit.Status
+            Status = status ?? existingVisit.Status,
+            ApprovedByUserId = approvedByUserId ?? existingVisit.ApprovedByUserId,
+            ApprovedAt = approvedAt ?? existingVisit.ApprovedAt,
+            RejectionReason = rejectionReason ?? existingVisit.RejectionReason
         };
+    }
+
+    public FluentResults.Result Approve(Guid approvedByUserId)
+    {
+        if (Status != VisitStatus.Pending)
+            return FluentResults.Result.Fail(new Errors.VisitNotPendingError());
+
+        Status = VisitStatus.Active;
+        ApprovedByUserId = approvedByUserId;
+        ApprovedAt = DateTimeOffset.UtcNow;
+        return FluentResults.Result.Ok();
+    }
+
+    public FluentResults.Result Reject(string reason)
+    {
+        if (Status != VisitStatus.Pending)
+            return FluentResults.Result.Fail(new Errors.VisitNotPendingError());
+
+        Status = VisitStatus.Rejected;
+        RejectionReason = reason;
+        return FluentResults.Result.Ok();
+    }
+
+    public FluentResults.Result Cancel()
+    {
+        if (Status != VisitStatus.Pending)
+            return FluentResults.Result.Fail(new Errors.VisitCannotBeCancelledError());
+
+        Status = VisitStatus.Cancelled;
+        return FluentResults.Result.Ok();
     }
 
 

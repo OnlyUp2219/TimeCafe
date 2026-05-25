@@ -41,7 +41,7 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
             UserId = userId,
             TariffId = tariffId,
             EntryTime = DateTimeOffset.UtcNow,
-            Status = VisitStatus.Active
+            Status = VisitStatus.Pending
         };
 
         VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>())).ReturnsAsync(visit);
@@ -52,6 +52,25 @@ public class CreateVisitCommandTests : BaseCqrsHandlerTest
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value!.UserId.Should().Be(userId);
+    }
+
+    [Fact]
+    public async Task Handler_Should_CreateVisitWithPendingStatus()
+    {
+        var userId = TestData.ExistingVisits.Visit1UserId;
+        var tariffId = TestData.DefaultValues.DefaultTariffId;
+        var command = new CreateVisitCommand(userId, tariffId);
+        Visit? capturedVisit = null;
+
+        VisitRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Visit>(), It.IsAny<CancellationToken>()))
+            .Callback<Visit, CancellationToken>((v, _) => capturedVisit = v)
+            .ReturnsAsync((Visit v, CancellationToken _) => v);
+        UowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        await _handler.Handle(command, CancellationToken.None);
+
+        capturedVisit.Should().NotBeNull();
+        capturedVisit!.Status.Should().Be(VisitStatus.Pending);
     }
 
     [Fact]

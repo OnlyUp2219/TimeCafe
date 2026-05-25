@@ -6,7 +6,7 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     public async Task Endpoint_GetActivePromotionsByDate_Should_Return200_WhenPromotionsExistForDate()
     {
         await ClearDatabaseAndCacheAsync();
-        var targetDate = DateTimeOffset.UtcNow;
+        var targetDate = new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1));
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5));
 
@@ -31,7 +31,7 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     public async Task Endpoint_GetActivePromotionsByDate_Should_Return200_WhenNoPromotionsExistForDate()
     {
         await ClearDatabaseAndCacheAsync();
-        var futureDate = DateTimeOffset.UtcNow.AddDays(100);
+        var futureDate = new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero).AddDays(100);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: TestData.DateTimeData.GetValidFromDate(), validTo: TestData.DateTimeData.GetValidToDate());
 
         var response = await Client.GetAsync($"/venue/promotions/active/{futureDate:yyyy-MM-ddTHH:mm:ss}");
@@ -55,7 +55,7 @@ public class GetActivePromotionsByDateTests(IntegrationApiFactory factory) : Bas
     public async Task Endpoint_GetActivePromotionsByDate_Should_OnlyReturnPromotionsValidForDate()
     {
         await ClearDatabaseAndCacheAsync();
-        var targetDate = DateTimeOffset.UtcNow;
+        var targetDate = new DateTimeOffset(2025, 6, 15, 12, 0, 0, TimeSpan.Zero);
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion1Name, (int)TestData.ExistingPromotions.Promotion1DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-1), validTo: targetDate.AddDays(1));
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion2Name, (int)TestData.ExistingPromotions.Promotion2DiscountPercent, isActive: true, validFrom: targetDate.AddDays(-10), validTo: targetDate.AddDays(-5));
         await SeedPromotionAsync(TestData.ExistingPromotions.Promotion3Name, (int)TestData.ExistingPromotions.Promotion3DiscountPercent, isActive: true, validFrom: targetDate.AddDays(5), validTo: targetDate.AddDays(10));

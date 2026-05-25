@@ -79,6 +79,18 @@ builder.AddContainer("kibana", "docker.elastic.co/kibana/kibana", "9.2.3")
     .WithHttpEndpoint(port: 5601, targetPort: 5601)
     .WaitFor(elastic);
 
+var prometheus = builder.AddContainer("prometheus", "prom/prometheus", "latest")
+    .WithBindMount("../infra/prometheus/prometheus.yml", "/etc/prometheus/prometheus.yml")
+    .WithHttpEndpoint(port: 9090, targetPort: 9090);
+
+builder.AddContainer("grafana", "grafana/grafana", "latest")
+    .WithHttpEndpoint(port: 3000, targetPort: 3000)
+    .WithBindMount("../infra/grafana/provisioning", "/etc/grafana/provisioning")
+    .WithEnvironment("GF_AUTH_ANONYMOUS_ENABLED", "true")
+    .WithEnvironment("GF_AUTH_ANONYMOUS_ORG_ROLE", "Viewer")
+    .WithEnvironment("GF_SECURITY_ALLOW_EMBEDDING", "true")
+    .WaitFor(prometheus);
+
 // Базы данных
 var authDb = postgres.AddDatabase("AuthDb", databaseName: "timecafe_auth");
 var userProfileDb = postgres.AddDatabase("UserProfileDb", databaseName: "timecafe_userprofile");

@@ -16,6 +16,7 @@
 
 		<PackageReference Include="Stripe.net" />
 		<PackageReference Include="FluentResults" />
+		<PackageReference Include="prometheus-net" />
 
 	</ItemGroup>
 

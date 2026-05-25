@@ -44,6 +44,9 @@ public static class Permissions
     public const string VenueVisitUpdate = "venue.visit.update";
     public const string VenueVisitDelete = "venue.visit.delete";
     public const string VenueVisitEnd = "venue.visit.end";
+    public const string VenueVisitApprove = "visit.approve";
+    public const string VenueVisitReject = "visit.reject";
+    public const string VenueVisitViewPending = "visit.view.pending";
     public const string VenueLoyaltyRead = "venue.loyalty.read";
 
     public const string AccountSelfRead = "auth.account.self.read";

@@ -115,7 +115,7 @@ var authGroup = app.MapGroup("/auth");
 authGroup.MapCarter();
 authGroup.MapControllers();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 app.MapGrpcService<Auth.TimeCafe.API.Services.PermissionGrpcService>();
 
 app.UseHealthChecks();
@@ -140,6 +140,9 @@ authGroup.MapGet("/test-yarp", () =>
     };
     return Results.Ok(user);
 });
+
+app.UsePrometheusMetrics();
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

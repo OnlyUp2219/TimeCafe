@@ -93,6 +93,22 @@ public sealed class AdjustBalanceCommandHandler(
 
                 await _uow.SaveChangesAsync(transactionToken);
 
+                if (request.Type == TransactionType.Deposit)
+                {
+                    if (request.Source == TransactionSource.Payment)
+                    {
+                        Metrics.BillingMetrics.SuccessfulPayments.Inc();
+                    }
+                    else if (request.Source == TransactionSource.Refund)
+                    {
+                        Metrics.BillingMetrics.Refunds.Inc();
+                    }
+                    else if (request.Source == TransactionSource.Manual)
+                    {
+                        Metrics.BillingMetrics.Adjustments.Inc();
+                    }
+                }
+
                 await _publisher.Publish(new BalanceChangedEvent(balance.UserId), transactionToken);
                 await _publisher.Publish(new TransactionChangedEvent(transaction.TransactionId, balance.UserId), transactionToken);
 

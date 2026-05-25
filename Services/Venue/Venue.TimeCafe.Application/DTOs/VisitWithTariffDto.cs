@@ -9,6 +9,9 @@ public class VisitWithTariffDto
     public DateTimeOffset? ExitTime { get; set; }
     public decimal? CalculatedCost { get; set; }
     public VisitStatus Status { get; set; }
+    public Guid? ApprovedByUserId { get; set; }
+    public DateTimeOffset? ApprovedAt { get; set; }
+    public string? RejectionReason { get; set; }
 
     public string TariffName { get; set; } = string.Empty;
     public decimal TariffPricePerMinute { get; set; }

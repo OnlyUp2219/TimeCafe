@@ -65,10 +65,11 @@ app.UseOpenApiDevelopment("TimeCafe UserProfile API");
 var userProfileGroup = app.MapGroup("/userprofile");
 userProfileGroup.MapCarter();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
+app.UsePrometheusMetrics();
 app.UseHealthChecks();
-
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

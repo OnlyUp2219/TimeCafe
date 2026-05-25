@@ -76,9 +76,11 @@ var venueGroup = app.MapGroup("/venue");
 venueGroup.MapCarter();
 venueGroup.MapControllers();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
+app.UsePrometheusMetrics();
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

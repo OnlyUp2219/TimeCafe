@@ -10,7 +10,7 @@ namespace Venue.TimeCafe.Test.Integration.Helpers;
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string AuthenticationScheme = "TestScheme";
-    public const string TestUserId = "test-user-id-12345";
+    public const string TestUserId = "11111111-1111-1111-1111-111111111111";
 
     public TestAuthHandler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,
@@ -25,6 +25,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, TestUserId),
+            new("sub", TestUserId),
             new(ClaimTypes.Name, "Test User"),
             new(ClaimTypes.Email, "test@example.com"),
             new(ClaimTypes.Role, "admin")

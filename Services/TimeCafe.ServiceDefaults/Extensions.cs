@@ -8,6 +8,7 @@ using Microsoft.Extensions.ServiceDiscovery;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using Prometheus;
 
 namespace TimeCafe.ServiceDefaults;
 
@@ -71,13 +72,20 @@ public static class ServiceDefaultsExtensions
     {
         if (app.Environment.IsDevelopment())
         {
-            app.MapHealthChecks("/health");
             app.MapHealthChecks("/alive", new HealthCheckOptions
             {
                 Predicate = r => r.Tags.Contains("live")
             });
         }
 
+        app.MapMetrics();
+
+        return app;
+    }
+
+    public static WebApplication UsePrometheusMetrics(this WebApplication app)
+    {
+        app.UseHttpMetrics();
         return app;
     }
 }

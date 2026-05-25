@@ -60,8 +60,7 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             {
                 UserId = request.UserId,
                 TariffId = request.TariffId,
-                EntryTime = DateTimeOffset.UtcNow,
-                Status = VisitStatus.Active
+                EntryTime = DateTimeOffset.UtcNow
             };
 
             var created = await _uow.Visits.CreateAsync(visit, cancellationToken);
@@ -71,6 +70,9 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
 
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(created.VisitId, created.UserId), cancellationToken);
+
+            Venue.TimeCafe.Application.Metrics.VenueMetrics.PendingVisits.Inc();
+            Venue.TimeCafe.Application.Metrics.VenueMetrics.VisitsStarted.Inc();
 
             return Result.Ok(created);
         }

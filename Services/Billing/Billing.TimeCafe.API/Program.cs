@@ -58,9 +58,11 @@ var billingGroup = app.MapGroup("/billing");
 billingGroup.MapCarter();
 billingGroup.MapControllers();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
+app.UsePrometheusMetrics();
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 

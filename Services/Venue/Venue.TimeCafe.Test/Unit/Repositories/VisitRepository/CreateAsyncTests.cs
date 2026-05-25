@@ -54,7 +54,7 @@ public class CreateAsyncTests : BaseCqrsTest
     }
 
     [Fact]
-    public async Task Repository_CreateAsync_Should_SetStatusToActive()
+    public async Task Repository_CreateAsync_Should_SetStatusToPending()
     {
         // Arrange
         var tariff = await SeedTariffAsync(TestData.DefaultValues.DefaultTariffName, TestData.DefaultValues.DefaultTariffPrice);
@@ -68,7 +68,7 @@ public class CreateAsyncTests : BaseCqrsTest
         var result = await VisitRepository.CreateAsync(visit);
 
         // Assert
-        result.Status.Should().Be(VisitStatus.Active);
+        result.Status.Should().Be(VisitStatus.Pending);
     }
 
     [Fact]

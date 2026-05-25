@@ -53,3 +53,21 @@ public sealed class VisitDeleteFailedError : Error
         Metadata.Add("ErrorCode", "500");
     }
 }
+
+public sealed class VisitNotPendingError : Error
+{
+    public VisitNotPendingError()
+        : base("Операция доступна только для визитов в статусе 'Ожидает подтверждения'.")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}
+
+public sealed class VisitCannotBeCancelledError : Error
+{
+    public VisitCannotBeCancelledError()
+        : base("Визит можно отменить только в статусе 'Ожидает подтверждения'.")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

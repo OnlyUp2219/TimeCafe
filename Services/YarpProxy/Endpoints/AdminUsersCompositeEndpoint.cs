@@ -47,7 +47,14 @@ public class AdminUsersCompositeEndpoint : ICarterModule
 
                 if (balancesResponse.IsSuccessStatusCode)
                 {
-                    balances = await balancesResponse.Content.ReadFromJsonAsync<List<BalanceDto>>();
+                    try
+                    {
+                        balances = await balancesResponse.Content.ReadFromJsonAsync<List<BalanceDto>>();
+                    }
+                    catch (System.Text.Json.JsonException)
+                    {
+                        balances = null;
+                    }
                 }
             }
 

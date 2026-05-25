@@ -23,8 +23,18 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.Property(v => v.Status)
             .HasConversion<int>()
             .IsRequired()
-            .HasDefaultValue(VisitStatus.Active)
-            .HasSentinel(VisitStatus.Active);
+            .HasDefaultValue(VisitStatus.Pending)
+            .HasSentinel(VisitStatus.Pending);
+
+        builder.Property(v => v.ApprovedByUserId)
+            .IsRequired(false);
+
+        builder.Property(v => v.ApprovedAt)
+            .IsRequired(false);
+
+        builder.Property(v => v.RejectionReason)
+            .HasMaxLength(500)
+            .IsRequired(false);
 
         builder.HasOne<Tariff>()
             .WithMany(t => t.Visits)
@@ -38,7 +48,7 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.HasIndex(v => new { v.Status, v.EntryTime });
         builder.HasIndex(v => new { v.UserId, v.EntryTime });
         builder.HasIndex(v => v.UserId)
-            .HasFilter("\"Status\" = 1")
+            .HasFilter("\"Status\" = 3")
             .IsUnique();
     }
 }

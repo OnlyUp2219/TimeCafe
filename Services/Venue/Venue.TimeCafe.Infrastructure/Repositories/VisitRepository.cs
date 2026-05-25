@@ -44,7 +44,7 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
-                               where v.UserId == userId && v.Status == VisitStatus.Active
+                               where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active)
                                select new VisitWithTariffDto
                                {
                                    VisitId = v.VisitId,
@@ -54,6 +54,9 @@ public class VisitRepository(
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
                                    Status = v.Status,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason,
                                    TariffName = t != null ? t.Name : string.Empty,
                                    TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
                                    TariffDescription = t != null ? t.Description! : string.Empty,
@@ -164,16 +167,53 @@ public class VisitRepository(
 
     public async Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken cancellationToken = default) =>
         await _context.Visits
-            .AnyAsync(v => v.UserId == userId && v.Status == VisitStatus.Active, cancellationToken);
+            .AnyAsync(v => v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active), cancellationToken);
 
     public async Task<Visit> CreateAsync(Visit visit, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(visit);
         visit.EntryTime = DateTimeOffset.UtcNow;
-        visit.Status = VisitStatus.Active;
         _context.Visits.Add(visit);
         return visit;
     }
+
+    public async Task<IEnumerable<VisitWithTariffDto>> GetPendingVisitsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default) =>
+        await _cache.GetOrCreateAsync<List<VisitWithTariffDto>>(
+            CacheKeys.Visit_Pending(pageNumber, pageSize),
+            async cancellationToken => await (from v in _context.Visits
+                               join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
+                               from t in tGroup.DefaultIfEmpty()
+                               where v.Status == VisitStatus.Pending
+                               orderby v.EntryTime descending
+                               select new VisitWithTariffDto
+                               {
+                                   VisitId = v.VisitId,
+                                   UserId = v.UserId,
+                                   TariffId = v.TariffId,
+                                   EntryTime = v.EntryTime,
+                                   ExitTime = v.ExitTime,
+                                   CalculatedCost = v.CalculatedCost,
+                                   Status = v.Status,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason,
+                                   TariffName = t != null ? t.Name : string.Empty,
+                                   TariffPricePerMinute = t != null ? t.PricePerMinute : 0m,
+                                   TariffDescription = t != null ? t.Description! : string.Empty,
+                                   TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
+                                   TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                               })
+                              .AsNoTracking()
+                              .Skip((pageNumber - 1) * pageSize)
+                              .Take(pageSize)
+                              .ToListAsync(cancellationToken),
+            new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(1) },
+            tags: [CacheTags.Visits],
+            cancellationToken: cancellationToken) ?? [];
+
+    public async Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default) =>
+        await _context.Visits.CountAsync(v => v.Status == VisitStatus.Pending, cancellationToken);
 
     public async Task<Visit?> UpdateAsync(Visit visit, CancellationToken cancellationToken = default)
     {

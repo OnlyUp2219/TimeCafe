@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8001']
+    metrics_path: /metrics
+
+  - job_name: 'profile-service'
+    static_configs:
+      - targets: ['profile-service:8002']
+    metrics_path: /metrics
+
+  - job_name: 'venue-service'
+    static_configs:
+      - targets: ['venue-service:8003']
+    metrics_path: /metrics
+
+  - job_name: 'billing-service'
+    static_configs:
+      - targets: ['billing-service:8004']
+    metrics_path: /metrics
+
+  - job_name: 'yarp-proxy'
+    static_configs:
+      - targets: ['yarp-proxy:8010']
+    metrics_path: /metrics

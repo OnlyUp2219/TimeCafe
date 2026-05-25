@@ -97,6 +97,8 @@ public sealed class VisitCompletedEventConsumer(
             await _uow.SaveChangesAsync(cancellationToken);
             await dbTransaction.CommitAsync(cancellationToken);
 
+            Billing.TimeCafe.Application.Metrics.BillingMetrics.Revenue.Inc((double)evt.Amount);
+
             _logger.LogInformation(
                 "Визит {VisitId} пользователя {UserId} успешно обработан. Списано: {Amount}₽, Баланс: {Balance}₽",
                 evt.VisitId, evt.UserId, evt.Amount, balance.CurrentBalance);

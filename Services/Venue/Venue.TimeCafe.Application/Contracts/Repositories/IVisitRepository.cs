@@ -9,5 +9,7 @@ public interface IVisitRepository : IRepository<Visit, Guid>
     Task<IEnumerable<VisitWithTariffDto>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default);
     Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<VisitWithTariffDto>> GetPendingVisitsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+    Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default);
 }
 

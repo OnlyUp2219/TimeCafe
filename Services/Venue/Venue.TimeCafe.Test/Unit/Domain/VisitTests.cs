@@ -159,4 +159,130 @@ public class VisitTests
         cost.FinalCost.Should().Be(66m);
         cost.OptimizationGain.Should().Be(0m);
     }
+
+    [Fact]
+    public void Approve_Should_Fail_WhenAlreadyApproved()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Approve(Guid.NewGuid()).IsSuccess.Should().BeTrue();
+
+        var secondApprove = visit.Approve(Guid.NewGuid());
+
+        secondApprove.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Approve_Should_Fail_WhenAlreadyRejected()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Reject("Нет мест").IsSuccess.Should().BeTrue();
+
+        var approveResult = visit.Approve(Guid.NewGuid());
+
+        approveResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Approve_Should_Fail_WhenAlreadyCancelled()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Cancel().IsSuccess.Should().BeTrue();
+
+        var approveResult = visit.Approve(Guid.NewGuid());
+
+        approveResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Approve_Should_Fail_WhenAlreadyCompleted()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Approve(Guid.NewGuid()).IsSuccess.Should().BeTrue();
+        visit.Status = VisitStatus.Completed;
+
+        var approveResult = visit.Approve(Guid.NewGuid());
+
+        approveResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Reject_Should_Fail_WhenAlreadyRejected()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Reject("Причина").IsSuccess.Should().BeTrue();
+
+        var secondReject = visit.Reject("Другая причина");
+
+        secondReject.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Reject_Should_Fail_WhenAlreadyActive()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Approve(Guid.NewGuid()).IsSuccess.Should().BeTrue();
+
+        var rejectResult = visit.Reject("Причина");
+
+        rejectResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Cancel_Should_Fail_WhenAlreadyCancelled()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Cancel().IsSuccess.Should().BeTrue();
+
+        var secondCancel = visit.Cancel();
+
+        secondCancel.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Cancel_Should_Fail_WhenAlreadyActive()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        visit.Approve(Guid.NewGuid()).IsSuccess.Should().BeTrue();
+
+        var cancelResult = visit.Cancel();
+
+        cancelResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Cancel_Should_Fail_WhenAlreadyCompleted()
+    {
+        var visit = new Visit { Status = VisitStatus.Active };
+        visit.Status = VisitStatus.Completed;
+
+        var cancelResult = visit.Cancel();
+
+        cancelResult.IsFailed.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Approve_Should_SetStatusToActive()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+        var approverId = Guid.NewGuid();
+
+        var result = visit.Approve(approverId);
+
+        result.IsSuccess.Should().BeTrue();
+        visit.Status.Should().Be(VisitStatus.Active);
+        visit.ApprovedByUserId.Should().Be(approverId);
+        visit.ApprovedAt.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Reject_Should_SetStatusToRejected()
+    {
+        var visit = new Visit { Status = VisitStatus.Pending };
+
+        var result = visit.Reject("Нет свободных мест");
+
+        result.IsSuccess.Should().BeTrue();
+        visit.Status.Should().Be(VisitStatus.Rejected);
+        visit.RejectionReason.Should().Be("Нет свободных мест");
+    }
 }

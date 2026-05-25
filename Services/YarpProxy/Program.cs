@@ -55,8 +55,9 @@ app.MapCarter();
 
 app.UseScalarConfiguration();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
+app.UseHealthChecks();
 app.MapDefaultEndpoints();
 
 if (app.Environment.IsDevelopment())

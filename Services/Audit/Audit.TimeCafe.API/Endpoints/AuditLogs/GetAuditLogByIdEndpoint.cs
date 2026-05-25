@@ -6,9 +6,7 @@ public class GetAuditLogByIdEndpoint : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        app.MapGroup("/audit")
-            .WithTags("Audit")
-            .MapGet("/logs/{id:guid}", async (
+        app.MapGet("/logs/{id:guid}", async (
                 Guid id,
                 [FromServices] ISender sender) =>
             {
@@ -17,6 +15,7 @@ public class GetAuditLogByIdEndpoint : ICarterModule
 
                 return result.ToHttpResult(data => Results.Ok(data));
             })
+            .WithTags("Audit")
             .WithName("GetAuditLogById")
             .WithSummary("Получение audit лога по ID")
             .Produces(StatusCodes.Status200OK)

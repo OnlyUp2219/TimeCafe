@@ -63,7 +63,10 @@ public class EndVisitCommandHandler(
             if (updated == null)
                 return Result.Fail(new EndVisitFailedError());
 
-            await _publishEndpoint.Publish(new VisitCompletedEvent
+            Venue.TimeCafe.Application.Metrics.VenueMetrics.ActiveVisits.Dec();
+        Venue.TimeCafe.Application.Metrics.VenueMetrics.VisitsCompleted.Inc();
+
+        await _publishEndpoint.Publish(new VisitCompletedEvent
             {
                 VisitId = updated.VisitId,
                 UserId = updated.UserId,

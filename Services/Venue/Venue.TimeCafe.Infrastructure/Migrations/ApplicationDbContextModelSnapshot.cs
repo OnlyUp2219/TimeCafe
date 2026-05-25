@@ -380,6 +380,12 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uuid");
+
                     b.Property<decimal?>("CalculatedCost")
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
@@ -390,10 +396,14 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("ExitTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasDefaultValue(0);
 
                     b.Property<Guid>("TariffId")
                         .HasColumnType("uuid");
@@ -411,7 +421,7 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasFilter("\"Status\" = 1");
+                        .HasFilter("\"Status\" = 3");
 
                     b.HasIndex("Status", "EntryTime");
 

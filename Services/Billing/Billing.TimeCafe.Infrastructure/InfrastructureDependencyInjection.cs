@@ -34,5 +34,7 @@ public static class InfrastructureDependencyInjection
     {
         cfg.AddConsumer<VisitCompletedEventConsumer>();
         cfg.AddConsumer<UserRegisteredEventConsumer>();
+        cfg.AddConsumer<VisitApprovedEventConsumer>();
+        cfg.AddConsumer<VisitRejectedEventConsumer>();
     }
 }

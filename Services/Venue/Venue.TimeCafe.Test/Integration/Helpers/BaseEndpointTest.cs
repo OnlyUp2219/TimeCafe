@@ -112,7 +112,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return theme;
     }
 
-    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null, bool isActive = true)
+    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null, bool isActive = true, VisitStatus? status = null)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -122,14 +122,15 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
                 ?? throw new InvalidOperationException($"Tariff with ID {tariffId} not found")
             : await SeedTariffAsync();
 
+        var visitStatus = status ?? (isActive ? VisitStatus.Active : VisitStatus.Completed);
         var visit = new Visit
         {
             UserId = userId ?? Guid.NewGuid(),
             TariffId = tariff.TariffId,
             EntryTime = DateTimeOffset.UtcNow,
-            Status = isActive ? VisitStatus.Active : VisitStatus.Completed,
-            ExitTime = isActive ? null : DateTimeOffset.UtcNow.AddMinutes(30),
-            CalculatedCost = isActive ? null : 100m
+            Status = visitStatus,
+            ExitTime = visitStatus == VisitStatus.Active || visitStatus == VisitStatus.Pending ? null : DateTimeOffset.UtcNow.AddMinutes(30),
+            CalculatedCost = visitStatus == VisitStatus.Active || visitStatus == VisitStatus.Pending ? null : 100m
         };
 
         context.Visits.Add(visit);

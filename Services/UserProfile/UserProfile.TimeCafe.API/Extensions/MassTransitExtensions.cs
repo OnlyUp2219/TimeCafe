@@ -14,6 +14,8 @@ public static class MassTransitExtensions
             {
                 x.AddConsumer<UserRegisteredConsumer>();
                 x.AddConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitCompletedEventConsumer>();
+                x.AddConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitApprovedEventConsumer>();
+                x.AddConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitRejectedEventConsumer>();
 
                 x.UsingInMemory((context, cfg) => cfg.ConfigureEndpoints(context));
             });

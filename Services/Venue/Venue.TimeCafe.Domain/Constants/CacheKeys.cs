@@ -17,6 +17,7 @@ public static class CacheKeys
     public static string Visit_ActiveByUser(Guid userId) => $"venue:visit:user:{userId}:active";
     public static string Visit_HistoryByUser(Guid userId, int page, int pageSize) => $"venue:visit:user:{userId}:history:p{page}:s{pageSize}";
     public static string Visit_Page(int page, int pageSize) => $"venue:visit:page:p{page}:s{pageSize}";
+    public static string Visit_Pending(int page, int pageSize) => $"venue:visit:pending:p{page}:s{pageSize}";
 
     public const string Promotion_All = "venue:promotion:all";
     public const string Promotion_Active = "venue:promotion:active";

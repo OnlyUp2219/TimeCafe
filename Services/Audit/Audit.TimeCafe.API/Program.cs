@@ -1,4 +1,7 @@
+using TimeCafe.ServiceDefaults;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.AddServiceDefaults();
 builder.AddSharedConfiguration();
 
 // Serilog
@@ -15,6 +18,8 @@ builder.Services.AddAuditPostgresDatabase(builder.Configuration);
 builder.Services.AddAuditInfrastructure();
 builder.Services.AddAuditCqrs();
 var corsPolicyName = builder.Services.AddCorsConfiguration(builder.Configuration);
+
+builder.Services.AddJwtAuthenticationConfiguration(builder.Configuration);
 
 // Swagger & Carter
 builder.Services.AddControllers();
@@ -44,9 +49,11 @@ var auditGroup = app.MapGroup("/audit");
 auditGroup.MapCarter();
 auditGroup.MapControllers();
 
-app.MapGet("/", () => Results.Redirect("/scalar/v1")).ExcludeFromDescription();
+app.MapGet("/", () => Results.Redirect("/scalar")).ExcludeFromDescription();
 
+app.UsePrometheusMetrics();
 app.UseHealthChecks();
+app.MapDefaultEndpoints();
 
 await app.RunAsync();
 
