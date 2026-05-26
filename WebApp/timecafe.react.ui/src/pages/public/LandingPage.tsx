@@ -16,7 +16,7 @@ import {
     Title2,
     Title3,
     tokens,
-    Image,
+
 } from "@fluentui/react-components";
 import type {FC} from "react";
 import {useMemo} from "react";
@@ -32,10 +32,7 @@ import {
 } from "@fluentui/react-icons";
 import {CURRENCY_SYMBOL} from "@shared/const/currency";
 
-import blob1Url from "@assets/ssshape_blob1.svg";
-import blob2Url from "@assets/ssshape_blob2.svg";
-import squigglyUrl from "@assets/sssquiggly.svg";
-import vortexUrl from "@assets/vvvortex.svg";
+
 
 type FaqItem = {
     question: string;
@@ -133,64 +130,14 @@ export const LandingPage: FC = () => {
 
     return (
         <main
-            className="tc-noise-overlay min-h-screen relative overflow-x-hidden"
+            className="min-h-screen relative overflow-x-hidden"
             id="Landing Page"
         >
             <Header variant="public"/>
 
-            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                {/* top-right blob */}
-                <Image
-                    src={blob1Url}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none"
-                    style={{opacity: 0.10}}
-                    draggable={false}
-                />
 
-                {/* mid-left blob */}
-                <Image
-                    src={blob2Url}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -left-[12vw] top-[40vh] w-[55vw] max-w-[720px] -rotate-6 select-none"
-                    style={{opacity: 0.10}}
-                    draggable={false}
-                />
 
-                {/* waves near top */}
-                <Image
-                    src={squigglyUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none"
-                    style={{opacity: 0.10}}
-                    draggable={false}
-                />
-
-                {/* waves near bottom */}
-                <Image
-                    src={squigglyUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -bottom-[12vw] left-1/2 w-[90vw] max-w-[1100px] -translate-x-1/2 rotate-180 select-none"
-                    style={{opacity: 0.10}}
-                    draggable={false}
-                />
-
-                {/* vortex */}
-                <Image
-                    src={vortexUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -right-[12vw] top-[70vh] w-[60vw] max-w-[720px] select-none lg:top-[64rem]"
-                    style={{opacity: 0.10}}
-                    draggable={false}
-                />
-            </div>
-
-            <div className="flex flex-col gap-10 py-10 z-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6">
+            <div className="flex flex-col gap-10 py-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6">
                 <section className="flex flex-col gap-2">
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10">
                         <div className="flex flex-col gap-4">

@@ -14,6 +14,8 @@ import {
 } from "@fluentui/react-components";
 import {TariffCard} from "@components/TariffCard/TariffCard";
 
+import {useComponentSize} from "@hooks/useComponentSize";
+
 export const TariffCarouselSection = ({
                                           visibleTariffs,
                                           totalCount,
@@ -23,8 +25,9 @@ export const TariffCarouselSection = ({
                                           onSelectTariff,
                                           onOpenDetails,
                                       }: TariffCarouselSectionProps) => {
+    const { sizes } = useComponentSize();
     return (
-        <Card className="flex flex-col gap-3">
+        <Card className="flex flex-col gap-3" size={sizes.card}>
             <div className="flex items-center justify-between gap-3 flex-wrap">
                 <Title3>Тарифы</Title3>
                 <Body2 block>Потяните мышкой/тачем или используйте стрелки.</Body2>

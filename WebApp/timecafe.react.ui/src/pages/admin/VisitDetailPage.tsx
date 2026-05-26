@@ -13,8 +13,8 @@ import {
     Title2,
     Title3,
 } from "@fluentui/react-components";
-import { ArrowLeft20Regular, Checkmark20Regular } from "@fluentui/react-icons";
-import { useGetVisitByIdQuery, useEndVisitMutation } from "@store/api/venueApi";
+import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, DismissCircle20Regular } from "@fluentui/react-icons";
+import { useGetVisitByIdQuery, useEndVisitMutation, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
@@ -22,9 +22,12 @@ import { VisitStatus } from "@app-types/visit";
 import { useState } from "react";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
+import { VisitStatusBadge } from "@components/VisitStatusBadge";
+import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
 
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { NO_DATA } from "@shared/const/placeholders";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
@@ -36,17 +39,19 @@ const formatDateTime = (iso: string | null) => {
 
 const formatMoney = (v: number | null) => v != null ? `${v.toFixed(2)} ${CURRENCY_SYMBOL}` : NO_DATA;
 
-const statusLabel = (s: number) => s === VisitStatus.Active ? "Активен" : "Завершён";
-const statusColor = (s: number): "success" | "informative" => s === VisitStatus.Active ? "success" : "informative";
+
 
 export const VisitDetailPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const [endError, setEndError] = useState<string | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const { data: visitData, isLoading, error } = useGetVisitByIdQuery(id!, { skip: !id });
     const [endVisit, { isLoading: ending }] = useEndVisitMutation();
+    const [approveVisit, { isLoading: approving }] = useApproveVisitMutation();
+    const [rejectVisit, { isLoading: rejecting }] = useRejectVisitMutation();
 
     const visit = visitData;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
@@ -61,7 +66,27 @@ export const VisitDetailPage = () => {
         }
     };
 
-    if (isLoading) return <div className="flex justify-center p-8"><Spinner /></div>;
+    const handleApprove = async (visitId: string) => {
+        setEndError(null);
+        try {
+            await approveVisit(visitId).unwrap();
+            setDialogOpen(false);
+        } catch (err) {
+            setEndError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось подтвердить визит");
+        }
+    };
+
+    const handleReject = async (visitId: string, reason: string) => {
+        setEndError(null);
+        try {
+            await rejectVisit({ visitId, reason }).unwrap();
+            setDialogOpen(false);
+        } catch (err) {
+            setEndError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось отклонить визит");
+        }
+    };
+
+    if (isLoading) return <PageLoader />;
 
     if (errorMessage) return (
         <div>
@@ -93,19 +118,43 @@ export const VisitDetailPage = () => {
 
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <Title2>Визит</Title2>
-                <HasPermission can={Permissions.VenueVisitEnd}>
-                    {visit.status === VisitStatus.Active && (
-                        <Button
-                            appearance="primary"
-                            icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
-                            onClick={handleEnd}
-                            disabled={ending}
-                        >
-                            Завершить визит
-                        </Button>
-                    )}
-                </HasPermission>
+                <div className="flex gap-2 flex-wrap">
+                    <HasPermission can={Permissions.VenueVisitApprove}>
+                        {visit.status === VisitStatus.Pending && (
+                            <Button
+                                appearance="primary"
+                                icon={approving ? <Spinner size="tiny" /> : <CheckmarkCircle20Regular />}
+                                onClick={() => setDialogOpen(true)}
+                                disabled={approving}
+                            >
+                                Подтвердить / Отклонить
+                            </Button>
+                        )}
+                    </HasPermission>
+                    <HasPermission can={Permissions.VenueVisitEnd}>
+                        {visit.status === VisitStatus.Active && (
+                            <Button
+                                appearance="primary"
+                                icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
+                                onClick={handleEnd}
+                                disabled={ending}
+                            >
+                                Завершить визит
+                            </Button>
+                        )}
+                    </HasPermission>
+                </div>
             </div>
+
+            <ApproveVisitDialog
+                open={dialogOpen}
+                visit={visit}
+                onOpenChange={setDialogOpen}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                approving={approving}
+                rejecting={rejecting}
+            />
 
             {endError && (
                 <MessageBar intent="error" className="mb-4">
@@ -121,9 +170,7 @@ export const VisitDetailPage = () => {
                             <Body2 block>Пользователь</Body2>
                             <Caption1 block className="font-mono">{visit.userId}</Caption1>
                         </div>
-                        <Badge appearance="filled" color={statusColor(visit.status)} size="large">
-                            {statusLabel(visit.status)}
-                        </Badge>
+                        <VisitStatusBadge status={visit.status} size="large" />
                     </div>
                 </Card>
 
@@ -148,6 +195,19 @@ export const VisitDetailPage = () => {
                         <Body2 block>ID визита</Body2>
                         <Caption1 block className="font-mono">{visit.visitId}</Caption1>
                     </Card>
+                    {visit.approvedByUserId && (
+                        <Card size={sizes.card}>
+                            <Body2 block>Подтверждён пользователем</Body2>
+                            <Caption1 block className="font-mono">{visit.approvedByUserId}</Caption1>
+                            <Caption1 block>{visit.approvedAt ? formatDateTime(visit.approvedAt) : NO_DATA}</Caption1>
+                        </Card>
+                    )}
+                    {visit.rejectionReason && (
+                        <Card size={sizes.card}>
+                            <Body2 block>Причина отклонения</Body2>
+                            <Body1 block>{visit.rejectionReason}</Body1>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>

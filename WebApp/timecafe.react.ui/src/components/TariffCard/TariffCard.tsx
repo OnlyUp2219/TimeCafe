@@ -18,6 +18,7 @@ import { useMemo } from "react";
 import { BillingType as BillingTypeEnum, type Tariff } from "@app-types/tariff";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { parseThemeConfig, getThemeStyles, getPatternLayerStyles } from "@utility/themeStyles";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 type Props = {
     tariff: Tariff;
@@ -27,7 +28,7 @@ type Props = {
 };
 
 export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOpenDetails }) => {
-
+    const { sizes } = useComponentSize();
     const config = useMemo(() => parseThemeConfig(tariff.themeColors || tariff.colors), [tariff]);
     const themeStyles = useMemo(() => getThemeStyles(config), [config]);
 
@@ -76,11 +77,11 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOp
                 }
                 action={
                     selected ? (
-                        <Badge appearance="tint" size="large">
+                        <Badge appearance="tint" size={sizes.badge}>
                             Выбран
                         </Badge>
                     ) : (
-                        <Badge appearance="ghost" size="large" style={{ color: themeStyles.color }}>
+                        <Badge appearance="ghost" size={sizes.badge} style={{ color: themeStyles.color }}>
                             Тариф
                         </Badge>
                     )
@@ -102,6 +103,7 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOp
                     style={!selected ? { backgroundColor: "rgba(255,255,255,0.1)", color: themeStyles.color, backdropFilter: "blur(4px)", border: "1px solid rgba(255,255,255,0.2)" } : {}}
                     onClick={() => onSelect?.(tariff.tariffId)}
                     disabled={!tariff.isActive}
+                    size={sizes.button}
                 >
                     {selected ? "Выбран" : "Выбрать"}
                 </Button>
@@ -111,6 +113,7 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOp
                             appearance="secondary" 
                             style={{ backgroundColor: "rgba(255,255,255,0.05)", color: themeStyles.color, border: "none" }}
                             onClick={() => onOpenDetails?.(tariff)}
+                            size={sizes.button}
                         >
                             <Body1 truncate wrap={false}>Детали</Body1>
                         </Button>

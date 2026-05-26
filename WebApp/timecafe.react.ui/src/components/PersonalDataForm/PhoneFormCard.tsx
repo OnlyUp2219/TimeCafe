@@ -25,6 +25,7 @@ import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface PhoneFormCardProps {
     loading?: boolean;
@@ -32,6 +33,7 @@ export interface PhoneFormCardProps {
 }
 
 export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, className}) => {
+    const { sizes } = useComponentSize();
     const dispatch = useAppDispatch();
     const [clearPhoneMutation] = useClearPhoneNumberMutation();
     const phoneNumber = useAppSelector((state) => state.auth.phoneNumber);
@@ -72,11 +74,9 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
 
     return (
         <>
-            <Card className={className}>
+            <Card className={className} size={sizes.card}>
                 <Title2 block className="!flex items-center gap-2">
-                    <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
-                        <PhoneRegular className="size-5"/>
-                    </Badge>
+                    <PhoneRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
                     Телефон
                 </Title2>
                 <Body2 className="!line-clamp-2">
@@ -86,25 +86,24 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                 <div>
                     <div className="flex flex-col gap-2">
                         <div className="flex flex-col sm:items-center sm:flex-row justify-between gap-2 min-w-0">
-                            <div className="flex items-center gap-2 min-w-0 ">
+                            <div className="flex items-center gap-2 min-w-0 flex-wrap">
                                 <Tooltip content={`Телефон: ${phone || "не указан"}`} relationship="label">
                                     <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
                                         {phone || "—"}
                                     </Body1Strong>
                                 </Tooltip>
-                                <Tooltip
-                                    content={!hasPhone ? "Телефон не указан" : (phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён")}
-                                    relationship="description"
-                                >
-                                    <Tag
-                                        appearance="outline"
-                                        icon={createElement(getPersonalDataStatusIcon(confirmedForUi))}
-                                        className={`custom-tag ${getPersonalDataStatusClass(confirmedForUi)}`}
-                                    />
-                                </Tooltip>
+                                <div className="flex items-center gap-1.5 sm:ml-2 shrink-0">
+                                    {createElement(getPersonalDataStatusIcon(confirmedForUi), {
+                                        className: confirmedForUi ? "text-[var(--colorStatusSuccessForeground1)]" : (confirmedForUi === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]"),
+                                        fontSize: 16
+                                    })}
+                                    <Caption1 className={confirmedForUi ? "text-[var(--colorStatusSuccessForeground1)]" : (confirmedForUi === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]")}>
+                                        {!hasPhone ? "Не указан" : (phoneNumberConfirmed ? "Подтверждён" : "Не подтверждён")}
+                                    </Caption1>
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-row items-center gap-2 w-full sm:w-auto">
                                 <Button
                                     appearance="subtle"
                                     icon={<Delete20Regular/>}
@@ -112,12 +111,15 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                         setShowClearDialog(true);
                                     }}
                                     disabled={loading || !hasPhone}
+                                    size={sizes.button}
                                 />
                                 <Button
                                     appearance="primary"
                                     icon={<Edit20Filled/>}
                                     onClick={() => setShowPhoneModal(true)}
                                     disabled={loading}
+                                    size={sizes.button}
+                                    className="flex-1 sm:flex-none"
                                 >
                                     {actionLabel}
                                 </Button>
@@ -160,6 +162,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                 appearance="secondary"
                                 onClick={() => setShowClearDialog(false)}
                                 disabled={clearing}
+                                size={sizes.button}
                             >
                                 Отмена
                             </Button>
@@ -167,6 +170,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                 appearance="primary"
                                 onClick={handleClearPhone}
                                 disabled={clearing}
+                                size={sizes.button}
                             >
                                 Удалить
                             </Button>

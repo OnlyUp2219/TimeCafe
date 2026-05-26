@@ -1,11 +1,15 @@
 import type {FC} from "react";
-import {Link} from "@fluentui/react-components";
+import {Link, tokens} from "@fluentui/react-components";
 
 export const Footer: FC = () => {
     return (
         <footer
-            className="mt-auto border-t w-full border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur
-            supports-[backdrop-filter]:bg-white/90">
+            className="mt-auto border-t w-full"
+            style={{
+                backgroundColor: tokens.colorNeutralBackground1,
+                borderColor: tokens.colorNeutralStroke2,
+            }}
+        >
             <div className="page-content flex items-center justify-between text-sm">
                 <span>© 2026 TimeCafe</span>
                 <div className="flex gap-4">

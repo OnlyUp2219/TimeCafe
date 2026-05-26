@@ -147,8 +147,8 @@ export const UserDetailPage = () => {
         { userId: id!, page: notesPage, pageSize: NOTES_PAGE_SIZE },
         { skip: !id }
     );
-    const adminNotes = notesData?.infos ?? [];
-    const totalNotes = notesData?.totalCount ?? 0;
+    const adminNotes = notesData?.items ?? [];
+    const totalNotes = notesData?.metadata?.totalCount ?? 0;
     const [createNote, { isLoading: creatingNote }] = useCreateAdditionalInfoMutation();
     const [deleteNote] = useDeleteAdditionalInfoMutation();
     const adminEmail = useAppSelector((state) => state.auth.email);
@@ -197,7 +197,6 @@ export const UserDetailPage = () => {
     }, [user?.email, user?.name]);
 
     const contactLine = [user?.email, profile?.phoneNumber].filter(Boolean).join(" · ") || NO_DATA;
-    const registrationDate = profile?.birthDate ? formatDateTime(profile.birthDate) : NO_DATA;
 
     const txColumnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         date: { minWidth: 130, defaultWidth: 160 },
@@ -433,10 +432,6 @@ export const UserDetailPage = () => {
                             <div>
                                 <Body2 block>Дата рождения</Body2>
                                 <Body1 block>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Регистрация</Body2>
-                                <Body1 block>{registrationDate}</Body1>
                             </div>
                             <div>
                                 <Body2 block>Email</Body2>

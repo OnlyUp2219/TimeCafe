@@ -52,6 +52,8 @@ import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { EmojiPicker } from "@components/EmojiPicker/EmojiPicker";
 import { parseThemeConfig, getThemeStyles, getPatternLayerStyles, type ThemeConfig, type PatternLayer } from "@utility/themeStyles";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+
 
 const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
     const color = useMemo(() => tinycolor(value).toHsv(), [value]);
@@ -272,7 +274,7 @@ export const ThemeEditorPage = () => {
         }
     };
 
-    if (id && loadingThemes) return <Spinner size="huge" label="Загрузка темы..." />;
+    if (id && loadingThemes) return <PageLoader label="Загрузка темы..." />;
 
     return (
         <div className="flex flex-col gap-4">

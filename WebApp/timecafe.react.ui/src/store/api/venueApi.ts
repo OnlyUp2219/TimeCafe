@@ -47,6 +47,7 @@ export interface CreateVisitRequest {
     plannedMinutes?: number;
     requirePositiveBalance?: boolean;
     requireEnoughForPlanned?: boolean;
+    guestsCount?: number;
 }
 
 interface CreateVisitResponse {
@@ -180,7 +181,7 @@ export interface UserLoyalty {
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "Promotions", "Themes", "UserLoyalty"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "PendingVisits", "Promotions", "Themes", "UserLoyalty"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
@@ -236,6 +237,39 @@ export const venueApi = createApi({
                 params: {page, pageSize},
             }),
             providesTags: ["VisitsPage"],
+        }),
+
+        getPendingVisits: builder.query<GetVisitsPageResponse, GetVisitsPageArgs>({
+            query: ({page, pageSize}) => ({
+                url: "/venue/visits/pending",
+                params: {page, pageSize},
+            }),
+            providesTags: ["PendingVisits"],
+        }),
+
+        approveVisit: builder.mutation<{message: string; visit: Visit}, string>({
+            query: (visitId) => ({
+                url: `/venue/visits/${visitId}/approve`,
+                method: "POST",
+            }),
+            invalidatesTags: ["PendingVisits", "VisitsPage", "ActiveVisit"],
+        }),
+
+        rejectVisit: builder.mutation<{message: string; visit: Visit}, {visitId: string; reason: string}>({
+            query: ({visitId, reason}) => ({
+                url: `/venue/visits/${visitId}/reject`,
+                method: "POST",
+                body: {reason},
+            }),
+            invalidatesTags: ["PendingVisits", "VisitsPage", "ActiveVisit"],
+        }),
+
+        cancelVisit: builder.mutation<void, string>({
+            query: (visitId) => ({
+                url: `/venue/visits/${visitId}/cancel`,
+                method: "POST",
+            }),
+            invalidatesTags: ["ActiveVisit", "VisitHistory"],
         }),
 
         getUserLoyalty: builder.query<UserLoyalty, string>({
@@ -416,9 +450,13 @@ export const {
     useLazyGetActiveVisitByUserQuery,
     useGetVisitHistoryQuery,
     useGetVisitsPageQuery,
+    useGetPendingVisitsQuery,
     useGetUserLoyaltyQuery,
     useCreateVisitMutation,
     useEndVisitMutation,
+    useApproveVisitMutation,
+    useRejectVisitMutation,
+    useCancelVisitMutation,
     useCreateTariffMutation,
     useUpdateTariffMutation,
     useDeleteTariffMutation,

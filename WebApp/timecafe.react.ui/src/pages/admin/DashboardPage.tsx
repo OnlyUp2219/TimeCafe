@@ -15,48 +15,28 @@ import {
 } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery } from "@store/api/adminApi";
-import { useGetTariffsPageQuery, useGetAllPromotionsQuery, useGetVisitsPageQuery } from "@store/api/venueApi";
+import { useGetVisitsPageQuery, useGetPendingVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { KpiCard } from "@components/Admin/KpiCard";
 
-interface StatCardProps {
-    title: string;
-    value: string | number;
-    icon: React.ReactElement;
-    onClick?: () => void;
-}
-
-const StatCard = ({ title, value, icon, onClick, cardSize }: StatCardProps & { cardSize: "small" | "medium" | "large" }) => (
-    <Card
-        className={`flex-1 min-w-[200px] ${onClick ? "cursor-pointer" : ""}`}
-        size={cardSize}
-        onClick={onClick}
-    >
-        <div className="flex items-center justify-between">
-            <div className="min-w-0 flex-1">
-                <Body2 block className="line-clamp-3">{title}</Body2>
-                <Title2>{value}</Title2>
-            </div>
-            <div className="text-2xl opacity-50 shrink-0 ml-2">{icon}</div>
-        </div>
-    </Card>
-);
 
 export const DashboardPage = () => {
+
+
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 });
-    const { data: tariffsData, isLoading: tariffsLoading } = useGetTariffsPageQuery({ page: 1, pageSize: 20 });
-    const { data: promotionsData, isLoading: promotionsLoading } = useGetAllPromotionsQuery();
-    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 20 });
+    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 1 });
+    const { data: pendingData, isLoading: pendingLoading } = useGetPendingVisitsQuery({ page: 1, pageSize: 1 });
     const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
     return (
         <div>
-            <div className="mb-6">
+            <div className="flex flex-col gap-1">
                 <Title2>Дашборд</Title2>
-                <Body1 block className="mt-1">Обзор системы TimeCafe</Body1>
+                <Body1 className="mt-1">Обзор системы TimeCafe</Body1>
             </div>
 
             {errorMessage && (
@@ -66,34 +46,65 @@ export const DashboardPage = () => {
             )}
 
             <div className="flex gap-4 flex-wrap mb-6">
-                <StatCard
+                <KpiCard
                     title="Пользователи"
                     value={usersLoading ? "..." : (usersData?.metadata.totalCount ?? "—")}
                     icon={<People20Regular />}
                     onClick={() => navigate("/admin/users")}
-                    cardSize={sizes.card}
                 />
-                <StatCard
-                    title="Тарифы"
-                    value={tariffsLoading ? "..." : (tariffsData?.metadata?.totalCount ?? "—")}
-                    icon={<Money20Regular />}
-                    onClick={() => navigate("/admin/tariffs")}
-                    cardSize={sizes.card}
-                />
-                <StatCard
+                <KpiCard
                     title="Визиты"
                     value={visitsLoading ? "..." : (visitsData?.metadata?.totalCount ?? "—")}
                     icon={<Clock20Regular />}
                     onClick={() => navigate("/admin/visits")}
-                    cardSize={sizes.card}
                 />
-                <StatCard
-                    title="Акции"
-                    value={promotionsLoading ? "..." : (promotionsData?.length ?? "—")}
+                <KpiCard
+                    title="Ожидают подтверждения"
+                    value={pendingLoading ? "..." : (pendingData?.metadata?.totalCount ?? "—")}
                     icon={<Gift20Regular />}
-                    onClick={() => navigate("/admin/promotions")}
-                    cardSize={sizes.card}
+                    onClick={() => navigate("/admin/visits/pending")}
                 />
+                <KpiCard
+                    title="Выручка (₽)"
+                    value="—"
+                    icon={<Money20Regular />}
+                    onClick={() => navigate("/admin/payments")}
+                />
+            </div>
+
+            <div className="flex flex-col gap-4 flex-wrap mb-6">
+                <Card className="flex-1 min-w-[300px]" size={sizes.card}>
+                    <Title2 className="mb-2">Визиты за 24ч (Grafana)</Title2>
+                    <iframe
+                        src="http://localhost:3000/d-solo/timecafe/overview?panelId=7&theme=light"
+                        width="100%"
+                        height="400"
+                        style={{ border: "none", borderRadius: "var(--borderRadiusXLarge)" }}
+                        title="Grafana Visits"
+                    />
+                </Card>
+
+                <Card className="flex-1 min-w-[300px]" size={sizes.card}>
+                    <Title2 className="mb-2">HTTP Latency P95 (Grafana)</Title2>
+                    <iframe
+                        src="http://localhost:3000/d-solo/timecafe/overview?panelId=5&theme=light"
+                        width="100%"
+                        height="400"
+                        style={{ border: "none", borderRadius: "var(--borderRadiusXLarge)" }}
+                        title="Grafana Latency"
+                    />
+                </Card>
+
+                <Card className="flex-1 min-w-[300px]" size={sizes.card}>
+                    <Title2 className="mb-2">Последние ошибки (Kibana)</Title2>
+                    <iframe
+                        src="http://localhost:5601/app/discover#/?_g=(filters:!(),refreshInterval:(pause:!t,value:0),time:(from:now-24h,to:now))&_a=(columns:!(),filters:!(),index:'*',interval:auto,query:(language:kuery,query:'level:%20error'),sort:!(!('@timestamp',desc)))"
+                        width="100%"
+                        height="400"
+                        style={{ border: "none", borderRadius: "var(--borderRadiusXLarge)" }}
+                        title="Kibana Errors"
+                    />
+                </Card>
             </div>
 
             <div className="flex gap-4 flex-wrap">
@@ -108,15 +119,15 @@ export const DashboardPage = () => {
                         </Body1>
                         <Body1
                             className="cursor-pointer hover:underline"
-                            onClick={() => navigate("/admin/tariffs")}
+                            onClick={() => navigate("/admin/visits/pending")}
                         >
-                            → Управление тарифами
+                            → Ожидающие визиты
                         </Body1>
                         <Body1
                             className="cursor-pointer hover:underline"
-                            onClick={() => navigate("/admin/promotions")}
+                            onClick={() => navigate("/admin/tariffs")}
                         >
-                            → Управление акциями
+                            → Управление тарифами
                         </Body1>
                     </div>
                 </Card>

@@ -42,6 +42,7 @@ import { RolesPage } from "@pages/admin/RolesPage";
 import { RoleClaimsPage } from "@pages/admin/RoleClaimsPage";
 import { UserRolesPage } from "@pages/admin/UserRolesPage";
 import { VisitDetailPage } from "@pages/admin/VisitDetailPage";
+import { PendingVisitsPage } from "@pages/admin/PendingVisitsPage";
 import { AdminLayout } from "@layouts/AdminLayout/AdminLayout";
 import { DevDebugPage } from "@pages/admin/DevDebugPage";
 import { AuditLogsPage } from "@pages/admin/AuditLogsPage";
@@ -117,6 +118,7 @@ const AppRoutes = () => {
                     <Route path="/admin/themes/:id/edit" element={<ThemeEditorPage />} />
                     <Route path="/admin/visits" element={<VisitsPage />} />
                     <Route path="/admin/visits/:id" element={<VisitDetailPage />} />
+                    <Route path="/admin/visits/pending" element={<PendingVisitsPage />} />
                     <Route path="/admin/transactions" element={<TransactionsPage />} />
                     <Route path="/admin/payments" element={<PaymentsPage />} />
                     <Route path="/admin/balances" element={<BalancesPage />} />

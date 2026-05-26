@@ -16,6 +16,7 @@ import {clearTokens} from "@store/authSlice";
 import {ConfirmPasswordInput, PasswordInput} from "@components/FormFields";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {useChangePasswordMutation} from "@store/api/authApi";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface ChangePasswordFormProps {
     redirectToLoginOnSuccess?: boolean;
@@ -38,6 +39,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                                                                     wrapInCard = true,
                                                                     showTitle = true,
                                                                 }) => {
+    const { sizes } = useComponentSize();
     const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -108,7 +110,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
         <>
             {showTitle && (
                 <Title2 block className="!flex items-center gap-2">
-                    <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
+                    <Badge appearance="tint" shape="rounded" size={sizes.badge} className="brand-badge">
                         <LockClosedRegular className="size-5"/>
                     </Badge>
                     Смена пароля
@@ -142,6 +144,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     shouldValidate={submitted}
                     validate={validateCurrentPassword}
                     onValidationChange={handleCurrentPasswordValidation}
+                    size={sizes.input}
                 />
 
                 <PasswordInput
@@ -153,6 +156,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     shouldValidate={submitted}
                     showRequirements
                     onValidationChange={handleNewPasswordValidation}
+                    size={sizes.input}
                 />
 
                 <ConfirmPasswordInput
@@ -164,14 +168,15 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
                     placeholder="Введите новый пароль ещё раз"
                     shouldValidate={submitted}
                     onValidationChange={handleConfirmPasswordValidation}
+                    size={sizes.input}
                 />
 
                 <div className="flex gap-[12px]">
-                    <Button appearance="primary" type="submit" disabled={loading || success}>
+                    <Button appearance="primary" type="submit" disabled={loading || success} size={sizes.button}>
                         {loading ? "Сохранение..." : "Сменить пароль"}
                     </Button>
                     {showCancelButton && (
-                        <Button appearance="secondary" type="button" onClick={onCancel} disabled={loading}>
+                        <Button appearance="secondary" type="button" onClick={onCancel} disabled={loading} size={sizes.button}>
                             Отмена
                         </Button>
                     )}
@@ -185,7 +190,7 @@ export const ChangePasswordForm: FC<ChangePasswordFormProps> = ({
     }
 
     return (
-        <Card className={className}>
+        <Card className={className} size={sizes.card}>
             {body}
         </Card>
     );

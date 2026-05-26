@@ -33,11 +33,15 @@ import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import { Permissions } from "@shared/auth/permissions";
 
 import { usePagination } from "@hooks/usePagination";
 
+
 export const RolesPage = () => {
+
+
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
@@ -132,7 +136,7 @@ export const RolesPage = () => {
     }, [handleDelete, navigate, has]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-12"><Spinner label="Загрузка ролей..." /></div>;
+        return <PageLoader label="Загрузка ролей..." />;
     }
 
     if (queryError) {

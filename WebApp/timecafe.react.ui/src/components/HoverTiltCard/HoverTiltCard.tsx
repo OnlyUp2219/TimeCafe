@@ -7,6 +7,7 @@ type HoverTiltCardProps = PropsWithChildren<{
     maxTiltDeg?: number;
     hoverScale?: number;
     perspectivePx?: number;
+    size?: "small" | "medium" | "large";
 }>;
 
 export const HoverTiltCard: FC<HoverTiltCardProps> = ({
@@ -15,6 +16,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
     maxTiltDeg = 4,
     hoverScale = 1.04,
     perspectivePx = 900,
+    size,
 }) => {
     const elementRef = useRef<HTMLDivElement | null>(null);
     const rafRef = useRef<number | null>(null);
@@ -106,6 +108,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
                 setIsHover(false);
                 reset();
             }}
+            size={size}
         >
             {children}
         </Card>

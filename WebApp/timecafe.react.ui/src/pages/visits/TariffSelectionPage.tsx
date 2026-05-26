@@ -3,32 +3,30 @@ import {
     Button,
     Card,
     Divider,
+
     Title2,
-    Tooltip,
-    Image,
+    Tooltip
 } from "@fluentui/react-components";
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {useNavigate} from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { useNavigate } from "react-router-dom";
 import {
     setSelectedTariffId,
 } from "@store/visitSlice";
-import {BillingType as BillingTypeEnum, type BillingType, type Tariff} from "@app-types/tariff";
-import {clamp} from "@utility/clamp";
-import {useProgressToast} from "@components/ToastProgress/ToastProgress";
+import { BillingType as BillingTypeEnum, type BillingType, type Tariff } from "@app-types/tariff";
+import { clamp } from "@utility/clamp";
+import { useProgressToast } from "@components/ToastProgress/ToastProgress";
+import { useComponentSize } from "@hooks/useComponentSize";
 
-import repeatTriangleUrl from "@assets/rrrepeat_triangle.svg";
-import vortexUrl from "@assets/vvvortex.svg";
-import blob2Url from "@assets/ssshape_blob2.svg";
-import blob4Url from "@assets/ssshape_blob4.svg";
+
 import "./visits.css";
-import {type CalcResult, TariffForecastCard} from "@components/Tariff/TariffForecastCard";
-import {TariffCarouselSection} from "@components/Tariff/TariffCarouselSection";
-import {VisitParamsCard} from "@components/Tariff/VisitParamsCard";
-import {TariffDetailsDrawer} from "@components/Tariff/TariffDetailsDrawer";
-import {useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation} from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
+import { type CalcResult, TariffForecastCard } from "@components/Tariff/TariffForecastCard";
+import { TariffCarouselSection } from "@components/Tariff/TariffCarouselSection";
+import { VisitParamsCard } from "@components/Tariff/VisitParamsCard";
+import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
+import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation } from "@store/api/venueApi";
+import { getRtkErrorMessage } from "@api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
@@ -60,14 +58,15 @@ const calculate = (minutes: number, pricePerMinute: number, billingType: Billing
 export const TariffSelectionPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const {showToast, ToasterElement} = useProgressToast();
+    const { showToast, ToasterElement } = useProgressToast();
+    const { sizes } = useComponentSize();
     const userId = useAppSelector((state) => state.auth.userId);
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
-    const {data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs} = useGetActiveTariffsQuery();
-    const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
-    const [createVisit, {isLoading: startingVisit}] = useCreateVisitMutation();
-    
+    const { data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs } = useGetActiveTariffsQuery();
+    const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
+    const [createVisit, { isLoading: startingVisit }] = useCreateVisitMutation();
+
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [selectedTariffIdForDetails, setSelectedTariffIdForDetails] = useState<string | null>(null);
 
@@ -87,6 +86,8 @@ export const TariffSelectionPage = () => {
             isActive: t.isActive,
             themeName: t.themeName,
             themeEmoji: t.themeEmoji ?? null,
+            themeColors: t.themeColors ?? null,
+            colors: t.themeColors ?? null,
         }));
     }, [tariffsData]);
 
@@ -142,7 +143,7 @@ export const TariffSelectionPage = () => {
 
     useEffect(() => {
         if (hasActive) {
-            navigate("/visit/active", {replace: true});
+            navigate("/visit/active", { replace: true });
         }
     }, [navigate, hasActive]);
 
@@ -159,6 +160,7 @@ export const TariffSelectionPage = () => {
                 requireEnoughForPlanned: true,
             }).unwrap();
             navigate("/visit/active");
+            showToast("Заявка на визит отправлена. Ожидайте подтверждения менеджера.", "info", "Визит");
         } catch (err) {
             const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось начать визит";
             showToast(message, "error", "Ошибка");
@@ -182,7 +184,7 @@ export const TariffSelectionPage = () => {
         tariffContent = (
             <Card className="flex flex-col gap-3" data-testid="visit-start-empty">
                 <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
-                <Button appearance="primary" onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
+                <Button appearance="primary" size={sizes.button} onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
                     Обновить тарифы
                 </Button>
             </Card>
@@ -202,92 +204,58 @@ export const TariffSelectionPage = () => {
     }
 
     return (
-        <div className="tc-noise-overlay relative overflow-hidden min-h-full">
+        <div className="page-content flex flex-col gap-4">
             {ToasterElement}
-            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <Image
-                    src={repeatTriangleUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -top-[8vw] -left-[10vw] w-[60vw] max-w-[720px] -rotate-6 select-none opacity-[0.1]"
-                    draggable={false}
-                />
-                <Image
-                    src={blob2Url}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -right-[14vw] top-[18vh] w-[55vw] max-w-[720px] rotate-6 select-none opacity-[0.1]"
-                    draggable={false}
-                />
-                <Image
-                    src={blob4Url}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -left-[14vw] top-[70vh] w-[60vw] max-w-[760px] -rotate-6 select-none opacity-[0.1]"
-                    draggable={false}
-                />
-                <Image
-                    src={vortexUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -right-[12vw] top-[72vh] w-[60vw] max-w-[720px] select-none lg:top-[56rem] opacity-[0.1]"
-                    draggable={false}
-                />
-            </div>
 
-            <div className="page-content relative z-10">
-                <div className="rounded-3xl p-5 sm:p-8 tc-visits-panel" data-testid="visit-start-page">
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="min-w-0">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Title2>Выбор тарифа</Title2>
-                                </div>
-                                <Body1 block className="mt-2">
-                                    Выберите тариф в карусели, затем задайте примерное время пребывания.
-                                </Body1>
-                            </div>
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <Title2>Выбор тарифа</Title2>
                         </div>
-
-                        <Divider/>
-
-                        {tariffContent}
-
-                        <Divider/>
-
-                        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                            <VisitParamsCard
-                                selectedTariff={selectedTariff}
-                                durationMinutes={durationMinutes}
-                                setDurationMinutes={setDurationMinutes}
-                                presets={presets}
-                            />
-
-                            <TariffForecastCard selectedTariff={selectedTariff} calc={calc}/>
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            <Tooltip content="Начать визит" relationship="label">
-                                <Button
-                                    appearance="primary"
-                                    className="w-full"
-                                    data-testid="visit-start-submit"
-                                    disabled={!selectedTariff || loadingTariffs || startingVisit || showEmptyTariffs}
-                                    onClick={() => void onStartVisit()}
-                                >
-                                    <Body1 truncate wrap={false}>{startingVisit ? "Запуск..." : "Начать визит"}</Body1>
-                                </Button>
-                            </Tooltip>
-                        </div>
+                        <Body1 block className="mt-2">
+                            Выберите тариф в карусели, затем задайте примерное время пребывания.
+                        </Body1>
                     </div>
                 </div>
+
+                <Divider />
+
+                {tariffContent}
+
+                <Divider />
+
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+                    <VisitParamsCard
+                        selectedTariff={selectedTariff}
+                        durationMinutes={durationMinutes}
+                        setDurationMinutes={setDurationMinutes}
+                        presets={presets}
+                    />
+
+                    <TariffForecastCard selectedTariff={selectedTariff} calc={calc} />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <Tooltip content="Начать визит" relationship="label">
+                        <Button
+                            appearance="primary"
+                            className="w-full"
+                            data-testid="visit-start-submit"
+                            disabled={!selectedTariff || loadingTariffs || startingVisit || showEmptyTariffs}
+                            onClick={() => void onStartVisit()}
+                            size={sizes.button}
+                        >
+                            <Body1 truncate wrap={false}>{startingVisit ? "Запрос..." : "Запросить визит"}</Body1>
+                        </Button>
+                    </Tooltip>
+                </div>
             </div>
-            
+
             <TariffDetailsDrawer
                 open={detailsOpen}
                 onOpenChange={setDetailsOpen}
-                tariffId={selectedTariffIdForDetails}
-            />
-        </div>
+                tariffId={selectedTariffIdForDetails} />
+        </div >
     );
 };

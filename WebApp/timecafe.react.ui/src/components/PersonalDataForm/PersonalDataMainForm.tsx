@@ -5,6 +5,7 @@ import type {Profile} from "@app-types/profile";
 import {DateInput} from "@components/FormFields";
 import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";
 import {normalizeDate} from "@utility/normalizeDate";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface PersonalDataMainFormProps {
     profile: Profile;
@@ -33,6 +34,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                                                         onPhotoDelete,
                                                                         photoBusy = false,
                                                                     }) => {
+    const { sizes } = useComponentSize();
     const maxBirthDate = useMemo(() => new Date(), []);
 
     const [firstName, setFirstName] = useState(profile.firstName ?? "");
@@ -88,11 +90,9 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
     const isEditing = mode === "edit";
 
     return (
-        <Card className={className}>
+        <Card className={className} size={sizes.card}>
             <Title2 block className="!flex items-center gap-2">
-                <Badge appearance="tint" shape="rounded" size="extra-large" className="brand-badge">
-                    <PersonRegular className="size-5" />
-                </Badge>
+                <PersonRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
                 Персональные данные
             </Title2>
 
@@ -125,6 +125,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                 icon={<Edit20Filled/>}
                                 onClick={() => setMode("edit")}
                                 disabled={loading}
+                                size={sizes.button}
                             >
                                 Изменить
                             </Button>
@@ -149,17 +150,17 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
                         <div className="flex flex-col gap-3">
                             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                <Field label="Фамилия">
+                                <Field label="Фамилия" size={sizes.field}>
                                     <Input value={lastName} onChange={(_, d) => setLastName(d.value)}
-                                           disabled={loading}/>
+                                           disabled={loading} size={sizes.input}/>
                                 </Field>
-                                <Field label="Имя">
+                                <Field label="Имя" size={sizes.field}>
                                     <Input value={firstName} onChange={(_, d) => setFirstName(d.value)}
-                                           disabled={loading}/>
+                                           disabled={loading} size={sizes.input}/>
                                 </Field>
-                                <Field label="Отчество">
+                                <Field label="Отчество" size={sizes.field}>
                                     <Input value={middleName} onChange={(_, d) => setMiddleName(d.value)}
-                                           disabled={loading}/>
+                                           disabled={loading} size={sizes.input}/>
                                 </Field>
 
                                 <DateInput
@@ -168,6 +169,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                                     disabled={loading}
                                     label="Дата рождения"
                                     maxDate={maxBirthDate}
+                                    size={sizes.input}
                                 />
                             </div>
 
@@ -190,10 +192,10 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             </div>
 
                             <div className="flex flex-wrap gap-2 sm:justify-end">
-                                <Button appearance="primary" onClick={handleSave} disabled={loading}>
+                                <Button appearance="primary" onClick={handleSave} disabled={loading} size={sizes.button}>
                                     Сохранить изменения
                                 </Button>
-                                <Button appearance="secondary" onClick={handleCancel} disabled={loading}>
+                                <Button appearance="secondary" onClick={handleCancel} disabled={loading} size={sizes.button}>
                                     Отмена
                                 </Button>
                             </div>

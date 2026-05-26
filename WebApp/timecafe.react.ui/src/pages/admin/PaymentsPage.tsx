@@ -26,6 +26,7 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
+import { usePagination } from "@hooks/usePagination";
 
 import { NO_ACCESS } from "@shared/const/placeholders";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
@@ -80,7 +81,7 @@ const AdminUserCell = ({ userId }: { userId: string }) => {
     );
 };
 
-import { usePagination } from "@hooks/usePagination";
+
 
 export const PaymentsPage = () => {
     const { sizes } = useComponentSize();
@@ -95,9 +96,9 @@ export const PaymentsPage = () => {
         { refetchOnMountOrArgChange: true }
     );
 
-    const payments = data?.payments ?? [];
-    const totalCount = data?.pagination.totalCount ?? 0;
-    const totalPages = data?.pagination.totalPages ?? 1;
+    const payments = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({

@@ -10,6 +10,9 @@ export type VisitWithTariff =
         exitTime: string | null;
         calculatedCost: number | null;
         status: VisitStatus;
+        approvedByUserId: string | null;
+        approvedAt: string | null;
+        rejectionReason: string | null;
 
         tariffName: string;
         tariffPricePerMinute: number;

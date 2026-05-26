@@ -31,6 +31,7 @@ import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 
 const getUserStatusBadgeClass = (status: string): string => {
     switch (status.toLowerCase()) {
@@ -120,7 +121,6 @@ const BalanceCell = ({ user }: { user: User }) => {
 };
 
 import { usePagination } from "@hooks/usePagination";
-
 export const UsersListPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
@@ -250,7 +250,7 @@ export const UsersListPage = () => {
     );
 
     if (isLoading) {
-        return <div className="flex justify-center p-12"><Spinner label="Загрузка пользователей..." /></div>;
+        return <PageLoader label="Загрузка пользователей..." />;
     }
 
     if (errorMessage) {

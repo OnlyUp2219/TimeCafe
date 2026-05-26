@@ -92,9 +92,9 @@ export const PromotionsPage = () => {
     const { data: allPromotions = [] } = useGetAllPromotionsQuery();
     const { data: tariffs = [] } = useGetAllTariffsQuery();
 
-    const promotions = data?.promotions ?? [];
-    const totalCount = data?.totalCount ?? 0;
-    const totalPages = data?.totalPages ?? 1;
+    const promotions = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const [createPromotion] = useCreatePromotionMutation();

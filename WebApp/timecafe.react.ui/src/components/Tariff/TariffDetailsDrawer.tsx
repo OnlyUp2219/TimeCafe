@@ -31,13 +31,13 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
 
     return (
         <OverlayDrawer
+            open={open}
+            onOpenChange={(_, data) => onOpenChange(data.open)}
             size="large"
             position="bottom"
             className="!flex !flex-col !items-center"
-            open={open}
-            onOpenChange={(_, { open }) => onOpenChange(open)}
         >
-            <div id="profileGateBackground" className="h-full w-full flex flex-col overflow-hidden" style={{ background: 'linear-gradient(135deg, #f7fafc 0%, #eef4ff 45%, #eafbf7 100%)' }}>
+            <div id="profileGateBackground" className="h-full w-full flex flex-col overflow-hidden bg-[var(--colorNeutralBackground2)]">
                 <div className="profile-gate-bg" aria-hidden="true">
                     <span className="profile-gate-shape profile-gate-shape--circle" />
                     <span className="profile-gate-shape profile-gate-shape--square" />

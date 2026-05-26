@@ -60,9 +60,9 @@ export const ProfilesPage = () => {
         { refetchOnMountOrArgChange: true }
     );
 
-    const profiles = data?.profiles ?? [];
-    const totalCount = data?.totalCount ?? 0;
-    const totalPages = data?.totalPages ?? 1;
+    const profiles = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({

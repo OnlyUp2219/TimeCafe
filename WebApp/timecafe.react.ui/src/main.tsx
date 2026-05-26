@@ -1,10 +1,10 @@
-import {StrictMode} from "react";
-import {createRoot} from "react-dom/client";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import App from "@app/App";
-import {FluentProvider, webLightTheme} from "@fluentui/react-components";
-import {Provider} from "react-redux";
-import {persistor, store} from "@store";
-import {PersistGate} from "redux-persist/integration/react";
+import { FluentProvider, webDarkTheme, webLightTheme } from "@fluentui/react-components";
+import { Provider } from "react-redux";
+import { persistor, store } from "@store";
+import { PersistGate } from "redux-persist/integration/react";
 import "./index.css"
 
 createRoot(document.getElementById('root')!).render(
@@ -12,7 +12,7 @@ createRoot(document.getElementById('root')!).render(
         <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
                 <FluentProvider theme={webLightTheme} className="FluentProvider">
-                    <App/>
+                    <App />
                 </FluentProvider>
             </PersistGate>
         </Provider>

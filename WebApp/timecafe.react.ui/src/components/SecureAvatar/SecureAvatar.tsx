@@ -7,48 +7,39 @@ interface SecureAvatarProps extends AvatarProps {
     photoUrl?: string | null;
 }
 
+const photoCache = new Map<string, string>();
+
 export const SecureAvatar: React.FC<SecureAvatarProps> = ({ photoUrl, ...props }) => {
-    const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
-    const [isVisible, setIsVisible] = useState(false);
-    const objectUrlRef = useRef<string | null>(null);
+    const fullUrl = photoUrl ? (photoUrl.startsWith("http") ? photoUrl : `${getApiBaseUrl()}${photoUrl}`) : null;
+    const initialSrc = fullUrl ? photoCache.get(fullUrl) : undefined;
+    const [imageSrc, setImageSrc] = useState<string | undefined>(initialSrc);
+    const [prevUrl, setPrevUrl] = useState(fullUrl);
+
+    if (fullUrl !== prevUrl) {
+        setPrevUrl(fullUrl);
+        setImageSrc(initialSrc);
+    }
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    setIsVisible(true);
-                    observer.disconnect();
-                }
-            },
-            { rootMargin: "50px" }
-        );
-
-        if (containerRef.current) {
-            observer.observe(containerRef.current);
-        }
-
-        return () => observer.disconnect();
-    }, [photoUrl]);
-
-    useEffect(() => {
-        if (!photoUrl || !isVisible) {
+        if (!fullUrl) {
             setImageSrc(undefined);
             return;
         }
 
         let isMounted = true;
-        const fullUrl = photoUrl.startsWith("http") ? photoUrl : `${getApiBaseUrl()}${photoUrl}`;
+
+        if (photoCache.has(fullUrl)) {
+            setImageSrc(photoCache.get(fullUrl));
+            return;
+        }
 
         const loadPhoto = async () => {
             try {
                 const blob = await ProfileApi.getProfilePhotoBlob(fullUrl);
                 if (isMounted) {
-                    if (objectUrlRef.current) {
-                        URL.revokeObjectURL(objectUrlRef.current);
-                    }
                     const url = URL.createObjectURL(blob);
-                    objectUrlRef.current = url;
+                    photoCache.set(fullUrl, url);
                     setImageSrc(url);
                 }
             } catch (error) {
@@ -62,12 +53,8 @@ export const SecureAvatar: React.FC<SecureAvatarProps> = ({ photoUrl, ...props }
 
         return () => {
             isMounted = false;
-            if (objectUrlRef.current) {
-                URL.revokeObjectURL(objectUrlRef.current);
-                objectUrlRef.current = null;
-            }
         };
-    }, [photoUrl, isVisible]);
+    }, [fullUrl]);
 
     return (
         <div ref={containerRef} style={{ display: "inline-flex" }}>

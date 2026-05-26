@@ -38,6 +38,8 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { TextareaWithCounter } from "@components/FormFields";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+
 
 interface TariffFormState {
     name: string;
@@ -139,6 +141,8 @@ const billingTypes = [
 ];
 
 export const TariffEditorPage = () => {
+
+
     const { id } = useParams();
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
@@ -243,8 +247,8 @@ export const TariffEditorPage = () => {
 
     const perHour = calcPerHour(form.pricePerMinute);
 
-    if (id && loadingTariff) return <div className="flex justify-center p-12"><Spinner label="Загрузка тарифа..." /></div>;
-    if (loadingThemes) return <div className="flex justify-center p-12"><Spinner label="Загрузка тем..." /></div>;
+    if (id && loadingTariff) return <PageLoader label="Загрузка тарифа..." />;
+    if (loadingThemes) return <PageLoader label="Загрузка тем..." />;
 
     const currentBillingType = billingTypes.find(t => t.value === form.billingType);
     const currentRoundingRule = roundingRules.find(r => r.value === form.roundingRule);

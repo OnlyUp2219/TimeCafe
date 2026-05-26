@@ -17,6 +17,7 @@ interface PhoneInputProps {
     validateOnBlur?: boolean;
     trailingElement?: ReactNode;
     externalError?: string;
+    size?: "small" | "medium" | "large";
 }
 
 export const PhoneInput = ({
@@ -33,6 +34,7 @@ export const PhoneInput = ({
     validateOnBlur = false,
     trailingElement,
     externalError,
+    size,
 }: PhoneInputProps) => {
     const [touched, setTouched] = useState(false);
 
@@ -60,6 +62,7 @@ export const PhoneInput = ({
             required={required}
             validationState={shouldValidate && displayError ? "error" : undefined}
             validationMessage={shouldValidate ? displayError : undefined}
+            size={size}
         >
             <div className={trailingElement ? "input-with-button" : undefined}>
                 <Input
@@ -71,6 +74,7 @@ export const PhoneInput = ({
                     disabled={disabled}
                     className="w-full"
                     onBlur={() => setTouched(true)}
+                    size={size}
                 />
                 {trailingElement}
             </div>

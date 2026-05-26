@@ -28,7 +28,6 @@
 }
 
 .auth-hero {
-  background: linear-gradient(135deg, #0078d4, #50e6ff);
   min-height: 100vh;
   min-height: 100dvh;
 }
@@ -137,8 +136,8 @@
   z-index: 40;
   overflow: hidden;
   transition: width 0.2s ease, transform 0.2s ease;
-  height: max-content;
-  min-height: calc(100vh - 4.25rem);
+  height: auto;
+  min-height: 0;
   flex-shrink: 0;
 }
 

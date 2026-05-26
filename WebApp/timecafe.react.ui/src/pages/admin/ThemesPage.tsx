@@ -11,10 +11,10 @@ import {
     CardHeader,
     Subtitle2,
     Divider,
-    Spinner,
     Subtitle1,
     Title1
 } from "@fluentui/react-components";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import {
     useGetThemesPageQuery,
@@ -37,9 +37,9 @@ export const ThemesPage = () => {
         page: currentPage,
         pageSize
     });
-    const themes = data?.themes ?? [];
-    const totalCount = data?.totalCount ?? 0;
-    const totalPages = data?.totalPages ?? 1;
+    const themes = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const [deleteTheme, { error: deleteError }] = useDeleteThemeMutation();
 
     const mutationError = deleteError ? getRtkErrorMessage(deleteError as FetchBaseQueryError) : null;
@@ -52,11 +52,7 @@ export const ThemesPage = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full">
-                <Spinner size="huge" label="Загружаем палитры..." />
-            </div>
-        );
+        return <PageLoader label="Загружаем палитры..." />;
     }
 
     if (finalError) {

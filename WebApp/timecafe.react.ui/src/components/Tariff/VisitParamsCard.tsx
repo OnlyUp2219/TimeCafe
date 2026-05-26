@@ -3,6 +3,7 @@ import {Body2, Button, Card, Divider, Field, Input, Tag, Title3} from "@fluentui
 import {clamp} from "@utility/clamp";
 import {formatDurationMinutes} from "@utility/formatDurationMinutes";
 import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 const getBillingLabel = (billingType: BillingType) =>
     billingType === BillingTypeEnum.PerMinute ? "Оплата за минуты" : "Округление до часа";
@@ -13,19 +14,22 @@ export const VisitParamsCard = ({
                                     setDurationMinutes,
                                     presets
                                 }: VisitParamsCardProps) => {
+    const { sizes } = useComponentSize();
+
     return (
-        <Card className="lg:col-span-7">
+        <Card className="lg:col-span-7" size={sizes.card}>
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                     <Title3>Параметры визита</Title3>
                 </div>
                 <Divider/>
-
+ 
                 {selectedTariff ? (
                     <div className="flex flex-col gap-4">
                         <Field
                             label="Примерное время пребывания"
                             hint="Можно выбрать пресет или ввести вручную (в минутах)"
+                            size={sizes.field}
                         >
                             <Input
                                 type="number"
@@ -37,25 +41,27 @@ export const VisitParamsCard = ({
                                 }}
                                 min={1}
                                 max={12 * 60}
+                                size={sizes.input}
                             />
                         </Field>
-
+ 
                         <div className="flex flex-wrap gap-2">
                             {presets.map((m) => (
                                 <Button
                                     key={m}
                                     appearance={durationMinutes === m ? "primary" : "secondary"}
                                     onClick={() => setDurationMinutes(m)}
+                                    size={sizes.button}
                                 >
                                     {formatDurationMinutes(m)}
                                 </Button>
                             ))}
                         </div>
-
+ 
                         <div className="flex flex-wrap items-center gap-2">
-                            <Tag appearance="brand">{selectedTariff.name}</Tag>
-                            <Tag appearance="outline">{getBillingLabel(selectedTariff.billingType)}</Tag>
-                            <Tag appearance="outline">{formatDurationMinutes(durationMinutes)}</Tag>
+                            <Tag appearance="brand" size="small">{selectedTariff.name}</Tag>
+                            <Tag appearance="outline" size="small">{getBillingLabel(selectedTariff.billingType)}</Tag>
+                            <Tag appearance="outline" size="small">{formatDurationMinutes(durationMinutes)}</Tag>
                         </div>
                     </div>
                 ) : (

@@ -14,6 +14,7 @@ import {ResponsiveContainer, VerticalBarChart, type VerticalBarChartDataPoint} f
 
 import type {BillingActivityPoint} from "@app-types/billing";
 import {formatRub} from "@utility/formatRub";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 type BalanceActivityCardProps = {
     balanceRub: number;
@@ -22,6 +23,7 @@ type BalanceActivityCardProps = {
 };
 
 export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: BalanceActivityCardProps) => {
+    const { sizes } = useComponentSize();
     const hasAnyActivity = activity.some((point) => point.depositsRub > 0 || point.withdrawalsRub > 0);
     const tickValues: Date[] = activity.map((p) => p.date);
     const getPointDate = (date: Date, hourOffset: number) => {
@@ -57,13 +59,13 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
 
     const deltaBadge =
         typeof monthDeltaPercent === "number" && monthDeltaPercent !== 0 && hasAnyActivity ? (
-            <Badge appearance="tint" color={monthDeltaPercent >= 0 ? "success" : "danger"} size="large">
+            <Badge appearance="tint" color={monthDeltaPercent >= 0 ? "success" : "danger"} size={sizes.badge}>
                 {monthDeltaPercent >= 0 ? "↑" : "↓"} {Math.abs(monthDeltaPercent)}% за месяц
             </Badge>
         ) : null;
 
     return (
-        <Card className="flex flex-col gap-6 sm:flex-row sm:items-stretch">
+        <Card className="flex flex-col gap-6 sm:flex-row sm:items-stretch" size={sizes.card}>
             <div className="flex flex-col gap-4 sm:min-w-[16rem]">
                 <Body1 block className="uppercase">
                     Доступно для оплаты

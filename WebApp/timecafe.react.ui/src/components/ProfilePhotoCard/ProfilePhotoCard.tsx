@@ -122,13 +122,20 @@ export function ProfilePhotoCard({
                 </div>
             )}
 
-            <div className={showTitle ? "mt-3 flex items-center gap-4" : "flex items-center gap-4"}>
-                <Avatar
-                    name={displayName}
-                    size={72}
-                    color="colorful"
-                    image={photoUrl ? {src: photoUrl} : undefined}
-                />
+            <div className={showTitle ? "mt-3 flex items-center gap-4 relative" : "flex items-center gap-4 relative"}>
+                <div className="relative w-fit h-fit">
+                    <Avatar
+                        name={displayName}
+                        size={72}
+                        color="colorful"
+                        image={photoUrl ? {src: photoUrl} : undefined}
+                    />
+                    {busy && (
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                            <Spinner size="small" appearance="primary" />
+                        </div>
+                    )}
+                </div>
             </div>
 
             <div className="mt-4 flex flex-col gap-2">

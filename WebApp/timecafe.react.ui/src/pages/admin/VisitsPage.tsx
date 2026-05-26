@@ -14,37 +14,24 @@ import {
     Spinner,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Eye20Regular } from "@fluentui/react-icons";
+import { Eye20Regular, Clock20Regular } from "@fluentui/react-icons";
 import { useGetVisitsPageQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
-import { VisitStatus } from "@app-types/visit";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
+import { VisitStatusBadge } from "@components/VisitStatusBadge";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import { NO_DATA } from "@shared/const/placeholders";
 
-const statusLabel = (status: number) => {
-    switch (status) {
-        case VisitStatus.Active: return "Активен";
-        case VisitStatus.Completed: return "Завершён";
-        default: return "Неизвестно";
-    }
-};
 
-const statusColor = (status: number): "success" | "informative" | "warning" => {
-    switch (status) {
-        case VisitStatus.Active: return "success";
-        case VisitStatus.Completed: return "informative";
-        default: return "warning";
-    }
-};
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
@@ -100,7 +87,7 @@ export const VisitsPage = () => {
                 renderHeaderCell: () => "Статус",
                 renderCell: (visit) => (
                     <TableCellLayout truncate>
-                        <Badge appearance="filled" color={statusColor(visit.status)}>{statusLabel(visit.status)}</Badge>
+                        <VisitStatusBadge status={visit.status} />
                     </TableCellLayout>
                 ),
             }),
@@ -156,7 +143,7 @@ export const VisitsPage = () => {
     }, [navigate, has]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-12"><Spinner label="Загрузка визитов..." /></div>;
+        return <PageLoader label="Загрузка визитов..." />;
     }
 
     if (queryError) {
@@ -174,6 +161,15 @@ export const VisitsPage = () => {
                     <Title2>Визиты</Title2>
                     <Body2 block>{totalCount} визитов</Body2>
                 </div>
+                <HasPermission can={Permissions.VenueVisitViewPending}>
+                    <Button
+                        appearance="outline"
+                        icon={<Clock20Regular />}
+                        onClick={() => navigate("/admin/visits/pending")}
+                    >
+                        Ожидают подтверждения
+                    </Button>
+                </HasPermission>
             </div>
 
             <Card className="overflow-x-auto" size={sizes.card}>

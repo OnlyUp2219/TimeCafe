@@ -95,9 +95,9 @@ export const TransactionsPage = () => {
         { page: currentPage, pageSize, userId: userId || undefined },
     );
 
-    const transactions = data?.transactions ?? [];
-    const totalPages = data?.pagination.totalPages ?? 1;
-    const totalCount = data?.pagination.totalCount ?? 0;
+    const transactions = data?.items ?? [];
+    const totalPages = data?.metadata?.totalPages ?? 1;
+    const totalCount = data?.metadata?.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const totalDeposits = useMemo(() => transactions.reduce((sum, item) => sum + (item.type === TransactionType.Deposit ? item.amount : 0), 0), [transactions]);

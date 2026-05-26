@@ -16,9 +16,9 @@ type TooltipButtonProps = {
     onClick?: MouseEventHandler<HTMLButtonElement>;
 };
 
-export const TooltipButton = ({tooltip, label, icon, positioning = "below", ...buttonProps}: TooltipButtonProps) => {
+export const TooltipButton = ({tooltip, label, icon, positioning = "below", size, ...buttonProps}: TooltipButtonProps) => {
     const button = (
-        <Button as="button" {...buttonProps} icon={icon} size={"large"} >
+        <Button as="button" {...buttonProps} icon={icon} size={size ?? "large"} >
             <Text truncate wrap={false}>
                 {label}
             </Text>

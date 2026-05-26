@@ -1,4 +1,4 @@
-import {Hamburger, Button, Avatar, Tag} from "@fluentui/react-components";
+import {Hamburger, Button, Avatar, Tag, tokens} from "@fluentui/react-components";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useEffect, useMemo, useState, type FC} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
@@ -111,8 +111,13 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     const profileDisplayName = profile ? `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim() : null;
     const displayName = profileDisplayName || authDisplayName || authEmail?.trim() || "Пользователь";
     return (
-        <header className="w-full border-b border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70">
-          
+        <header
+            className="w-full border-b"
+            style={{
+                backgroundColor: tokens.colorNeutralBackground1,
+                borderColor: tokens.colorNeutralStroke2,
+            }}
+        >
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
                 <div className="flex items-center gap-3">
                     {!isPublic && !isSidebarOpen && onMenuToggle && (

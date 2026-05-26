@@ -39,12 +39,16 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
 import { usePagination } from "@hooks/usePagination";
 
+
 export const TariffsPage = () => {
+
+
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
@@ -239,7 +243,7 @@ export const TariffsPage = () => {
     }, [sizes, handleToggleActive, openEdit, handleDelete, has, promotions, maxCap]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-12"><Spinner label="Загрузка тарифов..." /></div>;
+        return <PageLoader label="Загрузка тарифов..." />;
     }
 
     if (queryError) {

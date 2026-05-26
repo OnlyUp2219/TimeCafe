@@ -2,6 +2,7 @@ import {Body2, Caption1, Card, Divider, Title2, Title3} from "@fluentui/react-co
 import {formatMoneyByN} from "@utility/formatMoney";
 import type {TariffForecastCardProps} from "@components/Tariff/TariffForecastCardProps";
 import {BillingType as BillingTypeEnum} from "@app-types/tariff";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export type CalcResult = {
     total: number;
@@ -13,8 +14,10 @@ export type CalcResult = {
 
 
 export const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardProps) => {
+    const { sizes } = useComponentSize();
+
     return (
-        <Card className="lg:col-span-5">
+        <Card className="lg:col-span-5" size={sizes.card}>
             <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                     <Title3>Калькулятор</Title3>
@@ -26,8 +29,8 @@ export const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardPro
                     <Body2 block>Выберите тариф и задайте параметры.</Body2>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        <div className="rounded-2xl p-4 tc-tariff-forecast-box">
-                            <div className="flex items-end justify-between gap-3 flex-wrap">
+                        <div className="rounded-2xl p-4 bg-[var(--colorNeutralBackground2)] border border-[var(--colorNeutralStroke1)]">
+                            <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
                                 <div className="min-w-0">
                                     <Caption1>Ориентировочная сумма</Caption1>
                                     <Title2 block>{formatMoneyByN(calc.total)}</Title2>
@@ -39,7 +42,7 @@ export const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardPro
                                     <Title3 block>
                                         {selectedTariff.billingType === BillingTypeEnum.PerMinute
                                             ? `${calc.chargedMinutes} мин`
-                                            : `${calc.chargedHours} ч (за ${calc.chargedMinutes} мин)`}
+                                            : `${calc.chargedHours} ч`}
                                     </Title3>
                                 </div>
                                 <div>

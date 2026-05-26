@@ -13,6 +13,7 @@ interface DateInputProps {
     required?: boolean;
     maxDate?: Date;
     maxDateMessage?: string;
+    size?: "small" | "medium" | "large";
 }
 
 const formatDateForInput = (date: Date): string => {
@@ -34,6 +35,7 @@ export const DateInput = ({
                               required = false,
                               maxDate,
                               maxDateMessage = "Дата не может быть в будущем.",
+                              size,
                           }: DateInputProps) => {
     const inputValue = useMemo(() => (value ? formatDateForInput(value) : ""), [value]);
 
@@ -73,6 +75,7 @@ export const DateInput = ({
             required={required}
             validationState={shouldValidate && errorMsg ? "error" : undefined}
             validationMessage={shouldValidate ? errorMsg : undefined}
+            size={size}
         >
             <Input
                 type="date"
@@ -85,6 +88,7 @@ export const DateInput = ({
                 disabled={disabled}
                 max={maxDateValue}
                 className="w-full"
+                size={size}
             />
         </Field>
     );

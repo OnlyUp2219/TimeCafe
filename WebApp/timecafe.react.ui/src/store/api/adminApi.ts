@@ -173,7 +173,7 @@ export const adminApi = createApi({
             invalidatesTags: ["Users"],
         }),
 
-        getAdminBalances: builder.query<{balances: AdminBalanceDto[]; pagination: AdminPagination}, GetBalancesPageArgs>({
+        getAdminBalances: builder.query<PagedResponse<AdminBalanceDto>, GetBalancesPageArgs>({
             query: ({page, pageSize}) => ({
                 url: "/billing/admin/balances",
                 params: {page, pageSize},
@@ -181,7 +181,7 @@ export const adminApi = createApi({
             providesTags: ["AdminBalances"],
         }),
 
-        getAdminTransactions: builder.query<{transactions: BillingTransaction[]; pagination: AdminPagination}, GetTransactionsPageArgs>({
+        getAdminTransactions: builder.query<PagedResponse<BillingTransaction>, GetTransactionsPageArgs>({
             query: ({page, pageSize, userId}) => ({
                 url: "/billing/admin/transactions",
                 params: {page, pageSize, userId},
@@ -189,7 +189,7 @@ export const adminApi = createApi({
             providesTags: ["AdminTransactions"],
         }),
 
-        getAdminPayments: builder.query<{payments: AdminPaymentDto[]; pagination: AdminPagination}, GetPaymentsPageArgs>({
+        getAdminPayments: builder.query<PagedResponse<AdminPaymentDto>, GetPaymentsPageArgs>({
             query: ({page, pageSize, userId}) => ({
                 url: "/billing/admin/payments",
                 params: {page, pageSize, userId},

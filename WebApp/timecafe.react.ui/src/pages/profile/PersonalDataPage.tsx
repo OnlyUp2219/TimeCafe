@@ -10,47 +10,50 @@ import {
     MessageBarTitle,
     Title2,
     Subtitle2,
-    Image,
+    Dialog,
+    DialogSurface,
+    DialogBody,
+    DialogTitle,
+    DialogContent,
 } from "@fluentui/react-components";
-import {useCallback, useState} from "react";
-import {useAppDispatch, useAppSelector} from "@store/hooks";
-import {useNavigate} from "react-router-dom";
-import {ChangePasswordForm} from "@components/PersonalDataForm/ChangePasswordForm";
-import {Gender, type Profile} from "@app-types/profile";
-import {useProgressToast} from "@components/ToastProgress/ToastProgress";
-import {PersonalDataMainForm} from "@components/PersonalDataForm/PersonalDataMainForm";
-import {PhoneFormCard} from "@components/PersonalDataForm/PhoneFormCard";
-import {EmailFormCard} from "@components/PersonalDataForm/EmailFormCard";
-import {LogoutCard} from "@components/PersonalDataForm/LogoutCard";
-import {DismissRegular, LockClosedRegular, PasswordFilled} from "@fluentui/react-icons";
-import {clearTokens} from "@store/authSlice";
-import {useLogoutMutation} from "@store/api/authApi";
+import { useCallback, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { useNavigate } from "react-router-dom";
+import { ChangePasswordForm } from "@components/PersonalDataForm/ChangePasswordForm";
+import { Gender, type Profile } from "@app-types/profile";
+import { useProgressToast } from "@components/ToastProgress/ToastProgress";
+import { PersonalDataMainForm } from "@components/PersonalDataForm/PersonalDataMainForm";
+import { PhoneFormCard } from "@components/PersonalDataForm/PhoneFormCard";
+import { EmailFormCard } from "@components/PersonalDataForm/EmailFormCard";
+import { LogoutCard } from "@components/PersonalDataForm/LogoutCard";
+import { StarRegular, DismissRegular, LockClosedRegular, PasswordFilled } from "@fluentui/react-icons";
+import { clearTokens } from "@store/authSlice";
+import { useLogoutMutation } from "@store/api/authApi";
 import {
     useGetProfileByUserIdQuery,
     useUpdateProfileMutation,
     useUploadProfilePhotoMutation,
     useDeleteProfilePhotoMutation,
 } from "@store/api/profileApi";
-import {useGetUserLoyaltyQuery} from "@store/api/venueApi";
-import {LoyaltyProgress} from "@components/Loyalty/LoyaltyProgress";
-import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {normalizeBirthDateForApi} from "@utility/normalizeDate";
-import blob3Url from "@assets/ssshape_blob3.svg";
-import blob4Url from "@assets/ssshape_blob4.svg";
-import squiggly1Url from "@assets/sssquiggl_1.svg";
-import glitchUrl from "@assets/ggglitch.svg";
+import { useGetUserLoyaltyQuery } from "@store/api/venueApi";
+import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
+import { getUserMessageFromUnknown } from "@api/errors/getUserMessageFromUnknown";
+import { normalizeBirthDateForApi } from "@utility/normalizeDate";
+import { useComponentSize } from "@hooks/useComponentSize";
+
 import "./PersonalData.css";
 
 export const PersonalDataPage = () => {
+    const { sizes } = useComponentSize();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const userId = useAppSelector((state) => state.auth.userId);
-    const {data: profile} = useGetProfileByUserIdQuery(userId, {skip: !userId});
-    const {data: loyalty, isLoading: loyaltyLoading} = useGetUserLoyaltyQuery(userId, {skip: !userId});
+    const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
+    const { data: loyalty, isLoading: loyaltyLoading } = useGetUserLoyaltyQuery(userId, { skip: !userId });
 
-    const {showToast, ToasterElement} = useProgressToast();
+    const { showToast, ToasterElement } = useProgressToast();
     const [logoutMutation] = useLogoutMutation();
-    const [updateProfileMutation, {isLoading: saving}] = useUpdateProfileMutation();
+    const [updateProfileMutation, { isLoading: saving }] = useUpdateProfileMutation();
     const [uploadPhoto] = useUploadProfilePhotoMutation();
     const [deletePhoto] = useDeleteProfilePhotoMutation();
 
@@ -61,7 +64,7 @@ export const PersonalDataPage = () => {
     const savePatch = useCallback(
         async (patch: Partial<Profile>, successMessage: string): Promise<boolean> => {
             if (!profile || !userId) return false;
-            const merged = {...profile, ...patch};
+            const merged = { ...profile, ...patch };
             try {
                 await updateProfileMutation({
                     userId,
@@ -93,14 +96,14 @@ export const PersonalDataPage = () => {
     const handleLogout = useCallback(async () => {
         await logoutMutation();
         dispatch(clearTokens());
-        navigate("/login", {replace: true});
+        navigate("/login", { replace: true });
     }, [dispatch, logoutMutation, navigate]);
 
     const handlePhotoUpload = useCallback(async (file: File) => {
         if (!profile) return false;
         setPhotoBusy(true);
         try {
-            await uploadPhoto({userId, file}).unwrap();
+            await uploadPhoto({ userId, file }).unwrap();
             setPhotoMessage("Фото профиля обновлено.");
             setPhotoMessageIntent("success");
             return true;
@@ -130,11 +133,24 @@ export const PersonalDataPage = () => {
         }
     }, [deletePhoto, profile, userId]);
 
-    const content = profile ? (
-        <div className="page-content relative z-10">
+    if (!profile) {
+        return (
+            <div className="relative min-h-full">
+                {ToasterElement}
+                <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6">
+                    <Title2>Персональные данные</Title2>
+                    <div>
+                        Профиль не загружен. Перейдите на главную и попробуйте снова.
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
-            <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    return (
+        <div className="page-content flex flex-col gap-4">
+            {ToasterElement}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-col gap-1 min-w-0">
                         <Title2>Профиль</Title2>
                         <Body2>
@@ -144,7 +160,7 @@ export const PersonalDataPage = () => {
                     </div>
                 </div>
 
-                <Divider/>
+                <Divider />
 
                 {photoMessage && (
                     <MessageBar intent={photoMessageIntent}>
@@ -159,7 +175,7 @@ export const PersonalDataPage = () => {
                                 <Button
                                     appearance="transparent"
                                     aria-label="Закрыть"
-                                    icon={<DismissRegular className="size-5"/>}
+                                    icon={<DismissRegular className="size-5" />}
                                     onClick={() => setPhotoMessage(null)}
                                 />
                             }
@@ -178,7 +194,7 @@ export const PersonalDataPage = () => {
                                 <Button
                                     appearance="transparent"
                                     aria-label="Закрыть"
-                                    icon={<DismissRegular className="size-5"/>}
+                                    icon={<DismissRegular className="size-5" />}
                                     onClick={() => setLastSaveError(null)}
                                 />
                             }
@@ -188,122 +204,80 @@ export const PersonalDataPage = () => {
 
                 <div className="flex flex-col gap-4">
                     <PersonalDataMainForm
-                            profile={profile}
+                        profile={profile}
+                        loading={saving}
+                        onPhotoUrlChange={() => { }}
+                        onPhotoUpload={handlePhotoUpload}
+                        onPhotoDelete={handlePhotoDelete}
+                        photoBusy={photoBusy}
+                        onSave={(patch) => {
+                            void savePatch(patch, "Персональные данные сохранены.");
+                        }}
+                    />
+
+                    <Card className="w-full" size={sizes.card}>
+                        <Title2 block className="!flex items-center gap-2">
+                            <StarRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                            Программа лояльности
+                        </Title2>
+                        <LoyaltyProgress
+                            visitCount={profile?.visitCount || 0}
+                            currentDiscount={loyalty?.personalDiscountPercent || 0}
+                        />
+                    </Card>
+
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
+                        <PhoneFormCard
                             loading={saving}
-                            onPhotoUrlChange={() => {}}
-                            onPhotoUpload={handlePhotoUpload}
-                            onPhotoDelete={handlePhotoDelete}
-                            photoBusy={photoBusy}
-                            onSave={(patch) => {
-                                void savePatch(patch, "Персональные данные сохранены.");
-                            }}
                         />
 
-                        <Card className="w-full">
-                            <Subtitle2 block>
-                                Программа лояльности
-                            </Subtitle2>
-                            <Divider />
-                            <LoyaltyProgress 
-                                visitCount={profile?.visitCount || 0} 
-                                currentDiscount={loyalty?.personalDiscountPercent || 0} 
-                            />
+                        <EmailFormCard
+                            loading={saving}
+                        />
+
+                        <Card className="sm:col-span-2 lg:col-span-1" size={sizes.card}>
+                            <Title2 block className="!flex items-center gap-2">
+                                <LockClosedRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                                Смена пароля
+                            </Title2>
+                            <Body2 className="!line-clamp-2">
+                                Рекомендуется менять пароль регулярно и использовать уникальные пароли для
+                                разных сервисов.
+                            </Body2>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start mt-2">
+                                <Button appearance="primary" icon={<PasswordFilled className="size-5" />}
+                                    onClick={() => setShowPasswordForm(true)} size={sizes.button}>
+                                    Сменить пароль
+                                </Button>
+                            </div>
+
+                            {showPasswordForm && (
+                                <Dialog open={showPasswordForm} onOpenChange={(_, data) => setShowPasswordForm(data.open)}>
+                                    <DialogSurface>
+                                        <DialogBody>
+                                            <DialogTitle>Смена пароля</DialogTitle>
+                                            <DialogContent className="pt-4">
+                                                <ChangePasswordForm
+                                                    wrapInCard={false}
+                                                    showTitle={false}
+                                                    redirectToLoginOnSuccess={false}
+                                                    autoClearTokensOnSuccess={false}
+                                                    showCancelButton
+                                                    onCancel={() => setShowPasswordForm(false)}
+                                                />
+                                            </DialogContent>
+                                        </DialogBody>
+                                    </DialogSurface>
+                                </Dialog>
+                            )}
                         </Card>
 
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 ">
-                            <PhoneFormCard
-                                loading={saving}
-                            />
-
-                            <EmailFormCard
-                                loading={saving}
-                            />
-
-                            <Card className="sm:col-span-2 lg:col-span-1">
-                                <Title2 block className="!flex items-center gap-2">
-                                    <Badge appearance="tint" shape="rounded" size="extra-large"
-                                           className="brand-badge">
-                                        <LockClosedRegular className="size-5"/>
-                                    </Badge>
-                                    Смена пароля
-                                </Title2>
-                                <Body2 className="!line-clamp-2">
-                                    Рекомендуется менять пароль регулярно и использовать уникальные пароли для
-                                    разных сервисов.
-                                </Body2>
-                                <div
-                                    className={showPasswordForm ? "w-full" : "flex flex-col sm:flex-row sm:items-center sm:justify-end "}>
-                                    {showPasswordForm ? (
-                                        <ChangePasswordForm
-                                            wrapInCard={false}
-                                            showTitle={false}
-                                            redirectToLoginOnSuccess={false}
-                                            autoClearTokensOnSuccess={false}
-                                            showCancelButton
-                                            onCancel={() => setShowPasswordForm(false)}
-                                        />
-                                    ) : (
-                                        <Button appearance="primary" icon={<PasswordFilled className="size-5"/>}
-                                                onClick={() => setShowPasswordForm(true)}>
-                                            Сменить пароль
-                                        </Button>
-                                    )}
-                                </div>
-                            </Card>
-
-                            <LogoutCard className="h-full border-2 border-dashed sm:col-span-2 lg:col-span-1"
-                                        onLogout={handleLogout}/>
-                        </div>
+                        <LogoutCard className="h-full border-2 border-dashed sm:col-span-2 lg:col-span-1"
+                            onLogout={handleLogout} />
+                    </div>
 
                 </div>
 
-            </div>
-        </div>
-    ) : (
-        <div className="mx-auto w-full max-w-3xl px-2 py-4 sm:px-3 sm:py-6 relative z-10">
-            <Title2>Персональные данные</Title2>
-            <div>
-                Профиль не загружен. Перейдите на главную и попробуйте снова.
-            </div>
-        </div>
-    );
-
-    return (
-        <div className="tc-noise-overlay relative overflow-hidden min-h-full">
-            {ToasterElement}
-
-            <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                <Image
-                    src={blob3Url}
-                    alt=""
-                    aria-hidden="true"
-                    className={`absolute -top-[10vw] -right-[10vw] w-[50vw] max-w-[640px] rotate-6 select-none ${backgroundOpacityClass}`}
-                    draggable={false}
-                />
-                <Image
-                    src={blob4Url}
-                    alt=""
-                    aria-hidden="true"
-                    className={`absolute -left-[12vw] top-[35vh] w-[55vw] max-w-[720px] -rotate-6 select-none ${backgroundOpacityClass}`}
-                    draggable={false}
-                />
-                <Image
-                    src={squiggly1Url}
-                    alt=""
-                    aria-hidden="true"
-                    className={`absolute -top-[8vw] left-1/2 w-[80vw] max-w-[1000px] -translate-x-1/2 select-none ${backgroundOpacityClass}`}
-                    draggable={false}
-                />
-                <Image
-                    src={glitchUrl}
-                    alt=""
-                    aria-hidden="true"
-                    className={`absolute -right-[12vw] top-[70vh] w-[60vw] max-w-[720px] select-none ${backgroundOpacityClass}`}
-                    draggable={false}
-                />
-            </div>
-
-            {content}
         </div>
     );
 };

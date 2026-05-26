@@ -7,56 +7,55 @@ import {
     MessageBarBody,
     MessageBarTitle,
     Title2,
-    Image,
-} from "@fluentui/react-components";
-import {DismissRegular} from "@fluentui/react-icons";
 
-import {useCallback, useMemo, useState} from "react";
-import {useAppSelector} from "@store/hooks";
-import type {Tariff} from "@app-types/tariff";
-import {TransactionType, type BillingActivityPoint, type BillingTransaction} from "@app-types/billing";
+} from "@fluentui/react-components";
+import { DismissRegular } from "@fluentui/react-icons";
+
+import { useCallback, useMemo, useState } from "react";
+import { useAppSelector } from "@store/hooks";
+import type { Tariff } from "@app-types/tariff";
+import { TransactionType, type BillingActivityPoint, type BillingTransaction } from "@app-types/billing";
 
 import "./billing.css";
 
-import glitch from "@assets/ggglitch.svg";
-import blob4 from "@assets/ssshape_blob4.svg";
-import blob2 from "@assets/ssshape_blob2.svg";
-import squiggl from "@assets/sssquiggl_1.svg";
 
-import {BalanceActivityCard} from "@components/Billing/BalanceActivityCard";
-import {TopUpCard} from "@components/Billing/TopUpCard";
-import {TransactionsSection} from "@components/Billing/TransactionsSection";
-import {RestTimeCard} from "@components/Billing/RestTimeCard";
-import {DebtWarningCard} from "@components/Billing/DebtWarningCard";
-import {SupportCard} from "@components/Billing/SupportCard";
-import {getRtkErrorMessage} from "@api/errors/extractRtkError";
-import {useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation} from "@store/api/billingApi";
+
+import { BalanceActivityCard } from "@components/Billing/BalanceActivityCard";
+import { TopUpCard } from "@components/Billing/TopUpCard";
+import { TransactionsSection } from "@components/Billing/TransactionsSection";
+import { RestTimeCard } from "@components/Billing/RestTimeCard";
+import { DebtWarningCard } from "@components/Billing/DebtWarningCard";
+import { SupportCard } from "@components/Billing/SupportCard";
+import { getRtkErrorMessage } from "@api/errors/extractRtkError";
+import { useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation } from "@store/api/billingApi";
 
 const TELEGRAM_SUPPORT_URL = "https://t.me/OnlyUp_S";
-import {useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery} from "@store/api/venueApi";
+import { useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery } from "@store/api/venueApi";
 
 import { usePagination } from "@hooks/usePagination";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 export const BillingPage = () => {
+    const { sizes } = useComponentSize();
     const userId = useAppSelector((state) => state.auth.userId);
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
-    const { page, size: pageSize, setPage } = usePagination("userBilling", 1, 20);
+    const { page, size: pageSize, setPage } = usePagination("userBilling", 1, 5);
 
-    const {data: balance, isLoading: loadingOverview} = useGetBalanceQuery(userId ?? "", {skip: !userId});
-    const {data: debtRub = 0} = useGetDebtQuery(userId ?? "", {skip: !userId});
-    const {data: txData, isLoading: loadingTransactions} = useGetTransactionHistoryQuery(
-        {userId: userId ?? "", page, pageSize},
-        {skip: !userId},
+    const { data: balance, isLoading: loadingOverview } = useGetBalanceQuery(userId ?? "", { skip: !userId });
+    const { data: debtRub = 0 } = useGetDebtQuery(userId ?? "", { skip: !userId });
+    const { data: txData, isLoading: loadingTransactions } = useGetTransactionHistoryQuery(
+        { userId: userId ?? "", page, pageSize },
+        { skip: !userId },
     );
-    const {data: tariffsData} = useGetActiveTariffsQuery();
-    const {data: hasActive} = useHasActiveVisitQuery(userId ?? "", {skip: !userId});
-    const {data: activeVisitData} = useGetActiveVisitByUserQuery(userId ?? "", {skip: !userId || !hasActive});
-    const [initCheckout, {isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout}] = useInitializeStripeCheckoutMutation();
+    const { data: tariffsData } = useGetActiveTariffsQuery();
+    const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
+    const { data: activeVisitData } = useGetActiveVisitByUserQuery(userId ?? "", { skip: !userId || !hasActive });
+    const [initCheckout, { isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout }] = useInitializeStripeCheckoutMutation();
 
     const balanceRub = balance?.currentBalance ?? 0;
-    const transactions: BillingTransaction[] = useMemo(() => txData?.transactions ?? [], [txData?.transactions]);
-    const pagination = txData?.pagination ?? {currentPage: 1, pageSize, totalCount: 0, totalPages: 0};
+    const transactions: BillingTransaction[] = useMemo(() => txData?.items ?? [], [txData?.items]);
+    const pagination = txData?.metadata ?? { page: 1, pageSize, totalCount: 0, totalPages: 0 };
     const checkoutError = checkoutRtkError ? getRtkErrorMessage(checkoutRtkError) || "Не удалось инициализировать пополнение" : null;
 
     const tariffs: Tariff[] = useMemo(() => {
@@ -151,11 +150,11 @@ export const BillingPage = () => {
 
     const onLoadMoreTransactions = useCallback(() => {
         if (!userId) return;
-        if (pagination.currentPage >= pagination.totalPages) return;
-        setPage(pagination.currentPage + 1);
-    }, [pagination.currentPage, pagination.totalPages, userId]);
+        if (pagination.page >= pagination.totalPages) return;
+        setPage(pagination.page + 1);
+    }, [pagination.page, pagination.totalPages, userId]);
 
-    const canLoadMoreTransactions = pagination.currentPage < pagination.totalPages;
+    const canLoadMoreTransactions = pagination.page < pagination.totalPages;
 
     const weeklyActivity = useMemo<BillingActivityPoint[]>(() => {
         const today = new Date();
@@ -236,121 +235,88 @@ export const BillingPage = () => {
     }, []);
 
     return (
-        <div className="relative tc-noise-overlay w-full h-full overflow-hidden">
-            <div className="pointer-events-none absolute inset-0 overflow-hidden">
-                <Image
-                    src={glitch}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -top-[12vw] -left-[12vw] w-[52vw] max-w-[720px] select-none opacity-30"
-                    draggable={false}
-                />
-                <Image
-                    src={blob4}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -bottom-[18vw] -left-[10vw] w-[70vw] max-w-none select-none opacity-30"
-                    draggable={false}
-                />
-                <Image
-                    src={blob2}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -bottom-[10vw] -right-[12vw] w-[44vw] max-w-[640px] select-none opacity-30"
-                    draggable={false}
-                />
-                <Image
-                    src={squiggl}
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute -top-[8vw] -right-[10vw] w-[34vw] max-w-[520px] select-none opacity-40 rotate-[-135deg]"
-                    draggable={false}
-                />
-            </div>
+        <div className="page-content">
+            <div className="flex flex-col gap-4">
+                {checkoutError && (
+                    <MessageBar intent="error">
+                        <MessageBarBody>
+                            <MessageBarTitle>Ошибка биллинга:</MessageBarTitle>
+                            {checkoutError}
+                        </MessageBarBody>
+                        <MessageBarActions
+                            containerAction={
+                                <Button
+                                    appearance="transparent"
+                                    aria-label="Закрыть"
+                                    icon={<DismissRegular className="size-5" />}
+                                    onClick={() => resetCheckout()}
+                                    size={sizes.button}
+                                />
+                            }
+                        />
+                    </MessageBar>
+                )}
 
-            <div className="page-content relative">
+                {initializingCheckout && (
+                    <MessageBar intent="info">
+                        <MessageBarBody>
+                            <MessageBarTitle>Переход к оплате</MessageBarTitle>
+                            Подготавливаем платёжную сессию Stripe. Это может занять несколько секунд.
+                        </MessageBarBody>
+                    </MessageBar>
+                )}
+
+                <div className="flex flex-col gap-3">
+                    <Title2 block>Баланс и транзакции</Title2>
+                    <Body2 block>
+                        Следите за движением средств, пополняйте баланс и просматривайте историю операций.
+                    </Body2>
+                </div>
+
+                <Divider />
+
                 <div className="flex flex-col gap-4">
-                    {checkoutError && (
-                        <MessageBar intent="error">
-                            <MessageBarBody>
-                                <MessageBarTitle>Ошибка биллинга:</MessageBarTitle>
-                                {checkoutError}
-                            </MessageBarBody>
-                            <MessageBarActions
-                                containerAction={
-                                    <Button
-                                        appearance="transparent"
-                                        aria-label="Закрыть"
-                                        icon={<DismissRegular className="size-5"/>}
-                                        onClick={() => resetCheckout()}
-                                    />
-                                }
-                            />
-                        </MessageBar>
-                    )}
-
-                    {initializingCheckout && (
-                        <MessageBar intent="info">
-                            <MessageBarBody>
-                                <MessageBarTitle>Переход к оплате</MessageBarTitle>
-                                Подготавливаем платёжную сессию Stripe. Это может занять несколько секунд.
-                            </MessageBarBody>
-                        </MessageBar>
-                    )}
-
-                    <div className="flex flex-col gap-3">
-                        <Title2 block>Баланс и транзакции</Title2>
-                        <Body2 block>
-                            Следите за движением средств, пополняйте баланс и просматривайте историю операций.
-                        </Body2>
+                    <div className="grid grid-cols-1 gap-4">
+                        <BalanceActivityCard
+                            balanceRub={balanceRub}
+                            monthDeltaPercent={monthDeltaPercent}
+                            activity={weeklyActivity}
+                        />
                     </div>
 
-                    <Divider/>
-
-                    <div className="flex flex-col gap-4">
-                        <div className="grid grid-cols-1 gap-4">
-                            <BalanceActivityCard
-                                balanceRub={balanceRub}
-                                monthDeltaPercent={monthDeltaPercent}
-                                activity={weeklyActivity}
+                    <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
+                        <TopUpCard
+                            draftAmountText={draftAmountText}
+                            onDraftAmountTextChange={setDraftAmountText}
+                            onPresetAdd={onPresetAdd}
+                            onSubmit={onSubmitTopUp}
+                            loading={initializingCheckout || loadingOverview}
+                        />
+                        <div className="hidden h-full sm:block">
+                            <RestTimeCard
+                                availableRub={availableForVisitsRub}
+                                tariffs={tariffs}
+                                initialTariffId={effectiveTariff?.tariffId}
                             />
                         </div>
+                    </div>
 
-                        <div className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2">
-                            <TopUpCard
-                                draftAmountText={draftAmountText}
-                                onDraftAmountTextChange={setDraftAmountText}
-                                onPresetAdd={onPresetAdd}
-                                onSubmit={onSubmitTopUp}
-                                loading={initializingCheckout || loadingOverview}
-                            />
-                            <div className="hidden h-full sm:block">
-                                <RestTimeCard
-                                    availableRub={availableForVisitsRub}
-                                    tariffName={effectiveTariff?.name ?? "Тариф"}
-                                    pricePerMinuteRub={effectiveTariff?.pricePerMinute ?? 0}
-                                />
-                            </div>
-                        </div>
+                    <DebtWarningCard
+                        debtRub={debtRub}
+                        onPay={onPayDebt}
+                        loading={initializingCheckout}
+                    />
 
-                        <DebtWarningCard
-                            debtRub={debtRub}
-                            onPay={onPayDebt}
-                            loading={initializingCheckout}
-                        />
+                    <TransactionsSection
+                        transactions={transactions}
+                        loading={loadingTransactions}
+                        currentPage={pagination.page}
+                        totalPages={pagination.totalPages}
+                        onPageChange={setPage}
+                    />
 
-                        <TransactionsSection
-                            transactions={transactions}
-                            loading={loadingTransactions}
-                            loadingMore={loadingTransactions && transactions.length > 0}
-                            canLoadMore={canLoadMoreTransactions}
-                            onLoadMore={onLoadMoreTransactions}
-                        />
-
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            {/* TODO: loyalty блок — скрыт до появления backend-контракта */}
-                            <SupportCard telegramUrl={TELEGRAM_SUPPORT_URL} onCallAdmin={handleCallAdmin} />
-                        </div>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <SupportCard telegramUrl={TELEGRAM_SUPPORT_URL} onCallAdmin={handleCallAdmin} />
                     </div>
                 </div>
             </div>

@@ -74,9 +74,9 @@ export const BalancesPage = () => {
         { refetchOnMountOrArgChange: true }
     );
 
-    const balances = data?.balances ?? [];
-    const totalCount = data?.pagination.totalCount ?? 0;
-    const totalPages = data?.pagination.totalPages ?? 1;
+    const balances = data?.items ?? [];
+    const totalCount = data?.metadata?.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const totalBalance = useMemo(() => balances.reduce((s, b) => s + b.currentBalance, 0), [balances]);

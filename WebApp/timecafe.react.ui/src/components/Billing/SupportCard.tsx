@@ -1,8 +1,7 @@
 import {Body2, Caption1, Card, Subtitle2Stronger} from "@fluentui/react-components";
-
 import {ChatRegular, CallRegular} from "@fluentui/react-icons";
-
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 type SupportCardProps = {
     telegramUrl: string;
@@ -10,8 +9,10 @@ type SupportCardProps = {
 };
 
 export const SupportCard = ({telegramUrl, onCallAdmin}: SupportCardProps) => {
+    const { sizes } = useComponentSize();
+
     return (
-        <Card className="flex h-full flex-col gap-4">
+        <Card className="flex h-full flex-col gap-4" size={sizes.card}>
             <div className="flex items-center gap-2">
                 <ChatRegular />
                 <Caption1 block className="uppercase">
@@ -31,6 +32,7 @@ export const SupportCard = ({telegramUrl, onCallAdmin}: SupportCardProps) => {
                     tooltip="Открыть чат в Telegram"
                     label="Чат в Telegram"
                     onClick={() => window.open(telegramUrl, "_blank")}
+                    size={sizes.button}
                 />
                 <TooltipButton
                     appearance="secondary"
@@ -38,6 +40,7 @@ export const SupportCard = ({telegramUrl, onCallAdmin}: SupportCardProps) => {
                     tooltip="Позвать администратора"
                     label="Позвать админа"
                     onClick={onCallAdmin}
+                    size={sizes.button}
                 />
             </div>
         </Card>
