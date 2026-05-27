@@ -59,7 +59,7 @@ public sealed class AdjustBalanceCommandHandler(
                 if (balance == null)
                 {
                     balance = Balance.Create(request.UserId);
-                    await _uow.Balances.CreateAsync(balance, transactionToken);
+                    balance = await _uow.Balances.CreateAsync(balance, transactionToken);
                     isNew = true;
                 }
 

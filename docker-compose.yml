@@ -59,6 +59,12 @@ services:
     container_name: timecafe-kibana
     environment:
       - ELASTICSEARCH_HOSTS=${ELASTICSEARCH_HOSTS}
+      - CSP_STRICT=false
+      - "NODE_OPTIONS=--max-old-space-size=256"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     ports:
       - "5601:5601"
     depends_on:
@@ -78,7 +84,11 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -330,6 +340,45 @@ services:
       retries: 3
       start_period: 10s
 
+  audit-service:
+    image: timecafe-audit-service
+    build:
+      context: .
+      dockerfile: ./Services/Audit/Audit.TimeCafe.API/Dockerfile
+    container_name: timecafe-audit-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ENVIRONMENT}
+      - ASPNETCORE_URLS=http://+:8005
+      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUDIT_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__AuthConnection=Host=${POSTGRES_HOST};Port=${POSTGRES_PORT};Database=${AUTH_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - Redis__ConnectionString=${REDIS_HOST}:${REDIS_PORT}
+      - RabbitMQ__Host=${RABBITMQ_HOST}
+      - RabbitMQ__Username=${RABBITMQ_USER}
+      - RabbitMQ__Password=${RABBITMQ_PASSWORD}
+      - Jwt__SigningKey=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - CORS__PolicyName=${AUDIT_CORS_POLICY:-DefaultCorsPolicy}
+      - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - timecafe-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
   yarp-proxy:
     image: timecafe-yarp-proxy
     build:
@@ -357,6 +406,8 @@ services:
       venue-service:
         condition: service_healthy
       billing-service:
+        condition: service_healthy
+      audit-service:
         condition: service_healthy
     networks:
       - timecafe-network

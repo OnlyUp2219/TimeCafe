@@ -25,11 +25,13 @@ public sealed class InitializeStripePaymentCommandValidator : AbstractValidator<
 public sealed class InitializeStripePaymentCommandHandler(
     IUnitOfWork uow,
     IStripePaymentClient stripeClient,
-    IOptionsSnapshot<StripeOptions> options) : ICommandHandler<InitializeStripePaymentCommand, InitializeStripePaymentResponse>
+    IOptionsSnapshot<StripeOptions> options,
+    IPublisher publisher) : ICommandHandler<InitializeStripePaymentCommand, InitializeStripePaymentResponse>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IStripePaymentClient _stripeClient = stripeClient;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<InitializeStripePaymentResponse>> Handle(InitializeStripePaymentCommand request, CancellationToken cancellationToken = default)
     {
@@ -76,6 +78,8 @@ public sealed class InitializeStripePaymentCommandHandler(
         payment.ExternalPaymentId = providerResponse.ExternalPaymentId;
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId), cancellationToken);
 
         return Result.Ok(new InitializeStripePaymentResponse(
             payment.PaymentId, 

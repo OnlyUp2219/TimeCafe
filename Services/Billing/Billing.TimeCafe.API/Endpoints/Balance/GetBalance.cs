@@ -16,7 +16,9 @@ public class GetBalance : ICarterModule
                 balance = new
                 {
                     userId = r.UserId,
-                    amount = r.CurrentBalance,
+                    currentBalance = r.CurrentBalance,
+                    totalDeposited = r.TotalDeposited,
+                    totalSpent = r.TotalSpent,
                     debt = r.Debt,
                     lastUpdated = r.LastUpdated
                 }

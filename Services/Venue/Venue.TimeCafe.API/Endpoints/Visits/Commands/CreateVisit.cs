@@ -1,18 +1,25 @@
 namespace Venue.TimeCafe.API.Endpoints.Visits.Commands;
 
-public record CreateVisitRequest(
+public class CreateVisitRequest
+{
     /// <example>550e8400-e29b-41d4-a716-446655440000</example>
-    Guid UserId,
+    public Guid UserId { get; init; }
+    
     /// <example>a1b2c3d4-e5f6-7890-abcd-ef1234567890</example>
-    Guid TariffId,
+    public Guid TariffId { get; init; }
+    
     /// <example>120</example>
-    int? PlannedMinutes = null,
+    public int? PlannedMinutes { get; init; }
+    
     /// <example>false</example>
-    bool? RequirePositiveBalance = null,
+    public bool? RequirePositiveBalance { get; init; }
+    
     /// <example>false</example>
-    bool? RequireEnoughForPlanned = null,
+    public bool? RequireEnoughForPlanned { get; init; }
+    
     /// <example>1</example>
-    int GuestsCount = 1);
+    public int GuestsCount { get; init; } = 1;
+}
 
 public class CreateVisit : ICarterModule
 {

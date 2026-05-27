@@ -28,7 +28,8 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 ["Stripe:DefaultReturnUrl"] = "https://example.com/return",
                 ["Jwt:SigningKey"] = "test-signing-key-minimum-32-characters-long-for-hmacsha256",
                 ["Jwt:Issuer"] = "test-issuer",
-                ["Jwt:Audience"] = "test-audience"
+                ["Jwt:Audience"] = "test-audience",
+                ["Services:AuthGrpc"] = "http://localhost:8001"
             };
             cfg.AddInMemoryCollection(overrides);
         });
@@ -39,6 +40,20 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             ReplaceRedis(services);
             ReplaceMassTransit(services);
             ReplaceStripe(services);
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = Billing.TimeCafe.Test.Integration.Helpers.TestAuthHandler.AuthenticationScheme;
+                options.DefaultChallengeScheme = Billing.TimeCafe.Test.Integration.Helpers.TestAuthHandler.AuthenticationScheme;
+                options.DefaultScheme = Billing.TimeCafe.Test.Integration.Helpers.TestAuthHandler.AuthenticationScheme;
+            })
+            .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, Billing.TimeCafe.Test.Integration.Helpers.TestAuthHandler>(
+                Billing.TimeCafe.Test.Integration.Helpers.TestAuthHandler.AuthenticationScheme, _ => { });
+
+            services.AddAuthorizationBuilder()
+                .SetDefaultPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build());
         });
     }
 

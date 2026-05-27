@@ -1,4 +1,4 @@
-﻿namespace Audit.TimeCafe.Domain.Models;
+namespace Audit.TimeCafe.Domain.Models;
 
 public class AuditLog
 {
@@ -35,7 +35,7 @@ public class AuditLog
         Exception = auditEvent.Environment?.Exception;
         Duration = auditEvent.Duration;
 
-        Action = auditEvent.CustomFields.TryGetValue("CommandName", out var commandName)
+        Action = auditEvent.CustomFields?.TryGetValue("CommandName", out var commandName) == true
             ? commandName?.ToString() ?? "Unknown"
             : auditEvent.Environment?.CallingMethodName ?? "Unknown";
 
@@ -45,8 +45,8 @@ public class AuditLog
         OldData = auditEvent.Target?.Old != null ? JsonSerializer.Serialize(auditEvent.Target.Old) : null;
         NewData = auditEvent.Target?.New != null ? JsonSerializer.Serialize(auditEvent.Target.New) : null;
         EnvironmentJson = auditEvent.Environment != null ? JsonSerializer.Serialize(auditEvent.Environment) : null;
-        CustomFieldsJson = auditEvent.CustomFields.Count > 0 ? JsonSerializer.Serialize(auditEvent.CustomFields) : null;
-        Comments = auditEvent.Comments.Count > 0 ? JsonSerializer.Serialize(auditEvent.Comments) : null;
+        CustomFieldsJson = auditEvent.CustomFields?.Count > 0 ? JsonSerializer.Serialize(auditEvent.CustomFields) : null;
+        Comments = auditEvent.Comments?.Count > 0 ? JsonSerializer.Serialize(auditEvent.Comments) : null;
     }
 
     public AuditLog() { }

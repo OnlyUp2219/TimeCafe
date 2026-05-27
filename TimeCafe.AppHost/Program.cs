@@ -67,8 +67,8 @@ var elastic = builder.AddElasticsearch("elasticsearch")
     .WithImageTag("9.2.3")
     .WithEnvironment("discovery.type", "single-node")
     .WithEnvironment("xpack.security.enabled", "false")
-    .WithEnvironment("ES_JAVA_OPTS", "-Xms512m -Xmx512m")
-    .WithContainerRuntimeArgs("--ulimit", "nofile=65536:65536")
+    .WithEnvironment("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
+    .WithContainerRuntimeArgs("--ulimit", "nofile=65536:65536", "--memory", "768m")
     .WithDataVolume()
     .WithLifetime(ContainerLifetime.Persistent);
 elastic.WithEndpoint("http", e => e.Port = 9200);
@@ -76,6 +76,9 @@ elastic.WithEndpoint("http", e => e.Port = 9200);
 builder.AddContainer("kibana", "docker.elastic.co/kibana/kibana", "9.2.3")
     .WithReference(elastic)
     .WithEnvironment("ELASTICSEARCH_HOSTS", elastic.GetEndpoint("http"))
+    .WithEnvironment("CSP_STRICT", "false")
+    .WithEnvironment("NODE_OPTIONS", "--max-old-space-size=512")
+    .WithContainerRuntimeArgs("--memory", "512m")
     .WithHttpEndpoint(port: 5601, targetPort: 5601)
     .WaitFor(elastic);
 

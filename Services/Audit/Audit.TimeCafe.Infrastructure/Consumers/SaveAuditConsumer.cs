@@ -6,9 +6,10 @@ public class SaveAuditConsumer(IUnitOfWork unitOfWork, ILogger<SaveAuditConsumer
     {
         try
         {
-            var auditEvent = JsonSerializer.Deserialize<AuditEvent>(context.Message.AuditEventJson)
+            var auditEvent = AuditEvent.FromJson(context.Message.AuditEventJson)
                 ?? throw new InvalidOperationException("Failed to deserialize AuditEvent from SaveAuditMessage");
 
+            logger.LogInformation("Attempting to save AuditLog for EventId {EventId}, EventType: {EventType}", context.Message.EventId, auditEvent.EventType);
             var log = new AuditLog(
                 context.Message.EventId,
                 context.Message.CreatedAt,
@@ -17,6 +18,7 @@ public class SaveAuditConsumer(IUnitOfWork unitOfWork, ILogger<SaveAuditConsumer
 
             await unitOfWork.AuditLogs.CreateAsync(log);
             await unitOfWork.SaveChangesAsync();
+            logger.LogInformation("Successfully saved AuditLog for EventId {EventId}", context.Message.EventId);
         }
         catch (Exception ex)
         {
