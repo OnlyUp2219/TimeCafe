@@ -368,6 +368,12 @@
   background-color: var(--colorNeutralBackground1Hover) !important;
 }
 
+.admin-sidebar__navItem--selected {
+  background-color: var(--colorNeutralBackground1Selected) !important;
+  color: var(--colorBrandForegroundLink) !important;
+  font-weight: 600;
+}
+
 .profile-gate-shell {
   min-width: 100vw;
   min-height: 100dvh;

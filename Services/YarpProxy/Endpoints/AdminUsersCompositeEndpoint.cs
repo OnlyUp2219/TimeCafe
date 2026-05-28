@@ -32,30 +32,13 @@ public class AdminUsersCompositeEndpoint : ICarterModule
 
             if (userIds.Count > 0)
             {
-                var profilesTask = profileClient.PostAsJsonAsync("/userprofile/profiles/batch", userIds);
-                var balancesTask = billingClient.PostAsJsonAsync("/billing/balance/batch", userIds);
+                var profilesTask = SafePostBatchAsync<List<ProfileDto>>(profileClient, "/userprofile/profiles/batch", userIds);
+                var balancesTask = SafePostBatchAsync<List<BalanceDto>>(billingClient, "/billing/balance/batch", userIds);
 
                 await Task.WhenAll(profilesTask, balancesTask);
 
-                var profilesResponse = await profilesTask;
-                var balancesResponse = await balancesTask;
-
-                if (profilesResponse.IsSuccessStatusCode)
-                {
-                    profiles = await profilesResponse.Content.ReadFromJsonAsync<List<ProfileDto>>();
-                }
-
-                if (balancesResponse.IsSuccessStatusCode)
-                {
-                    try
-                    {
-                        balances = await balancesResponse.Content.ReadFromJsonAsync<List<BalanceDto>>();
-                    }
-                    catch (System.Text.Json.JsonException)
-                    {
-                        balances = null;
-                    }
-                }
+                profiles = await profilesTask;
+                balances = await balancesTask;
             }
 
             var profilesMap = profiles?.ToDictionary(p => p.UserId) ?? [];
@@ -93,4 +76,20 @@ public class AdminUsersCompositeEndpoint : ICarterModule
 
     private record ProfileDto(Guid UserId, string FirstName, string LastName, string? MiddleName, string? PhotoUrl, int ProfileStatus);
     private record BalanceDto(Guid UserId, decimal CurrentBalance, decimal Debt);
+
+    private static async Task<T?> SafePostBatchAsync<T>(HttpClient client, string url, object body) where T : class
+    {
+        try
+        {
+            var response = await client.PostAsJsonAsync(url, body);
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<T>();
+            }
+        }
+        catch
+        {
+        }
+        return null;
+    }
 }

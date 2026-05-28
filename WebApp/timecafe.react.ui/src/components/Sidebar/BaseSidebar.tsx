@@ -13,6 +13,15 @@ import {
     OverlayDrawer,
     Tooltip,
     useRestoreFocusSource,
+    NavCategory,
+    NavCategoryItem,
+    NavSubItem,
+    NavSubItemGroup,
+    Menu,
+    MenuTrigger,
+    MenuPopover,
+    MenuList,
+    MenuItem,
     type NavDrawerProps,
 } from "@fluentui/react-components";
 import {
@@ -30,6 +39,7 @@ export interface NavItemType {
     path: string;
     icon: React.ReactElement;
     permission?: Permission;
+    subItems?: Omit<NavItemType, "subItems">[];
 }
 
 export interface NavSectionType {
@@ -76,12 +86,42 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
     const restoreFocusSourceAttributes = useRestoreFocusSource();
 
 
-    const navItems = useMemo(() => nav.flatMap((section) => section.items), [nav]);
+    const navItems = useMemo(() => {
+        return nav.flatMap((section) => {
+            const items: NavItemType[] = [];
+            for (const item of section.items) {
+                items.push(item);
+                if (item.subItems) {
+                    items.push(...item.subItems);
+                }
+            }
+            return items;
+        });
+    }, [nav]);
 
     const selectedValue = useMemo(() => {
         const item = navItems.find((navItem) => location.pathname.startsWith(navItem.path));
         return item?.id ?? startnav;
     }, [location.pathname, navItems, startnav]);
+
+    const selectedCategoryValue = useMemo(() => {
+        for (const section of nav) {
+            for (const item of section.items) {
+                if (item.subItems?.some((sub) => location.pathname.startsWith(sub.path))) {
+                    return item.id;
+                }
+            }
+        }
+        return undefined;
+    }, [location.pathname, nav]);
+
+    const [openCategories, setOpenCategories] = useState<string[]>([]);
+
+    useEffect(() => {
+        if (selectedCategoryValue && !openCategories.includes(selectedCategoryValue)) {
+            setOpenCategories((prev) => [...prev, selectedCategoryValue]);
+        }
+    }, [selectedCategoryValue]);
 
     useEffect(() => {
         const mediaQuery = globalThis.matchMedia(`(max-width: ${MOBILE_SIDEBAR_BREAKPOINT}px)`);
@@ -110,11 +150,23 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
         }
     };
 
+    const handleCategoryToggle = (_: unknown, data: Parameters<NonNullable<NavDrawerProps["onNavCategoryItemToggle"]>>[1]) => {
+        const categoryValue = data.categoryValue as string;
+        setOpenCategories((prev) =>
+            prev.includes(categoryValue)
+                ? prev.filter((c) => c !== categoryValue)
+                : [...prev, categoryValue]
+        );
+    };
+
     const renderNav = () => (
         <NavDrawer
             open
             type="inline"
             selectedValue={selectedValue}
+            selectedCategoryValue={selectedCategoryValue}
+            openCategories={openCategories}
+            onNavCategoryItemToggle={handleCategoryToggle}
             onNavItemSelect={handleDrawerItemSelect}
             className={`${classNamePrefix}__nav`}
             style={{ backgroundColor: "var(--colorNeutralBackground1)" }}
@@ -123,11 +175,29 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                 {nav.map((section) => (
                     <div key={section.title}>
                         <NavSectionHeader>{section.title}</NavSectionHeader>
-                        {section.items.map((item) => (
-                            <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
-                                {item.label}
-                            </NavItem>
-                        ))}
+                        {section.items.map((item) => {
+                            if (item.subItems && item.subItems.length > 0) {
+                                return (
+                                    <NavCategory key={item.id} value={item.id}>
+                                        <NavCategoryItem icon={item.icon} className="admin-sidebar__navItem">
+                                            {item.label}
+                                        </NavCategoryItem>
+                                        <NavSubItemGroup>
+                                            {item.subItems.map((subItem) => (
+                                                <NavSubItem key={subItem.id} value={subItem.id} icon={subItem.icon} className="admin-sidebar__navItem">
+                                                    {subItem.label}
+                                                </NavSubItem>
+                                            ))}
+                                        </NavSubItemGroup>
+                                    </NavCategory>
+                                );
+                            }
+                            return (
+                                <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
+                                    {item.label}
+                                </NavItem>
+                            );
+                        })}
                     </div>
                 ))}
             </NavDrawerBody>
@@ -164,6 +234,9 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                     open
                     type="inline"
                     selectedValue={selectedValue}
+                    selectedCategoryValue={selectedCategoryValue}
+                    openCategories={openCategories}
+                    onNavCategoryItemToggle={handleCategoryToggle}
                     onNavItemSelect={handleDrawerItemSelect}
                     className={`${classNamePrefix}__nav admin-sidebar__nav--mobile`}
                     style={{ backgroundColor: "var(--colorNeutralBackground1)" }}
@@ -172,11 +245,29 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                         {nav.map((section) => (
                             <div key={section.title}>
                                 <NavSectionHeader>{section.title}</NavSectionHeader>
-                                {section.items.map((item) => (
-                                    <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
-                                        {item.label}
-                                    </NavItem>
-                                ))}
+                                {section.items.map((item) => {
+                                    if (item.subItems && item.subItems.length > 0) {
+                                        return (
+                                            <NavCategory key={item.id} value={item.id}>
+                                                <NavCategoryItem icon={item.icon} className="admin-sidebar__navItem">
+                                                    {item.label}
+                                                </NavCategoryItem>
+                                                <NavSubItemGroup>
+                                                    {item.subItems.map((subItem) => (
+                                                        <NavSubItem key={subItem.id} value={subItem.id} icon={subItem.icon} className="admin-sidebar__navItem">
+                                                            {subItem.label}
+                                                        </NavSubItem>
+                                                    ))}
+                                                </NavSubItemGroup>
+                                            </NavCategory>
+                                        );
+                                    }
+                                    return (
+                                        <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
+                                            {item.label}
+                                        </NavItem>
+                                    );
+                                })}
                             </div>
                         ))}
                     </NavDrawerBody>
@@ -224,17 +315,54 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                 <div className={`${classNamePrefix}__desktop-nav`}>
                     {collapsed ? (
                         <nav className="admin-sidebar__collapsed-nav pt-0">
-                            {navItems.map((item) => (
-                                <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
-                                    <Button
-                                        appearance={selectedValue === item.id ? "primary" : "subtle"}
-                                        size="large"
-                                        icon={item.icon}
-                                        onClick={() => handleNavigate(item.path)}
-                                        className="admin-sidebar__icon-btn"
-                                    />
-                                </Tooltip>
-                            ))}
+                            {nav.flatMap((section) => section.items).map((item) => {
+                                const hasSubItems = item.subItems && item.subItems.length > 0;
+                                const isSubActive = hasSubItems && (item.subItems.some((sub) => selectedValue === sub.id) || selectedCategoryValue === item.id);
+                                const isActive = selectedValue === item.id || isSubActive;
+
+                                if (hasSubItems) {
+                                    return (
+                                        <Menu key={item.id} positioning="after-start">
+                                            <MenuTrigger disableButtonEnhancement>
+                                                <Tooltip content={item.label} relationship="label" positioning="after">
+                                                    <Button
+                                                        appearance={isActive ? "primary" : "subtle"}
+                                                        size="large"
+                                                        icon={item.icon}
+                                                        className="admin-sidebar__icon-btn"
+                                                    />
+                                                </Tooltip>
+                                            </MenuTrigger>
+                                            <MenuPopover>
+                                                <MenuList>
+                                                    {item.subItems!.map((subItem) => (
+                                                        <MenuItem
+                                                            key={subItem.id}
+                                                            icon={subItem.icon}
+                                                            onClick={() => handleNavigate(subItem.path)}
+                                                            className={`admin-sidebar__navItem ${selectedValue === subItem.id ? "admin-sidebar__navItem--selected" : ""}`}
+                                                        >
+                                                            {subItem.label}
+                                                        </MenuItem>
+                                                    ))}
+                                                </MenuList>
+                                            </MenuPopover>
+                                        </Menu>
+                                    );
+                                }
+
+                                return (
+                                    <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
+                                        <Button
+                                            appearance={selectedValue === item.id ? "primary" : "subtle"}
+                                            size="large"
+                                            icon={item.icon}
+                                            onClick={() => handleNavigate(item.path)}
+                                            className="admin-sidebar__icon-btn"
+                                        />
+                                    </Tooltip>
+                                );
+                            })}
                         </nav>
                     ) : (
                         renderNav()

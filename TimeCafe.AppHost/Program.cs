@@ -143,13 +143,6 @@ userProfileApi
     .WithEnvironment("Sightengine__ApiSecret", builder.Configuration["SIGHTENGINE_API_SECRET"])
     .WaitFor(userProfileDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
 
-// Venue Service
-var venueApi = builder.AddProject<Projects.Venue_TimeCafe_API>("venue-api")
-    .WithHttpEndpoint(name: "api")
-    .WithHttpHealthCheck("/health", endpointName: "api");
-ApplyTimeCafeReferences(venueApi, venueDb, rabbitUser, rabbitPass, authApi);
-venueApi.WaitFor(venueDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
-
 // Billing Service
 var billingApi = builder.AddProject<Projects.Billing_TimeCafe_API>("billing-api")
     .WithHttpEndpoint(name: "api")
@@ -160,6 +153,16 @@ billingApi
     .WithEnvironment("Stripe__SecretKey", builder.Configuration["STRIPE_SECRET_KEY"])
     .WithEnvironment("Stripe__WebhookSecret", builder.Configuration["STRIPE_WEBHOOK_SECRET"])
     .WaitFor(billingDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
+
+// Venue Service
+var venueApi = builder.AddProject<Projects.Venue_TimeCafe_API>("venue-api")
+    .WithHttpEndpoint(name: "api")
+    .WithHttpHealthCheck("/health", endpointName: "api");
+ApplyTimeCafeReferences(venueApi, venueDb, rabbitUser, rabbitPass, authApi);
+venueApi
+    .WithReference(billingApi)
+    .WithEnvironment("Services__Billing__BaseUrl", billingApi.GetEndpoint("api"))
+    .WaitFor(venueDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq).WaitFor(billingApi);
 
 // Audit Service
 var auditApi = builder.AddProject<Projects.Audit_TimeCafe_API>("audit-api")

@@ -17,3 +17,7 @@ global using Serilog;
 global using Yarp.ReverseProxy.Transforms;
 global using YarpProxy.Extensions;
 global using BuildingBlocks.Permissions.Grpc;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Routing;
+global using Microsoft.Extensions.Configuration;

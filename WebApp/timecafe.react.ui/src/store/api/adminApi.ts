@@ -209,6 +209,10 @@ export const adminApi = createApi({
             query: (id) => `/audit/logs/${id}`,
             providesTags: (_result, _error, id) => [{type: "AuditLogs", id}],
         }),
+
+        getSystemStatus: builder.query<Record<string, "Online" | "Offline">, void>({
+            query: () => "/api/admin/system/status",
+        }),
     }),
 });
 
@@ -231,4 +235,5 @@ export const {
     useGetAdminPaymentsQuery,
     useGetAuditLogsQuery,
     useGetAuditLogByIdQuery,
+    useGetSystemStatusQuery,
 } = adminApi;

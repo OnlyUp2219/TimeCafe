@@ -46,6 +46,8 @@ import { PendingVisitsPage } from "@pages/admin/PendingVisitsPage";
 import { AdminLayout } from "@layouts/AdminLayout/AdminLayout";
 import { DevDebugPage } from "@pages/admin/DevDebugPage";
 import { AuditLogsPage } from "@pages/admin/AuditLogsPage";
+import { GrafanaPage } from "@pages/admin/GrafanaPage";
+import { KibanaPage } from "@pages/admin/KibanaPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -127,6 +129,8 @@ const AppRoutes = () => {
                     <Route path="/admin/users/:id/roles" element={<UserRolesPage />} />
                     <Route path="/admin/dev-debug" element={<DevDebugPage />} />
                     <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+                    <Route path="/admin/monitoring/grafana" element={<GrafanaPage />} />
+                    <Route path="/admin/monitoring/kibana" element={<KibanaPage />} />
                 </Route>
                 <Route path="/dev/jwt-test" element={<JwtCrossServiceTestPage />} />
 

@@ -26,6 +26,20 @@ import {ApproveVisitDialog} from "@components/Admin/ApproveVisitDialog/ApproveVi
 import {usePagination} from "@hooks/usePagination";
 import {NO_DATA} from "@shared/const/placeholders";
 import {PageLoader} from "@components/PageLoader/PageLoader";
+import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+
+const UserCell = ({ userId }: { userId: string }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
+    const userFullName = profile && (profile.firstName || profile.lastName)
+        ? [profile.firstName, profile.middleName, profile.lastName].filter(Boolean).join(" ")
+        : "Загрузка...";
+    
+    return (
+        <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
+            <Body2 className="text-xs">{profile ? userFullName : `${userId.slice(0, 8)}…`}</Body2>
+        </TableCellLayout>
+    );
+};
 
 
 const formatDateTime = (iso: string | null) => {
@@ -122,11 +136,7 @@ export const PendingVisitsPage = () => {
             columnId: "userId",
             compare: (a, b) => a.userId.localeCompare(b.userId),
             renderHeaderCell: () => "Пользователь",
-            renderCell: (visit) => (
-                <TableCellLayout truncate>
-                    <Body2 className="font-mono text-xs">{visit.userId.slice(0, 8)}…</Body2>
-                </TableCellLayout>
-            ),
+            renderCell: (visit) => <UserCell userId={visit.userId} />,
         }),
         createTableColumn<VisitWithTariff>({
             columnId: "actions",
