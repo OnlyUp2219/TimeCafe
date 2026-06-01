@@ -30,6 +30,8 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         context.Tariffs.RemoveRange(context.Tariffs);
         context.Promotions.RemoveRange(context.Promotions);
         context.Visits.RemoveRange(context.Visits);
+        context.Resources.RemoveRange(context.Resources);
+        context.ResourceGroups.RemoveRange(context.ResourceGroups);
         await context.SaveChangesAsync();
 
         var hybridCache = scope.ServiceProvider.GetRequiredService<HybridCache>();
@@ -37,6 +39,8 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         await hybridCache.RemoveByTagAsync(CacheTags.Themes);
         await hybridCache.RemoveByTagAsync(CacheTags.Promotions);
         await hybridCache.RemoveByTagAsync(CacheTags.Visits);
+        await hybridCache.RemoveByTagAsync(CacheTags.Resources);
+        await hybridCache.RemoveByTagAsync(CacheTags.ResourceGroups);
 
         await hybridCache.RemoveAsync(CacheKeys.Tariff_All);
         await hybridCache.RemoveAsync(CacheKeys.Tariff_Active);
@@ -44,6 +48,8 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         await hybridCache.RemoveAsync(CacheKeys.Visit_Active);
         await hybridCache.RemoveAsync(CacheKeys.Promotion_All);
         await hybridCache.RemoveAsync(CacheKeys.Promotion_Active);
+        await hybridCache.RemoveAsync(CacheKeys.Resource_All);
+        await hybridCache.RemoveAsync(CacheKeys.ResourceGroup_All);
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute, bool isActive = true)
@@ -112,7 +118,7 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         return theme;
     }
 
-    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null, bool isActive = true, VisitStatus? status = null)
+    protected async Task<Visit> SeedVisitAsync(Guid? userId = null, Guid? tariffId = null, bool isActive = true, VisitStatus? status = null, Guid? resourceId = null)
     {
         using var scope = Factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -125,8 +131,9 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         var visitStatus = status ?? (isActive ? VisitStatus.Active : VisitStatus.Completed);
         var visit = new Visit
         {
-            UserId = userId ?? Guid.NewGuid(),
+            UserId = userId,
             TariffId = tariff.TariffId,
+            ResourceId = resourceId,
             EntryTime = DateTimeOffset.UtcNow,
             Status = visitStatus,
             ExitTime = visitStatus == VisitStatus.Active || visitStatus == VisitStatus.Pending ? null : DateTimeOffset.UtcNow.AddMinutes(30),
@@ -136,6 +143,30 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         context.Visits.Add(visit);
         await context.SaveChangesAsync();
         return visit;
+    }
+
+    protected async Task<ResourceGroup> SeedResourceGroupAsync(string name = "Test Group", int capacity = 10, string? description = null, bool isActive = true)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var group = ResourceGroup.Create(null, name, description, capacity, isActive);
+
+        context.ResourceGroups.Add(group);
+        await context.SaveChangesAsync();
+        return group;
+    }
+
+    protected async Task<Resource> SeedResourceAsync(Guid resourceGroupId, string name = "Test Resource", int capacity = 4, bool isActive = true)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var resource = Resource.Create(null, resourceGroupId, name, capacity, isActive);
+
+        context.Resources.Add(resource);
+        await context.SaveChangesAsync();
+        return resource;
     }
 }
 

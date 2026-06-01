@@ -26,5 +26,13 @@ public static class CacheKeys
     public static string Promotion_Page(int page, int pageSize) => $"venue:promotion:page:p{page}:s{pageSize}";
 
     public static string UserLoyalty_ByUserId(Guid userId) => $"venue:userloyalty:user:{userId}";
+
+    public const string Resource_All = "venue:resource:all";
+    public static string Resource_ById(Guid id) => $"venue:resource:id:{id}";
+    public static string Resource_Page(int page, int pageSize) => $"venue:resource:page:p{page}:s{pageSize}";
+
+    public const string ResourceGroup_All = "venue:resourcegroup:all";
+    public static string ResourceGroup_ById(Guid id) => $"venue:resourcegroup:id:{id}";
+    public static string ResourceGroup_Page(int page, int pageSize) => $"venue:resourcegroup:page:p{page}:s{pageSize}";
 }
 

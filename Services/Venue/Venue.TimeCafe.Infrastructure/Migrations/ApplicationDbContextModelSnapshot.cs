@@ -246,6 +246,63 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                     b.ToTable("Promotions", (string)null);
                 });
 
+            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Resource", b =>
+                {
+                    b.Property<Guid>("ResourceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("ResourceGroupId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ResourceId");
+
+                    b.HasIndex("ResourceGroupId");
+
+                    b.ToTable("Resources", (string)null);
+                });
+
+            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.ResourceGroup", b =>
+                {
+                    b.Property<Guid>("ResourceGroupId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("ResourceGroupId");
+
+                    b.ToTable("ResourceGroups", (string)null);
+                });
+
             modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Tariff", b =>
                 {
                     b.Property<Guid>("TariffId")
@@ -396,9 +453,25 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("ExitTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("GuestsCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<bool>("IsFinishRequested")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<int?>("PlannedMinutes")
+                        .HasColumnType("integer");
+
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
+
+                    b.Property<Guid?>("ResourceId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Status")
                         .ValueGeneratedOnAdd()
@@ -408,12 +481,14 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                     b.Property<Guid>("TariffId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid?>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("VisitId");
 
                     b.HasIndex("EntryTime");
+
+                    b.HasIndex("ResourceId");
 
                     b.HasIndex("Status");
 
@@ -421,7 +496,7 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
                     b.HasIndex("UserId")
                         .IsUnique()
-                        .HasFilter("\"Status\" = 3");
+                        .HasFilter("\"Status\" = 3 AND \"UserId\" IS NOT NULL");
 
                     b.HasIndex("Status", "EntryTime");
 
@@ -444,6 +519,15 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
                         .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 
+            modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Resource", b =>
+                {
+                    b.HasOne("Venue.TimeCafe.Domain.Models.ResourceGroup", null)
+                        .WithMany()
+                        .HasForeignKey("ResourceGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Tariff", b =>
                 {
                     b.HasOne("Venue.TimeCafe.Domain.Models.Theme", null)
@@ -454,6 +538,11 @@ namespace Venue.TimeCafe.Infrastructure.Migrations
 
             modelBuilder.Entity("Venue.TimeCafe.Domain.Models.Visit", b =>
                 {
+                    b.HasOne("Venue.TimeCafe.Domain.Models.Resource", null)
+                        .WithMany()
+                        .HasForeignKey("ResourceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Venue.TimeCafe.Domain.Models.Tariff", null)
                         .WithMany("Visits")
                         .HasForeignKey("TariffId")

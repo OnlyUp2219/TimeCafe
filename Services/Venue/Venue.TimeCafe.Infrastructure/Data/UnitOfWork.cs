@@ -10,6 +10,8 @@ public class UnitOfWork(ApplicationDbContext context, HybridCache cache) : IUnit
     public IThemeRepository Themes => field ??= new ThemeRepository(_context, _cache);
     public IVisitRepository Visits => field ??= new VisitRepository(_context, _cache);
     public IUserLoyaltyRepository UserLoyalties => field ??= new UserLoyaltyRepository(_context, _cache);
+    public IResourceRepository Resources => field ??= new ResourceRepository(_context, _cache);
+    public IResourceGroupRepository ResourceGroups => field ??= new ResourceGroupRepository(_context, _cache);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await _context.SaveChangesAsync(cancellationToken);

@@ -3,7 +3,7 @@ namespace Venue.TimeCafe.Application.DTOs;
 public class VisitWithTariffDto
 {
     public Guid VisitId { get; set; }
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public Guid TariffId { get; set; }
     public DateTimeOffset EntryTime { get; set; }
     public DateTimeOffset? ExitTime { get; set; }
@@ -19,5 +19,7 @@ public class VisitWithTariffDto
     public BillingType TariffBillingType { get; set; }
     public int? TariffMinSessionMinutes { get; set; }
     public string? TariffRoundingRule { get; set; }
+    public int? PlannedMinutes { get; set; }
+    public int GuestsCount { get; set; }
 }
 

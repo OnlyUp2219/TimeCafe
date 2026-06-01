@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-    Badge,
     Body1,
     Body2,
     Button,
@@ -11,11 +10,10 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
-    Spinner,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Eye20Regular, Clock20Regular } from "@fluentui/react-icons";
-import { useGetVisitsPageQuery } from "@store/api/venueApi";
+import { useGetVisitsPageQuery, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
@@ -26,6 +24,10 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
+import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { useState } from "react";
+import { VisitStatus } from "@app-types/visit";
 
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { PageLoader } from "@components/PageLoader/PageLoader";
@@ -39,22 +41,84 @@ const formatDateTime = (iso: string | null) => {
     return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 };
 
-const formatCost = (cost: number | null) => {
-    if (cost == null) return NO_DATA;
+const formatCost = (cost: number | null, status: VisitStatus) => {
+    if (status === VisitStatus.Cancelled || status === VisitStatus.Rejected) {
+        return `0.00 ${CURRENCY_SYMBOL}`;
+    }
+    if (cost == null) return "—";
     return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
 };
 
 import { usePagination } from "@hooks/usePagination";
+
+import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";
+
+const UserCell = ({ userId }: { userId: string | null }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
+    if (!userId) {
+        return (
+            <TableCellLayout truncate title="Анонимный гость (Walk-in)">
+                <Body2 className="text-xs text-[var(--colorNeutralForeground3)]">Анонимный гость (Walk-in)</Body2>
+            </TableCellLayout>
+        );
+    }
+    const userFullName = profile && (profile.firstName || profile.lastName)
+        ? [profile.lastName, profile.firstName, profile.middleName].filter(Boolean).join(" ")
+        : "Загрузка...";
+
+    return (
+        <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
+            <Body2 className="text-xs">{profile ? userFullName : `${userId.slice(0, 8)}…`}</Body2>
+        </TableCellLayout>
+    );
+};
 
 export const VisitsPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminVisits");
-    const { data, isLoading, error } = useGetVisitsPageQuery(
+
+    const [selectedVisit, setSelectedVisit] = useState<VisitWithTariff | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [walkInOpen, setWalkInOpen] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
+
+    const [approveVisit, { isLoading: approving }] = useApproveVisitMutation();
+    const [rejectVisit, { isLoading: rejecting }] = useRejectVisitMutation();
+
+    const { data, isLoading, error, refetch } = useGetVisitsPageQuery(
         { page: currentPage, pageSize },
         { refetchOnMountOrArgChange: true }
     );
+
+    const handleApprove = async (visitId: string) => {
+        setActionError(null);
+        try {
+            await approveVisit(visitId).unwrap();
+            setDialogOpen(false);
+            void refetch();
+        } catch (err) {
+            setActionError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось подтвердить визит");
+        }
+    };
+
+    const handleReject = async (visitId: string, reason: string) => {
+        setActionError(null);
+        try {
+            await rejectVisit({ visitId, reason }).unwrap();
+            setDialogOpen(false);
+            void refetch();
+        } catch (err) {
+            setActionError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось отклонить визит");
+        }
+    };
+
+    const openDialog = (visit: VisitWithTariff) => {
+        setSelectedVisit(visit);
+        setActionError(null);
+        setDialogOpen(true);
+    };
     const visits = data?.items ?? [];
     const totalCount = data?.metadata?.totalCount ?? 0;
     const totalPages = data?.metadata?.totalPages ?? 1;
@@ -104,7 +168,9 @@ export const VisitsPage = () => {
                 compare: (a, b) => new Date(a.exitTime ?? "").getTime() - new Date(b.exitTime ?? "").getTime(),
                 renderHeaderCell: () => "Выход",
                 renderCell: (visit) => (
-                    <TableCellLayout truncate>{formatDateTime(visit.exitTime)}</TableCellLayout>
+                    <TableCellLayout truncate>
+                        {visit.status === VisitStatus.Completed ? formatDateTime(visit.exitTime) : "—"}
+                    </TableCellLayout>
                 ),
             }),
             createTableColumn<VisitWithTariff>({
@@ -112,18 +178,14 @@ export const VisitsPage = () => {
                 compare: (a, b) => (a.calculatedCost ?? 0) - (b.calculatedCost ?? 0),
                 renderHeaderCell: () => "Стоимость",
                 renderCell: (visit) => (
-                    <TableCellLayout truncate>{formatCost(visit.calculatedCost)}</TableCellLayout>
+                    <TableCellLayout truncate>{formatCost(visit.calculatedCost, visit.status)}</TableCellLayout>
                 ),
             }),
             createTableColumn<VisitWithTariff>({
                 columnId: "userId",
-                compare: (a, b) => a.userId.localeCompare(b.userId),
+                compare: (a, b) => (a.userId ?? "").localeCompare(b.userId ?? ""),
                 renderHeaderCell: () => "Пользователь",
-                renderCell: (visit) => (
-                    <TableCellLayout truncate>
-                        <Body2 className="font-mono text-xs">{visit.userId.slice(0, 8)}…</Body2>
-                    </TableCellLayout>
-                ),
+                renderCell: (visit) => <UserCell userId={visit.userId} />,
             }),
             createTableColumn<VisitWithTariff>({
                 columnId: "actions",
@@ -131,7 +193,7 @@ export const VisitsPage = () => {
                 renderHeaderCell: () => "Действия",
                 renderCell: (visit) => (
                     <HasPermission can={Permissions.VenueVisitRead}>
-                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => navigate(`/admin/visits/${visit.visitId}`)}>
+                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => openDialog(visit)}>
                             Открыть
                         </Button>
                     </HasPermission>
@@ -159,18 +221,36 @@ export const VisitsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Визиты</Title2>
-                    <Body2 block>{totalCount} визитов</Body2>
+                    <div className="flex">
+                        <Body2>{totalCount} визитов</Body2>
+                    </div>
                 </div>
-                <HasPermission can={Permissions.VenueVisitViewPending}>
-                    <Button
-                        appearance="outline"
-                        icon={<Clock20Regular />}
-                        onClick={() => navigate("/admin/visits/pending")}
-                    >
-                        Ожидают подтверждения
-                    </Button>
-                </HasPermission>
+                <div className="flex gap-2">
+                    <HasPermission can={Permissions.VenueVisitCreate}>
+                        <Button
+                            appearance="primary"
+                            onClick={() => setWalkInOpen(true)}
+                        >
+                            Быстрая посадка (Walk-in)
+                        </Button>
+                    </HasPermission>
+                    <HasPermission can={Permissions.VenueVisitViewPending}>
+                        <Button
+                            appearance="outline"
+                            icon={<Clock20Regular />}
+                            onClick={() => navigate("/admin/visits/pending")}
+                        >
+                            Ожидают подтверждения
+                        </Button>
+                    </HasPermission>
+                </div>
             </div>
+
+            {actionError && (
+                <MessageBar intent="error" className="mb-4">
+                    <MessageBarBody>{actionError}</MessageBarBody>
+                </MessageBar>
+            )}
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable
@@ -193,6 +273,20 @@ export const VisitsPage = () => {
                     totalCount={totalCount}
                 />
             </div>
+            <ApproveVisitDialog
+                open={dialogOpen}
+                visit={selectedVisit}
+                onOpenChange={setDialogOpen}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                approving={approving}
+                rejecting={rejecting}
+            />
+            <WalkInVisitDialog
+                open={walkInOpen}
+                onOpenChange={setWalkInOpen}
+                onSuccess={() => void refetch()}
+            />
         </div>
     );
 };

@@ -8,3 +8,4 @@ global using Billing.TimeCafe.Domain.Models;
 global using Billing.TimeCafe.Domain.Errors;
 global using FluentResults;
 global using BuildingBlocks.Contracts;
+global using Invoice = Billing.TimeCafe.Domain.Models.Invoice;

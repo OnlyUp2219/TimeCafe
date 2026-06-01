@@ -5,4 +5,6 @@ export type VisitParamsCardProps = {
     durationMinutes: number;
     setDurationMinutes: (value: number) => void;
     presets: number[];
+    guestsCount: number;
+    setGuestsCount: (value: number) => void;
 };

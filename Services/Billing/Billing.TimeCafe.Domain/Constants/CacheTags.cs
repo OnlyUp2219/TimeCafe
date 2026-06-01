@@ -12,4 +12,8 @@ public static class CacheTags
     public const string Payments = "payments";
     public static string Payment(Guid paymentId) => $"payment:{paymentId}";
     public static string PaymentByUser(Guid userId) => $"payment:user:{userId}";
+
+    public const string Invoices = "invoices";
+    public static string Invoice(Guid invoiceId) => $"invoice:{invoiceId}";
+    public static string InvoiceByUser(Guid userId) => $"invoice:user:{userId}";
 }

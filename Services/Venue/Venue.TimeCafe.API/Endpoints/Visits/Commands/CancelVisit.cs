@@ -9,7 +9,10 @@ public class CancelVisit : ICarterModule
             Guid visitId,
             ClaimsPrincipal principal) =>
         {
-            var userId = Guid.Parse(principal.FindFirstValue("sub")!);
+            var userIdStr = principal.FindFirstValue("sub")
+                ?? principal.FindFirstValue(ClaimTypes.NameIdentifier)
+                ?? principal.FindFirstValue("nameid");
+            var userId = Guid.Parse(userIdStr!);
             var command = new CancelVisitCommand(visitId, userId);
             var result = await sender.Send(command);
             return result.ToHttpResult(() => TypedResults.Ok());

@@ -11,9 +11,10 @@ public class CancelVisitCommandValidator : AbstractValidator<CancelVisitCommand>
     }
 }
 
-public class CancelVisitCommandHandler(IUnitOfWork uow) : ICommandHandler<CancelVisitCommand>
+public class CancelVisitCommandHandler(IUnitOfWork uow, IPublisher publisher) : ICommandHandler<CancelVisitCommand>
 {
     private readonly IUnitOfWork _uow = uow;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result> Handle(CancelVisitCommand request, CancellationToken cancellationToken = default)
     {
@@ -35,6 +36,7 @@ public class CancelVisitCommandHandler(IUnitOfWork uow) : ICommandHandler<Cancel
                 return Result.Fail(new VisitUpdateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);
 
             return Result.Ok();
         }

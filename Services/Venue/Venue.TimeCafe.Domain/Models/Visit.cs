@@ -13,8 +13,9 @@ public class Visit
     }
 
     public Guid VisitId { get; set; }
-    public Guid UserId { get; set; }
+    public Guid? UserId { get; set; }
     public Guid TariffId { get; set; }
+    public Guid? ResourceId { get; set; }
     public DateTimeOffset EntryTime { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ExitTime { get; set; }
     public decimal? CalculatedCost { get; set; }
@@ -22,34 +23,44 @@ public class Visit
     public Guid? ApprovedByUserId { get; set; }
     public DateTimeOffset? ApprovedAt { get; set; }
     public string? RejectionReason { get; set; }
+    public int? PlannedMinutes { get; set; }
+    public int GuestsCount { get; set; } = 1;
+    public bool IsFinishRequested { get; set; } = false;
 
-    public static Visit Create(Guid? visitId, Guid userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, DateTimeOffset? exitTime = null, decimal? calculatedCost = null)
+    public static Visit Create(Guid? visitId, Guid? userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, Guid? resourceId = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, int? plannedMinutes = null, int guestsCount = 1)
     {
         return new Visit
         {
             VisitId = visitId ?? Guid.NewGuid(),
             UserId = userId,
             TariffId = tariffId,
+            ResourceId = resourceId,
             EntryTime = entryTime,
             ExitTime = exitTime,
             CalculatedCost = calculatedCost,
-            Status = status
+            Status = status,
+            PlannedMinutes = plannedMinutes,
+            GuestsCount = guestsCount
         };
     }
 
-    public static Visit Update(Visit existingVisit, Guid? userId = null, Guid? tariffId = null, DateTimeOffset? entryTime = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, VisitStatus? status = null, Guid? approvedByUserId = null, DateTimeOffset? approvedAt = null, string? rejectionReason = null)
+    public static Visit Update(Visit existingVisit, Guid? userId = null, Guid? tariffId = null, Guid? resourceId = null, DateTimeOffset? entryTime = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, VisitStatus? status = null, Guid? approvedByUserId = null, DateTimeOffset? approvedAt = null, string? rejectionReason = null, int? plannedMinutes = null, int? guestsCount = null, bool? isFinishRequested = null)
     {
         return new Visit(existingVisit.VisitId)
         {
             UserId = userId ?? existingVisit.UserId,
             TariffId = tariffId ?? existingVisit.TariffId,
+            ResourceId = resourceId ?? existingVisit.ResourceId,
             EntryTime = entryTime ?? existingVisit.EntryTime,
             ExitTime = exitTime ?? existingVisit.ExitTime,
             CalculatedCost = calculatedCost ?? existingVisit.CalculatedCost,
             Status = status ?? existingVisit.Status,
             ApprovedByUserId = approvedByUserId ?? existingVisit.ApprovedByUserId,
             ApprovedAt = approvedAt ?? existingVisit.ApprovedAt,
-            RejectionReason = rejectionReason ?? existingVisit.RejectionReason
+            RejectionReason = rejectionReason ?? existingVisit.RejectionReason,
+            PlannedMinutes = plannedMinutes ?? existingVisit.PlannedMinutes,
+            GuestsCount = guestsCount ?? existingVisit.GuestsCount,
+            IsFinishRequested = isFinishRequested ?? existingVisit.IsFinishRequested
         };
     }
 
@@ -80,6 +91,35 @@ public class Visit
             return FluentResults.Result.Fail(new Errors.VisitCannotBeCancelledError());
 
         Status = VisitStatus.Cancelled;
+        return FluentResults.Result.Ok();
+    }
+
+    public FluentResults.Result RequestFinish()
+    {
+        if (Status != VisitStatus.Active)
+            return FluentResults.Result.Fail(new Errors.VisitNotActiveError());
+
+        IsFinishRequested = true;
+        return FluentResults.Result.Ok();
+    }
+
+    public FluentResults.Result FixateTime(decimal calculatedCost, DateTimeOffset exitTime)
+    {
+        if (Status != VisitStatus.Active)
+            return FluentResults.Result.Fail(new Errors.VisitNotActiveError());
+
+        Status = VisitStatus.WaitingForPayment;
+        ExitTime = exitTime;
+        CalculatedCost = calculatedCost;
+        return FluentResults.Result.Ok();
+    }
+
+    public FluentResults.Result Complete()
+    {
+        if (Status != VisitStatus.WaitingForPayment)
+            return FluentResults.Result.Fail(new Errors.VisitNotActiveError());
+
+        Status = VisitStatus.Completed;
         return FluentResults.Result.Ok();
     }
 

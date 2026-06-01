@@ -60,7 +60,9 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             {
                 UserId = request.UserId,
                 TariffId = request.TariffId,
-                EntryTime = DateTimeOffset.UtcNow
+                EntryTime = DateTimeOffset.UtcNow,
+                PlannedMinutes = request.PlannedMinutes,
+                GuestsCount = request.GuestsCount
             };
 
             var created = await _uow.Visits.CreateAsync(visit, cancellationToken);

@@ -14,8 +14,8 @@ public class GetBalancesPageEndpoint : ICarterModule
 
             return result.ToHttpResult(data => TypedResults.Ok(new
             {
-                balances = data.Balances,
-                pagination = new
+                items = data.Balances,
+                metadata = new
                 {
                     currentPage = page <= 0 ? 1 : page,
                     pageSize = pageSize <= 0 ? 20 : pageSize,

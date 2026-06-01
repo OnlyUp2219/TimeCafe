@@ -22,4 +22,10 @@ public static class CacheKeys
         userId.HasValue ? $"billing:payment:page:p{page}:s{pageSize}:u{userId}" : $"billing:payment:page:p{page}:s{pageSize}";
 
     public const string Debtors_All = "billing:debtors:all";
+
+    public const string Invoice_All = "billing:invoice:all";
+    public static string Invoice_ById(Guid id) => $"billing:invoice:id:{id}";
+    public static string Invoice_ByVisitId(Guid visitId) => $"billing:invoice:visit:{visitId}";
+    public static string Invoice_Page(int page, int pageSize, Guid? userId = null) =>
+        userId.HasValue ? $"billing:invoice:page:p{page}:s{pageSize}:u{userId}" : $"billing:invoice:page:p{page}:s{pageSize}";
 }

@@ -17,6 +17,10 @@ export const Permissions = {
     BillingTransactionRead: "billing.transaction.read",
     BillingPaymentInitialize: "billing.payment.initialize",
     BillingPaymentHistoryRead: "billing.payment.read",
+    BillingInvoiceRead: "billing.invoice.read",
+    BillingInvoicePay: "billing.invoice.pay",
+    BillingInvoiceAdminRead: "billing.invoice.admin.read",
+    BillingInvoiceAdminWrite: "billing.invoice.admin.write",
 
     VenueTariffCreate: "venue.tariff.create",
     VenueTariffRead: "venue.tariff.read",
@@ -43,6 +47,10 @@ export const Permissions = {
     VenueVisitReject: "visit.reject",
     VenueVisitViewPending: "visit.view.pending",
     VenueLoyaltyRead: "venue.loyalty.read",
+    VenueResourceCreate: "venue.resource.create",
+    VenueResourceRead: "venue.resource.read",
+    VenueResourceUpdate: "venue.resource.update",
+    VenueResourceDelete: "venue.resource.delete",
 
     AccountSelfRead: "auth.account.self.read",
     AccountAdminRead: "auth.account.admin.read",

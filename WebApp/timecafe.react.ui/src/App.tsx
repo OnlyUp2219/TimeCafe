@@ -46,6 +46,7 @@ import { PendingVisitsPage } from "@pages/admin/PendingVisitsPage";
 import { AdminLayout } from "@layouts/AdminLayout/AdminLayout";
 import { DevDebugPage } from "@pages/admin/DevDebugPage";
 import { AuditLogsPage } from "@pages/admin/AuditLogsPage";
+import { ResourcesPage } from "@pages/admin/ResourcesPage";
 import { GrafanaPage } from "@pages/admin/GrafanaPage";
 import { KibanaPage } from "@pages/admin/KibanaPage";
 
@@ -119,6 +120,7 @@ const AppRoutes = () => {
                     <Route path="/admin/themes/create" element={<ThemeEditorPage />} />
                     <Route path="/admin/themes/:id/edit" element={<ThemeEditorPage />} />
                     <Route path="/admin/visits" element={<VisitsPage />} />
+                    <Route path="/admin/resources" element={<ResourcesPage />} />
                     <Route path="/admin/visits/:id" element={<VisitDetailPage />} />
                     <Route path="/admin/visits/pending" element={<PendingVisitsPage />} />
                     <Route path="/admin/transactions" element={<TransactionsPage />} />

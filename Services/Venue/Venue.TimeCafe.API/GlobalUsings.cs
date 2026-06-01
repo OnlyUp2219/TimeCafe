@@ -34,4 +34,8 @@ global using Venue.TimeCafe.Domain.Models;
 global using Venue.TimeCafe.Infrastructure;
 global using Venue.TimeCafe.Infrastructure.Data;
 global using Venue.TimeCafe.Infrastructure.HttpHandlers;
+global using Venue.TimeCafe.Application.CQRS.Resources.Commands;
+global using Venue.TimeCafe.Application.CQRS.Resources.Queries;
+global using Venue.TimeCafe.Application.CQRS.ResourceGroups.Commands;
+global using Venue.TimeCafe.Application.CQRS.ResourceGroups.Queries;
 

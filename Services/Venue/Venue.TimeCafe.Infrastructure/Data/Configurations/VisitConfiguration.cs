@@ -9,7 +9,14 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.HasKey(v => v.VisitId);
 
         builder.Property(v => v.UserId)
-            .IsRequired();
+            .IsRequired(false);
+
+        builder.Property(v => v.ResourceId)
+            .IsRequired(false);
+
+        builder.Property(v => v.IsFinishRequested)
+            .IsRequired()
+            .HasDefaultValue(false);
 
         builder.Property(v => v.EntryTime)
             .IsRequired();
@@ -36,10 +43,22 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .HasMaxLength(500)
             .IsRequired(false);
 
+        builder.Property(v => v.PlannedMinutes)
+            .IsRequired(false);
+
+        builder.Property(v => v.GuestsCount)
+            .IsRequired()
+            .HasDefaultValue(1);
+
         builder.HasOne<Tariff>()
             .WithMany(t => t.Visits)
             .HasForeignKey(v => v.TariffId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<Resource>()
+            .WithMany()
+            .HasForeignKey(v => v.ResourceId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(v => v.UserId);
         builder.HasIndex(v => v.Status);
@@ -48,7 +67,7 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.HasIndex(v => new { v.Status, v.EntryTime });
         builder.HasIndex(v => new { v.UserId, v.EntryTime });
         builder.HasIndex(v => v.UserId)
-            .HasFilter("\"Status\" = 3")
+            .HasFilter("\"Status\" = 3 AND \"UserId\" IS NOT NULL")
             .IsUnique();
     }
 }

@@ -7,6 +7,7 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<IBalanceRepository, BalanceRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         services.AddScoped<IBillingTransactionExecutor, BillingTransactionExecutor>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -32,7 +33,7 @@ public static class InfrastructureDependencyInjection
 
     public static void AddBillingMassTransit(this IBusRegistrationConfigurator cfg)
     {
-        cfg.AddConsumer<VisitCompletedEventConsumer>();
+        cfg.AddConsumer<VisitTimerStoppedEventConsumer>();
         cfg.AddConsumer<UserRegisteredEventConsumer>();
         cfg.AddConsumer<VisitApprovedEventConsumer>();
         cfg.AddConsumer<VisitRejectedEventConsumer>();

@@ -3,6 +3,49 @@ import {baseQueryWithReauth} from "@store/api/baseQuery";
 import type {BillingBalance, BillingTransaction} from "@app-types/billing";
 import type {PagedResponse} from "@app-types/pagination";
 
+export interface Invoice {
+    invoiceId: string;
+    userId: string | null;
+    visitId: string;
+    totalAmount: number;
+    status: number; // 1 = Pending, 2 = Paid, 3 = Cancelled
+    paymentMethod: number | null; // 1 = Card, 2 = Cash, 3 = Online
+    stripeSessionId: string | null;
+    createdAt: string;
+    paidAt: string | null;
+}
+
+export interface GetInvoicesPageArgs {
+    page: number;
+    pageSize: number;
+    userId?: string | null;
+}
+
+export interface GetInvoicesPageResponse {
+    invoices: Invoice[];
+    pagination: {
+        currentPage: number;
+        pageSize: number;
+        totalCount: number;
+        totalPages: number;
+    };
+}
+
+export interface PayInvoiceRequest {
+    invoiceId: string;
+    method: number; // 1 = Card, 2 = Cash, 3 = Online
+}
+
+export interface InitializeStripeInvoicePaymentRequest {
+    invoiceId: string;
+    successUrl: string;
+    cancelUrl: string;
+}
+
+export interface InitializeStripeInvoicePaymentResponse {
+    checkoutUrl: string;
+}
+
 export interface InitializeStripeCheckoutRequest {
     userId: string;
     amount: number;
@@ -36,7 +79,7 @@ export interface GetTransactionHistoryArgs {
 export const billingApi = createApi({
     reducerPath: "billingApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["Balance", "Debt", "Transactions"],
+    tagTypes: ["Balance", "Debt", "Transactions", "Invoices"],
     endpoints: (builder) => ({
         getBalance: builder.query<BillingBalance, string>({
             query: (userId) => `/billing/balance/${userId}`,
@@ -97,6 +140,50 @@ export const billingApi = createApi({
                 {type: "Debt", id: arg.userId},
             ],
         }),
+
+        getInvoice: builder.query<Invoice, string>({
+            query: (invoiceId) => `/billing/invoices/${invoiceId}`,
+            providesTags: (_result, _error, invoiceId) => [{type: "Invoices", id: invoiceId}],
+        }),
+
+        getInvoiceByVisitId: builder.query<Invoice, string>({
+            query: (visitId) => `/billing/invoices/visit/${visitId}`,
+            providesTags: (_result, _error, visitId) => [{type: "Invoices", id: visitId}],
+        }),
+
+        getInvoicesPage: builder.query<GetInvoicesPageResponse, GetInvoicesPageArgs>({
+            query: ({page, pageSize, userId}) => ({
+                url: "/billing/admin/invoices",
+                params: {page, pageSize, userId: userId || undefined},
+            }),
+            providesTags: ["Invoices"],
+        }),
+
+        payInvoice: builder.mutation<{ message: string }, PayInvoiceRequest>({
+            query: ({invoiceId, ...body}) => ({
+                url: `/billing/invoices/${invoiceId}/pay`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: () => [
+                "Invoices",
+                "Transactions",
+                "Balance",
+                "Debt"
+            ],
+        }),
+
+        initializeStripeInvoicePayment: builder.mutation<
+            InitializeStripeInvoicePaymentResponse,
+            InitializeStripeInvoicePaymentRequest
+        >({
+            query: ({invoiceId, ...body}) => ({
+                url: `/billing/invoices/${invoiceId}/pay-stripe`,
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Invoices"],
+        }),
     }),
 });
 
@@ -106,4 +193,9 @@ export const {
     useGetTransactionHistoryQuery,
     useInitializeStripeCheckoutMutation,
     useSimulateStripeWebhookMutation,
+    useGetInvoiceQuery,
+    useGetInvoiceByVisitIdQuery,
+    useGetInvoicesPageQuery,
+    usePayInvoiceMutation,
+    useInitializeStripeInvoicePaymentMutation,
 } = billingApi;

@@ -4,8 +4,9 @@ import type {VisitStatus} from "@app-types/visit";
 export type VisitWithTariff =
     {
         visitId: string;
-        userId: string;
+        userId: string | null;
         tariffId: string;
+        resourceId: string | null;
         entryTime: string;
         exitTime: string | null;
         calculatedCost: number | null;
@@ -13,9 +14,14 @@ export type VisitWithTariff =
         approvedByUserId: string | null;
         approvedAt: string | null;
         rejectionReason: string | null;
+        isFinishRequested: boolean;
 
         tariffName: string;
         tariffPricePerMinute: number;
         tariffDescription: string;
-        tariffBillingType: BillingType
+        tariffBillingType: BillingType;
+        plannedMinutes: number | null;
+        guestsCount: number;
+        tariffMinSessionMinutes: number | null;
+        tariffRoundingRule: string | null;
 }

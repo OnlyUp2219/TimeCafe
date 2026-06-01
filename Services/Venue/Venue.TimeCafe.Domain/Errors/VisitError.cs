@@ -71,3 +71,12 @@ public sealed class VisitCannotBeCancelledError : Error
         Metadata.Add("ErrorCode", "409");
     }
 }
+
+public sealed class VisitNotActiveError : Error
+{
+    public VisitNotActiveError()
+        : base("Операция доступна только для активных визитов.")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

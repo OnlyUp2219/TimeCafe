@@ -7,4 +7,6 @@ public interface IUnitOfWork : BuildingBlocks.Contracts.IUnitOfWork
     IThemeRepository Themes { get; }
     IVisitRepository Visits { get; }
     IUserLoyaltyRepository UserLoyalties { get; }
+    IResourceRepository Resources { get; }
+    IResourceGroupRepository ResourceGroups { get; }
 }

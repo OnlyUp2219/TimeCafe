@@ -5,6 +5,7 @@ public interface IUnitOfWork
     IBalanceRepository Balances { get; }
     IPaymentRepository Payments { get; }
     ITransactionRepository Transactions { get; }
+    IInvoiceRepository Invoices { get; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

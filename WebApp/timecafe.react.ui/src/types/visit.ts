@@ -1,7 +1,8 @@
 export type Visit = {
     visitId: string;
-    userId: string;
+    userId: string | null;
     tariffId: string;
+    resourceId: string | null;
 
     entryTime: string;
     exitTime: string | null;
@@ -9,6 +10,9 @@ export type Visit = {
     calculatedCost: number | null;
 
     status: VisitStatus;
+    plannedMinutes: number | null;
+    guestsCount: number;
+    isFinishRequested: boolean;
 }
 
 export const VisitStatus = {
@@ -18,6 +22,7 @@ export const VisitStatus = {
     Active: 3,
     Completed: 4,
     Cancelled: 5,
+    WaitingForPayment: 6,
 } as const;
 
 export type VisitStatus = (typeof VisitStatus)[keyof typeof VisitStatus];

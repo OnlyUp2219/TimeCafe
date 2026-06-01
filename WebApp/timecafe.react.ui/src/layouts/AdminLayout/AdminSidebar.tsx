@@ -8,7 +8,7 @@ import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
     SignOut20Regular, Eye20Regular, Bug24Regular, ShieldSettings20Regular,
-    DocumentText20Regular, HeartPulse20Regular
+    DocumentText20Regular, HeartPulse20Regular, Grid20Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
@@ -53,6 +53,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                     { id: "users", label: "Пользователи", path: "/admin/users", icon: <People20Regular />, permission: Permissions.AccountAdminRead },
                     { id: "roles", label: "Роли", path: "/admin/roles", icon: <ShieldSettings20Regular />, permission: Permissions.RbacRoleRead },
                     { id: "visits", label: "Визиты", path: "/admin/visits", icon: <Clock20Regular />, permission: Permissions.VenueVisitRead },
+                    { id: "resources", label: "Карта столов", path: "/admin/resources", icon: <Grid20Regular />, permission: Permissions.VenueVisitRead },
                 ],
             },
             {

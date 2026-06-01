@@ -31,7 +31,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -62,7 +64,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -91,7 +95,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .ToListAsync(cancellationToken),
@@ -121,7 +127,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -152,7 +160,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -202,7 +212,9 @@ public class VisitRepository(
                                    TariffDescription = t != null ? t.Description! : string.Empty,
                                    TariffBillingType = t != null ? t.BillingType : BillingType.PerMinute,
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
-                                   TariffRoundingRule = t != null ? t.RoundingRule : null
+                                   TariffRoundingRule = t != null ? t.RoundingRule : null,
+                                   PlannedMinutes = v.PlannedMinutes,
+                                   GuestsCount = v.GuestsCount
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)

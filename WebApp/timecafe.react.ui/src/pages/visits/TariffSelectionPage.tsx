@@ -64,7 +64,7 @@ export const TariffSelectionPage = () => {
     const selectedTariffId = useAppSelector((state) => state.visit.selectedTariffId);
 
     const { data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs } = useGetActiveTariffsQuery();
-    const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
+    const { data: hasActive, isFetching: isFetchingHasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
     const [createVisit, { isLoading: startingVisit }] = useCreateVisitMutation();
 
     const [detailsOpen, setDetailsOpen] = useState(false);
@@ -108,6 +108,7 @@ export const TariffSelectionPage = () => {
 
     const [activeIndex, setActiveIndex] = useState<number>(initialActiveIndex);
     const [durationMinutes, setDurationMinutes] = useState<number>(90);
+    const [guestsCount, setGuestsCount] = useState<number>(1);
 
     const calc = useMemo(() => {
         if (!selectedTariff) return null;
@@ -142,10 +143,10 @@ export const TariffSelectionPage = () => {
     }, [dispatch, selectedTariffId, visibleTariffs]);
 
     useEffect(() => {
-        if (hasActive) {
+        if (hasActive && !isFetchingHasActive) {
             navigate("/visit/active", { replace: true });
         }
-    }, [navigate, hasActive]);
+    }, [navigate, hasActive, isFetchingHasActive]);
 
     const presets = useMemo(() => [30, 60, 90, 120, 180, 240], []);
 
@@ -155,6 +156,7 @@ export const TariffSelectionPage = () => {
             await createVisit({
                 tariffId: selectedTariff.tariffId,
                 plannedMinutes: durationMinutes,
+                guestsCount,
                 userId,
                 requirePositiveBalance: true,
                 requireEnoughForPlanned: true,
@@ -165,7 +167,7 @@ export const TariffSelectionPage = () => {
             const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось начать визит";
             showToast(message, "error", "Ошибка");
         }
-    }, [createVisit, durationMinutes, navigate, selectedTariff, showToast, userId]);
+    }, [createVisit, durationMinutes, guestsCount, navigate, selectedTariff, showToast, userId]);
 
     const onRetryLoad = useCallback(async () => {
         await refetchTariffs();
@@ -213,9 +215,11 @@ export const TariffSelectionPage = () => {
                         <div className="flex items-center gap-2 flex-wrap">
                             <Title2>Выбор тарифа</Title2>
                         </div>
-                        <Body1 block className="mt-2">
-                            Выберите тариф в карусели, затем задайте примерное время пребывания.
-                        </Body1>
+                        <div className="flex mt-2">
+                            <Body1>
+                                Выберите тариф в карусели, затем задайте примерное время пребывания.
+                            </Body1>
+                        </div>
                     </div>
                 </div>
 
@@ -231,6 +235,8 @@ export const TariffSelectionPage = () => {
                         durationMinutes={durationMinutes}
                         setDurationMinutes={setDurationMinutes}
                         presets={presets}
+                        guestsCount={guestsCount}
+                        setGuestsCount={setGuestsCount}
                     />
 
                     <TariffForecastCard selectedTariff={selectedTariff} calc={calc} />

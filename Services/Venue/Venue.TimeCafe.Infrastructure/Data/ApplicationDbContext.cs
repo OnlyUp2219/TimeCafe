@@ -11,6 +11,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Visit> Visits { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
     public DbSet<UserLoyalty> UserLoyalties { get; set; }
+    public DbSet<ResourceGroup> ResourceGroups { get; set; }
+    public DbSet<Resource> Resources { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

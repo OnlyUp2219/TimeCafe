@@ -22,12 +22,14 @@ public sealed class ProcessStripeWebhookCommandHandler(
     IUnitOfWork uow,
     ISender sender,
     IPublisher publisher,
+    IPublishEndpoint publishEndpoint,
     IOptionsSnapshot<StripeOptions> options,
     ILogger<ProcessStripeWebhookCommandHandler> logger) : ICommandHandler<ProcessStripeWebhookCommand>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly ISender _sender = sender;
     private readonly IPublisher _publisher = publisher;
+    private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
     private readonly ILogger _logger = logger;
 
@@ -59,8 +61,10 @@ public sealed class ProcessStripeWebhookCommandHandler(
 
         string? metadataPaymentId = null;
         string? metadataUserId = null;
+        string? metadataInvoiceId = null;
         paymentIntent.Metadata?.TryGetValue("paymentId", out metadataPaymentId);
         paymentIntent.Metadata?.TryGetValue("userId", out metadataUserId);
+        paymentIntent.Metadata?.TryGetValue("invoiceId", out metadataInvoiceId);
 
         var payment = await FindPaymentAsync(stripeObjectId, stripePaymentIntentId, metadataPaymentId, metadataUserId, paymentIntent, cancellationToken);
 
@@ -85,7 +89,9 @@ public sealed class ProcessStripeWebhookCommandHandler(
         var result = payload.Type.ToLower() switch
         {
             "checkout.session.completed" or "checkout.session.async_payment_succeeded"
-                => await HandleSuccess(payment, paymentIntent, cancellationToken),
+                => Guid.TryParse(metadataInvoiceId, out var invoiceId) && invoiceId != Guid.Empty
+                    ? await HandleInvoiceSuccess(invoiceId, payment, paymentIntent, cancellationToken)
+                    : await HandleSuccess(payment, paymentIntent, cancellationToken),
 
             "checkout.session.async_payment_failed"
                 => await HandleFailure(payment, "Stripe: асинхронный платёж отклонён", cancellationToken),
@@ -164,6 +170,42 @@ public sealed class ProcessStripeWebhookCommandHandler(
         }
 
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
+        return Result.Ok();
+    }
+
+    private async Task<Result> HandleInvoiceSuccess(Guid invoiceId, Payment payment, StripePaymentIntentObject session, CancellationToken cancellationToken = default)
+    {
+        var invoice = await _uow.Invoices.GetByIdAsync(invoiceId, cancellationToken);
+        if (invoice == null)
+            return Result.Fail(new InvoiceNotFoundError());
+
+        var payResult = invoice.Pay(PaymentMethod.Online, session.Created > 0 ? DateTimeOffset.FromUnixTimeSeconds(session.Created) : null);
+        if (payResult.IsFailed)
+            return payResult;
+
+        payment.MarkAsSucceeded(
+            Guid.Empty,
+            session.Created > 0 ? DateTimeOffset.FromUnixTimeSeconds(session.Created) : null);
+
+        if (!string.IsNullOrWhiteSpace(session.PaymentIntentId))
+        {
+            payment.UpdateExternalData(System.Text.Json.JsonSerializer.Serialize(new { paymentIntentId = session.PaymentIntentId }));
+        }
+
+        await _uow.Invoices.UpdateAsync(invoice, cancellationToken);
+        await _uow.Payments.UpdateAsync(payment, cancellationToken);
+
+        await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);
+
+        await _publishEndpoint.Publish(new InvoicePaidEvent
+        {
+            InvoiceId = invoice.InvoiceId,
+            VisitId = invoice.VisitId,
+            UserId = invoice.UserId,
+            Amount = invoice.TotalAmount,
+            PaidAt = invoice.PaidAt ?? DateTimeOffset.UtcNow
+        }, cancellationToken);
+
         return Result.Ok();
     }
 

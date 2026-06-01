@@ -6,35 +6,20 @@ import type {VisitWithTariff} from "@app-types/visitWithTariff";
 import type {TariffWithTheme} from "@app-types/tariffWithTheme";
 import type {PagedResponse} from "@app-types/pagination";
 
-interface GetTariffsResponse {
-    tariffs: TariffWithTheme[];
-}
-
-interface GetTariffResponse {
-    tariff: TariffApiResponse;
-}
-
-interface TariffApiResponse {
-    tariffId: string;
+export interface Resource {
+    resourceId: string;
+    resourceGroupId: string;
     name: string;
-    description?: string | null;
-    pricePerMinute: number;
-    billingType: 1 | 2;
-    themeId?: string | null;
+    capacity: number;
     isActive: boolean;
-    summary?: string | null;
-    features?: string[] | null;
-    audienceTags?: string[] | null;
-    minSessionMinutes?: number | null;
-    roundingRule?: string | null;
-    maxGuests?: number | null;
-    cancellationPolicy?: string | null;
-    isRecommended?: boolean;
-    sortOrder?: number;
 }
 
-interface VisitsResponse {
-    visits: VisitWithTariff[];
+export interface ResourceGroup {
+    resourceGroupId: string;
+    name: string;
+    description: string | null;
+    capacity: number;
+    isActive: boolean;
 }
 
 interface HasActiveVisitResponse {
@@ -55,10 +40,35 @@ interface CreateVisitResponse {
     visit: Visit;
 }
 
-interface EndVisitResponse {
-    message: string;
+interface RequestEndVisitResponse {
+    visitId: string;
+}
+
+export interface FixateVisitTimeResponse {
     visit: Visit;
     calculatedCost: number;
+    breakdown: {
+        actualMinutes: number;
+        billableMinutes: number;
+        baseCost: number;
+        finalCost: number;
+        optimizationGain: number;
+    };
+}
+
+export interface WalkInVisitRequest {
+    tariffId: string;
+    resourceId?: string | null;
+    userId?: string | null;
+    guestsCount?: number;
+}
+
+export interface WalkInVisitResponse {
+    visitId: string;
+    tariffId: string;
+    resourceId: string | null;
+    userId: string | null;
+    status: number;
 }
 
 
@@ -181,7 +191,7 @@ export interface UserLoyalty {
 export const venueApi = createApi({
     reducerPath: "venueApi",
     baseQuery: baseQueryWithReauth,
-    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "PendingVisits", "Promotions", "Themes", "UserLoyalty"],
+    tagTypes: ["ActiveTariffs", "Tariff", "AllTariffs", "ActiveVisit", "VisitHistory", "VisitsPage", "PendingVisits", "Promotions", "Themes", "UserLoyalty", "Resources", "ResourceGroups"],
     endpoints: (builder) => ({
         getActiveTariffs: builder.query<TariffWithTheme[], void>({
             query: () => "/venue/tariffs/active",
@@ -226,6 +236,11 @@ export const venueApi = createApi({
             providesTags: (_result, _error, {userId}) => [{type: "VisitHistory", id: userId}],
         }),
 
+        getActiveVisits: builder.query<VisitWithTariff[], void>({
+            query: () => "/venue/visits/active",
+            providesTags: ["VisitsPage", "PendingVisits", { type: "ActiveVisit" }],
+        }),
+
         getVisitById: builder.query<VisitWithTariff, string>({
             query: (visitId) => `/venue/visits/${visitId}`,
             providesTags: (_result, _error, visitId) => [{type: "VisitsPage", id: visitId}],
@@ -252,7 +267,7 @@ export const venueApi = createApi({
                 url: `/venue/visits/${visitId}/approve`,
                 method: "POST",
             }),
-            invalidatesTags: ["PendingVisits", "VisitsPage", "ActiveVisit"],
+            invalidatesTags: ["PendingVisits", "VisitsPage", { type: "ActiveVisit" }],
         }),
 
         rejectVisit: builder.mutation<{message: string; visit: Visit}, {visitId: string; reason: string}>({
@@ -261,7 +276,7 @@ export const venueApi = createApi({
                 method: "POST",
                 body: {reason},
             }),
-            invalidatesTags: ["PendingVisits", "VisitsPage", "ActiveVisit"],
+            invalidatesTags: ["PendingVisits", "VisitsPage", { type: "ActiveVisit" }],
         }),
 
         cancelVisit: builder.mutation<void, string>({
@@ -269,7 +284,7 @@ export const venueApi = createApi({
                 url: `/venue/visits/${visitId}/cancel`,
                 method: "POST",
             }),
-            invalidatesTags: ["ActiveVisit", "VisitHistory"],
+            invalidatesTags: [{ type: "ActiveVisit" }, "VisitHistory"],
         }),
 
         getUserLoyalty: builder.query<UserLoyalty, string>({
@@ -289,12 +304,95 @@ export const venueApi = createApi({
             ],
         }),
 
-        endVisit: builder.mutation<EndVisitResponse, string>({
+        requestEndVisit: builder.mutation<RequestEndVisitResponse, string>({
             query: (visitId) => ({
-                url: `/venue/visits/${visitId}/end`,
+                url: `/venue/visits/${visitId}/request-end`,
                 method: "POST",
             }),
-            invalidatesTags: ["ActiveVisit", "VisitHistory"],
+            invalidatesTags: [{ type: "ActiveVisit" }, "VisitHistory"],
+        }),
+
+        fixateVisitTime: builder.mutation<FixateVisitTimeResponse, string>({
+            query: (visitId) => ({
+                url: `/venue/visits/${visitId}/fixate-time`,
+                method: "POST",
+            }),
+            invalidatesTags: [{ type: "ActiveVisit" }, "VisitsPage", "VisitHistory", "PendingVisits"],
+        }),
+
+        walkInVisit: builder.mutation<WalkInVisitResponse, WalkInVisitRequest>({
+            query: (body) => ({
+                url: "/venue/visits/walk-in",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: (result) => [
+                { type: "ActiveVisit", id: result?.userId || undefined },
+                "VisitsPage",
+                "VisitHistory"
+            ],
+        }),
+
+        getResources: builder.query<Resource[], void>({
+            query: () => "/venue/resources",
+            providesTags: ["Resources"],
+        }),
+
+        getResourceGroups: builder.query<ResourceGroup[], void>({
+            query: () => "/venue/resource-groups",
+            providesTags: ["ResourceGroups"],
+        }),
+
+        createResource: builder.mutation<Resource, Partial<Resource>>({
+            query: (body) => ({
+                url: "/venue/resources",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["Resources"],
+        }),
+
+        updateResource: builder.mutation<Resource, Resource>({
+            query: ({ resourceId, ...body }) => ({
+                url: `/venue/resources/${resourceId}`,
+                method: "PUT",
+                body: { resourceId, ...body },
+            }),
+            invalidatesTags: ["Resources"],
+        }),
+
+        deleteResource: builder.mutation<void, string>({
+            query: (id) => ({
+                url: `/venue/resources/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Resources"],
+        }),
+
+        createResourceGroup: builder.mutation<ResourceGroup, Partial<ResourceGroup>>({
+            query: (body) => ({
+                url: "/venue/resource-groups",
+                method: "POST",
+                body,
+            }),
+            invalidatesTags: ["ResourceGroups"],
+        }),
+
+        updateResourceGroup: builder.mutation<ResourceGroup, ResourceGroup>({
+            query: ({ resourceGroupId, ...body }) => ({
+                url: `/venue/resource-groups/${resourceGroupId}`,
+                method: "PUT",
+                body: { resourceGroupId, ...body },
+            }),
+            invalidatesTags: ["ResourceGroups"],
+        }),
+
+        deleteResourceGroup: builder.mutation<void, string>({
+            query: (id) => ({
+                url: `/venue/resource-groups/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["ResourceGroups"],
         }),
 
         createTariff: builder.mutation<{message: string; tariff: TariffWithTheme}, CreateTariffRequest>({
@@ -441,6 +539,7 @@ export const venueApi = createApi({
 
 export const {
     useGetVisitByIdQuery,
+    useGetActiveVisitsQuery,
     useGetActiveTariffsQuery,
     useGetAllTariffsQuery,
     useGetTariffsPageQuery,
@@ -451,9 +550,19 @@ export const {
     useGetVisitHistoryQuery,
     useGetVisitsPageQuery,
     useGetPendingVisitsQuery,
+    useGetResourcesQuery,
+    useGetResourceGroupsQuery,
+    useCreateResourceMutation,
+    useUpdateResourceMutation,
+    useDeleteResourceMutation,
+    useCreateResourceGroupMutation,
+    useUpdateResourceGroupMutation,
+    useDeleteResourceGroupMutation,
     useGetUserLoyaltyQuery,
     useCreateVisitMutation,
-    useEndVisitMutation,
+    useRequestEndVisitMutation,
+    useFixateVisitTimeMutation,
+    useWalkInVisitMutation,
     useApproveVisitMutation,
     useRejectVisitMutation,
     useCancelVisitMutation,

@@ -17,5 +17,11 @@ public static class CacheTags
 
     public const string UserLoyalties = "userloyalties";
     public static string UserLoyalty(Guid userId) => $"userloyalty:{userId}";
+
+    public const string Resources = "resources";
+    public static string Resource(Guid id) => $"resource:{id}";
+
+    public const string ResourceGroups = "resourcegroups";
+    public static string ResourceGroup(Guid id) => $"resourcegroup:{id}";
 }
 

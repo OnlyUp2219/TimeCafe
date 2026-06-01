@@ -11,7 +11,9 @@ public class RbacCacheTests(IntegrationApiFactory factory) : BaseEndpointTest(fa
     [Fact]
     public async Task Cache_ShouldBeInvalidated_OnUpdateRoleClaims()
     {
-        await AuthenticateAsync();
+        var (_, accessToken) = await CreateAuthenticatedUserAsync();
+        Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        
         // Arrange
         var roleName = "CacheTestRole";
         var claims = new List<string> { "TestPermission1" };

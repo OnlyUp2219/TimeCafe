@@ -12,7 +12,9 @@ export const VisitParamsCard = ({
                                     selectedTariff,
                                     durationMinutes,
                                     setDurationMinutes,
-                                    presets
+                                    presets,
+                                    guestsCount,
+                                    setGuestsCount
                                 }: VisitParamsCardProps) => {
     const { sizes } = useComponentSize();
 
@@ -57,15 +59,37 @@ export const VisitParamsCard = ({
                                 </Button>
                             ))}
                         </div>
+
+                        <Field
+                            label="Количество гостей"
+                            hint="Введите количество гостей (от 1 до 10)"
+                            size={sizes.field}
+                        >
+                            <Input
+                                type="number"
+                                value={String(guestsCount)}
+                                onChange={(_, data) => {
+                                    const next = Number(data.value);
+                                    if (!Number.isFinite(next)) return;
+                                    setGuestsCount(clamp(next, 1, 10));
+                                }}
+                                min={1}
+                                max={10}
+                                size={sizes.input}
+                            />
+                        </Field>
  
                         <div className="flex flex-wrap items-center gap-2">
                             <Tag appearance="brand" size="small">{selectedTariff.name}</Tag>
                             <Tag appearance="outline" size="small">{getBillingLabel(selectedTariff.billingType)}</Tag>
                             <Tag appearance="outline" size="small">{formatDurationMinutes(durationMinutes)}</Tag>
+                            <Tag appearance="outline" size="small">{guestsCount} {guestsCount === 1 ? "гость" : guestsCount < 5 ? "гостя" : "гостей"}</Tag>
                         </div>
                     </div>
                 ) : (
-                    <Body2 block>Сначала выберите тариф в карусели.</Body2>
+                    <div className="flex">
+                        <Body2>Сначала выберите тариф в карусели.</Body2>
+                    </div>
                 )}
             </div>
         </Card>

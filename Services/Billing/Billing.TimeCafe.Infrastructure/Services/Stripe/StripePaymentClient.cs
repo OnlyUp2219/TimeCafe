@@ -71,6 +71,17 @@ public class StripePaymentClient : IStripePaymentClient
             _logger.LogInformation("Creating Stripe checkout session: Amount={Amount}, Currency={Currency}, UserId={UserId}",
                 request.Amount, request.Currency, request.UserId);
 
+            var metadata = new Dictionary<string, string>
+            {
+                { "paymentId", request.PaymentId.ToString() },
+                { "userId", request.UserId.ToString() }
+            };
+
+            if (request.InvoiceId.HasValue)
+            {
+                metadata.Add("invoiceId", request.InvoiceId.Value.ToString());
+            }
+
             var options = new SessionCreateOptions
             {
                 Mode = "payment",
@@ -83,7 +94,7 @@ public class StripePaymentClient : IStripePaymentClient
                             Currency = request.Currency,
                             ProductData = new SessionLineItemPriceDataProductDataOptions
                             {
-                                Name = "Пополнение баланса TimeCafe",
+                                Name = request.InvoiceId.HasValue ? $"Оплата счёта #{request.InvoiceId}" : "Пополнение баланса TimeCafe",
                                 Description = request.Description
                             },
                             UnitAmount = (long)(request.Amount * 100)
@@ -93,18 +104,10 @@ public class StripePaymentClient : IStripePaymentClient
                 ],
                 SuccessUrl = request.SuccessUrl,
                 CancelUrl = request.CancelUrl,
-                Metadata = new Dictionary<string, string>
-                {
-                    { "paymentId", request.PaymentId.ToString() },
-                    { "userId", request.UserId.ToString() }
-                },
+                Metadata = metadata,
                 PaymentIntentData = new SessionPaymentIntentDataOptions
                 {
-                    Metadata = new Dictionary<string, string>
-                    {
-                        { "paymentId", request.PaymentId.ToString() },
-                        { "userId", request.UserId.ToString() }
-                    }
+                    Metadata = metadata
                 }
             };
 

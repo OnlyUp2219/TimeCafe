@@ -6,7 +6,7 @@ public class CancelVisitCommandTests : BaseCqrsHandlerTest
 
     public CancelVisitCommandTests()
     {
-        _handler = new CancelVisitCommandHandler(UowMock.Object);
+        _handler = new CancelVisitCommandHandler(UowMock.Object, PublisherMock.Object);
     }
 
     [Fact]

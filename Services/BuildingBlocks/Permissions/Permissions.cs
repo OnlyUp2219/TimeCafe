@@ -23,6 +23,11 @@ public static class Permissions
     public const string BillingAdminRead = "billing.admin.read";
     public const string BillingAdminWrite = "billing.admin.write";
 
+    public const string BillingInvoiceRead = "billing.invoice.read";
+    public const string BillingInvoicePay = "billing.invoice.pay";
+    public const string BillingInvoiceAdminRead = "billing.invoice.admin.read";
+    public const string BillingInvoiceAdminWrite = "billing.invoice.admin.write";
+
     public const string VenueTariffCreate = "venue.tariff.create";
     public const string VenueTariffRead = "venue.tariff.read";
     public const string VenueTariffUpdate = "venue.tariff.update";
@@ -48,6 +53,11 @@ public static class Permissions
     public const string VenueVisitReject = "visit.reject";
     public const string VenueVisitViewPending = "visit.view.pending";
     public const string VenueLoyaltyRead = "venue.loyalty.read";
+    
+    public const string VenueResourceCreate = "venue.resource.create";
+    public const string VenueResourceRead = "venue.resource.read";
+    public const string VenueResourceUpdate = "venue.resource.update";
+    public const string VenueResourceDelete = "venue.resource.delete";
 
     public const string AccountSelfRead = "auth.account.self.read";
     public const string AccountAdminRead = "auth.account.admin.read";

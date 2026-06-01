@@ -10,6 +10,8 @@ public static class VenueSeedExtensions
         await SeedThemesAsync(dbContext);
         await SeedTariffsAsync(dbContext);
         await SeedPromotionsAsync(dbContext);
+        await SeedResourceGroupsAsync(dbContext);
+        await SeedResourcesAsync(dbContext);
     }
 
     private static async Task SeedThemesAsync(ApplicationDbContext dbContext)
@@ -229,6 +231,95 @@ public static class VenueSeedExtensions
             return;
 
         await dbContext.Promotions.AddRangeAsync(missing);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedResourceGroupsAsync(ApplicationDbContext dbContext)
+    {
+        var requiredGroups = new[]
+        {
+            new ResourceGroup
+            {
+                Name = "Основной зал",
+                Description = "Общая уютная зона для настольных игр и общения",
+                Capacity = 40,
+                IsActive = true
+            },
+            new ResourceGroup
+            {
+                Name = "Игровая зона",
+                Description = "Комнаты с игровыми консолями PlayStation 5 и Xbox",
+                Capacity = 10,
+                IsActive = true
+            },
+            new ResourceGroup
+            {
+                Name = "Коворкинг",
+                Description = "Тихая рабочая зона для фрилансеров и учебы",
+                Capacity = 12,
+                IsActive = true
+            }
+        };
+
+        foreach (var required in requiredGroups)
+        {
+            var existing = await dbContext.ResourceGroups.FirstOrDefaultAsync(x => x.Name == required.Name);
+            if (existing != null)
+            {
+                existing.Description = required.Description;
+                existing.Capacity = required.Capacity;
+                existing.IsActive = required.IsActive;
+            }
+            else
+            {
+                await dbContext.ResourceGroups.AddAsync(required);
+            }
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    private static async Task SeedResourcesAsync(ApplicationDbContext dbContext)
+    {
+        var groups = await dbContext.ResourceGroups.ToDictionaryAsync(x => x.Name, x => x.ResourceGroupId, StringComparer.OrdinalIgnoreCase);
+
+        Guid? ResolveGroupId(string name) =>
+            groups.TryGetValue(name, out var value) ? value : null;
+
+        var mainGroupId = ResolveGroupId("Основной зал");
+        var gameGroupId = ResolveGroupId("Игровая зона");
+        var coworkGroupId = ResolveGroupId("Коворкинг");
+
+        if (mainGroupId == null || gameGroupId == null || coworkGroupId == null)
+            return;
+
+        var requiredResources = new[]
+        {
+            new Resource { Name = "Стол №1 (У окна)", Capacity = 4, ResourceGroupId = mainGroupId.Value, IsActive = true },
+            new Resource { Name = "Стол №2 (Диван)", Capacity = 6, ResourceGroupId = mainGroupId.Value, IsActive = true },
+            new Resource { Name = "Стол №3 (Большой)", Capacity = 8, ResourceGroupId = mainGroupId.Value, IsActive = true },
+            new Resource { Name = "Стол №4 (Семейный)", Capacity = 10, ResourceGroupId = mainGroupId.Value, IsActive = true },
+            new Resource { Name = "VIP комната (PS5 Pro)", Capacity = 4, ResourceGroupId = gameGroupId.Value, IsActive = true },
+            new Resource { Name = "VIP комната (Xbox Series)", Capacity = 4, ResourceGroupId = gameGroupId.Value, IsActive = true },
+            new Resource { Name = "Место №1 (Коворкинг)", Capacity = 1, ResourceGroupId = coworkGroupId.Value, IsActive = true },
+            new Resource { Name = "Место №2 (Коворкинг)", Capacity = 1, ResourceGroupId = coworkGroupId.Value, IsActive = true },
+            new Resource { Name = "Место №3 (Коворкинг)", Capacity = 1, ResourceGroupId = coworkGroupId.Value, IsActive = true }
+        };
+
+        foreach (var required in requiredResources)
+        {
+            var existing = await dbContext.Resources.FirstOrDefaultAsync(x => x.Name == required.Name && x.ResourceGroupId == required.ResourceGroupId);
+            if (existing != null)
+            {
+                existing.Capacity = required.Capacity;
+                existing.IsActive = required.IsActive;
+            }
+            else
+            {
+                await dbContext.Resources.AddAsync(required);
+            }
+        }
+
         await dbContext.SaveChangesAsync();
     }
 }

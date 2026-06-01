@@ -14,3 +14,5 @@ export {UserRolesPage} from "./UserRolesPage";
 export {VisitDetailPage} from "./VisitDetailPage";
 export {PendingVisitsPage} from "./PendingVisitsPage";
 export {AuditLogsPage} from "./AuditLogsPage";
+export {ResourcesPage} from "./ResourcesPage";
+

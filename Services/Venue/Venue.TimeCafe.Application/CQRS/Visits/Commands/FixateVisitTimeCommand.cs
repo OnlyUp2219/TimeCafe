@@ -1,31 +1,31 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record EndVisitCommand(Guid VisitId) : ICommand<EndVisitResponse>;
+public record FixateVisitTimeCommand(Guid VisitId) : ICommand<FixateVisitTimeResponse>;
 
-public class EndVisitCommandValidator : AbstractValidator<EndVisitCommand>
+public record FixateVisitTimeResponse(Visit Visit, decimal CalculatedCost, CostBreakdownDto Breakdown);
+
+public class FixateVisitTimeCommandValidator : AbstractValidator<FixateVisitTimeCommand>
 {
-    public EndVisitCommandValidator()
+    public FixateVisitTimeCommandValidator()
     {
         RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
     }
 }
 
-public class EndVisitCommandHandler(
+public class FixateVisitTimeCommandHandler(
     IUnitOfWork uow,
     IMapper mapper,
     IPublishEndpoint publishEndpoint,
     IPublisher publisher,
-    ILogger<EndVisitCommandHandler> logger,
-    IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<EndVisitCommand, EndVisitResponse>
+    IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<FixateVisitTimeCommand, FixateVisitTimeResponse>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     private readonly IPublisher _publisher = publisher;
-    private readonly ILogger<EndVisitCommandHandler> _logger = logger;
     private readonly VenuePricingOptions _options = options.Value;
 
-    public async Task<Result<EndVisitResponse>> Handle(EndVisitCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<FixateVisitTimeResponse>> Handle(FixateVisitTimeCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -38,8 +38,12 @@ public class EndVisitCommandHandler(
             var globalDiscount = activePromotions.Where(p => p.Type == PromotionType.Global).Max(p => p.DiscountPercent) ?? 0m;
             var tariffDiscount = activePromotions.Where(p => p.Type == PromotionType.TariffSpecific && p.TariffId == existing.TariffId).Max(p => p.DiscountPercent) ?? 0m;
 
-            var userLoyalty = await _uow.UserLoyalties.GetByUserIdAsync(existing.UserId, cancellationToken);
-            var personalDiscount = userLoyalty?.PersonalDiscountPercent ?? 0m;
+            var personalDiscount = 0m;
+            if (existing.UserId.HasValue)
+            {
+                var userLoyalty = await _uow.UserLoyalties.GetByUserIdAsync(existing.UserId.Value, cancellationToken);
+                personalDiscount = userLoyalty?.PersonalDiscountPercent ?? 0m;
+            }
 
             var breakdown = Visit.CalculateCost(
                     tariffBillingType: existing.TariffBillingType,
@@ -53,25 +57,23 @@ public class EndVisitCommandHandler(
                     tariffDiscount: tariffDiscount,
                     personalDiscount: personalDiscount);
 
-            var visit = Visit.Update(
-                existingVisit: _mapper.Map<Visit>(existing),
-                exitTime: exitTime,
-                calculatedCost: breakdown.FinalCost,
-                status: VisitStatus.Completed);
+            var entity = await _uow.Visits.GetByIdAsync(request.VisitId, cancellationToken);
+            if (entity == null) return Result.Fail(new VisitNotFoundError());
 
-            var updated = await _uow.Visits.UpdateAsync(visit, cancellationToken);
+            var result = entity.FixateTime(breakdown.FinalCost, exitTime);
+            if (result.IsFailed)
+                return Result.Fail(result.Errors);
+
+            var updated = await _uow.Visits.UpdateAsync(entity, cancellationToken);
             if (updated == null)
                 return Result.Fail(new EndVisitFailedError());
 
-            Venue.TimeCafe.Application.Metrics.VenueMetrics.ActiveVisits.Dec();
-        Venue.TimeCafe.Application.Metrics.VenueMetrics.VisitsCompleted.Inc();
-
-        await _publishEndpoint.Publish(new VisitCompletedEvent
+            await _publishEndpoint.Publish(new VisitTimerStoppedEvent
             {
                 VisitId = updated.VisitId,
                 UserId = updated.UserId,
-                Amount = visit.CalculatedCost ?? 0,
-                CompletedAt = exitTime
+                Amount = updated.CalculatedCost ?? 0,
+                StoppedAt = exitTime
             }, cancellationToken);
 
             await _uow.SaveChangesAsync(cancellationToken);
@@ -86,11 +88,10 @@ public class EndVisitCommandHandler(
                 OptimizationGain = breakdown.OptimizationGain
             };
 
-            return Result.Ok(new EndVisitResponse(updated, visit.CalculatedCost ?? 0, breakdownDto));
+            return Result.Ok(new FixateVisitTimeResponse(updated, updated.CalculatedCost ?? 0, breakdownDto));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при завершении визита {VisitId}", request.VisitId);
             return Result.Fail(new EndVisitFailedError().CausedBy(ex));
         }
     }

@@ -16,6 +16,7 @@ public static class MassTransitExtensions
             });
 
             x.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>();
+            x.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.InvoicePaidEventConsumer>();
 
             x.UsingRabbitMq((context, cfg) =>
             {
@@ -39,10 +40,11 @@ public static class MassTransitExtensions
                     });
                 }
 
-                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
-                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
+                cfg.Message<VisitTimerStoppedEvent>(e => e.SetEntityName("visit-timer-stopped"));
+                cfg.Publish<VisitTimerStoppedEvent>(p => p.ExchangeType = "fanout");
 
                 cfg.ReceiveEndpoint("venue-user-discount-updated", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>(context));
+                cfg.ReceiveEndpoint("venue-invoice-paid", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.InvoicePaidEventConsumer>(context));
 
                 cfg.ConfigureEndpoints(context);
             });

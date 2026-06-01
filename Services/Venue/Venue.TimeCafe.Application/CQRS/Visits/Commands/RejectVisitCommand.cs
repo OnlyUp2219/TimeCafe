@@ -11,10 +11,11 @@ public class RejectVisitCommandValidator : AbstractValidator<RejectVisitCommand>
     }
 }
 
-public class RejectVisitCommandHandler(IUnitOfWork uow, IPublishEndpoint publishEndpoint) : ICommandHandler<RejectVisitCommand, Visit>
+public class RejectVisitCommandHandler(IUnitOfWork uow, IPublishEndpoint publishEndpoint, IPublisher publisher) : ICommandHandler<RejectVisitCommand, Visit>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+    private readonly IPublisher _publisher = publisher;
 
     public async Task<Result<Visit>> Handle(RejectVisitCommand request, CancellationToken cancellationToken = default)
     {
@@ -33,6 +34,7 @@ public class RejectVisitCommandHandler(IUnitOfWork uow, IPublishEndpoint publish
                 return Result.Fail(new VisitUpdateFailedError());
 
             await _uow.SaveChangesAsync(cancellationToken);
+            await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);
 
             Venue.TimeCafe.Application.Metrics.VenueMetrics.PendingVisits.Dec();
 

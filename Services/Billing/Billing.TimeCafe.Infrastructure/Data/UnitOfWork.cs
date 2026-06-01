@@ -8,6 +8,7 @@ public class UnitOfWork(ApplicationDbContext context, HybridCache cache) : IUnit
     public IBalanceRepository Balances => field ??= new BalanceRepository(_context, _cache);
     public IPaymentRepository Payments => field ??= new PaymentRepository(_context, _cache);
     public ITransactionRepository Transactions => field ??= new TransactionRepository(_context, _cache);
+    public IInvoiceRepository Invoices => field ??= new InvoiceRepository(_context, _cache);
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
         await _context.SaveChangesAsync(cancellationToken);

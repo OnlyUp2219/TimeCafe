@@ -29,7 +29,7 @@ builder.Services.Configure<Venue.TimeCafe.Application.Options.VenuePricingOption
 builder.Services.AddTransient<AuthorizationDelegatingHandler>();
 builder.Services.AddHttpClient("BillingApi", (sp, client) =>
 {
-    var billingOptions = sp.GetRequiredService<IOptionsSnapshot<BillingApiOptions>>().Value;
+    var billingOptions = sp.GetRequiredService<IOptionsMonitor<BillingApiOptions>>().CurrentValue;
     client.BaseAddress = new Uri(billingOptions.BaseUrl, UriKind.Absolute);
     client.Timeout = TimeSpan.FromSeconds(5);
 })

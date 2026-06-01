@@ -8,5 +8,6 @@ public enum VisitStatus
     Active = 3,
     Completed = 4,
     Cancelled = 5,
+    WaitingForPayment = 6,
 }
 

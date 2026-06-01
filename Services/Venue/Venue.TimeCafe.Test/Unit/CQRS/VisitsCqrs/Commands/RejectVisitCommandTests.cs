@@ -6,7 +6,7 @@ public class RejectVisitCommandTests : BaseCqrsHandlerTest
 
     public RejectVisitCommandTests()
     {
-        _handler = new RejectVisitCommandHandler(UowMock.Object, PublishEndpointMock.Object);
+        _handler = new RejectVisitCommandHandler(UowMock.Object, PublishEndpointMock.Object, PublisherMock.Object);
     }
 
     [Fact]

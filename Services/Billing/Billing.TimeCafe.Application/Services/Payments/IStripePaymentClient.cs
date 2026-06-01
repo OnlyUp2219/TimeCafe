@@ -33,7 +33,8 @@ public record StripeCreateCheckoutSessionRequest(
     string Currency,
     string Description,
     string SuccessUrl,
-    string CancelUrl);
+    string CancelUrl,
+    Guid? InvoiceId = null);
 
 public record StripeCreateCheckoutSessionResponse(
     bool Success,
