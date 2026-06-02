@@ -123,8 +123,10 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                     <div className="admin-sidebar__bottom-user">
                         <SecureAvatar name={avatarName} photoUrl={profile?.photoUrl} size={32} />
                         <div className="min-w-0">
-                            <Body1 truncate wrap={false} block>{avatarName || "Админ"}</Body1>
-                            <Caption1 truncate wrap={false} block>{email ?? "—"}</Caption1>
+                            <Body1 truncate wrap={false} block title={avatarName}>{avatarName || "Админ"}</Body1>
+                            <Caption1 truncate wrap={false} block title={email ?? undefined}>
+                                {email && email.length > 20 ? `${email.substring(0, 20)}...` : (email ?? "—")}
+                            </Caption1>
                         </div>
                     </div>
                     <div className="admin-sidebar__bottom-actions">

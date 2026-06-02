@@ -21,7 +21,25 @@ public class AdminUsersCompositeEndpoint : ICarterModule
             if (!string.IsNullOrEmpty(status))
                 authUrl += $"&status={status}";
 
-            var authResponse = await authClient.GetFromJsonAsync<AuthUsersResponse>(authUrl);
+            AuthUsersResponse? authResponse = null;
+            try
+            {
+                var response = await authClient.GetAsync(authUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    authResponse = await response.Content.ReadFromJsonAsync<AuthUsersResponse>();
+                }
+                else
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    return Results.Problem(detail: errorContent, statusCode: (int)response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem($"Ошибка при обращении к сервису Auth: {ex.Message}", statusCode: 500);
+            }
+
             if (authResponse == null || authResponse.Items == null)
                 return Results.Problem("Не удалось получить список пользователей из сервиса Auth");
 

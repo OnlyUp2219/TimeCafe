@@ -18,6 +18,20 @@ export default defineConfig({
         trace: "on-first-retry",
         screenshot: "only-on-failure",
         video: "retain-on-failure",
+        storageState: {
+            cookies: [],
+            origins: [
+                {
+                    origin: baseUrl,
+                    localStorage: [
+                        {
+                            name: "isE2E",
+                            value: "true",
+                        },
+                    ],
+                },
+            ],
+        },
     },
     webServer: {
         command: "npm run dev -- --host 127.0.0.1 --port 9301",

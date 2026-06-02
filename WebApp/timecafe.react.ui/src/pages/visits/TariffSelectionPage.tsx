@@ -137,8 +137,11 @@ export const TariffSelectionPage = () => {
     }, [initialActiveIndex]);
 
     useEffect(() => {
-        if (!selectedTariffId && visibleTariffs.length > 0) {
-            dispatch(setSelectedTariffId(visibleTariffs[0].tariffId));
+        if (visibleTariffs.length > 0) {
+            const isValid = visibleTariffs.some((t) => t.tariffId === selectedTariffId);
+            if (!isValid) {
+                dispatch(setSelectedTariffId(visibleTariffs[0].tariffId));
+            }
         }
     }, [dispatch, selectedTariffId, visibleTariffs]);
 

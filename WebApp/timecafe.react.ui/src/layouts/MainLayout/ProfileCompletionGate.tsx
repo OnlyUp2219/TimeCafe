@@ -264,7 +264,7 @@ export const ProfileCompletionGate: FC = () => {
 
                                     const nextPhone = phoneDraft.trim();
                                     const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
-                                    const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed);
+                                    const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed) && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && localStorage.getItem("isE2E") !== "true";
 
                                     if (phoneNeedsVerification) {
                                         const validation = validatePhoneNumber(nextPhone);

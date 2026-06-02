@@ -75,6 +75,25 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
         entryTime: string;
     } = null;
 
+    await page.route("**/auth/account/me", async (route) => {
+        if (route.request().method() !== "GET") {
+            await route.continue();
+            return;
+        }
+
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+                userId,
+                email: "e2e@timecafe.local",
+                emailConfirmed: true,
+                phoneNumberConfirmed: true,
+                role: "client",
+            }),
+        });
+    });
+
     await page.route("**/userprofile/profiles/*", async (route) => {
         if (route.request().method() !== "GET") {
             await route.continue();
@@ -107,24 +126,22 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
         await route.fulfill({
             status: 200,
             contentType: "application/json",
-            body: JSON.stringify({
-                tariffs: [
-                    {
-                        tariffId,
-                        name: "E2E Тариф",
-                        description: "Тестовый тариф",
-                        pricePerMinute: 3,
-                        billingType: 1,
-                        isActive: true,
-                        createdAt: new Date().toISOString(),
-                        lastModified: new Date().toISOString(),
-                        themeId: null,
-                        themeName: "Default",
-                        themeEmoji: "☕",
-                        themeColors: null,
-                    },
-                ],
-            }),
+            body: JSON.stringify([
+                {
+                    tariffId,
+                    name: "E2E Тариф",
+                    description: "Тестовый тариф",
+                    pricePerMinute: 3,
+                    billingType: 1,
+                    isActive: true,
+                    createdAt: new Date().toISOString(),
+                    lastModified: new Date().toISOString(),
+                    themeId: null,
+                    themeName: "Default",
+                    themeEmoji: "☕",
+                    themeColors: null,
+                },
+            ]),
         });
     });
 
@@ -162,47 +179,34 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
             status: 200,
             contentType: "application/json",
             body: JSON.stringify({
-                visit: {
-                    visitId,
-                    userId,
-                    tariffId,
-                    entryTime: activeVisit.entryTime,
-                    exitTime: null,
-                    calculatedCost: null,
-                    status: 1,
-                    tariffName: "E2E Тариф",
-                    tariffPricePerMinute: 3,
-                    tariffDescription: "Тестовый тариф",
-                    tariffBillingType: 1,
-                },
+                visitId,
+                userId,
+                tariffId,
+                entryTime: activeVisit.entryTime,
+                exitTime: null,
+                calculatedCost: null,
+                status: 3,
+                tariffName: "E2E Тариф",
+                tariffPricePerMinute: 3,
+                tariffDescription: "Тестовый тариф",
+                tariffBillingType: 1,
             }),
         });
     });
 
-    await page.route("**/venue/visits/*/end", async (route) => {
+    await page.route("**/venue/visits/*/request-end", async (route) => {
         if (route.request().method() !== "POST") {
             await route.continue();
             return;
         }
 
-        const now = new Date().toISOString();
         activeVisit = null;
 
         await route.fulfill({
             status: 200,
             contentType: "application/json",
             body: JSON.stringify({
-                message: "Визит завершён",
-                visit: {
-                    visitId,
-                    userId,
-                    tariffId,
-                    entryTime: now,
-                    exitTime: now,
-                    calculatedCost: 15,
-                    status: 2,
-                },
-                calculatedCost: 15,
+                message: "Запрос на выход успешно отправлен",
             }),
         });
     });
@@ -228,7 +232,7 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
                     entryTime,
                     exitTime: null,
                     calculatedCost: null,
-                    status: 1,
+                    status: 3,
                 },
             }),
         });
@@ -256,8 +260,6 @@ const ensureTariffsLoaded = async (page: Page) => {
     const startButton = page.getByTestId("visit-start-submit");
 
     for (let attempt = 0; attempt < 6; attempt += 1) {
-        await completeProfileGateIfNeeded(page);
-
         const enabled = await startButton.isEnabled().catch(() => false);
         if (enabled) return;
 
@@ -288,7 +290,7 @@ test("Visit flow start-active-end", async ({page, request}) => {
 
     await page.getByTestId("home-visit-action").click();
     await expect(page).toHaveURL(/\/visit\/start$/);
-    await expect(page.getByTestId("visit-start-page")).toBeVisible();
+    await expect(page.getByText("Выбор тарифа").first()).toBeVisible();
 
     await ensureTariffsLoaded(page);
     await expect(page.getByTestId("visit-start-submit")).toBeEnabled();
@@ -297,10 +299,22 @@ test("Visit flow start-active-end", async ({page, request}) => {
     await expect(page).toHaveURL(/\/visit\/active$/);
     await expect(page.getByTestId("visit-active-page")).toBeVisible();
 
+    const closePhoneModal = async () => {
+        const title = page.getByRole("heading", {name: "Подтверждение номера телефона"});
+        await title.waitFor({ state: "visible", timeout: 2500 }).catch(() => {});
+        if (await title.isVisible()) {
+            await page.locator(".phone-verification-modal").getByRole("button", {name: "Отмена"}).click();
+            await expect(title).toBeHidden({timeout: 5000});
+        }
+    };
+
+    await closePhoneModal();
     await page.getByTestId("visit-active-exit").click();
+
     await expect(page.getByTestId("visit-end-dialog-title")).toBeVisible();
+    await closePhoneModal();
     await page.getByTestId("visit-end-confirm").click();
 
     await expect(page).toHaveURL(/\/visit\/start$/);
-    await expect(page.getByTestId("visit-start-page")).toBeVisible();
+    await expect(page.getByText("Выбор тарифа").first()).toBeVisible();
 });

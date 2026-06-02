@@ -88,8 +88,10 @@ export const Sidebar: FC = () => {
                     <div className="user-sidebar__bottom-user">
                         <SecureAvatar name={displayName} photoUrl={profile?.photoUrl} size={32} />
                         <div className="min-w-0">
-                            <Body1 truncate wrap={false} block>{displayName}</Body1>
-                            <Caption1 truncate wrap={false} block>{email || role || "—"}</Caption1>
+                            <Body1 truncate wrap={false} block title={displayName}>{displayName}</Body1>
+                            <Caption1 truncate wrap={false} block title={email ?? undefined}>
+                                {email && email.length > 20 ? `${email.substring(0, 20)}...` : (email || role || "—")}
+                            </Caption1>
                         </div>
                     </div>
                     <div className="user-sidebar__bottom-actions">

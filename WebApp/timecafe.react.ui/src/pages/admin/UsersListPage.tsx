@@ -15,6 +15,7 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Select,
 } from "@fluentui/react-components";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
@@ -275,7 +276,11 @@ export const UsersListPage = () => {
                     <Input size={sizes.input} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по имени, email..." />
                 </Field>
                 <Field label="Статус" size={sizes.field}>
-                    <Input size={sizes.input} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} placeholder="active / inactive" />
+                    <Select size={sizes.input} value={statusFilter} onChange={(_, data) => setStatusFilter(data.value)}>
+                        <option value="">Все статусы</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </Select>
                 </Field>
                 <Button appearance="secondary" size={sizes.button} onClick={handleClearFilters}>
                     Сбросить фильтры

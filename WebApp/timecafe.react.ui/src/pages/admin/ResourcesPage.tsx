@@ -12,7 +12,6 @@ import {
     Divider,
     MessageBar,
     MessageBarBody,
-    Spinner,
 } from "@fluentui/react-components";
 import {
     Grid20Regular,
@@ -28,6 +27,8 @@ import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVis
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 
 const ActiveUserLabel = ({ userId }: { userId: string | null }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
@@ -40,6 +41,7 @@ const ActiveUserLabel = ({ userId }: { userId: string | null }) => {
 
 export const ResourcesPage = () => {
     const navigate = useNavigate();
+    const { sizes } = useComponentSize();
 
     const { data: activeVisits, isLoading: loadingVisits, error: errorVisits, refetch } = useGetActiveVisitsQuery();
     const { data: dbResources, isLoading: loadingResources, error: errorResources } = useGetResourcesQuery();
@@ -57,11 +59,7 @@ export const ResourcesPage = () => {
     const error = errorVisits || errorResources || errorResourceGroups;
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center p-12 gap-4">
-                <Spinner size="large" label="Загрузка карты столов..." />
-            </div>
-        );
+        return <PageLoader label="Загрузка карты столов..." />;
     }
 
     if (error) {
@@ -87,6 +85,7 @@ export const ResourcesPage = () => {
                 </div>
                 <Button
                     appearance="primary"
+                    size={sizes.button}
                     icon={<Add20Regular />}
                     onClick={() => handleOpenWalkIn("")}
                 >
@@ -100,7 +99,7 @@ export const ResourcesPage = () => {
                     return (
                         <div key={group.resourceGroupId} className="flex flex-col gap-4">
                             <div className="flex flex-col gap-1 border-b pb-2">
-                                <Subtitle2 className="text-lg font-bold text-[var(--colorBrandForegroundLink)]">
+                                <Subtitle2 className="text-[var(--colorBrandForegroundLink)]">
                                     {group.name}
                                 </Subtitle2>
                                 {group.description && (
@@ -119,6 +118,7 @@ export const ResourcesPage = () => {
                                     return (
                                         <Card
                                             key={res.resourceId}
+                                            size={sizes.card}
                                             className={`transition-all duration-200 border-2 ${isOccupied
                                                     ? "border-[var(--colorPaletteRedBorderActive)] bg-[var(--colorNeutralBackground2)]"
                                                     : "border-[var(--colorPaletteGreenBorderActive)] hover:shadow-md"
@@ -128,13 +128,14 @@ export const ResourcesPage = () => {
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-2">
                                                         <Grid20Regular />
-                                                        <Body1 className="font-semibold text-base">
+                                                        <Body1 className="font-semibold">
                                                             {res.name}
                                                         </Body1>
                                                     </div>
                                                     <Badge
                                                         color={isOccupied ? "danger" : "success"}
                                                         appearance="filled"
+                                                        size={sizes.badge}
                                                     >
                                                         {isOccupied ? "Занят" : "Свободен"}
                                                     </Badge>
@@ -144,35 +145,37 @@ export const ResourcesPage = () => {
 
                                                 {isOccupied ? (
                                                     <div className="flex flex-col gap-2 my-1">
-                                                        <div className="flex items-center gap-2 text-sm text-[var(--colorNeutralForeground2)]">
-                                                            <Person20Regular />
-                                                            <span className="font-medium text-[var(--colorNeutralForeground1)]">
+                                                        <div className="flex items-center gap-2">
+                                                            <Person20Regular className="text-[var(--colorNeutralForeground2)]" />
+                                                            <Body2 className="font-medium text-[var(--colorNeutralForeground1)]">
                                                                 <ActiveUserLabel userId={activeVisit.userId} />
-                                                            </span>
+                                                            </Body2>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-sm text-[var(--colorNeutralForeground2)]">
-                                                            <Clock20Regular />
-                                                            <span>
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock20Regular className="text-[var(--colorNeutralForeground2)]" />
+                                                            <Body2 className="text-[var(--colorNeutralForeground2)]">
                                                                 Вход: {new Date(activeVisit.entryTime).toLocaleTimeString("ru-RU", {
                                                                     hour: "2-digit",
                                                                     minute: "2-digit"
                                                                 })}
-                                                            </span>
+                                                            </Body2>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-sm text-[var(--colorNeutralForeground2)]">
-                                                            <Money20Regular />
-                                                            <span>
+                                                        <div className="flex items-center gap-2">
+                                                            <Money20Regular className="text-[var(--colorNeutralForeground2)]" />
+                                                            <Body2 className="text-[var(--colorNeutralForeground2)]">
                                                                 Тариф: {activeVisit.tariffName} (
                                                                 {activeVisit.calculatedCost != null
                                                                     ? `${activeVisit.calculatedCost.toFixed(2)} ${CURRENCY_SYMBOL}`
                                                                     : "—"}
                                                                 )
-                                                            </span>
+                                                            </Body2>
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div className="flex items-center justify-center py-4 text-[var(--colorNeutralForeground3)] text-sm italic">
-                                                        Готов к посадке гостей (Вместимость: {res.capacity})
+                                                    <div className="flex items-center justify-center py-4">
+                                                        <Body2 className="text-[var(--colorNeutralForeground3)] italic">
+                                                            Готов к посадке гостей (Вместимость: {res.capacity})
+                                                        </Body2>
                                                     </div>
                                                 )}
 
@@ -181,7 +184,7 @@ export const ResourcesPage = () => {
                                                 <div className="flex justify-end gap-2 mt-1">
                                                     {isOccupied ? (
                                                         <Button
-                                                            size="small"
+                                                            size={sizes.button}
                                                             appearance="primary"
                                                             icon={<Eye20Regular />}
                                                             onClick={() => navigate(`/admin/visits/${activeVisit.visitId}`)}
@@ -190,7 +193,7 @@ export const ResourcesPage = () => {
                                                         </Button>
                                                     ) : (
                                                         <Button
-                                                            size="small"
+                                                            size={sizes.button}
                                                             appearance="outline"
                                                             icon={<Add20Regular />}
                                                             onClick={() => handleOpenWalkIn(res.name)}
