@@ -38,11 +38,11 @@ public sealed class CurrentUser : ICarterModule
 
     private static async Task<IResult> GetCurrentUserResponse(ClaimsPrincipal principal, UserManager<ApplicationUser> userManager)
     {
-        var userId = principal.FindFirstValue("sub");
+        var userId = principal.TryGetUserId();
         if (userId == null)
             return Results.Unauthorized();
 
-        var user = await userManager.FindByIdAsync(userId);
+        var user = await userManager.FindByIdAsync(userId.ToString()!);
         if (user == null)
         {
             return Results.NotFound(new

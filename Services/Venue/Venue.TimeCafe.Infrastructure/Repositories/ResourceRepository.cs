@@ -65,4 +65,7 @@ public class ResourceRepository(
         _context.Resources.Remove(resource);
         return true;
     }
+
+    public async Task<bool> AnyWithGroupIdAsync(Guid groupId, CancellationToken cancellationToken = default) =>
+        await _context.Resources.AnyAsync(r => r.ResourceGroupId == groupId, cancellationToken);
 }

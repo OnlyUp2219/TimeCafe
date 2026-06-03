@@ -1,35 +1,31 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record RequestEndVisitCommand(Guid VisitId, Guid UserId) : ICommand<RequestEndVisitResponse>;
+public record ForceEndVisitCommand(Guid VisitId) : ICommand<ForceEndVisitResponse>;
 
-public class RequestEndVisitCommandValidator : AbstractValidator<RequestEndVisitCommand>
+public class ForceEndVisitCommandValidator : AbstractValidator<ForceEndVisitCommand>
 {
-    public RequestEndVisitCommandValidator()
+    public ForceEndVisitCommandValidator()
     {
         RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
-        RuleFor(x => x.UserId).NotEmpty().WithMessage("Идентификатор пользователя обязателен");
     }
 }
 
-public record RequestEndVisitResponse(Guid VisitId);
+public record ForceEndVisitResponse(Guid VisitId);
 
-public class RequestEndVisitCommandHandler(
+public class ForceEndVisitCommandHandler(
     IUnitOfWork uow,
-    IPublisher publisher) : ICommandHandler<RequestEndVisitCommand, RequestEndVisitResponse>
+    IPublisher publisher) : ICommandHandler<ForceEndVisitCommand, ForceEndVisitResponse>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IPublisher _publisher = publisher;
 
-    public async Task<Result<RequestEndVisitResponse>> Handle(RequestEndVisitCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<ForceEndVisitResponse>> Handle(ForceEndVisitCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
             var existing = await _uow.Visits.GetByIdAsync(request.VisitId, cancellationToken);
             if (existing == null)
                 return Result.Fail(new VisitNotFoundError());
-
-            if (existing.UserId != request.UserId)
-                return Result.Fail(new VisitAccessDeniedError());
 
             var result = existing.RequestFinish();
             if (result.IsFailed)
@@ -42,7 +38,7 @@ public class RequestEndVisitCommandHandler(
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new VisitChangedEvent(updated.VisitId, updated.UserId), cancellationToken);
 
-            return Result.Ok(new RequestEndVisitResponse(updated.VisitId));
+            return Result.Ok(new ForceEndVisitResponse(updated.VisitId));
         }
         catch (Exception ex)
         {

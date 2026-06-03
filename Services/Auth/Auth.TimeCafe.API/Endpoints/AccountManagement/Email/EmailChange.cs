@@ -22,11 +22,11 @@ public class EmailChange : ICarterModule
             ClaimsPrincipal principal,
             [FromServices] ISender sender) =>
         {
-            var userId = principal.FindFirstValue("sub");
+            var userId = principal.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: true);
+            var command = new RequestEmailChangeCommand(userId.ToString()!, request.NewEmail, SendEmail: true);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
@@ -44,11 +44,11 @@ public class EmailChange : ICarterModule
             ClaimsPrincipal principal,
             [FromServices] ISender sender) =>
         {
-            var userId = principal.FindFirstValue("sub");
+            var userId = principal.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new RequestEmailChangeCommand(userId, request.NewEmail, SendEmail: false);
+            var command = new RequestEmailChangeCommand(userId.ToString()!, request.NewEmail, SendEmail: false);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { callbackUrl = r.CallbackUrl }));

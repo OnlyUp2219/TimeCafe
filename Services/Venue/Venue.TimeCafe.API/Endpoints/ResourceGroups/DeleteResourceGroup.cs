@@ -9,6 +9,7 @@ public class DeleteResourceGroup : ICarterModule
             var result = await sender.Send(new DeleteResourceGroupCommand(id));
             return result.ToHttpResult(r => TypedResults.NoContent());
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceDelete))
         .WithTags("ResourceGroups")
         .WithName("DeleteResourceGroup")
         .WithSummary("Удалить зону")

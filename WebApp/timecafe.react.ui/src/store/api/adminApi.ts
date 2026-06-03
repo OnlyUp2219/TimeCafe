@@ -16,6 +16,12 @@ export interface AuditLogDto {
     startDate: string | null;
     endDate: string | null;
     correlationId: string | null;
+    oldData?: string | null;
+    newData?: string | null;
+    environmentJson?: string | null;
+    customFieldsJson?: string | null;
+    comments?: string | null;
+    exception?: string | null;
 }
 
 export interface GetAuditLogsArgs {

@@ -23,7 +23,13 @@ public sealed class GetAuditLogByIdQueryHandler(IUnitOfWork uow)
             auditLog.CreatedAt,
             auditLog.StartDate,
             auditLog.EndDate,
-            auditLog.CorrelationId);
+            auditLog.CorrelationId,
+            auditLog.OldData,
+            auditLog.NewData,
+            auditLog.EnvironmentJson,
+            auditLog.CustomFieldsJson,
+            auditLog.Comments,
+            auditLog.Exception);
 
         return Result.Ok(dto);
     }

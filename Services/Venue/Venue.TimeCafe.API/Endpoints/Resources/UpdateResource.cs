@@ -10,6 +10,7 @@ public class UpdateResource : ICarterModule
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceUpdate))
         .WithTags("Resources")
         .WithName("UpdateResource")
         .WithSummary("Обновить данные стола")

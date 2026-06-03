@@ -11,7 +11,7 @@ namespace Venue.TimeCafe.Test.Integration.Endpoints.ResourceGroups;
 public class CreateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
 {
     [Fact]
-    public async Task Endpoint_CreateResourceGroup_Should_Return200_WhenRequestIsValid()
+    public async Task Endpoint_CreateResourceGroup_Should_Return201_WhenRequestIsValid()
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -28,7 +28,7 @@ public class CreateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpo
 
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
             var result = JsonSerializer.Deserialize<ResourceGroupDto>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             
             result.Should().NotBeNull();
@@ -40,13 +40,13 @@ public class CreateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpo
         }
         catch (Exception)
         {
-            Console.WriteLine($"[Endpoint_CreateResourceGroup_Should_Return200_WhenRequestIsValid] Response: {jsonString}");
+            Console.WriteLine($"[Endpoint_CreateResourceGroup_Should_Return201_WhenRequestIsValid] Response: {jsonString}");
             throw;
         }
     }
 
     [Fact]
-    public async Task Endpoint_CreateResourceGroup_Should_Return400_WhenNameIsEmpty()
+    public async Task Endpoint_CreateResourceGroup_Should_Return422_WhenNameIsEmpty()
     {
         await ClearDatabaseAndCacheAsync();
 
@@ -59,6 +59,6 @@ public class CreateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpo
         };
 
         var response = await Client.PostAsJsonAsync("/venue/resource-groups", request);
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
     }
 }

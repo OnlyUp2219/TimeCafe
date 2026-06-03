@@ -47,3 +47,11 @@ public sealed class TariffDeactivateFailedError : Error
         Metadata.Add("ErrorCode", "500");
     }
 }
+
+public sealed class TariffInUseError : Error
+{
+    public TariffInUseError() : base("Нельзя удалить тариф, так как он используется в визитах")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

@@ -26,7 +26,7 @@ public class VisitBalancePolicyService(IHttpClientFactory httpClientFactory, ILo
 
         var available = response.Balance.CurrentBalance - response.Balance.Debt;
 
-        if (requirePositiveBalance && available <= 0)
+        if (requirePositiveBalance && available < 0)
         {
             return new VisitBalanceCheckResult(false, "Недостаточно средств для старта визита");
         }

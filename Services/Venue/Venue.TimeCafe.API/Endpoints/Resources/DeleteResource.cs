@@ -9,6 +9,7 @@ public class DeleteResource : ICarterModule
             var result = await sender.Send(new DeleteResourceCommand(id));
             return result.ToHttpResult(r => TypedResults.NoContent());
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceDelete))
         .WithTags("Resources")
         .WithName("DeleteResource")
         .WithSummary("Удалить стол")

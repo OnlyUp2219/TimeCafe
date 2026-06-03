@@ -80,3 +80,12 @@ public sealed class VisitNotActiveError : Error
         Metadata.Add("ErrorCode", "409");
     }
 }
+
+public sealed class VisitAccessDeniedError : Error
+{
+    public VisitAccessDeniedError()
+        : base("Доступ запрещен. Нельзя завершить чужой визит.")
+    {
+        Metadata.Add("ErrorCode", "403");
+    }
+}

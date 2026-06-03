@@ -11,4 +11,10 @@ public sealed record AuditLogDto(
     DateTime CreatedAt,
     DateTime? StartDate,
     DateTime? EndDate,
-    string? CorrelationId);
+    string? CorrelationId,
+    string? OldData = null,
+    string? NewData = null,
+    string? EnvironmentJson = null,
+    string? CustomFieldsJson = null,
+    string? Comments = null,
+    string? Exception = null);

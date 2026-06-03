@@ -18,6 +18,7 @@ public class GetResourceGroups : ICarterModule
             var result = await sender.Send(new GetResourceGroupsQuery());
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceRead))
         .WithTags("ResourceGroups")
         .WithName("GetResourceGroups")
         .WithSummary("Получить все зоны")

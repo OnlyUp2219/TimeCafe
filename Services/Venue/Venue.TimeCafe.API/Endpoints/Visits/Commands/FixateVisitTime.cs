@@ -18,6 +18,6 @@ public class FixateVisitTime : ICarterModule
         .WithDescription("Администратор фиксирует время визита. Переводит статус в WaitingForPayment.")
         .Produces(200)
         .Produces(404)
-        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitEnd));
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitUpdate));
     }
 }

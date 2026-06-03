@@ -285,4 +285,46 @@ public class VisitTests
         visit.Status.Should().Be(VisitStatus.Rejected);
         visit.RejectionReason.Should().Be("Нет свободных мест");
     }
+
+    [Fact]
+    public void CalculateCost_Should_ApplyMinSessionMinutes()
+    {
+        var entryTime = DateTimeOffset.UtcNow;
+        var exitTime = entryTime.AddMinutes(10);
+        var pricePerMinute = 1m;
+
+        var cost = Visit.CalculateCost(
+            tariffBillingType: BillingType.PerMinute,
+            tariffPricePerMinute: pricePerMinute,
+            exitTime: exitTime,
+            entryTime: entryTime,
+            minSessionMinutes: 30
+        );
+
+        cost.ActualMinutes.Should().Be(10);
+        cost.BillableMinutes.Should().Be(30);
+        cost.BaseCost.Should().Be(10m);
+        cost.FinalCost.Should().Be(30m);
+    }
+
+    [Fact]
+    public void CalculateCost_Should_ApplyRoundingRule()
+    {
+        var entryTime = DateTimeOffset.UtcNow;
+        var exitTime = entryTime.AddMinutes(7);
+        var pricePerMinute = 1m;
+
+        var cost = Visit.CalculateCost(
+            tariffBillingType: BillingType.PerMinute,
+            tariffPricePerMinute: pricePerMinute,
+            exitTime: exitTime,
+            entryTime: entryTime,
+            roundingRule: "5min"
+        );
+
+        cost.ActualMinutes.Should().Be(7);
+        cost.BillableMinutes.Should().Be(10);
+        cost.BaseCost.Should().Be(7m);
+        cost.FinalCost.Should().Be(10m);
+    }
 }

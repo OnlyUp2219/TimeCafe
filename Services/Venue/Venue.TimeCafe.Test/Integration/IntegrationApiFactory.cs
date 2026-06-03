@@ -125,6 +125,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
         services.AddMassTransit(cfg =>
         {
             cfg.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>();
+            cfg.AddConsumer<Venue.TimeCafe.Infrastructure.Consumers.InvoicePaidEventConsumer>();
             cfg.UsingInMemory((context, busCfg) => busCfg.ConfigureEndpoints(context));
         });
     }

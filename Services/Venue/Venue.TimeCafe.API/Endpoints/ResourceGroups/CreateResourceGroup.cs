@@ -9,6 +9,7 @@ public class CreateResourceGroup : ICarterModule
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Created($"/resource-groups/{r.ResourceGroupId}", r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceCreate))
         .WithTags("ResourceGroups")
         .WithName("CreateResourceGroup")
         .WithSummary("Создать новую зону")

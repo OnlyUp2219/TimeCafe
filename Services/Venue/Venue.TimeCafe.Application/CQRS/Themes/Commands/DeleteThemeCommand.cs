@@ -23,12 +23,15 @@ public class DeleteThemeCommandHandler(IUnitOfWork uow, IPublisher publisher) : 
             if (existing == null)
                 return Result.Fail(new ThemeNotFoundError());
 
-            var result = await _uow.Themes.DeleteAsync(request.ThemeId, cancellationToken);
-            await _uow.SaveChangesAsync(cancellationToken);
+            var hasTariffs = await _uow.Tariffs.AnyWithThemeIdAsync(request.ThemeId, cancellationToken);
+            if (hasTariffs)
+                return Result.Fail(new ThemeInUseError());
 
+            var result = await _uow.Themes.DeleteAsync(request.ThemeId, cancellationToken);
             if (!result)
                 return Result.Fail(new ThemeDeleteFailedError());
 
+            await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new ThemeChangedEvent(request.ThemeId), cancellationToken);
 
             return Result.Ok();

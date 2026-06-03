@@ -24,7 +24,7 @@ import { type CalcResult, TariffForecastCard } from "@components/Tariff/TariffFo
 import { TariffCarouselSection } from "@components/Tariff/TariffCarouselSection";
 import { VisitParamsCard } from "@components/Tariff/VisitParamsCard";
 import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
-import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation } from "@store/api/venueApi";
+import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
@@ -66,9 +66,12 @@ export const TariffSelectionPage = () => {
     const { data: tariffsData, isLoading: loadingTariffs, refetch: refetchTariffs } = useGetActiveTariffsQuery();
     const { data: hasActive, isFetching: isFetchingHasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
     const [createVisit, { isLoading: startingVisit }] = useCreateVisitMutation();
+    const { data: resourcesData } = useGetResourcesQuery();
+    const { data: activeVisitsData } = useGetActiveVisitsQuery();
 
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [selectedTariffIdForDetails, setSelectedTariffIdForDetails] = useState<string | null>(null);
+    const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
 
     const handleOpenDetails = useCallback((tariff: Tariff) => {
         setSelectedTariffIdForDetails(tariff.tariffId);
@@ -88,6 +91,8 @@ export const TariffSelectionPage = () => {
             themeEmoji: t.themeEmoji ?? null,
             themeColors: t.themeColors ?? null,
             colors: t.themeColors ?? null,
+            maxGuests: t.maxGuests,
+            minSessionMinutes: t.minSessionMinutes,
         }));
     }, [tariffsData]);
 
@@ -109,6 +114,18 @@ export const TariffSelectionPage = () => {
     const [activeIndex, setActiveIndex] = useState<number>(initialActiveIndex);
     const [durationMinutes, setDurationMinutes] = useState<number>(90);
     const [guestsCount, setGuestsCount] = useState<number>(1);
+
+    const freeResources = useMemo(() => {
+        if (!resourcesData) return [];
+        const activeResourceIds = new Set(
+            (activeVisitsData ?? [])
+                .map((v) => v.resourceId)
+                .filter((id): id is string => !!id)
+        );
+        return resourcesData.filter(
+            (res) => res.isActive && !activeResourceIds.has(res.resourceId)
+        );
+    }, [resourcesData, activeVisitsData]);
 
     const calc = useMemo(() => {
         if (!selectedTariff) return null;
@@ -146,6 +163,19 @@ export const TariffSelectionPage = () => {
     }, [dispatch, selectedTariffId, visibleTariffs]);
 
     useEffect(() => {
+        setSelectedResourceId(null);
+    }, [selectedTariffId]);
+
+    useEffect(() => {
+        if (selectedTariff) {
+            const maxGuests = selectedTariff.maxGuests ?? 10;
+            if (guestsCount > maxGuests) {
+                setGuestsCount(maxGuests);
+            }
+        }
+    }, [selectedTariff, guestsCount]);
+
+    useEffect(() => {
         if (hasActive && !isFetchingHasActive) {
             navigate("/visit/active", { replace: true });
         }
@@ -162,7 +192,8 @@ export const TariffSelectionPage = () => {
                 guestsCount,
                 userId,
                 requirePositiveBalance: true,
-                requireEnoughForPlanned: true,
+                requireEnoughForPlanned: false,
+                resourceId: selectedResourceId,
             }).unwrap();
             navigate("/visit/active");
             showToast("Заявка на визит отправлена. Ожидайте подтверждения менеджера.", "info", "Визит");
@@ -170,7 +201,7 @@ export const TariffSelectionPage = () => {
             const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось начать визит";
             showToast(message, "error", "Ошибка");
         }
-    }, [createVisit, durationMinutes, guestsCount, navigate, selectedTariff, showToast, userId]);
+    }, [createVisit, durationMinutes, guestsCount, navigate, selectedTariff, showToast, userId, selectedResourceId]);
 
     const onRetryLoad = useCallback(async () => {
         await refetchTariffs();
@@ -240,6 +271,9 @@ export const TariffSelectionPage = () => {
                         presets={presets}
                         guestsCount={guestsCount}
                         setGuestsCount={setGuestsCount}
+                        resources={freeResources}
+                        selectedResourceId={selectedResourceId}
+                        setSelectedResourceId={setSelectedResourceId}
                     />
 
                     <TariffForecastCard selectedTariff={selectedTariff} calc={calc} />

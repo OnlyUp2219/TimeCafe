@@ -1,5 +1,5 @@
 import type {VisitParamsCardProps} from "@components/Tariff/VisitParamsCardProps";
-import {Body2, Button, Card, Divider, Field, Input, Tag, Title3} from "@fluentui/react-components";
+import {Body2, Button, Card, Divider, Field, Input, Tag, Title3, Select} from "@fluentui/react-components";
 import {clamp} from "@utility/clamp";
 import {formatDurationMinutes} from "@utility/formatDurationMinutes";
 import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
@@ -14,9 +14,13 @@ export const VisitParamsCard = ({
                                     setDurationMinutes,
                                     presets,
                                     guestsCount,
-                                    setGuestsCount
+                                    setGuestsCount,
+                                    resources = [],
+                                    selectedResourceId = null,
+                                    setSelectedResourceId
                                 }: VisitParamsCardProps) => {
     const { sizes } = useComponentSize();
+    const maxGuestsLimit = selectedTariff?.maxGuests ?? 10;
 
     return (
         <Card className="lg:col-span-7" size={sizes.card}>
@@ -60,9 +64,30 @@ export const VisitParamsCard = ({
                             ))}
                         </div>
 
+                        {resources && resources.length > 0 && setSelectedResourceId && (
+                            <Field
+                                label="Столик/Зона"
+                                hint="Выберите свободный столик"
+                                size={sizes.field}
+                            >
+                                <Select
+                                    value={selectedResourceId ?? ""}
+                                    onChange={(_, data) => setSelectedResourceId(data.value || null)}
+                                    size={sizes.input}
+                                >
+                                    <option value="">Не выбран (Любой свободный)</option>
+                                    {resources.map((res) => (
+                                        <option key={res.resourceId} value={res.resourceId}>
+                                            {res.name} (мест: {res.capacity})
+                                        </option>
+                                    ))}
+                                </Select>
+                            </Field>
+                        )}
+
                         <Field
                             label="Количество гостей"
-                            hint="Введите количество гостей (от 1 до 10)"
+                            hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`}
                             size={sizes.field}
                         >
                             <Input
@@ -71,10 +96,10 @@ export const VisitParamsCard = ({
                                 onChange={(_, data) => {
                                     const next = Number(data.value);
                                     if (!Number.isFinite(next)) return;
-                                    setGuestsCount(clamp(next, 1, 10));
+                                    setGuestsCount(clamp(next, 1, maxGuestsLimit));
                                 }}
                                 min={1}
-                                max={10}
+                                max={maxGuestsLimit}
                                 size={sizes.input}
                             />
                         </Field>

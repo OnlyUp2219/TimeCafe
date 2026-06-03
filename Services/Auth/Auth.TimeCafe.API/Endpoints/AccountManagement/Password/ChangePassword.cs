@@ -20,11 +20,11 @@ public sealed class ChangePassword : ICarterModule
         [FromServices] ISender sender
         ) =>
         {
-            var userId = principal.FindFirstValue("sub");
+            var userId = principal.TryGetUserId();
             if (userId == null)
                 return Results.BadRequest(new { errors = new[] { new { code = "UserNotFound", description = "Пользователь не найден" } } });
 
-            var command = new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword);
+            var command = new ChangePasswordCommand(userId.ToString()!, request.CurrentPassword, request.NewPassword);
 
             var result = await sender.Send(command);
 

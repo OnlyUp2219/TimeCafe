@@ -26,7 +26,13 @@ public sealed class GetAuditLogsPageQueryHandler(IUnitOfWork uow)
                 a.CreatedAt,
                 a.StartDate,
                 a.EndDate,
-                a.CorrelationId));
+                a.CorrelationId,
+                a.OldData,
+                a.NewData,
+                a.EnvironmentJson,
+                a.CustomFieldsJson,
+                a.Comments,
+                a.Exception));
 
             var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
 

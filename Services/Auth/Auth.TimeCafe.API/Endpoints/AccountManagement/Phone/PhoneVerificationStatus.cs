@@ -12,11 +12,11 @@ public sealed class PhoneVerificationStatus : ICarterModule
                 ClaimsPrincipal principal,
                 [FromServices] ISender sender) =>
             {
-                var userId = principal.FindFirstValue("sub");
+                var userId = principal.TryGetUserId();
                 if (userId == null)
                     return Results.Unauthorized();
 
-                var query = new GetPhoneVerificationStatusQuery(userId);
+                var query = new GetPhoneVerificationStatusQuery(userId.ToString()!);
                 var result = await sender.Send(query);
 
                 return result.ToHttpResult(r => Results.Ok(new

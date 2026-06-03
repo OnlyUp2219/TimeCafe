@@ -19,6 +19,7 @@ public class UpdateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpo
 
         var request = new
         {
+            ResourceGroupId = group.ResourceGroupId,
             Name = "New Name",
             Description = "Updated Description",
             Capacity = 15,

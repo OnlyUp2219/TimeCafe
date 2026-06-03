@@ -192,11 +192,11 @@ export const ResourcesPage = () => {
                                                             Управление
                                                         </Button>
                                                     ) : (
-                                                        <Button
+                                                         <Button
                                                             size={sizes.button}
                                                             appearance="outline"
                                                             icon={<Add20Regular />}
-                                                            onClick={() => handleOpenWalkIn(res.name)}
+                                                            onClick={() => handleOpenWalkIn(res.resourceId)}
                                                         >
                                                             Посадить
                                                         </Button>
@@ -215,6 +215,7 @@ export const ResourcesPage = () => {
             <WalkInVisitDialog
                 open={walkInOpen}
                 onOpenChange={setWalkInOpen}
+                initialResourceId={selectedResourceId}
                 onSuccess={() => void refetch()}
             />
         </div>

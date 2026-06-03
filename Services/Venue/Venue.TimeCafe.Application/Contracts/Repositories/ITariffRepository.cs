@@ -11,5 +11,6 @@ public interface ITariffRepository : IRepository<Tariff, Guid>
 
     Task<bool> ActivateAsync(Guid tariffId, CancellationToken cancellationToken = default);
     Task<bool> DeactivateAsync(Guid tariffId, CancellationToken cancellationToken = default);
+    Task<bool> AnyWithThemeIdAsync(Guid themeId, CancellationToken cancellationToken = default);
 }
 

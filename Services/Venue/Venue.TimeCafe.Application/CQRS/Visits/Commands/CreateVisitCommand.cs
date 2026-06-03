@@ -6,7 +6,8 @@ public record CreateVisitCommand(
     int? PlannedMinutes = null,
     int GuestsCount = 1,
     bool RequirePositiveBalance = true,
-    bool RequireEnoughForPlanned = false) : ICommand<Visit>;
+    bool RequireEnoughForPlanned = false,
+    Guid? ResourceId = null) : ICommand<Visit>;
 
 public class CreateVisitCommandValidator : AbstractValidator<CreateVisitCommand>
 {
@@ -40,6 +41,13 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             if (tariff.MaxGuests.HasValue && request.GuestsCount > tariff.MaxGuests.Value)
                 return Result.Fail(new Error("Превышено максимальное количество гостей для данного тарифа"));
 
+            if (request.ResourceId.HasValue)
+            {
+                var isBusy = await _uow.Visits.IsResourceBusyAsync(request.ResourceId.Value, cancellationToken);
+                if (isBusy)
+                    return Result.Fail(new Error("Выбранный столик уже занят"));
+            }
+
             if (request.RequirePositiveBalance || request.RequireEnoughForPlanned)
             {
                 var balanceCheck = await _visitBalancePolicyService.CheckBeforeStartAsync(
@@ -60,6 +68,7 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             {
                 UserId = request.UserId,
                 TariffId = request.TariffId,
+                ResourceId = request.ResourceId,
                 EntryTime = DateTimeOffset.UtcNow,
                 PlannedMinutes = request.PlannedMinutes,
                 GuestsCount = request.GuestsCount

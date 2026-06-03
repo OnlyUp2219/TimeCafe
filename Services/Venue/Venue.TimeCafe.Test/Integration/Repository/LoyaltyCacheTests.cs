@@ -47,8 +47,7 @@ public class LoyaltyCacheTests(IntegrationApiFactory factory) : BaseEndpointTest
         createVisit1Resp.StatusCode.Should().Be(HttpStatusCode.Created);
         var visit1Id = JsonDocument.Parse(await createVisit1Resp.Content.ReadAsStringAsync()).RootElement.GetProperty("visitId").GetString();
 
-        var complete1Resp = await Client.PostAsync($"/venue/visits/{visit1Id}/end", null);
-        complete1Resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        await CompleteVisitAsync(Guid.Parse(visit1Id!), userId);
 
         // 2. Получить лояльность (Initial GET)
         var initialGetResponse = await Client.GetAsync($"/venue/loyalty/{userId}");
@@ -66,8 +65,7 @@ public class LoyaltyCacheTests(IntegrationApiFactory factory) : BaseEndpointTest
         createVisit2Resp.StatusCode.Should().Be(HttpStatusCode.Created);
         var visit2Id = JsonDocument.Parse(await createVisit2Resp.Content.ReadAsStringAsync()).RootElement.GetProperty("visitId").GetString();
 
-        var complete2Resp = await Client.PostAsync($"/venue/visits/{visit2Id}/end", null);
-        complete2Resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        await CompleteVisitAsync(Guid.Parse(visit2Id!), userId);
 
         // 4. Получить лояльность после обновления
         // Кэш должен быть инвалидирован, и мы должны увидеть увеличенные счетчики
@@ -79,5 +77,40 @@ public class LoyaltyCacheTests(IntegrationApiFactory factory) : BaseEndpointTest
         
         updatedLoyalty.GetProperty("totalVisitsCount").GetInt32().Should().Be(2, "Количество визитов должно увеличиться, кэш инвалидирован");
         updatedLoyalty.GetProperty("totalSpentAmount").GetDecimal().Should().BeGreaterThan(initialTotalSpent);
+    }
+
+    private async Task CompleteVisitAsync(Guid visitId, Guid userId)
+    {
+        var requestEndResponse = await Client.PostAsync($"/venue/visits/{visitId}/force-end", null);
+        requestEndResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var fixateResponse = await Client.PostAsync($"/venue/visits/{visitId}/fixate-time", null);
+        fixateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var fixateJson = await fixateResponse.Content.ReadAsStringAsync();
+        var fixateResult = JsonSerializer.Deserialize<FixateVisitTimeResponse>(fixateJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var publishEndpoint = scope.ServiceProvider.GetRequiredService<IPublishEndpoint>();
+            await publishEndpoint.Publish(new InvoicePaidEvent
+            {
+                InvoiceId = Guid.NewGuid(),
+                VisitId = visitId,
+                UserId = userId,
+                Amount = fixateResult!.CalculatedCost,
+                PaidAt = DateTimeOffset.UtcNow
+            });
+        }
+
+        for (int i = 0; i < 50; i++)
+        {
+            using var checkScope = Factory.Services.CreateScope();
+            var checkContext = checkScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var updatedVisit = await checkContext.Visits.FindAsync(visitId);
+            if (updatedVisit?.Status == VisitStatus.Completed)
+                break;
+            await Task.Delay(100);
+        }
     }
 }

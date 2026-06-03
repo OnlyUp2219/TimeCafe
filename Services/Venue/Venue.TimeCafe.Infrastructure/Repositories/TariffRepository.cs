@@ -199,4 +199,7 @@ public class TariffRepository(ApplicationDbContext context, HybridCache cache) :
         entity.LastModified = DateTimeOffset.UtcNow;
         return true;
     }
+
+    public async Task<bool> AnyWithThemeIdAsync(Guid themeId, CancellationToken cancellationToken = default) =>
+        await _context.Tariffs.AnyAsync(t => t.ThemeId == themeId, cancellationToken);
 }

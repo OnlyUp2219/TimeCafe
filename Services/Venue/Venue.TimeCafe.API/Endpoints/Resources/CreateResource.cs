@@ -9,6 +9,7 @@ public class CreateResource : ICarterModule
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Created($"/resources/{r.ResourceId}", r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceCreate))
         .WithTags("Resources")
         .WithName("CreateResource")
         .WithSummary("Создать новый стол")

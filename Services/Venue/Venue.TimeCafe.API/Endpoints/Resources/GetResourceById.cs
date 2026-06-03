@@ -9,6 +9,7 @@ public class GetResourceById : ICarterModule
             var result = await sender.Send(new GetResourceByIdQuery(id));
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceRead))
         .WithTags("Resources")
         .WithName("GetResourceById")
         .WithSummary("Получить стол по ID")

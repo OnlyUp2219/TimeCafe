@@ -31,7 +31,7 @@ public class VisitsCacheTests(IntegrationApiFactory factory) : BaseEndpointTest(
         var tariffJsonStr = await createTariffResponse.Content.ReadAsStringAsync();
         tariffId = Guid.Parse(JsonDocument.Parse(tariffJsonStr).RootElement.GetProperty("tariffId").GetString()!);
 
-        var userId = Guid.NewGuid(); // mock user
+        var userId = Guid.Parse(TestAuthHandler.TestUserId);
 
         // 1. Получить данные (Initial GET)
         var initialGetResponse = await Client.GetAsync("/venue/visits/active");
@@ -83,7 +83,7 @@ public class VisitsCacheTests(IntegrationApiFactory factory) : BaseEndpointTest(
         
         // 4. Обновление статуса (PUT/POST/PATCH) 
         // Для визитов обычно вызывается Complete / Cancel / Approve
-        var completeResponse = await Client.PostAsync($"/venue/visits/{createdVisitId}/end", null);
+        var completeResponse = await Client.PostAsync($"/venue/visits/{createdVisitId}/cancel", null);
         completeResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
         // 5. Получить данные (GET after PUT)

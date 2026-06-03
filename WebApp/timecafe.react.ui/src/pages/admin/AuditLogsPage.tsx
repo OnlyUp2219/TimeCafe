@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
     Body1,
     Body2,
@@ -11,8 +11,15 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Dialog,
+    DialogSurface,
+    DialogBody,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Eye20Regular } from "@fluentui/react-icons";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { RequirePermission } from "@components/RequirePermission/RequirePermission";
@@ -23,6 +30,36 @@ import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePagination } from "@hooks/usePagination";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+
+const isUuid = (str: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
+const safeParseJson = (str?: string | null) => {
+    if (!str) return null;
+    try {
+        return JSON.parse(str);
+    } catch {
+        return str;
+    }
+};
+
+const AuditUserCell = ({ userName }: { userName: string }) => {
+    const { data: profile } = useGetProfileByUserIdQuery(userName, {
+        skip: !isUuid(userName),
+    });
+
+    if (!isUuid(userName)) {
+        return <span>{userName}</span>;
+    }
+
+    if (!profile) {
+        return <span className="text-[var(--colorNeutralForeground3)]">{userName.slice(0, 8)}...</span>;
+    }
+
+    const displayName = [profile.lastName, profile.firstName].filter(Boolean).join(" ");
+    return <span>{displayName || profile.firstName || userName}</span>;
+};
 
 
 const formatDateTime = (iso: string) =>
@@ -58,6 +95,14 @@ export const AuditLogsPage = () => {
     const totalCount = data?.metadata.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
+    const [selectedLog, setSelectedLog] = useState<AuditLogDto | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
+
+    const handleOpenDetails = (log: AuditLogDto) => {
+        setSelectedLog(log);
+        setDetailsOpen(true);
+    };
+
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         eventType: { minWidth: 120, defaultWidth: 180, idealWidth: 220 },
         action: { minWidth: 120, defaultWidth: 180, idealWidth: 220 },
@@ -65,6 +110,7 @@ export const AuditLogsPage = () => {
         machineName: { minWidth: 120, defaultWidth: 160, idealWidth: 200 },
         duration: { minWidth: 80, defaultWidth: 120, idealWidth: 140 },
         createdAt: { minWidth: 130, defaultWidth: 170, idealWidth: 200 },
+        actions: { minWidth: 80, defaultWidth: 100, idealWidth: 120 },
     }), []);
 
     const columns: TableColumnDefinition<AuditLogDto>[] = useMemo(() => [
@@ -84,7 +130,7 @@ export const AuditLogsPage = () => {
             columnId: "userName",
             compare: (a, b) => a.userName.localeCompare(b.userName),
             renderHeaderCell: () => "Пользователь",
-            renderCell: (log) => <TableCellLayout truncate>{log.userName}</TableCellLayout>,
+            renderCell: (log) => <TableCellLayout truncate><AuditUserCell userName={log.userName} /></TableCellLayout>,
         }),
         createTableColumn<AuditLogDto>({
             columnId: "machineName",
@@ -104,7 +150,21 @@ export const AuditLogsPage = () => {
             renderHeaderCell: () => "Дата",
             renderCell: (log) => <TableCellLayout truncate>{formatDateTime(log.createdAt)}</TableCellLayout>,
         }),
-    ], []);
+        createTableColumn<AuditLogDto>({
+            columnId: "actions",
+            compare: () => 0,
+            renderHeaderCell: () => "Действия",
+            renderCell: (log) => (
+                <Button
+                    appearance="subtle"
+                    icon={<Eye20Regular />}
+                    onClick={() => handleOpenDetails(log)}
+                >
+                    Детали
+                </Button>
+            ),
+        }),
+    ], [sizes]);
 
     const handleClearFilters = () => {
         setFilters({ eventType: "", userName: "" });
@@ -177,6 +237,62 @@ export const AuditLogsPage = () => {
                     />
                 </div>
             </div>
+
+            <Dialog open={detailsOpen} onOpenChange={(_, data) => setDetailsOpen(data.open)}>
+                <DialogSurface style={{ maxWidth: "800px", width: "100%" }}>
+                    <DialogBody>
+                        <DialogTitle>Детали записи аудита</DialogTitle>
+                        <DialogContent>
+                            {selectedLog && (
+                                <div className="flex flex-col gap-4 py-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                                        <div><strong>ID:</strong> {selectedLog.id}</div>
+                                        <div><strong>Дата:</strong> {formatDateTime(selectedLog.createdAt)}</div>
+                                        <div><strong>Тип события:</strong> {selectedLog.eventType}</div>
+                                        <div><strong>Действие:</strong> {selectedLog.action}</div>
+                                        <div><strong>Пользователь:</strong> <AuditUserCell userName={selectedLog.userName} /></div>
+                                        <div><strong>Машина/Домен:</strong> {selectedLog.machineName} ({selectedLog.domainName})</div>
+                                        <div><strong>Длительность:</strong> {formatDuration(selectedLog.duration)}</div>
+                                        <div><strong>Correlation ID:</strong> {selectedLog.correlationId || "—"}</div>
+                                    </div>
+                                    <hr style={{ border: "0", borderTop: "1px solid var(--colorNeutralStroke1)" }} />
+                                    <div className="flex flex-col gap-2">
+                                        <strong>Полные JSON данные лога:</strong>
+                                        <pre style={{
+                                            backgroundColor: "var(--colorNeutralBackground2)",
+                                            padding: "12px",
+                                            borderRadius: "4px",
+                                            overflowX: "auto",
+                                            fontSize: "12px",
+                                            maxHeight: "400px",
+                                            fontFamily: "monospace",
+                                            whiteSpace: "pre-wrap"
+                                        }}>
+                                            {JSON.stringify(
+                                                {
+                                                    ...selectedLog,
+                                                    oldData: safeParseJson(selectedLog.oldData),
+                                                    newData: safeParseJson(selectedLog.newData),
+                                                    environmentJson: safeParseJson(selectedLog.environmentJson),
+                                                    customFieldsJson: safeParseJson(selectedLog.customFieldsJson),
+                                                    comments: safeParseJson(selectedLog.comments),
+                                                },
+                                                null,
+                                                2
+                                            )}
+                                        </pre>
+                                    </div>
+                                </div>
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button appearance="secondary" onClick={() => setDetailsOpen(false)}>
+                                Закрыть
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </RequirePermission>
     );
 };

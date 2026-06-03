@@ -247,5 +247,11 @@ public class VisitRepository(
         _context.Visits.Remove(visit);
         return true;
     }
+
+    public async Task<bool> IsResourceBusyAsync(Guid resourceId, CancellationToken cancellationToken = default) =>
+        await _context.Visits.AnyAsync(v => v.ResourceId == resourceId && (v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment || v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved), cancellationToken);
+
+    public async Task<bool> AnyWithTariffIdAsync(Guid tariffId, CancellationToken cancellationToken = default) =>
+        await _context.Visits.AnyAsync(v => v.TariffId == tariffId, cancellationToken);
 }
 

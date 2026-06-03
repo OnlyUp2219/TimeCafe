@@ -33,6 +33,7 @@ export interface CreateVisitRequest {
     requirePositiveBalance?: boolean;
     requireEnoughForPlanned?: boolean;
     guestsCount?: number;
+    resourceId?: string | null;
 }
 
 interface CreateVisitResponse {
@@ -312,6 +313,14 @@ export const venueApi = createApi({
             invalidatesTags: [{ type: "ActiveVisit" }, "VisitHistory"],
         }),
 
+        forceEndVisit: builder.mutation<{message: string}, string>({
+            query: (visitId) => ({
+                url: `/venue/visits/${visitId}/force-end`,
+                method: "POST",
+            }),
+            invalidatesTags: [{ type: "ActiveVisit" }, "VisitsPage", "VisitHistory", "PendingVisits"],
+        }),
+
         fixateVisitTime: builder.mutation<FixateVisitTimeResponse, string>({
             query: (visitId) => ({
                 url: `/venue/visits/${visitId}/fixate-time`,
@@ -561,6 +570,7 @@ export const {
     useGetUserLoyaltyQuery,
     useCreateVisitMutation,
     useRequestEndVisitMutation,
+    useForceEndVisitMutation,
     useFixateVisitTimeMutation,
     useWalkInVisitMutation,
     useApproveVisitMutation,

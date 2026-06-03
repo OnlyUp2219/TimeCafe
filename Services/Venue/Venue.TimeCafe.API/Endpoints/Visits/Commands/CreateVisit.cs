@@ -7,6 +7,9 @@ public class CreateVisitRequest
     
     /// <example>a1b2c3d4-e5f6-7890-abcd-ef1234567890</example>
     public Guid TariffId { get; init; }
+
+    /// <example>a1b2c3d4-e5f6-7890-abcd-ef1234567890</example>
+    public Guid? ResourceId { get; init; }
     
     /// <example>120</example>
     public int? PlannedMinutes { get; init; }
@@ -30,12 +33,13 @@ public class CreateVisit : ICarterModule
             [FromBody] CreateVisitRequest request) =>
         {
             var command = new CreateVisitCommand(
-                request.UserId,
-                request.TariffId,
-                request.PlannedMinutes,
-                request.GuestsCount,
-                request.RequirePositiveBalance ?? true,
-                request.RequireEnoughForPlanned ?? false);
+                UserId: request.UserId,
+                TariffId: request.TariffId,
+                PlannedMinutes: request.PlannedMinutes,
+                GuestsCount: request.GuestsCount,
+                RequirePositiveBalance: request.RequirePositiveBalance ?? true,
+                RequireEnoughForPlanned: request.RequireEnoughForPlanned ?? false,
+                ResourceId: request.ResourceId);
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Created($"/visits/{r.VisitId}", r));
         })

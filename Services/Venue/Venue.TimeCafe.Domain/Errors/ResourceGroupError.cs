@@ -31,3 +31,11 @@ public sealed class ResourceGroupDeleteFailedError : Error
         Metadata.Add("ErrorCode", "500");
     }
 }
+
+public sealed class ResourceGroupInUseError : Error
+{
+    public ResourceGroupInUseError() : base("Нельзя удалить группу ресурсов, так как в ней есть ресурсы")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

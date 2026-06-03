@@ -9,10 +9,7 @@ public class ApproveVisit : ICarterModule
             Guid visitId,
             ClaimsPrincipal principal) =>
         {
-            var approvedByUserIdStr = principal.FindFirstValue("sub")
-                ?? principal.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? principal.FindFirstValue("nameid");
-            var approvedByUserId = Guid.Parse(approvedByUserIdStr!);
+            var approvedByUserId = principal.GetUserId();
             var command = new ApproveVisitCommand(visitId, approvedByUserId);
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Ok(r));

@@ -6,9 +6,11 @@ public class RequestEndVisit : ICarterModule
     {
         app.MapPost("/visits/{visitId:guid}/request-end", async (
             [FromServices] ISender sender,
-            Guid visitId) =>
+            Guid visitId,
+            ClaimsPrincipal principal) =>
         {
-            var command = new RequestEndVisitCommand(visitId);
+            var userId = principal.GetUserId();
+            var command = new RequestEndVisitCommand(visitId, userId);
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })
@@ -18,6 +20,8 @@ public class RequestEndVisit : ICarterModule
         .WithDescription("Пользователь запрашивает завершение визита. Таймер продолжает идти.")
         .Produces(200)
         .Produces(404)
+        .Produces(403)
+        .Produces(409)
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueVisitEnd));
     }
 }

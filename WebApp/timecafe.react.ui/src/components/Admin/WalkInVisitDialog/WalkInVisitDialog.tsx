@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     Button,
     Dialog,
@@ -14,7 +14,7 @@ import {
     MessageBarBody,
     Spinner,
 } from "@fluentui/react-components";
-import { useGetActiveTariffsQuery, useWalkInVisitMutation } from "@store/api/venueApi";
+import { useGetActiveTariffsQuery, useWalkInVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
@@ -28,12 +28,29 @@ interface WalkInVisitDialogProps {
 export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResourceId }: WalkInVisitDialogProps) => {
     const { data: tariffs, isLoading: loadingTariffs } = useGetActiveTariffsQuery();
     const [walkInVisit, { isLoading: submitting }] = useWalkInVisitMutation();
+    const { data: resources, isLoading: loadingResources } = useGetResourcesQuery();
+    const { data: activeVisits } = useGetActiveVisitsQuery();
 
     const [tariffId, setTariffId] = useState("");
     const [guestsCount, setGuestsCount] = useState(1);
     const [resourceId, setResourceId] = useState("");
     const [userId, setUserId] = useState("");
     const [error, setError] = useState<string | null>(null);
+
+    const selectedTariff = useMemo(() => tariffs?.find(t => t.tariffId === tariffId), [tariffs, tariffId]);
+    const maxGuestsLimit = selectedTariff?.maxGuests ?? 10;
+
+    const freeResources = useMemo(() => {
+        if (!resources) return [];
+        const activeResourceIds = new Set(
+            (activeVisits ?? [])
+                .map((v) => v.resourceId)
+                .filter((id): id is string => !!id)
+        );
+        return resources.filter(
+            (res) => res.isActive && (!activeResourceIds.has(res.resourceId) || res.resourceId === initialResourceId)
+        );
+    }, [resources, activeVisits, initialResourceId]);
 
     useEffect(() => {
         if (tariffs && tariffs.length > 0 && !tariffId) {
@@ -46,6 +63,15 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
             setResourceId(initialResourceId || "");
         }
     }, [open, initialResourceId]);
+
+    useEffect(() => {
+        if (selectedTariff) {
+            const maxGuests = selectedTariff.maxGuests ?? 10;
+            if (guestsCount > maxGuests) {
+                setGuestsCount(maxGuests);
+            }
+        }
+    }, [selectedTariff, guestsCount]);
 
     const handleOpenChange = (openValue: boolean) => {
         if (!openValue) {
@@ -88,7 +114,7 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
 
     return (
         <Dialog open={open} onOpenChange={(_, data) => handleOpenChange(data.open)}>
-            <DialogSurface aria-describedby={undefined}>
+            <DialogSurface aria-describedby={undefined} style={{ maxWidth: "600px", width: "100%" }}>
                 <DialogBody>
                     <DialogTitle>Быстрая посадка гостя (Walk-in)</DialogTitle>
                     <form onSubmit={handleSubmit}>
@@ -120,23 +146,30 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                                     </Select>
                                 </Field>
 
-                                <Field label="Количество гостей" required>
+                                <Field label="Количество гостей" hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`} required>
                                     <Input
                                         type="number"
                                         min={1}
+                                        max={maxGuestsLimit}
                                         value={guestsCount}
-                                        onChange={(_, data) => setGuestsCount(Number(data.value))}
+                                        onChange={(_, data) => setGuestsCount(Math.min(maxGuestsLimit, Math.max(1, Number(data.value))))}
                                         disabled={submitting}
                                     />
                                 </Field>
 
-                                <Field label="Столик / Ресурс (ID, опционально)">
-                                    <Input
+                                <Field label="Столик / Ресурс (опционально)">
+                                    <Select
                                         value={resourceId}
                                         onChange={(_, data) => setResourceId(data.value)}
-                                        placeholder="Например, Стол №5"
-                                        disabled={submitting}
-                                    />
+                                        disabled={loadingResources || submitting}
+                                    >
+                                        <option value="">Не выбран (Любой свободный)</option>
+                                        {freeResources.map((res) => (
+                                            <option key={res.resourceId} value={res.resourceId}>
+                                                {res.name} (мест: {res.capacity})
+                                            </option>
+                                        ))}
+                                    </Select>
                                 </Field>
 
                                 <Field label="ID Пользователя (опционально, для зарегистрированных гостей)">

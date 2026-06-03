@@ -1,11 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using FluentAssertions;
-using Venue.TimeCafe.Application.CQRS.Resources.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
-using Xunit;
-
 namespace Venue.TimeCafe.Test.Integration.Endpoints.Resources;
 
 public class CreateResourceTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
@@ -30,7 +22,7 @@ public class CreateResourceTests(IntegrationApiFactory factory) : BaseEndpointTe
 
         try
         {
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.StatusCode.Should().Be(HttpStatusCode.Created);
             var result = JsonSerializer.Deserialize<ResourceDto>(jsonString, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             result.Should().NotBeNull();
@@ -63,6 +55,6 @@ public class CreateResourceTests(IntegrationApiFactory factory) : BaseEndpointTe
         };
 
         var response = await Client.PostAsJsonAsync("/venue/resources", request);
-        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

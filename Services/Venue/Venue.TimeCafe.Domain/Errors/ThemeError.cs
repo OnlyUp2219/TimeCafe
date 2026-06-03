@@ -31,3 +31,11 @@ public sealed class ThemeDeleteFailedError : Error
         Metadata.Add("ErrorCode", "500");
     }
 }
+
+public sealed class ThemeInUseError : Error
+{
+    public ThemeInUseError() : base("Нельзя удалить тему, так как она используется в тарифах")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}

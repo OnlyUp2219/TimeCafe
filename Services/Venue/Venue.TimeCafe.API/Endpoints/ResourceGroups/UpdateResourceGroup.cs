@@ -10,6 +10,7 @@ public class UpdateResourceGroup : ICarterModule
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })
+        .RequireAuthorization(policy => policy.RequirePermissions(Permissions.VenueResourceUpdate))
         .WithTags("ResourceGroups")
         .WithName("UpdateResourceGroup")
         .WithSummary("Обновить данные зоны")

@@ -23,8 +23,11 @@ public class DeleteTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) :
             if (existing == null)
                 return Result.Fail(new TariffNotFoundError());
 
-            var result = await _uow.Tariffs.DeleteAsync(request.TariffId, cancellationToken);
+            var hasVisits = await _uow.Visits.AnyWithTariffIdAsync(request.TariffId, cancellationToken);
+            if (hasVisits)
+                return Result.Fail(new TariffInUseError());
 
+            var result = await _uow.Tariffs.DeleteAsync(request.TariffId, cancellationToken);
             if (!result)
                 return Result.Fail(new TariffDeleteFailedError());
 
