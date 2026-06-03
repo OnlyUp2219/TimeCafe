@@ -1,11 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using FluentAssertions;
-using Venue.TimeCafe.Application.CQRS.ResourceGroups.DTOs;
-using Venue.TimeCafe.Test.Integration.Helpers;
-using Xunit;
-
 namespace Venue.TimeCafe.Test.Integration.Endpoints.ResourceGroups;
 
 public class UpdateResourceGroupTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)

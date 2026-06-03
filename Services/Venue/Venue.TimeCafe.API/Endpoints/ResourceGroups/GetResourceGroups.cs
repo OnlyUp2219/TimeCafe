@@ -1,12 +1,3 @@
-using Carter;
-using MediatR;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Venue.TimeCafe.Application.CQRS.ResourceGroups.Queries;
-using BuildingBlocks.Extensions;
-
 namespace Venue.TimeCafe.API.Endpoints.ResourceGroups;
 
 public class GetResourceGroups : ICarterModule

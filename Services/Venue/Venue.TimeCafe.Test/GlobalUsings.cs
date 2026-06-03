@@ -56,3 +56,4 @@ global using BuildingBlocks.Events;
 global using Microsoft.Extensions.DependencyInjection;
 global using Venue.TimeCafe.Infrastructure;
 global using Venue.TimeCafe.Application.CQRS.Resources.DTOs;
+global using Venue.TimeCafe.Application.CQRS.ResourceGroups.DTOs;

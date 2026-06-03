@@ -1,10 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using FluentAssertions;
-using Venue.TimeCafe.Domain.Constants;
-using Venue.TimeCafe.Test.Integration.Helpers;
-
 namespace Venue.TimeCafe.Test.Integration.Repository;
 
 public class VisitsCacheTests(IntegrationApiFactory factory) : BaseEndpointTest(factory)
