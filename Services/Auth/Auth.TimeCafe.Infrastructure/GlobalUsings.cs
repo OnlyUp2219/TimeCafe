@@ -30,3 +30,6 @@ global using Microsoft.Extensions.Logging;
 global using Microsoft.Extensions.Options;
 global using Microsoft.IdentityModel.Tokens;
 global using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+global using BuildingBlocks.Authentication;
+global using BuildingBlocks.Contracts;
+global using Auth.TimeCafe.Infrastructure.Data;

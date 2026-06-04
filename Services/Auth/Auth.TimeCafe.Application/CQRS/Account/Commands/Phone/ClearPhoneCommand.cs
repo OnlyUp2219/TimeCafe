@@ -1,62 +1,45 @@
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
-public record ClearPhoneCommand(string UserId) : IRequest<ClearPhoneResult>;
-
-public record ClearPhoneResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null
-) : ICqrsResult
-{
-    public static ClearPhoneResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
-
-    public static ClearPhoneResult Cleared() =>
-        new(true, Message: "Номер телефона удален");
-
-    public static ClearPhoneResult ClearFailed() =>
-        new(false, Code: "PhoneClearFailed", Message: "Не удалось удалить номер телефона", StatusCode: 500);
-}
+public record ClearPhoneCommand(Guid UserId) : ICommand;
 
 public class ClearPhoneCommandValidator : AbstractValidator<ClearPhoneCommand>
 {
     public ClearPhoneCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
     }
 }
 
 public class ClearPhoneCommandHandler(
-    UserManager<ApplicationUser> userManager
-) : IRequestHandler<ClearPhoneCommand, ClearPhoneResult>
+    UserManager<ApplicationUser> userManager,
+    MediatR.IPublisher publisher
+) : ICommandHandler<ClearPhoneCommand>
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-
-    public async Task<ClearPhoneResult> Handle(ClearPhoneCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result> Handle(ClearPhoneCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
-                return ClearPhoneResult.UserNotFound();
+                return Result.Fail(new UserNotFoundError(request.UserId));
 
             if (string.IsNullOrWhiteSpace(user.PhoneNumber) && !user.PhoneNumberConfirmed)
-                return ClearPhoneResult.Cleared();
+                return Result.Ok();
 
             user.PhoneNumber = null;
             user.PhoneNumberConfirmed = false;
 
-            var updateResult = await _userManager.UpdateAsync(user);
+            var updateResult = await userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
-                return ClearPhoneResult.ClearFailed();
+                return Result.Fail(new PhoneClearFailedError(request.UserId));
 
-            return ClearPhoneResult.Cleared();
+            await publisher.Publish(new Events.UserChangedEvent(user.Id), cancellationToken);
+
+            return Result.Ok();
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(ClearPhoneResult.ClearFailed(), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 }

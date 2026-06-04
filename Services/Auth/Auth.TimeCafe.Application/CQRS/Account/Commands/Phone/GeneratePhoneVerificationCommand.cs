@@ -1,88 +1,57 @@
 using Auth.TimeCafe.Application.CQRS.Sender.Commands;
-
 using Microsoft.Extensions.Configuration;
-
 
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
-public record GeneratePhoneVerificationCommand(string UserId, string PhoneNumber, bool Mock = false) : IRequest<GeneratePhoneVerificationResult>;
+public record PhoneVerificationResponse(string PhoneNumber, string? Token = null, string? Message = null);
 
-public record GeneratePhoneVerificationResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    string? CallbackUrl = null,
-    string? PhoneNumber = null,
-    string? Token = null) : ICqrsResult
-{
-    public static GeneratePhoneVerificationResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
-
-    public static GeneratePhoneVerificationResult MockCallback(string phoneNumber, string token) =>
-        new(true, Message: "Mock SMS сгенерировано", PhoneNumber: phoneNumber, Token: token);
-
-    public static GeneratePhoneVerificationResult Sent(string PhoneNumber) =>
-    new(true, Message: "SMS отправлено",
-        PhoneNumber: PhoneNumber);
-
-    public static GeneratePhoneVerificationResult SendFailed(string PhoneNumber) =>
-        new(false, Code: "SendFailed", Message: "Ошибка при отправке письма", StatusCode: 500,
-            PhoneNumber: PhoneNumber);
-}
+public record GeneratePhoneVerificationCommand(Guid UserId, string PhoneNumber, bool Mock = false) : ICommand<PhoneVerificationResponse>;
 
 public class GeneratePhoneVerificationCommandValidator : AbstractValidator<GeneratePhoneVerificationCommand>
 {
     public GeneratePhoneVerificationCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
-
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
         RuleFor(x => x.PhoneNumber).ValidPhone();
     }
 }
 
 public class GeneratePhoneVerificationCommandHandler(
-UserManager<ApplicationUser> userManager,
-IConfiguration configuration,
-ISender sender,
-ISmsVerificationAttemptTracker attemptTracker
-) : IRequestHandler<GeneratePhoneVerificationCommand, GeneratePhoneVerificationResult>
+    UserManager<ApplicationUser> userManager,
+    IConfiguration configuration,
+    ISender sender,
+    ISmsVerificationAttemptTracker attemptTracker
+) : ICommandHandler<GeneratePhoneVerificationCommand, PhoneVerificationResponse>
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ISender _sender = sender;
-    private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
-
-    public async Task<GeneratePhoneVerificationResult> Handle(GeneratePhoneVerificationCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<PhoneVerificationResponse>> Handle(GeneratePhoneVerificationCommand request, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
         if (user == null)
-            return GeneratePhoneVerificationResult.UserNotFound();
+            return Result.Fail(new PhoneUserNotFoundError(request.UserId));
 
-        var token = await _userManager.GenerateChangePhoneNumberTokenAsync(user, request.PhoneNumber);
+        var token = await userManager.GenerateChangePhoneNumberTokenAsync(user, request.PhoneNumber);
 
         if (request.Mock)
         {
-            _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
-            _attemptTracker.RecordCodeSent(request.UserId, request.PhoneNumber);
-            return GeneratePhoneVerificationResult.MockCallback(request.PhoneNumber, token);
+            attemptTracker.ResetAttempts(request.UserId.ToString(), request.PhoneNumber);
+            attemptTracker.RecordCodeSent(request.UserId.ToString(), request.PhoneNumber);
+            return Result.Ok(new PhoneVerificationResponse(request.PhoneNumber, token, "Mock SMS сгенерировано"));
         }
 
-        string accountSid = _configuration["Twilio:AccountSid"] ?? string.Empty;
-        string authToken = _configuration["Twilio:AuthToken"] ?? string.Empty;
-        string twilioPhoneNumber = _configuration["Twilio:TwilioPhoneNumber"] ?? string.Empty;
+        string accountSid = configuration["Twilio:AccountSid"] ?? string.Empty;
+        string authToken = configuration["Twilio:AuthToken"] ?? string.Empty;
+        string twilioPhoneNumber = configuration["Twilio:TwilioPhoneNumber"] ?? string.Empty;
 
         var sendSmsCommand = new SendSmsCommand(accountSid, authToken, twilioPhoneNumber, request.PhoneNumber, token);
-        var sendResult = await _sender.Send(sendSmsCommand, cancellationToken);
+        var sendResult = await sender.Send(sendSmsCommand, cancellationToken);
 
         if (sendResult != null)
         {
-            _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
-            _attemptTracker.RecordCodeSent(request.UserId, request.PhoneNumber);
-            return GeneratePhoneVerificationResult.Sent(request.PhoneNumber);
+            attemptTracker.ResetAttempts(request.UserId.ToString(), request.PhoneNumber);
+            attemptTracker.RecordCodeSent(request.UserId.ToString(), request.PhoneNumber);
+            return Result.Ok(new PhoneVerificationResponse(request.PhoneNumber, Message: "SMS отправлено"));
         }
 
-        return GeneratePhoneVerificationResult.SendFailed(request.PhoneNumber);
+        return Result.Fail(new PhoneVerificationSendFailedError(request.PhoneNumber));
     }
 }

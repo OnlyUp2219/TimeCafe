@@ -2,13 +2,6 @@ namespace Auth.TimeCafe.Application.CQRS.Admin.Query;
 
 public sealed record GetUserByIdQuery(Guid UserId) : IRequest<Result<AdminUserResponse>>;
 
-public sealed class GetUserByIdQueryValidator : AbstractValidator<GetUserByIdQuery>
-{
-    public GetUserByIdQueryValidator()
-    {
-        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
-    }
-}
 
 public sealed class GetUserByIdQueryHandler(IUserRepository userRepository)
     : IRequestHandler<GetUserByIdQuery, Result<AdminUserResponse>>

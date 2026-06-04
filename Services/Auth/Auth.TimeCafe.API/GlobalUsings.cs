@@ -38,3 +38,9 @@ global using Serilog;
 
 global using BuildingBlocks.Permissions.Grpc;
 global using Grpc.Core;
+
+global using Carter;
+global using BuildingBlocks.Extensions;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Routing;

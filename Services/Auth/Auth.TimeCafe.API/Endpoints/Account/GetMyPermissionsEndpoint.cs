@@ -6,7 +6,7 @@ public class GetMyPermissionsEndpoint : ICarterModule
     {
         app.MapGroup("/account")
             .WithTags("Account")
-            .MapGet("/my-permissions", (ClaimsPrincipal user) =>
+            .MapGet("/my-permissions", async (ClaimsPrincipal user, [FromServices] ISender sender) =>
             {
                 var permissions = user
                     .FindAll(CustomClaimTypes.Permissions)
@@ -14,7 +14,7 @@ public class GetMyPermissionsEndpoint : ICarterModule
                     .Distinct(StringComparer.Ordinal)
                     .ToList();
 
-                return Results.Ok(new { permissions });
+                return await Task.FromResult(Results.Ok(new { permissions }));
             })
             .WithName("GetMyPermissions")
             .WithSummary("Получение разрешений текущего пользователя")

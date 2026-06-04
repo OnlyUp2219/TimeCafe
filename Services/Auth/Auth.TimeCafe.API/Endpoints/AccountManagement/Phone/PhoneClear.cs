@@ -12,14 +12,14 @@ public class PhoneClear : ICarterModule
             ClaimsPrincipal user
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
+            var userId = user.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new ClearPhoneCommand(userId);
+            var command = new ClearPhoneCommand(userId.Value);
             var result = await sender.Send(command);
 
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message }));
+            return result.ToHttpResult(onSuccess: () => Results.Ok(new { message = "Номер телефона удален" }));
         })
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneClear))
         .WithName("ClearPhone")

@@ -14,14 +14,27 @@ public class PhoneVerify : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
+            var userId = user.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new VerifyPhoneCommand(userId, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: true);
+            var command = new VerifyPhoneCommand(userId.Value, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: true);
             var result = await sender.Send(command);
 
-            var extra = new { phoneNumber = result.PhoneNumber, remainingAttempts = result.RemainingAttempts, requiresCaptcha = result.RequiresCaptcha };
+            object extra;
+            if (result.IsSuccess)
+            {
+                extra = new { phoneNumber = result.Value.PhoneNumber, remainingAttempts = result.Value.RemainingAttempts, requiresCaptcha = result.Value.RequiresCaptcha };
+            }
+            else
+            {
+                var firstError = result.Errors.FirstOrDefault();
+                var remainingAttempts = firstError?.Metadata.TryGetValue("RemainingAttempts", out var obj1) == true ? Convert.ToInt32(obj1) : 0;
+                var requiresCaptcha = firstError?.Metadata.TryGetValue("RequiresCaptcha", out var obj2) == true ? Convert.ToBoolean(obj2) : false;
+                var phoneNumber = firstError?.Metadata.TryGetValue("PhoneNumber", out var obj3) == true ? Convert.ToString(obj3) : model.PhoneNumber;
+                extra = new { phoneNumber, remainingAttempts, requiresCaptcha };
+            }
+
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
         })
         .WithName("VerifySmsMock")
@@ -35,14 +48,27 @@ public class PhoneVerify : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
+            var userId = user.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new VerifyPhoneCommand(userId, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: false);
+            var command = new VerifyPhoneCommand(userId.Value, model.PhoneNumber, model.Code, model.CaptchaToken, Mock: false);
             var result = await sender.Send(command);
 
-            var extra = new { phoneNumber = result.PhoneNumber, remainingAttempts = result.RemainingAttempts, requiresCaptcha = result.RequiresCaptcha };
+            object extra;
+            if (result.IsSuccess)
+            {
+                extra = new { phoneNumber = result.Value.PhoneNumber, remainingAttempts = result.Value.RemainingAttempts, requiresCaptcha = result.Value.RequiresCaptcha };
+            }
+            else
+            {
+                var firstError = result.Errors.FirstOrDefault();
+                var remainingAttempts = firstError?.Metadata.TryGetValue("RemainingAttempts", out var obj1) == true ? Convert.ToInt32(obj1) : 0;
+                var requiresCaptcha = firstError?.Metadata.TryGetValue("RequiresCaptcha", out var obj2) == true ? Convert.ToBoolean(obj2) : false;
+                var phoneNumber = firstError?.Metadata.TryGetValue("PhoneNumber", out var obj3) == true ? Convert.ToString(obj3) : model.PhoneNumber;
+                extra = new { phoneNumber, remainingAttempts, requiresCaptcha };
+            }
+
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber, remainingAttempts = r.RemainingAttempts, requiresCaptcha = r.RequiresCaptcha }), extra);
         })
         .WithName("VerifySms")

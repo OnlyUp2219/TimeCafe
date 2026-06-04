@@ -12,7 +12,9 @@ public sealed class DeleteUserCommandValidator : AbstractValidator<DeleteUserCom
 
 public sealed class DeleteUserCommandHandler(
     UserManager<ApplicationUser> userManager,
-    IUserContext userContext)
+    IUserContext userContext,
+    IUnitOfWork uow,
+    IPublisher publisher)
     : IRequestHandler<DeleteUserCommand, Result>
 {
     public async Task<Result> Handle(DeleteUserCommand request, CancellationToken cancellationToken = default)
@@ -30,6 +32,9 @@ public sealed class DeleteUserCommandHandler(
             var errors = identityResult.Errors.Select(e => new Error(e.Description)).ToList();
             return Result.Fail(errors);
         }
+
+        await uow.SaveChangesAsync(cancellationToken);
+        await publisher.Publish(new Events.UserChangedEvent(request.UserId), cancellationToken);
 
         return Result.Ok();
     }

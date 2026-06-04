@@ -19,7 +19,9 @@ public sealed class UpdateUserCommandValidator : AbstractValidator<UpdateUserCom
 }
 
 public sealed class UpdateUserCommandHandler(
-    UserManager<ApplicationUser> userManager)
+    UserManager<ApplicationUser> userManager,
+    IUnitOfWork uow,
+    IPublisher publisher)
     : IRequestHandler<UpdateUserCommand, Result>
 {
     public async Task<Result> Handle(UpdateUserCommand request, CancellationToken cancellationToken = default)
@@ -51,6 +53,9 @@ public sealed class UpdateUserCommandHandler(
             var errors = identityResult.Errors.Select(e => new Error(e.Description)).ToList();
             return Result.Fail(errors);
         }
+
+        await uow.SaveChangesAsync(cancellationToken);
+        await publisher.Publish(new Events.UserChangedEvent(request.UserId), cancellationToken);
 
         return Result.Ok();
     }

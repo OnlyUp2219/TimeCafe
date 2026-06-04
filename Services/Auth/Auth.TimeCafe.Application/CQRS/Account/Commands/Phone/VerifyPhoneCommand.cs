@@ -1,51 +1,19 @@
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
-public record VerifyPhoneCommand(string UserId, string PhoneNumber, string Code, string? CaptchaToken, bool Mock = false) : IRequest<VerifyPhoneResult>;
+public record VerifyPhoneResponse(
+    string PhoneNumber,
+    int RemainingAttempts,
+    bool RequiresCaptcha,
+    string? Message = null
+);
 
-public record VerifyPhoneResult(
-            bool Success,
-            string? Code = null,
-            string? Message = null,
-            int? StatusCode = null,
-            List<ErrorItem>? Errors = null,
-            string? PhoneNumber = null,
-            int? RemainingAttempts = null,
-            bool? RequiresCaptcha = null
-        ) : ICqrsResult
-{
-    public static VerifyPhoneResult UserNotFound(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401,
-            PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-
-    public static VerifyPhoneResult TooManyAttempts(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
-        new(false, Code: "TooManyAttempts", Message: "Превышено количество попыток. Запросите новый код.", StatusCode: 429,
-            PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-
-    public static VerifyPhoneResult CaptchaRequired(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
-        new(false, Code: "CaptchaRequired", Message: "Пройдите проверку капчи", StatusCode: 400,
-            PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-
-    public static VerifyPhoneResult CaptchaInvalid(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
-        new(false, Code: "CaptchaInvalid", Message: "Неверная капча", StatusCode: 400,
-            PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-
-    public static VerifyPhoneResult SuccessResult(string phoneNumber, int remainingAttempts, bool requiresCaptcha, bool mock) =>
-    new(true,
-        Message: mock ? "Номер телефона успешно подтвержден (mock)" : "Номер телефона успешно подтвержден",
-        PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-
-    public static VerifyPhoneResult InvalidCode(string phoneNumber, int remainingAttempts, bool requiresCaptcha) =>
-        new(false, Code: "InvalidCode", Message: "Неверный код подтверждения или истек срок действия", StatusCode: 400,
-            Errors: [new ErrorItem("InvalidCode", "Код недействителен")],
-            PhoneNumber: phoneNumber, RemainingAttempts: remainingAttempts, RequiresCaptcha: requiresCaptcha);
-}
+public record VerifyPhoneCommand(Guid UserId, string PhoneNumber, string Code, string? CaptchaToken, bool Mock = false) : ICommand<VerifyPhoneResponse>;
 
 public class VerifyPhoneCommandValidator : AbstractValidator<VerifyPhoneCommand>
 {
     public VerifyPhoneCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
-
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
         RuleFor(x => x.PhoneNumber).ValidPhone();
     }
 }
@@ -53,49 +21,81 @@ public class VerifyPhoneCommandValidator : AbstractValidator<VerifyPhoneCommand>
 public class VerifyPhoneCommandHandler(
     UserManager<ApplicationUser> userManager,
     ISmsVerificationAttemptTracker attemptTracker,
-    ICaptchaValidator captchaValidator
-) : IRequestHandler<VerifyPhoneCommand, VerifyPhoneResult>
+    ICaptchaValidator captchaValidator,
+    MediatR.IPublisher publisher
+) : ICommandHandler<VerifyPhoneCommand, VerifyPhoneResponse>
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly ISmsVerificationAttemptTracker _attemptTracker = attemptTracker;
-    private readonly ICaptchaValidator _captchaValidator = captchaValidator;
-
-    public async Task<VerifyPhoneResult> Handle(VerifyPhoneCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<VerifyPhoneResponse>> Handle(VerifyPhoneCommand request, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
         if (user == null)
-            return VerifyPhoneResult.UserNotFound(request.PhoneNumber, 0, false);
-        if (!_attemptTracker.CanVerifyCode(request.UserId, request.PhoneNumber))
-            return VerifyPhoneResult.TooManyAttempts(request.PhoneNumber, 0, requiresCaptcha: true);
+        {
+            var error = new PhoneUserNotFoundError(request.UserId);
+            error.Metadata.Add("RemainingAttempts", 0);
+            error.Metadata.Add("RequiresCaptcha", false);
+            error.Metadata.Add("PhoneNumber", request.PhoneNumber);
+            return Result.Fail(error);
+        }
 
-        var remaining = _attemptTracker.GetRemainingAttempts(userId: request.UserId, request.PhoneNumber);
+        if (!attemptTracker.CanVerifyCode(request.UserId.ToString(), request.PhoneNumber))
+        {
+            var error = new PhoneVerificationTooManyAttemptsError(request.PhoneNumber);
+            error.Metadata.Add("RemainingAttempts", 0);
+            error.Metadata.Add("RequiresCaptcha", true);
+            return Result.Fail(error);
+        }
+
+        var remaining = attemptTracker.GetRemainingAttempts(request.UserId.ToString(), request.PhoneNumber);
         if (remaining == 3)
         {
             if (string.IsNullOrEmpty(request.CaptchaToken))
-                return VerifyPhoneResult.CaptchaRequired(request.PhoneNumber, remainingAttempts: remaining, requiresCaptcha: true);
+            {
+                var error = new PhoneVerificationCaptchaRequiredError(request.PhoneNumber);
+                error.Metadata.Add("RemainingAttempts", remaining);
+                error.Metadata.Add("RequiresCaptcha", true);
+                return Result.Fail(error);
+            }
 
-            if (!await _captchaValidator.ValidateAsync(request.CaptchaToken))
-                return VerifyPhoneResult.CaptchaInvalid(request.PhoneNumber, remainingAttempts: remaining, requiresCaptcha: true);
+            if (!await captchaValidator.ValidateAsync(request.CaptchaToken))
+            {
+                var error = new PhoneVerificationCaptchaInvalidError(request.PhoneNumber);
+                error.Metadata.Add("RemainingAttempts", remaining);
+                error.Metadata.Add("RequiresCaptcha", true);
+                return Result.Fail(error);
+            }
         }
 
-        var identityResult = await _userManager.ChangePhoneNumberAsync(user, request.PhoneNumber, request.Code);
+        var identityResult = await userManager.ChangePhoneNumberAsync(user, request.PhoneNumber, request.Code);
         if (identityResult.Succeeded)
         {
-            _attemptTracker.ResetAttempts(request.UserId, request.PhoneNumber);
-            _attemptTracker.ClearPendingVerification(request.UserId, request.PhoneNumber);
-            var attempts = _attemptTracker.GetRemainingAttempts(request.UserId, request.PhoneNumber);
+            attemptTracker.ResetAttempts(request.UserId.ToString(), request.PhoneNumber);
+            attemptTracker.ClearPendingVerification(request.UserId.ToString(), request.PhoneNumber);
+            var attempts = attemptTracker.GetRemainingAttempts(request.UserId.ToString(), request.PhoneNumber);
 
-            return VerifyPhoneResult.SuccessResult(request.PhoneNumber, attempts, false, request.Mock);
+            await publisher.Publish(new Events.UserChangedEvent(user.Id), cancellationToken);
+
+            return Result.Ok(new VerifyPhoneResponse(
+                request.PhoneNumber,
+                attempts,
+                false,
+                request.Mock ? "Номер телефона успешно подтвержден (mock)" : "Номер телефона успешно подтвержден"
+            ));
         }
 
-        _attemptTracker.RecordFailedAttempt(request.UserId, request.PhoneNumber);
-        remaining = _attemptTracker.GetRemainingAttempts(request.UserId, request.PhoneNumber);
+        attemptTracker.RecordFailedAttempt(request.UserId.ToString(), request.PhoneNumber);
+        remaining = attemptTracker.GetRemainingAttempts(request.UserId.ToString(), request.PhoneNumber);
 
         if (remaining <= 0)
         {
-            return VerifyPhoneResult.TooManyAttempts(request.PhoneNumber, remaining, requiresCaptcha: true);
+            var error = new PhoneVerificationTooManyAttemptsError(request.PhoneNumber);
+            error.Metadata.Add("RemainingAttempts", remaining);
+            error.Metadata.Add("RequiresCaptcha", true);
+            return Result.Fail(error);
         }
 
-        return VerifyPhoneResult.InvalidCode(request.PhoneNumber, remaining, remaining == 3);
+        var invalidCodeError = new PhoneVerificationInvalidCodeError(request.PhoneNumber);
+        invalidCodeError.Metadata.Add("RemainingAttempts", remaining);
+        invalidCodeError.Metadata.Add("RequiresCaptcha", remaining == 3);
+        return Result.Fail(invalidCodeError);
     }
 }

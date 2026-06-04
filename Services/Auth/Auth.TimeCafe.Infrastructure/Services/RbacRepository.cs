@@ -5,18 +5,15 @@ public class RbacRepository : IRbacRepository
     private readonly ApplicationDbContext _context;
     private readonly RoleManager<IdentityRole<Guid>> _roleManager;
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly HybridCache _cache;
 
     public RbacRepository(
         ApplicationDbContext context,
         RoleManager<IdentityRole<Guid>> roleManager,
-        UserManager<ApplicationUser> userManager,
-        HybridCache cache)
+        UserManager<ApplicationUser> userManager)
     {
         _context = context;
         _roleManager = roleManager;
         _userManager = userManager;
-        _cache = cache;
     }
 
     public List<string> GetPermissions()
@@ -93,7 +90,6 @@ public class RbacRepository : IRbacRepository
             await _context.SaveChangesAsync();
             if (transaction is not null)
                 await transaction.CommitAsync();
-            await InvalidatePermissionsCacheAsync();
 
             return Result.Ok();
         }
@@ -139,7 +135,6 @@ public class RbacRepository : IRbacRepository
             await _context.SaveChangesAsync();
             if (transaction is not null)
                 await transaction.CommitAsync();
-            await InvalidatePermissionsCacheByRoleAsync(roleName);
 
             return Result.Ok();
         }
@@ -165,8 +160,6 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await InvalidatePermissionsCacheByRoleAsync(roleName);
-
         return Result.Ok();
     }
 
@@ -189,9 +182,6 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await InvalidatePermissionsCacheByRoleAsync(oldRoleName);
-        await InvalidatePermissionsCacheByRoleAsync(newRoleName);
-
         return Result.Ok();
     }
 
@@ -212,9 +202,6 @@ public class RbacRepository : IRbacRepository
         var identityResult = await _userManager.AddToRoleAsync(user, roleName);
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
-
-        await InvalidatePermissionsCacheByUserAsync(userId);
-        await InvalidatePermissionsCacheByRoleAsync(roleName);
 
         return Result.Ok();
     }
@@ -237,27 +224,7 @@ public class RbacRepository : IRbacRepository
         if (!identityResult.Succeeded)
             return Result.Fail(identityResult.Errors.Select(error => error.Description));
 
-        await InvalidatePermissionsCacheByUserAsync(userId);
-        await InvalidatePermissionsCacheByRoleAsync(roleName);
-
         return Result.Ok();
-    }
-
-    private async Task InvalidatePermissionsCacheAsync(CancellationToken cancellationToken = default)
-    {
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.PermissionsTag, cancellationToken);
-    }
-
-    private async Task InvalidatePermissionsCacheByRoleAsync(string roleName, CancellationToken cancellationToken = default)
-    {
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.RolePermissionsTag(roleName), cancellationToken);
-    }
-
-    private async Task InvalidatePermissionsCacheByUserAsync(Guid userId, CancellationToken cancellationToken = default)
-    {
-        await _cache.RemoveAsync(PermissionClaimsCacheKeys.UserPermissionsKey(userId), cancellationToken);
-        await _cache.RemoveByTagAsync(PermissionClaimsCacheKeys.UserPermissionsTag(userId), cancellationToken);
-        await _cache.RemoveByTagAsync($"user_{userId}", cancellationToken);
     }
 
     private static List<string> NormalizeClaims(List<string> claims)

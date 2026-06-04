@@ -1,15 +1,6 @@
-﻿namespace Auth.TimeCafe.Application.CQRS.RBAC.Query;
+namespace Auth.TimeCafe.Application.CQRS.RBAC.Query;
 
 public sealed record GetPermissionQuery(string Permission) : IQuery<string>;
-
-public sealed class GetPermissionQueryValidator : AbstractValidator<GetPermissionQuery>
-{
-    public GetPermissionQueryValidator()
-    {
-        RuleFor(x => x.Permission)
-            .NotEmpty().WithMessage("Разрешение не найдено");
-    }
-}
 
 public sealed class GetPermissionQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetPermissionQuery, string>
 {

@@ -1,51 +1,32 @@
 namespace Auth.TimeCafe.Application.CQRS.Account.Queries;
 
-public record GetPhoneVerificationStatusQuery(string UserId) : IRequest<GetPhoneVerificationStatusResult>;
+public record PhoneVerificationStatusResponse(
+    string? PhoneNumber,
+    bool PhoneNumberConfirmed,
+    bool HasPendingVerification
+);
 
-public record GetPhoneVerificationStatusResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    string? PhoneNumber = null,
-    bool PhoneNumberConfirmed = false,
-    bool HasPendingVerification = false
-) : ICqrsResult
-{
-    public static GetPhoneVerificationStatusResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
-
-    public static GetPhoneVerificationStatusResult Ok(string? phoneNumber, bool confirmed, bool pending) =>
-        new(true, PhoneNumber: phoneNumber, PhoneNumberConfirmed: confirmed, HasPendingVerification: pending);
-}
-
-public class GetPhoneVerificationStatusQueryValidator : AbstractValidator<GetPhoneVerificationStatusQuery>
-{
-    public GetPhoneVerificationStatusQueryValidator()
-    {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
-    }
-}
+public record GetPhoneVerificationStatusQuery(Guid UserId) : IQuery<PhoneVerificationStatusResponse>;
 
 public class GetPhoneVerificationStatusQueryHandler(
     UserManager<ApplicationUser> userManager,
     ISmsVerificationAttemptTracker attemptTracker
-) : IRequestHandler<GetPhoneVerificationStatusQuery, GetPhoneVerificationStatusResult>
+) : IQueryHandler<GetPhoneVerificationStatusQuery, PhoneVerificationStatusResponse>
 {
-    public async Task<GetPhoneVerificationStatusResult> Handle(GetPhoneVerificationStatusQuery request, CancellationToken cancellationToken = default)
+    public async Task<Result<PhoneVerificationStatusResponse>> Handle(GetPhoneVerificationStatusQuery request, CancellationToken cancellationToken = default)
     {
-        var user = await userManager.FindByIdAsync(request.UserId);
+        var user = await userManager.FindByIdAsync(request.UserId.ToString());
         if (user == null)
-            return GetPhoneVerificationStatusResult.UserNotFound();
+            return Result.Fail(new UserNotFoundError(request.UserId));
 
         var hasPending = !string.IsNullOrEmpty(user.PhoneNumber)
                          && !user.PhoneNumberConfirmed
-                         && attemptTracker.HasPendingVerification(request.UserId, user.PhoneNumber);
+                         && attemptTracker.HasPendingVerification(request.UserId.ToString(), user.PhoneNumber);
 
-        return GetPhoneVerificationStatusResult.Ok(
+        return Result.Ok(new PhoneVerificationStatusResponse(
             user.PhoneNumber,
             user.PhoneNumberConfirmed,
-            hasPending);
+            hasPending
+        ));
     }
 }

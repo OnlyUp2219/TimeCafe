@@ -10,13 +10,20 @@ public sealed class DeleteRoleCommandValidator : AbstractValidator<DeleteRoleCom
     }
 }
 
-public sealed class DeleteRoleCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<DeleteRoleCommand>
+public sealed class DeleteRoleCommandHandler(
+    IRbacRepository rbacRepository,
+    IPublisher publisher) : ICommandHandler<DeleteRoleCommand>
 {
     public async Task<Result> Handle(DeleteRoleCommand request, CancellationToken cancellationToken = default)
     {
         if (Roles.IsSystemRole(request.RoleName))
             return Result.Fail(new SystemRoleModificationError(request.RoleName));
 
-        return await rbacRepository.DeleteRoleAsync(request.RoleName);
+        var result = await rbacRepository.DeleteRoleAsync(request.RoleName);
+        if (result.IsSuccess)
+        {
+            await publisher.Publish(new Events.RoleClaimsChangedEvent(request.RoleName), cancellationToken);
+        }
+        return result;
     }
 }

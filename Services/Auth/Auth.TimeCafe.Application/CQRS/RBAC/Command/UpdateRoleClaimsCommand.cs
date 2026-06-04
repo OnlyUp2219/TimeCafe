@@ -11,13 +11,20 @@ public sealed class UpdateRoleClaimsCommandValidator : AbstractValidator<UpdateR
     }
 }
 
-public sealed class UpdateRoleClaimsCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<UpdateRoleClaimsCommand>
+public sealed class UpdateRoleClaimsCommandHandler(
+    IRbacRepository rbacRepository,
+    IPublisher publisher) : ICommandHandler<UpdateRoleClaimsCommand>
 {
     public async Task<Result> Handle(UpdateRoleClaimsCommand request, CancellationToken cancellationToken = default)
     {
         if (Roles.IsSystemRole(request.RoleName))
             return Result.Fail(new SystemRoleModificationError(request.RoleName));
 
-        return await rbacRepository.UpdateRoleClaimsAsync(request.RoleName, request.Claims);
+        var result = await rbacRepository.UpdateRoleClaimsAsync(request.RoleName, request.Claims);
+        if (result.IsSuccess)
+        {
+            await publisher.Publish(new Events.RoleClaimsChangedEvent(request.RoleName), cancellationToken);
+        }
+        return result;
     }
 }

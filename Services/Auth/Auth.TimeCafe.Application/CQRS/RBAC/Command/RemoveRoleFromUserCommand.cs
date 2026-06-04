@@ -14,7 +14,8 @@ public sealed class RemoveRoleFromUserCommandValidator : AbstractValidator<Remov
 public sealed class RemoveRoleFromUserCommandHandler(
     IRbacRepository rbacRepository,
     IUserContext userContext,
-    IUserRepository userRepository) : ICommandHandler<RemoveRoleFromUserCommand>
+    IUserRepository userRepository,
+    IPublisher publisher) : ICommandHandler<RemoveRoleFromUserCommand>
 {
     public async Task<Result> Handle(RemoveRoleFromUserCommand request, CancellationToken cancellationToken = default)
     {
@@ -28,6 +29,11 @@ public sealed class RemoveRoleFromUserCommandHandler(
         if (roles.Count <= 1)
             return Result.Fail(new LastRoleRemovalError());
 
-        return await rbacRepository.RemoveRoleFromUserAsync(request.UserId, request.RoleName);
+        var result = await rbacRepository.RemoveRoleFromUserAsync(request.UserId, request.RoleName);
+        if (result.IsSuccess)
+        {
+            await publisher.Publish(new Events.UserRolesChangedEvent(request.UserId, request.RoleName), cancellationToken);
+        }
+        return result;
     }
 }

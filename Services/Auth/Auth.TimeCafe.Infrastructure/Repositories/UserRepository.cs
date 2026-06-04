@@ -19,7 +19,7 @@ public class UserRepository(
         var cacheKey = $"users_page_{page}_{pageSize}_{search ?? "null"}_{status ?? "null"}";
 
         var stopwatch = Stopwatch.StartNew();
-        var result = await _cache.GetOrCreateAsync(
+        var cachedResult = await _cache.GetOrCreateAsync(
             cacheKey,
             async token =>
             {
@@ -49,7 +49,17 @@ public class UserRepository(
                     .Take(pageSize)
                     .ToListAsync(token);
 
-                return (users, totalCount);
+                var cachedUsers = users.Select(u => new CachedUserDto(
+                    u.Id,
+                    u.Email,
+                    u.UserName,
+                    u.LockoutEnd,
+                    u.PhoneNumber,
+                    u.EmailConfirmed,
+                    u.PhoneNumberConfirmed
+                )).ToList();
+
+                return new CachedUsersPageDto(cachedUsers, totalCount);
             },
             new HybridCacheEntryOptions { Expiration = TimeSpan.FromMinutes(5) },
             tags: ["users"],
@@ -67,7 +77,23 @@ public class UserRepository(
                 status);
         }
 
-        return result;
+        if (cachedResult == null)
+        {
+            return ([], 0);
+        }
+
+        var usersList = cachedResult.Users.Select(cu => new ApplicationUser
+        {
+            Id = cu.Id,
+            Email = cu.Email,
+            UserName = cu.UserName,
+            LockoutEnd = cu.LockoutEnd,
+            PhoneNumber = cu.PhoneNumber,
+            EmailConfirmed = cu.EmailConfirmed,
+            PhoneNumberConfirmed = cu.PhoneNumberConfirmed
+        }).ToList();
+
+        return (usersList, cachedResult.TotalCount);
     }
 
     public async Task<List<string>> GetUserRolesAsync(Guid userId, CancellationToken ct)
@@ -119,3 +145,19 @@ public class UserRepository(
         return await _userManager.FindByIdAsync(userId.ToString());
     }
 }
+
+public sealed record CachedUserDto(
+    Guid Id,
+    string? Email,
+    string? UserName,
+    DateTimeOffset? LockoutEnd,
+    string? PhoneNumber,
+    bool EmailConfirmed,
+    bool PhoneNumberConfirmed
+);
+
+public sealed record CachedUsersPageDto(
+    List<CachedUserDto> Users,
+    int TotalCount
+);
+

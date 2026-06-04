@@ -11,7 +11,9 @@ public sealed class UpdateRoleNameCommandValidator : AbstractValidator<UpdateRol
     }
 }
 
-public sealed class UpdateRoleNameCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<UpdateRoleNameCommand>
+public sealed class UpdateRoleNameCommandHandler(
+    IRbacRepository rbacRepository,
+    IPublisher publisher) : ICommandHandler<UpdateRoleNameCommand>
 {
     public async Task<Result> Handle(UpdateRoleNameCommand request, CancellationToken cancellationToken = default)
     {
@@ -21,6 +23,12 @@ public sealed class UpdateRoleNameCommandHandler(IRbacRepository rbacRepository)
         if (Roles.IsSystemRole(request.NewRoleName))
             return Result.Fail(new SystemRoleModificationError(request.NewRoleName));
 
-        return await rbacRepository.UpdateRoleNameAsync(request.OldRoleName, request.NewRoleName);
+        var result = await rbacRepository.UpdateRoleNameAsync(request.OldRoleName, request.NewRoleName);
+        if (result.IsSuccess)
+        {
+            await publisher.Publish(new Events.RoleClaimsChangedEvent(request.OldRoleName), cancellationToken);
+            await publisher.Publish(new Events.RoleClaimsChangedEvent(request.NewRoleName), cancellationToken);
+        }
+        return result;
     }
 }

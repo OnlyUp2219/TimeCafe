@@ -17,14 +17,14 @@ public class PhoneSave : ICarterModule
             [FromBody] SavePhoneRequest model
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
-            if (userId == null)
+            var userIdStr = user.FindFirst("sub")?.Value;
+            if (userIdStr == null || !Guid.TryParse(userIdStr, out var userId))
                 return Results.Unauthorized();
 
             var command = new SavePhoneCommand(userId, model.PhoneNumber);
             var result = await sender.Send(command);
 
-            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = r.Message, phoneNumber = r.PhoneNumber }));
+            return result.ToHttpResult(onSuccess: r => Results.Ok(new { message = "Номер телефона сохранен", phoneNumber = r }));
         })
         .RequireAuthorization(policy => policy.RequirePermissions(Permissions.AccountPhoneSave))
         .WithName("SavePhone")

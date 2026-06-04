@@ -22,11 +22,11 @@ public class PhoneGenerate : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
+            var userId = user.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: true);
+            var command = new GeneratePhoneVerificationCommand(userId.Value, model.PhoneNumber, Mock: true);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message, token = r.Token }));
@@ -44,11 +44,11 @@ public class PhoneGenerate : ICarterModule
             [FromBody] PhoneVerificationRequest model
         ) =>
         {
-            var userId = user.FindFirst("sub")?.Value;
+            var userId = user.TryGetUserId();
             if (userId == null)
                 return Results.Unauthorized();
 
-            var command = new GeneratePhoneVerificationCommand(userId, model.PhoneNumber, Mock: false);
+            var command = new GeneratePhoneVerificationCommand(userId.Value, model.PhoneNumber, Mock: false);
             var result = await sender.Send(command);
 
             return result.ToHttpResult(onSuccess: r => Results.Ok(new { phoneNumber = r.PhoneNumber, message = r.Message }));

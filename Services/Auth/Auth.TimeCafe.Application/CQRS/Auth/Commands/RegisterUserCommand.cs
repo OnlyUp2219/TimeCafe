@@ -38,13 +38,13 @@ public class RegisterUserCommandHandler(
     IEmailSender<ApplicationUser> emailSender,
     IOptionsSnapshot<PostmarkOptions> postmarkOptions,
     IPublishEndpoint publishEndpoint,
-    HybridCache cache) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
+    MediatR.IPublisher publisher) : IRequestHandler<RegisterUserCommand, RegisterUserResult>
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IEmailSender<ApplicationUser> _emailSender = emailSender;
     private readonly IOptionsSnapshot<PostmarkOptions> _postmarkOptions = postmarkOptions;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
-    private readonly HybridCache _cache = cache;
+    private readonly MediatR.IPublisher _publisher = publisher;
 
     // TODO : добавить транзакцию, чтобы при ошибке отправки письма удалять пользователя и публиковать событие только после успешной отправки письма
     public async Task<RegisterUserResult> Handle(RegisterUserCommand request, CancellationToken cancellationToken = default)
@@ -75,7 +75,7 @@ public class RegisterUserCommandHandler(
                 return RegisterUserResult.Error(errs);
             }
 
-            await _cache.RemoveByTagAsync("users", cancellationToken);
+            await _publisher.Publish(new Events.UserChangedEvent(user.Id), cancellationToken);
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));

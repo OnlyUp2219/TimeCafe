@@ -1,67 +1,47 @@
 namespace Auth.TimeCafe.Application.CQRS.Account.Commands.Phone;
 
-public record SavePhoneCommand(string UserId, string PhoneNumber) : IRequest<SavePhoneResult>;
-
-public record SavePhoneResult(
-    bool Success,
-    string? Code = null,
-    string? Message = null,
-    int? StatusCode = null,
-    List<ErrorItem>? Errors = null,
-    string? PhoneNumber = null
-) : ICqrsResult
-{
-    public static SavePhoneResult UserNotFound() =>
-        new(false, Code: "UserNotFound", Message: "Пользователь не найден", StatusCode: 401);
-
-    public static SavePhoneResult Saved(string phoneNumber) =>
-        new(true, Message: "Номер телефона сохранен", PhoneNumber: phoneNumber);
-
-    public static SavePhoneResult SaveFailed(string phoneNumber) =>
-        new(false, Code: "PhoneSaveFailed", Message: "Не удалось сохранить номер телефона", StatusCode: 500,
-            PhoneNumber: phoneNumber);
-}
+public record SavePhoneCommand(Guid UserId, string PhoneNumber) : ICommand<string>;
 
 public class SavePhoneCommandValidator : AbstractValidator<SavePhoneCommand>
 {
     public SavePhoneCommandValidator()
     {
-        RuleFor(x => x.UserId).ValidEntityId("Пользователь не найден");
-
+        RuleFor(x => x.UserId).ValidGuidEntityId("Пользователь не найден");
         RuleFor(x => x.PhoneNumber).ValidPhone();
     }
 }
 
 public class SavePhoneCommandHandler(
-    UserManager<ApplicationUser> userManager
-) : IRequestHandler<SavePhoneCommand, SavePhoneResult>
+    UserManager<ApplicationUser> userManager,
+    MediatR.IPublisher publisher
+) : ICommandHandler<SavePhoneCommand, string>
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-
-    public async Task<SavePhoneResult> Handle(SavePhoneCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<string>> Handle(SavePhoneCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await userManager.FindByIdAsync(request.UserId.ToString());
             if (user == null)
-                return SavePhoneResult.UserNotFound();
+                return Result.Fail(new UserNotFoundError(request.UserId));
 
             var normalizedPhone = NormalizePhone(request.PhoneNumber);
             if (string.Equals(user.PhoneNumber, normalizedPhone, StringComparison.Ordinal) && !user.PhoneNumberConfirmed)
-                return SavePhoneResult.Saved(normalizedPhone);
+                return Result.Ok(normalizedPhone);
 
             user.PhoneNumber = normalizedPhone;
             user.PhoneNumberConfirmed = false;
 
-            var updateResult = await _userManager.UpdateAsync(user);
+            var updateResult = await userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
-                return SavePhoneResult.SaveFailed(normalizedPhone);
+                return Result.Fail(new PhoneSaveFailedError(normalizedPhone));
 
-            return SavePhoneResult.Saved(normalizedPhone);
+            await publisher.Publish(new Events.UserChangedEvent(user.Id), cancellationToken);
+
+            return Result.Ok(normalizedPhone);
         }
         catch (Exception ex)
         {
-            throw new CqrsResultException(SavePhoneResult.SaveFailed(request.PhoneNumber), ex);
+            return Result.Fail(new Error("Внутренняя ошибка").CausedBy(ex));
         }
     }
 

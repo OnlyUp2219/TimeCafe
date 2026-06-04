@@ -10,7 +10,6 @@
 		<PackageReference Include="MassTransit" />
 		<PackageReference Include="FluentResults" />
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-		<PackageReference Include="Audit.EntityFramework.Core" />
 	</ItemGroup>
 
 			

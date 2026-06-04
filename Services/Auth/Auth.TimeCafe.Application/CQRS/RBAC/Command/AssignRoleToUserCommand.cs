@@ -11,13 +11,20 @@ public sealed class AssignRoleToUserCommandValidator : AbstractValidator<AssignR
     }
 }
 
-public sealed class AssignRoleToUserCommandHandler(IRbacRepository rbacRepository) : ICommandHandler<AssignRoleToUserCommand>
+public sealed class AssignRoleToUserCommandHandler(
+    IRbacRepository rbacRepository,
+    IPublisher publisher) : ICommandHandler<AssignRoleToUserCommand>
 {
     public async Task<Result> Handle(AssignRoleToUserCommand request, CancellationToken cancellationToken = default)
     {
         if (request.RoleName.Equals(BuildingBlocks.Permissions.Roles.SuperAdmin, StringComparison.OrdinalIgnoreCase))
             return Result.Fail(new SuperAdminModificationError());
 
-        return await rbacRepository.AssignRoleToUserAsync(request.UserId, request.RoleName);
+        var result = await rbacRepository.AssignRoleToUserAsync(request.UserId, request.RoleName);
+        if (result.IsSuccess)
+        {
+            await publisher.Publish(new Events.UserRolesChangedEvent(request.UserId, request.RoleName), cancellationToken);
+        }
+        return result;
     }
 }

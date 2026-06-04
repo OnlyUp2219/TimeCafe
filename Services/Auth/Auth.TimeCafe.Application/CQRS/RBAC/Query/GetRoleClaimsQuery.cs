@@ -1,7 +1,6 @@
-﻿namespace Auth.TimeCafe.Application.CQRS.RBAC.Query;
+namespace Auth.TimeCafe.Application.CQRS.RBAC.Query;
 
 public sealed record GetRoleClaimsQuery() : IQuery<List<RoleClaimsResponse>>;
-
 
 public sealed class GetRoleClaimsQueryHandler(IRbacRepository rbacRepository) : IQueryHandler<GetRoleClaimsQuery, List<RoleClaimsResponse>>
 {

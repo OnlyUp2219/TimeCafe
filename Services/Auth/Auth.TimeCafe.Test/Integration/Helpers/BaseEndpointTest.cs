@@ -1,3 +1,5 @@
+using System.Security.Claims;
+
 namespace Auth.TimeCafe.Test.Integration.Helpers;
 
 public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFixture<IntegrationApiFactory>
@@ -75,4 +77,76 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
 
         return (user.Id, token);
     }
+
+    protected async Task EnsureRoleWithPermissionsAsync(string roleName, IEnumerable<string>? rolePermissions)
+    {
+        using var scope = Factory.Services.CreateScope();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+        var identityRole = await roleManager.FindByNameAsync(roleName);
+        if (identityRole is null)
+        {
+            identityRole = new IdentityRole<Guid>(roleName);
+            var createRole = await roleManager.CreateAsync(identityRole);
+            createRole.Succeeded.Should().BeTrue();
+        }
+
+        if (rolePermissions is null)
+            return;
+
+        var existingClaims = await roleManager.GetClaimsAsync(identityRole);
+        foreach (var claim in existingClaims.Where(c => c.Type == BuildingBlocks.Permissions.CustomClaimTypes.Permissions))
+        {
+            await roleManager.RemoveClaimAsync(identityRole, claim);
+        }
+
+        foreach (var permission in rolePermissions.Distinct(StringComparer.Ordinal))
+        {
+            await roleManager.AddClaimAsync(identityRole, new Claim(BuildingBlocks.Permissions.CustomClaimTypes.Permissions, permission));
+        }
+    }
+
+    protected async Task<(Guid userId, string accessToken)> CreateUserAndLoginAsync(string? roleName = null, IEnumerable<string>? rolePermissions = null)
+    {
+        var email = $"rbac_user_{Guid.NewGuid():N}@example.com";
+        const string password = "P@ssw0rd!";
+
+        using var scope = Factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        if (!string.IsNullOrWhiteSpace(roleName))
+        {
+            await EnsureRoleWithPermissionsAsync(roleName, rolePermissions);
+        }
+
+        var user = new ApplicationUser
+        {
+            UserName = email,
+            Email = email,
+            EmailConfirmed = true
+        };
+
+        var createUser = await userManager.CreateAsync(user, password);
+        createUser.Succeeded.Should().BeTrue();
+
+        if (!string.IsNullOrWhiteSpace(roleName))
+        {
+            var addRole = await userManager.AddToRoleAsync(user, roleName);
+            addRole.Succeeded.Should().BeTrue();
+        }
+
+        var loginResponse = await Client.PostAsJsonAsync("/auth/login-jwt", new { Email = email, Password = password });
+        loginResponse.EnsureSuccessStatusCode();
+
+        var json = JsonDocument.Parse(await loginResponse.Content.ReadAsStringAsync()).RootElement;
+        var accessToken = json.GetProperty("accessToken").GetString()!;
+        return (user.Id, accessToken);
+    }
+
+    protected async Task<string> CreateUserWithRoleAndLoginAsync(string role, IEnumerable<string>? rolePermissions = null)
+    {
+        var (_, token) = await CreateUserAndLoginAsync(role, rolePermissions);
+        return token;
+    }
 }
+

@@ -1,5 +1,3 @@
-using BuildingBlocks.Authentication;
-
 namespace Auth.TimeCafe.Infrastructure;
 
 public static class DependencyInjection
@@ -10,6 +8,7 @@ public static class DependencyInjection
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRbacRepository, RbacRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;
     }
 }

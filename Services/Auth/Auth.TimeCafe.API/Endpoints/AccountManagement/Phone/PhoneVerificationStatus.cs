@@ -16,7 +16,7 @@ public sealed class PhoneVerificationStatus : ICarterModule
                 if (userId == null)
                     return Results.Unauthorized();
 
-                var query = new GetPhoneVerificationStatusQuery(userId.ToString()!);
+                var query = new GetPhoneVerificationStatusQuery(userId.Value);
                 var result = await sender.Send(query);
 
                 return result.ToHttpResult(r => Results.Ok(new

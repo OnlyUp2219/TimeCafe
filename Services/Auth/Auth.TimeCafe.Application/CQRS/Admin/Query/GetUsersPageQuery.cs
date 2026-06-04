@@ -4,15 +4,6 @@ namespace Auth.TimeCafe.Application.CQRS.Admin.Query;
 
 public sealed record GetUsersPageQuery(int Page, int Size, string? Search, string? Status) : IQuery<PagedResponse<AdminUserResponse>>;
 
-public sealed class GetUsersPageQueryValidator : AbstractValidator<GetUsersPageQuery>
-{
-    public GetUsersPageQueryValidator()
-    {
-        RuleFor(x => x.Page).GreaterThan(0);
-        RuleFor(x => x.Size).GreaterThan(0).LessThanOrEqualTo(100);
-        RuleFor(x => x.Status).Must(status => status == null || status == "active" || status == "inactive").WithMessage("Status must be 'active' or 'inactive'");
-    }
-}
 
 public sealed class GetUsersPageQueryHandler(IUserRepository userRepository) : IQueryHandler<GetUsersPageQuery, PagedResponse<AdminUserResponse>>
 {

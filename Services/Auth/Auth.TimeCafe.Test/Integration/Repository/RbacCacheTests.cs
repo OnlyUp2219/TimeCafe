@@ -1,8 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using FluentAssertions;
-using Auth.TimeCafe.Test.Integration.Helpers;
 
 namespace Auth.TimeCafe.Test.Integration.Repository;
 
@@ -11,14 +6,14 @@ public class RbacCacheTests(IntegrationApiFactory factory) : BaseEndpointTest(fa
     [Fact]
     public async Task Cache_ShouldBeInvalidated_OnUpdateRoleClaims()
     {
-        var (_, accessToken) = await CreateAuthenticatedUserAsync();
+        var (_, accessToken) = await CreateUserAndLoginAsync("CacheAdmin", [Permissions.RbacRoleCreate, Permissions.RbacRoleClaimsUpdate, Permissions.RbacRoleRead]);
         Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
         
         // Arrange
         var roleName = "CacheTestRole";
         var claims = new List<string> { "TestPermission1" };
 
-        var createPayload = new { name = roleName };
+        var createPayload = new { roleName, claims = new List<string>() };
         var createResponse = await Client.PostAsJsonAsync("/auth/rbac/roles", createPayload);
         createResponse.EnsureSuccessStatusCode();
 
