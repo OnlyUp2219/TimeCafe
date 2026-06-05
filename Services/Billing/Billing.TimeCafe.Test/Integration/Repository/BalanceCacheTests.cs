@@ -27,7 +27,7 @@ public class BalanceCacheTests(IntegrationApiFactory factory) : BaseEndpointTest
         {
             try
             {
-                initialBalanceAmount = JsonDocument.Parse(initialJsonStr).RootElement.GetProperty("balance").GetProperty("amount").GetDecimal();
+                initialBalanceAmount = JsonDocument.Parse(initialJsonStr).RootElement.GetProperty("balance").GetProperty("currentBalance").GetDecimal();
             }
             catch(Exception)
             {
@@ -54,7 +54,7 @@ public class BalanceCacheTests(IntegrationApiFactory factory) : BaseEndpointTest
         getAfterCreateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         
         var getAfterCreateJsonStr = await getAfterCreateResponse.Content.ReadAsStringAsync();
-        var updatedBalanceAmount = JsonDocument.Parse(getAfterCreateJsonStr).RootElement.GetProperty("balance").GetProperty("amount").GetDecimal();
+        var updatedBalanceAmount = JsonDocument.Parse(getAfterCreateJsonStr).RootElement.GetProperty("balance").GetProperty("currentBalance").GetDecimal();
         
         updatedBalanceAmount.Should().Be(initialBalanceAmount + 50.0m, $"Баланс должен обновиться. Получен JSON: {getAfterCreateJsonStr}");
     }

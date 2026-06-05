@@ -13,7 +13,7 @@ public class CardInvoicePaymentStrategy(IUnitOfWork uow) : IInvoicePaymentStrate
             return payResult;
 
         var paymentResult = Payment.Create(
-            invoice.UserId ?? Guid.Empty,
+            invoice.UserId,
             invoice.TotalAmount,
             PaymentMethod.Card
         );
@@ -22,7 +22,7 @@ public class CardInvoicePaymentStrategy(IUnitOfWork uow) : IInvoicePaymentStrate
             return paymentResult.ToResult();
 
         var payment = paymentResult.Value;
-        payment.MarkAsSucceeded(Guid.Empty);
+        payment.MarkAsSucceeded(null);
         await _uow.Payments.CreateAsync(payment, cancellationToken);
 
         return Result.Ok();

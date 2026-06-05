@@ -37,8 +37,6 @@ public class PayInvoiceCommandHandler(
             return payResult;
 
         await _uow.Invoices.UpdateAsync(invoice, cancellationToken);
-        await _uow.SaveChangesAsync(cancellationToken);
-
         await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);
 
         await _publishEndpoint.Publish(new InvoicePaidEvent
@@ -49,6 +47,8 @@ public class PayInvoiceCommandHandler(
             Amount = invoice.TotalAmount,
             PaidAt = invoice.PaidAt ?? DateTimeOffset.UtcNow
         }, cancellationToken);
+
+        await _uow.SaveChangesAsync(cancellationToken);
 
         return Result.Ok();
     }

@@ -15,7 +15,7 @@ public class UpdateThemeCommandValidator : AbstractValidator<UpdateThemeCommand>
             .When(x => !string.IsNullOrEmpty(x.Emoji));
 
         RuleFor(x => x.Colors)
-            .MaximumLength(2000).WithMessage("Colors слишком длинный")
+            .MaximumLength(10000).WithMessage("Colors слишком длинный")
             .Must(colors => string.IsNullOrEmpty(colors) || IsValidJson(colors)).WithMessage("Colors должен быть корректным JSON")
             .When(x => x.Colors != null);
 

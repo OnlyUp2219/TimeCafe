@@ -17,11 +17,32 @@ public class InvoicePaidEventConsumer(
             return;
         }
 
+        if (visit.Status == VisitStatus.Completed)
+        {
+            logger.LogInformation("Визит {VisitId} уже завершён (Completed) при получении оплаты по счёту {InvoiceId}.", message.VisitId, message.InvoiceId);
+            return;
+        }
+
+        if (visit.Status == VisitStatus.Cancelled || visit.Status == VisitStatus.Rejected)
+        {
+            logger.LogWarning("Счёт {InvoiceId} оплачен, но визит {VisitId} имеет статус {Status}. Игнорируем.", message.InvoiceId, message.VisitId, visit.Status);
+            return;
+        }
+
+        if (visit.Status == VisitStatus.Active)
+        {
+            logger.LogWarning("Счёт {InvoiceId} оплачен, но визит {VisitId} всё ещё в статусе Active. Фиксируем время по факту оплаты.", message.InvoiceId, message.VisitId);
+            var fixateResult = visit.FixateTime(message.Amount, message.PaidAt);
+            if (fixateResult.IsFailed)
+            {
+                throw new InvalidOperationException($"Не удалось зафиксировать время визита {message.VisitId}: {fixateResult.Errors[0].Message}");
+            }
+        }
+
         var result = visit.Complete();
         if (result.IsFailed)
         {
-            logger.LogError("Не удалось перевести визит {VisitId} в статус Completed: {Error}", message.VisitId, result.Errors[0].Message);
-            return;
+            throw new InvalidOperationException($"Не удалось перевести визит {message.VisitId} в статус Completed: {result.Errors[0].Message}");
         }
 
         await uow.Visits.UpdateAsync(visit, context.CancellationToken);

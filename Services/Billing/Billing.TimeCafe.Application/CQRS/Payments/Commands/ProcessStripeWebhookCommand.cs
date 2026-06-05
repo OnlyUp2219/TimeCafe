@@ -139,10 +139,13 @@ public sealed class ProcessStripeWebhookCommandHandler(
 
     private async Task<Result> HandleSuccess(Payment payment, StripePaymentIntentObject session, CancellationToken cancellationToken = default)
     {
+        if (!payment.UserId.HasValue)
+            return Result.Fail(new Error("Анонимный платеж не может пополнить баланс"));
+
         var amount = session.AmountTotal > 0 ? session.AmountTotal / 100m : payment.Amount;
 
         var adjustResult = await _sender.Send(new AdjustBalanceCommand(
-            payment.UserId,
+            payment.UserId.Value,
             amount,
             TransactionType.Deposit,
             TransactionSource.Payment,

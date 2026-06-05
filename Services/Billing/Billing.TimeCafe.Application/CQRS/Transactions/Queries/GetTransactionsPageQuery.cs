@@ -19,6 +19,7 @@ public sealed class GetTransactionsPageQueryHandler(IUnitOfWork uow)
                 t.Amount,
                 (int)t.Type,
                 (int)t.Source,
+                t.SourceId,
                 (int)t.Status,
                 t.Comment,
                 t.CreatedAt,

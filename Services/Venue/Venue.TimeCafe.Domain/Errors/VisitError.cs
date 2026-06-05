@@ -99,3 +99,28 @@ public sealed class ResourceAlreadyInUseError : Error
     }
 }
 
+public sealed class InvalidVisitStatusForBillingError : Error
+{
+    public InvalidVisitStatusForBillingError()
+        : base("Счет может быть сгенерирован только для визитов, ожидающих оплаты или завершенных")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}
+
+public sealed class VisitCostNotCalculatedError : Error
+{
+    public VisitCostNotCalculatedError()
+        : base("Стоимость визита еще не рассчитана")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}
+
+public sealed class InvalidVisitStatusException : InvalidOperationException
+{
+    public InvalidVisitStatusException()
+        : base("Счет может быть сгенерирован только для визитов, ожидающих оплаты или завершенных")
+    {
+    }
+}

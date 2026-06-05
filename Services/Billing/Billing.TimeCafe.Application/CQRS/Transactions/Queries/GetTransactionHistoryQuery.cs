@@ -22,6 +22,7 @@ public sealed class GetTransactionHistoryQueryHandler(IUnitOfWork uow) : IQueryH
             t.Amount,
             (int)t.Type,
             (int)t.Source,
+            t.SourceId,
             (int)t.Status,
             t.Comment,
             t.CreatedAt,

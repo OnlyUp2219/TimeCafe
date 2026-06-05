@@ -14,7 +14,7 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
             .IsRequired();
 
         builder.Property(p => p.UserId)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(p => p.Amount)
             .HasPrecision(18, 2)
@@ -60,7 +60,8 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.HasOne<Balance>()
             .WithMany()
             .HasForeignKey(p => p.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired(false);
 
         builder.HasOne<Transaction>()
             .WithMany()

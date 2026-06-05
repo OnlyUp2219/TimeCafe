@@ -78,7 +78,10 @@ public abstract class BasePaymentRepositoryTest : IDisposable
 
         foreach (var payment in payments)
         {
-            await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(payment.UserId), cancellationToken);
+            if (payment.UserId.HasValue)
+            {
+                await hybridCache.RemoveByTagAsync(CacheTags.PaymentByUser(payment.UserId.Value), cancellationToken);
+            }
         }
     }
 

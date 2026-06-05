@@ -264,7 +264,6 @@ public class VisitRepository(
 
     public async Task<bool> IsResourceBusyAsync(Guid resourceId, Guid? excludeVisitId, CancellationToken cancellationToken = default) =>
         await _context.Visits.AnyAsync(v => v.ResourceId == resourceId && (excludeVisitId == null || v.VisitId != excludeVisitId) && (v.Status == VisitStatus.Active 
-        || v.Status == VisitStatus.WaitingForPayment 
         || v.Status == VisitStatus.Pending 
         || v.Status == VisitStatus.Approved), cancellationToken);
 

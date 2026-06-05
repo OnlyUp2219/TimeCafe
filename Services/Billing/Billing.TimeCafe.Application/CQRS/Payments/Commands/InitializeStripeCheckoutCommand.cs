@@ -63,7 +63,7 @@ public sealed class InitializeStripeCheckoutCommandHandler(
 
         var createRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
-            payment.UserId,
+            payment.UserId.Value,
             payment.Amount,
             currency,
             description,
@@ -85,7 +85,7 @@ public sealed class InitializeStripeCheckoutCommandHandler(
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId), cancellationToken);
+        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId.Value), cancellationToken);
 
         return Result.Ok(new InitializeStripeCheckoutResponse(payment.PaymentId, response.SessionId, response.CheckoutUrl!));
     }

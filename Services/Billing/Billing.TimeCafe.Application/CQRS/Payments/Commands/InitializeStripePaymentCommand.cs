@@ -59,7 +59,7 @@ public sealed class InitializeStripePaymentCommandHandler(
 
         var createRequest = new StripeCreatePaymentRequest(
             payment.PaymentId,
-            payment.UserId,
+            payment.UserId.Value,
             payment.Amount,
             currency,
             description,
@@ -79,7 +79,7 @@ public sealed class InitializeStripePaymentCommandHandler(
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
-        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId), cancellationToken);
+        await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId.Value), cancellationToken);
 
         return Result.Ok(new InitializeStripePaymentResponse(
             payment.PaymentId, 

@@ -11,7 +11,7 @@ public sealed record PaymentDto(
 
 public sealed record AdminPaymentDto(
     Guid PaymentId,
-    Guid UserId,
+    Guid? UserId,
     decimal Amount,
     int PaymentMethod,
     string? ExternalPaymentId,

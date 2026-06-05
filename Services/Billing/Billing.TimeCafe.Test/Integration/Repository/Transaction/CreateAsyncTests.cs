@@ -122,6 +122,8 @@ public class CreateAsyncTests : BaseTransactionRepositoryTest
         var result2 = await repository.CreateAsync(transaction2);
 
         result1.SourceId.Should().Be(result2.SourceId);
-        result1.UserId.Should().NotBe(result2.UserId);
+        result1.UserId.Should().NotBeNull();
+        result2.UserId.Should().NotBeNull();
+        result1.UserId.Value.Should().NotBe(result2.UserId.Value);
     }
 }

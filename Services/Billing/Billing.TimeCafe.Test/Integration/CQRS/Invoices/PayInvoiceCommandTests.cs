@@ -161,4 +161,67 @@ public class PayInvoiceCommandTests : BasePaymentTest
         result.IsFailed.Should().BeTrue();
         result.Errors[0].Should().BeOfType<InvoiceNotFoundError>();
     }
+
+    [Fact]
+    public async Task Handle_Should_PayAnonymousInvoiceWithCash_AndCreateCompletedPayment()
+    {
+        using var scope = CreateScope();
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var db = scope.ServiceProvider.GetRequiredService<Billing.TimeCafe.Infrastructure.Data.ApplicationDbContext>();
+
+        var visitId = Guid.NewGuid();
+        var amount = 350m;
+
+        // Anonymous Invoice (UserId = null)
+        var invoice = InvoiceModel.Create(null, visitId, amount).Value;
+        db.Invoices.Add(invoice);
+        await db.SaveChangesAsync();
+
+        var command = new PayInvoiceCommand(invoice.InvoiceId, PaymentMethod.Cash);
+        var result = await sender.Send(command);
+
+        result.IsSuccess.Should().BeTrue();
+
+        var updatedInvoice = await db.Invoices.FindAsync(invoice.InvoiceId);
+        updatedInvoice!.Status.Should().Be(InvoiceStatus.Paid);
+        updatedInvoice.PaymentMethod.Should().Be(PaymentMethod.Cash);
+
+        // Payment must be created with UserId = null
+        var payments = await db.Payments.Where(p => p.UserId == null).ToListAsync();
+        payments.Should().NotBeEmpty();
+        payments.Last().Status.Should().Be(PaymentStatus.Completed);
+        payments.Last().Amount.Should().Be(amount);
+        payments.Last().PaymentMethod.Should().Be(PaymentMethod.Cash);
+    }
+
+    [Fact]
+    public async Task Handle_Should_PayAnonymousInvoiceWithCard_AndCreateCompletedPayment()
+    {
+        using var scope = CreateScope();
+        var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+        var db = scope.ServiceProvider.GetRequiredService<Billing.TimeCafe.Infrastructure.Data.ApplicationDbContext>();
+
+        var visitId = Guid.NewGuid();
+        var amount = 450m;
+
+        // Anonymous Invoice (UserId = null)
+        var invoice = InvoiceModel.Create(null, visitId, amount).Value;
+        db.Invoices.Add(invoice);
+        await db.SaveChangesAsync();
+
+        var command = new PayInvoiceCommand(invoice.InvoiceId, PaymentMethod.Card);
+        var result = await sender.Send(command);
+
+        result.IsSuccess.Should().BeTrue();
+
+        var updatedInvoice = await db.Invoices.FindAsync(invoice.InvoiceId);
+        updatedInvoice!.Status.Should().Be(InvoiceStatus.Paid);
+        updatedInvoice.PaymentMethod.Should().Be(PaymentMethod.Card);
+
+        var payments = await db.Payments.Where(p => p.UserId == null).ToListAsync();
+        payments.Should().NotBeEmpty();
+        payments.Last().Status.Should().Be(PaymentStatus.Completed);
+        payments.Last().Amount.Should().Be(amount);
+        payments.Last().PaymentMethod.Should().Be(PaymentMethod.Card);
+    }
 }

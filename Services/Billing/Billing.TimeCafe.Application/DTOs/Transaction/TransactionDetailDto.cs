@@ -2,7 +2,7 @@ namespace Billing.TimeCafe.Application.DTOs.Transaction;
 
 public record TransactionDetailDto(
     Guid TransactionId,
-    Guid UserId,
+    Guid? UserId,
     decimal Amount,
     int Type,
     int Source,

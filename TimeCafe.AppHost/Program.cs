@@ -82,17 +82,7 @@ builder.AddContainer("kibana", "docker.elastic.co/kibana/kibana", "9.2.3")
     .WithHttpEndpoint(port: 5601, targetPort: 5601)
     .WaitFor(elastic);
 
-var prometheus = builder.AddContainer("prometheus", "prom/prometheus", "latest")
-    .WithBindMount("../infra/prometheus/prometheus.yml", "/etc/prometheus/prometheus.yml")
-    .WithHttpEndpoint(port: 9090, targetPort: 9090);
 
-builder.AddContainer("grafana", "grafana/grafana", "latest")
-    .WithHttpEndpoint(port: 3000, targetPort: 3000)
-    .WithBindMount("../infra/grafana/provisioning", "/etc/grafana/provisioning")
-    .WithEnvironment("GF_AUTH_ANONYMOUS_ENABLED", "true")
-    .WithEnvironment("GF_AUTH_ANONYMOUS_ORG_ROLE", "Viewer")
-    .WithEnvironment("GF_SECURITY_ALLOW_EMBEDDING", "true")
-    .WaitFor(prometheus);
 
 // Базы данных
 var authDb = postgres.AddDatabase("AuthDb", databaseName: "timecafe_auth");
@@ -105,15 +95,15 @@ var auditDb = postgres.AddDatabase("AuditDb", databaseName: "timecafe_audit");
 var authApi = builder.AddProject<Projects.Auth_TimeCafe_API>("auth-api")
     .WithHttpEndpoint(name: "api")
     .WithHttpEndpoint(name: "grpc")
-    .WithHttpHealthCheck("/health", endpointName: "api")
-    .WaitFor(elastic);
+    .WithHttpHealthCheck("/health", endpointName: "api");
 
 authApi
+    .WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{authApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)};http://+:{authApi.GetEndpoint("grpc").Property(EndpointProperty.TargetPort)}"))
     .WithEnvironment("ASPNETCORE_KESTREL__ENDPOINTS__api__Url", 
-        ReferenceExpression.Create($"http://*:{authApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"))
+        ReferenceExpression.Create($"http://+:{authApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"))
     .WithEnvironment("ASPNETCORE_KESTREL__ENDPOINTS__api__Protocols", "Http1")
     .WithEnvironment("ASPNETCORE_KESTREL__ENDPOINTS__grpc__Url", 
-        ReferenceExpression.Create($"http://*:{authApi.GetEndpoint("grpc").Property(EndpointProperty.TargetPort)}"))
+        ReferenceExpression.Create($"http://+:{authApi.GetEndpoint("grpc").Property(EndpointProperty.TargetPort)}"))
     .WithEnvironment("ASPNETCORE_KESTREL__ENDPOINTS__grpc__Protocols", "Http2");
 
 ApplyTimeCafeReferences(authApi, authDb, rabbitUser, rabbitPass, authApi);
@@ -133,6 +123,7 @@ authApi
 var userProfileApi = builder.AddProject<Projects.UserProfile_TimeCafe_API>("userprofile-api")
     .WithHttpEndpoint(name: "api")
     .WithHttpHealthCheck("/health", endpointName: "api");
+userProfileApi.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{userProfileApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
 ApplyTimeCafeReferences(userProfileApi, userProfileDb, rabbitUser, rabbitPass, authApi);
 userProfileApi
     .WithEnvironment("S3__AccessKey", builder.Configuration["S3_ACCESS_KEY"])
@@ -147,6 +138,7 @@ userProfileApi
 var billingApi = builder.AddProject<Projects.Billing_TimeCafe_API>("billing-api")
     .WithHttpEndpoint(name: "api")
     .WithHttpHealthCheck("/health", endpointName: "api");
+billingApi.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{billingApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
 ApplyTimeCafeReferences(billingApi, billingDb, rabbitUser, rabbitPass, authApi);
 billingApi
     .WithEnvironment("Stripe__PublishableKey", builder.Configuration["STRIPE_PUBLISHABLE_KEY"])
@@ -158,6 +150,7 @@ billingApi
 var venueApi = builder.AddProject<Projects.Venue_TimeCafe_API>("venue-api")
     .WithHttpEndpoint(name: "api")
     .WithHttpHealthCheck("/health", endpointName: "api");
+venueApi.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{venueApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
 ApplyTimeCafeReferences(venueApi, venueDb, rabbitUser, rabbitPass, authApi);
 venueApi
     .WithReference(billingApi)
@@ -168,6 +161,7 @@ venueApi
 var auditApi = builder.AddProject<Projects.Audit_TimeCafe_API>("audit-api")
     .WithHttpEndpoint(name: "api")
     .WithHttpHealthCheck("/health", endpointName: "api");
+auditApi.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{auditApi.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
 ApplyTimeCafeReferences(auditApi, auditDb, rabbitUser, rabbitPass, authApi);
 auditApi.WaitFor(auditDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
 
@@ -200,6 +194,28 @@ var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WaitFor(venueApi)
     .WaitFor(billingApi)
     .WaitFor(auditApi);
+yarpProxy.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{yarpProxy.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
+
+var prometheus = builder.AddContainer("prometheus", "prom/prometheus", "latest")
+    .WithBindMount("../infra/prometheus/prometheus.yml", "/etc/prometheus/prometheus.yml.tmpl")
+    .WithEntrypoint("sh")
+    .WithArgs("-c", "sed -e \"s/\\${AUTH_PORT}/$AUTH_PORT/g\" -e \"s/\\${PROFILE_PORT}/$PROFILE_PORT/g\" -e \"s/\\${VENUE_PORT}/$VENUE_PORT/g\" -e \"s/\\${BILLING_PORT}/$BILLING_PORT/g\" -e \"s/\\${AUDIT_PORT}/$AUDIT_PORT/g\" -e \"s/\\${YARP_PORT}/$YARP_PORT/g\" /etc/prometheus/prometheus.yml.tmpl > /etc/prometheus/prometheus.yml && /bin/prometheus --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus")
+    .WithEnvironment("AUTH_PORT", authApi.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithEnvironment("PROFILE_PORT", userProfileApi.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithEnvironment("VENUE_PORT", venueApi.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithEnvironment("BILLING_PORT", billingApi.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithEnvironment("AUDIT_PORT", auditApi.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithEnvironment("YARP_PORT", yarpProxy.GetEndpoint("api").Property(EndpointProperty.Port))
+    .WithHttpEndpoint(port: 9090, targetPort: 9090);
+
+builder.AddContainer("grafana", "grafana/grafana", "latest")
+    .WithHttpEndpoint(port: 3000, targetPort: 3000)
+    .WithBindMount("../infra/grafana/provisioning", "/etc/grafana/provisioning")
+    .WithEnvironment("GF_AUTH_ANONYMOUS_ENABLED", "true")
+    .WithEnvironment("GF_AUTH_ANONYMOUS_ORG_ROLE", "Viewer")
+    .WithEnvironment("GF_SECURITY_ALLOW_EMBEDDING", "true")
+    .WithEnvironment("PROMETHEUS_URL", "http://host.docker.internal:9090")
+    .WaitFor(prometheus);
 
 builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
     .WithReference(yarpProxy)
@@ -223,7 +239,6 @@ void ApplyTimeCafeReferences(
         .WithReference(db, "DefaultConnection")
         .WithReference(redis)
         .WithReference(rabbitmq)
-        .WithReference(elastic)
         .WithEnvironment("Redis__ConnectionString", redis)
         .WithEnvironment("RabbitMQ__ConnectionString", rabbitmq)
         .WithEnvironment("RabbitMQ__Host", rabbitmq.GetEndpoint("tcp").Property(EndpointProperty.Host))
