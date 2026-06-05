@@ -33,7 +33,9 @@ public static class DatabaseExtensions
             .UseOptOut()
             .IgnoreAny(type => type == typeof(InboxState)
                         || type == typeof(OutboxState)
-                        || type == typeof(OutboxMessage));
+                        || type == typeof(OutboxMessage)
+                        || type.Name == "ApplicationUser"
+                        || type.Name == "RefreshToken");
 
         Audit.Core.Configuration.AddCustomAction(ActionType.OnScopeCreated, auditEvent =>
         {

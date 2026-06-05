@@ -68,6 +68,30 @@ public class GetactiveVisitByUserTests(IntegrationApiFactory factory) : BaseEndp
             throw;
         }
     }
+
+    [Fact]
+    public async Task Endpoint_GetActiveVisitByUser_Should_Return200_WhenUserHasVisitWaitingForPayment()
+    {
+        await ClearDatabaseAndCacheAsync();
+        var userId = TestData.NewVisits.NewVisit1UserId;
+        var visit = await SeedVisitAsync(userId, status: VisitStatus.WaitingForPayment);
+
+        var response = await Client.GetAsync($"/venue/visits/active/{userId}");
+        var jsonString = await response.Content.ReadAsStringAsync();
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+
+            json.GetProperty("userId").GetString().Should().Be(userId.ToString());
+            json.GetProperty("status").GetInt32().Should().Be((int)VisitStatus.WaitingForPayment);
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_GetActiveVisitByUser_Should_Return200_WhenUserHasVisitWaitingForPayment] Response: {jsonString}");
+            throw;
+        }
+    }
 }
 
 

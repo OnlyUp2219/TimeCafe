@@ -12,6 +12,7 @@ public interface IVisitRepository : IRepository<Visit, Guid>
     Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<VisitWithTariffDto>> GetPendingVisitsAsync(int pageNumber, int pageSize, CancellationToken cancellationToken = default);
     Task<bool> IsResourceBusyAsync(Guid resourceId, CancellationToken cancellationToken = default);
+    Task<bool> IsResourceBusyAsync(Guid resourceId, Guid? excludeVisitId, CancellationToken cancellationToken = default);
     Task<bool> AnyWithTariffIdAsync(Guid tariffId, CancellationToken cancellationToken = default);
 }
 

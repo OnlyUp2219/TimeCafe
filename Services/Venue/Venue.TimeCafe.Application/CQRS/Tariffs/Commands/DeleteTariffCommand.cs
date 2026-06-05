@@ -25,7 +25,14 @@ public class DeleteTariffCommandHandler(IUnitOfWork uow, IPublisher publisher) :
 
             var hasVisits = await _uow.Visits.AnyWithTariffIdAsync(request.TariffId, cancellationToken);
             if (hasVisits)
-                return Result.Fail(new TariffInUseError());
+            {
+                existing.IsActive = false;
+                await _uow.Tariffs.UpdateAsync(existing, cancellationToken);
+                await _uow.SaveChangesAsync(cancellationToken);
+                await _publisher.Publish(new TariffChangedEvent(request.TariffId), cancellationToken);
+
+                return Result.Ok().WithSuccess("Тариф не может быть удален, так как используется в визитах. Он был деактивирован.");
+            }
 
             var result = await _uow.Tariffs.DeleteAsync(request.TariffId, cancellationToken);
             if (!result)

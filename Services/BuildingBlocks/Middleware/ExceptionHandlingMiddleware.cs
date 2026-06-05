@@ -5,7 +5,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
     private readonly RequestDelegate _next = next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger = logger;
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IPublishEndpoint publishEndpoint)
     {
         try
         {
@@ -13,7 +13,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
         catch (Exceptions.CqrsResultException ex)
         {
-            await HandleCqrsResultExceptionAsync(context, ex);
+            await HandleCqrsResultExceptionAsync(context, ex, publishEndpoint);
         }
         catch (ValidationException ex)
         {
@@ -41,16 +41,16 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         }
         catch (Exception ex)
         {
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context, ex, publishEndpoint);
         }
     }
 
-    private async Task HandleCqrsResultExceptionAsync(HttpContext context, Exceptions.CqrsResultException exception)
+    private async Task HandleCqrsResultExceptionAsync(HttpContext context, Exceptions.CqrsResultException exception, IPublishEndpoint publishEndpoint)
     {
         var result = exception.Result;
         if (result is null)
         {
-            await HandleExceptionAsync(context, exception.InnerException ?? exception);
+            await HandleExceptionAsync(context, exception.InnerException ?? exception, publishEndpoint);
             return;
         }
 
@@ -116,9 +116,37 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, IPublishEndpoint publishEndpoint)
     {
         _logger.LogError(exception, "Unhandled 500 Exception on {Method} {Path}: {Message}", context.Request.Method, context.Request.Path, exception.Message);
+
+        try
+        {
+            var auditEvent = new AuditEvent
+            {
+                EventType = "Exception",
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow,
+                Duration = 0,
+                Environment = new AuditEventEnvironment
+                {
+                    UserName = context.User?.FindFirstValue(ClaimTypes.NameIdentifier) ?? context.User?.Identity?.Name ?? "Anonymous",
+                    CallingMethodName = context.Request.Path,
+                    Exception = exception.ToString()
+                }
+            };
+
+            await publishEndpoint.Publish<SaveAuditMessage>(new
+            {
+                EventId = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                AuditEventJson = auditEvent.ToJson()
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish SaveAuditMessage for exception");
+        }
 
         const string code = "InternalServerError";
         const int statusCode = (int)HttpStatusCode.InternalServerError;

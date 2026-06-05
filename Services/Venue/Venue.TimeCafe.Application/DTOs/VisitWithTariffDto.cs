@@ -10,6 +10,7 @@ public class VisitWithTariffDto
     public decimal? CalculatedCost { get; set; }
     public VisitStatus Status { get; set; }
     public Guid? ApprovedByUserId { get; set; }
+    public Guid? ResourceId { get; set; }
     public DateTimeOffset? ApprovedAt { get; set; }
     public string? RejectionReason { get; set; }
 

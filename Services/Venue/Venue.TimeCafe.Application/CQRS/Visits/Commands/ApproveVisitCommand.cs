@@ -25,6 +25,13 @@ public class ApproveVisitCommandHandler(IUnitOfWork uow, IPublishEndpoint publis
             if (visit is null)
                 return Result.Fail(new VisitNotFoundError());
 
+            if (visit.ResourceId.HasValue)
+            {
+                var isBusy = await _uow.Visits.IsResourceBusyAsync(visit.ResourceId.Value, visit.VisitId, cancellationToken);
+                if (isBusy)
+                    return Result.Fail(new ResourceAlreadyInUseError());
+            }
+
             var approveResult = visit.Approve(request.ApprovedByUserId);
             if (approveResult.IsFailed)
                 return approveResult;

@@ -22,6 +22,7 @@ public class VisitRepository(
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -46,12 +47,13 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
-                               where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active)
+                               where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment)
                                select new VisitWithTariffDto
                                {
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -86,6 +88,7 @@ public class VisitRepository(
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -118,6 +121,7 @@ public class VisitRepository(
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -151,6 +155,7 @@ public class VisitRepository(
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -177,7 +182,12 @@ public class VisitRepository(
 
     public async Task<bool> HasActiveVisitAsync(Guid userId, CancellationToken cancellationToken = default) =>
         await _context.Visits
-            .AnyAsync(v => v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active), cancellationToken);
+            .AnyAsync(v => v.UserId == userId && (
+                v.Status == VisitStatus.Pending ||
+                v.Status == VisitStatus.Approved ||
+                v.Status == VisitStatus.Active ||
+                v.Status == VisitStatus.WaitingForPayment
+            ), cancellationToken);
 
     public async Task<Visit> CreateAsync(Visit visit, CancellationToken cancellationToken = default)
     {
@@ -200,6 +210,7 @@ public class VisitRepository(
                                    VisitId = v.VisitId,
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
+                                   ResourceId = v.ResourceId,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -249,7 +260,13 @@ public class VisitRepository(
     }
 
     public async Task<bool> IsResourceBusyAsync(Guid resourceId, CancellationToken cancellationToken = default) =>
-        await _context.Visits.AnyAsync(v => v.ResourceId == resourceId && (v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment || v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved), cancellationToken);
+        await IsResourceBusyAsync(resourceId, null, cancellationToken);
+
+    public async Task<bool> IsResourceBusyAsync(Guid resourceId, Guid? excludeVisitId, CancellationToken cancellationToken = default) =>
+        await _context.Visits.AnyAsync(v => v.ResourceId == resourceId && (excludeVisitId == null || v.VisitId != excludeVisitId) && (v.Status == VisitStatus.Active 
+        || v.Status == VisitStatus.WaitingForPayment 
+        || v.Status == VisitStatus.Pending 
+        || v.Status == VisitStatus.Approved), cancellationToken);
 
     public async Task<bool> AnyWithTariffIdAsync(Guid tariffId, CancellationToken cancellationToken = default) =>
         await _context.Visits.AnyAsync(v => v.TariffId == tariffId, cancellationToken);

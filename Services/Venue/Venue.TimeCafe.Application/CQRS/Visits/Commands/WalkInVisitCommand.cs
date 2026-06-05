@@ -28,6 +28,13 @@ public class WalkInVisitCommandHandler(
             if (tariff == null)
                 return Result.Fail(new TariffNotFoundError());
 
+            if (request.ResourceId.HasValue)
+            {
+                var isBusy = await _uow.Visits.IsResourceBusyAsync(request.ResourceId.Value, cancellationToken);
+                if (isBusy)
+                    return Result.Fail(new ResourceAlreadyInUseError());
+            }
+
             var visit = Visit.Create(
                 visitId: Guid.NewGuid(),
                 userId: request.UserId,

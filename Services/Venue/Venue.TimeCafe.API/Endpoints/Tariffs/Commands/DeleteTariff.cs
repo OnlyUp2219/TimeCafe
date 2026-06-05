@@ -10,7 +10,11 @@ public class DeleteTariff : ICarterModule
         {
             var command = new DeleteTariffCommand(tariffId);
             var result = await sender.Send(command);
-            return result.ToHttpResult(() => TypedResults.NoContent());
+            return result.ToHttpResult(() =>
+            {
+                var success = result.Successes.FirstOrDefault();
+                return success != null ? Results.Ok(new { message = success.Message }) : Results.NoContent();
+            });
         })
         .WithTags("Tariffs")
         .WithName("DeleteTariff")

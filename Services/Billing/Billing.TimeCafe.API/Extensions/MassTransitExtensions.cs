@@ -51,6 +51,7 @@ public static class MassTransitExtensions
                 }
 
                 cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
+                cfg.Message<VisitTimerStoppedEvent>(e => e.SetEntityName("visit-timer-stopped"));
 
                 cfg.ConfigureEndpoints(context);
             });

@@ -45,7 +45,7 @@ public class CreateVisitCommandHandler(IUnitOfWork uow, IVisitBalancePolicyServi
             {
                 var isBusy = await _uow.Visits.IsResourceBusyAsync(request.ResourceId.Value, cancellationToken);
                 if (isBusy)
-                    return Result.Fail(new Error("Выбранный столик уже занят"));
+                    return Result.Fail(new ResourceAlreadyInUseError());
             }
 
             if (request.RequirePositiveBalance || request.RequireEnoughForPlanned)

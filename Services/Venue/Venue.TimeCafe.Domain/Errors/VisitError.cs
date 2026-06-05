@@ -89,3 +89,13 @@ public sealed class VisitAccessDeniedError : Error
         Metadata.Add("ErrorCode", "403");
     }
 }
+
+public sealed class ResourceAlreadyInUseError : Error
+{
+    public ResourceAlreadyInUseError()
+        : base("Выбранный стол уже занят другим активным визитом.")
+    {
+        Metadata.Add("ErrorCode", "409");
+    }
+}
+
