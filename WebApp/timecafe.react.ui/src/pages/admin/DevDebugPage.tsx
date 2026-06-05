@@ -51,7 +51,7 @@ export const DevDebugPage: React.FC = () => {
 
     const currentUserId = useAppSelector((state) => state.auth.userId) || "";
     const [stripeUserId, setStripeUserId] = useState("");
-    const [stripePaymentId, setStripePaymentId] = useState(() => crypto.randomUUID());
+    const [stripePaymentId, setStripePaymentId] = useState<string>(() => crypto.randomUUID());
     const [stripeExtId, setStripeExtId] = useState(() => `pi_test_${Math.random().toString(36).substring(2, 10)}`);
     const [stripeAmount, setStripeAmount] = useState(1000);
     const [simulateWebhook, { isLoading: isSimulating }] = useSimulateStripeWebhookMutation();
@@ -125,7 +125,7 @@ export const DevDebugPage: React.FC = () => {
         try {
             const successUrl = window.location.href;
             const cancelUrl = window.location.href;
-            
+
             const result = await initializeCheckout({
                 userId: stripeUserId,
                 amount: checkoutAmount,
@@ -142,7 +142,7 @@ export const DevDebugPage: React.FC = () => {
             });
             setCurrentIntent("success");
             showToast("Ссылка на оплату успешно создана! Открываем в новой вкладке...", "success", "Stripe Checkout");
-            
+
             if (result.checkoutUrl) {
                 window.open(result.checkoutUrl, "_blank");
             }
@@ -240,7 +240,7 @@ export const DevDebugPage: React.FC = () => {
     );
 
     return (
-        <div className="flex flex-col gap-6 p-4 max-w-5xl">
+        <div className="flex flex-col gap-6 p-4">
             {ToasterElement}
 
             <div className="flex items-center justify-between">
@@ -279,7 +279,7 @@ export const DevDebugPage: React.FC = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {renderBlock("404 & 422 Errors", <Warning24Regular className="text-[var(--colorPaletteDarkOrangeForeground1)]" />, (
+                {renderBlock("404 & 422 Errors", <Warning24Regular className="text-(--colorPaletteDarkOrangeForeground1)" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(trigger404Single, "404 Single")}>
                             404 Single (Not Found)
@@ -290,7 +290,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("500 & Exceptions", <Bug24Regular className="text-[var(--colorPaletteRedForeground1)]" />, (
+                {renderBlock("500 & Exceptions", <Bug24Regular className="text-(--colorPaletteRedForeground1)" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(trigger500Single, "500 Single")}>
                             500 Single Error
@@ -304,7 +304,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("Success & Info", <CheckmarkCircle24Regular className="text-[var(--colorPaletteGreenForeground1)]" />, (
+                {renderBlock("Success & Info", <CheckmarkCircle24Regular className="text-(--colorPaletteGreenForeground1)" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(triggerSuccess, "Success Response")}>
                             Success (200 OK)
@@ -315,7 +315,7 @@ export const DevDebugPage: React.FC = () => {
                     </>
                 ))}
 
-                {renderBlock("Legacy & RTK", <ArrowSync24Regular className="text-[var(--colorBrandForeground1)]" />, (
+                {renderBlock("Legacy & RTK", <ArrowSync24Regular className="text-(--colorBrandForeground1)" />, (
                     <>
                         <Button appearance="outline" onClick={() => handleAction(triggerLegacy, "Legacy Format")}>
                             Legacy CqrsResult
@@ -330,9 +330,9 @@ export const DevDebugPage: React.FC = () => {
                 ))}
             </div>
 
-            <Card className="p-5 flex flex-col gap-4 border border-[var(--colorNeutralStrokeAccessible)] shadow-md">
+            <Card className="p-5 flex flex-col gap-4 border border-(--colorNeutralStrokeAccessible) shadow-md">
                 <div className="flex items-center gap-2 mb-2">
-                    <CreditCardClock24Regular className="text-[var(--colorBrandForeground1)]" />
+                    <CreditCardClock24Regular className="text-(--colorBrandForeground1)" />
                     <Title3>Реальная оплата Stripe (Checkout Link)</Title3>
                 </div>
                 <Body1>
@@ -380,9 +380,9 @@ export const DevDebugPage: React.FC = () => {
                 </div>
             </Card>
 
-            <Card className="p-5 flex flex-col gap-4 border border-[var(--colorNeutralStrokeAccessible)] shadow-md">
+            <Card className="p-5 flex flex-col gap-4 border border-(--colorNeutralStrokeAccessible) shadow-md">
                 <div className="flex items-center gap-2 mb-2">
-                    <CreditCardClock24Regular className="text-[var(--colorBrandForeground1)]" />
+                    <CreditCardClock24Regular className="text-(--colorBrandForeground1)" />
                     <Title3>Симулятор Stripe Webhooks</Title3>
                 </div>
                 <Body1>
@@ -465,8 +465,8 @@ export const DevDebugPage: React.FC = () => {
             <Divider />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="bg-black text-[var(--colorPaletteGreenForeground1)] p-4 font-mono text-xs overflow-auto max-h-96">
-                    <div className="flex items-center gap-2 mb-2 text-white border-b border-[var(--colorNeutralStrokeAccessible)] pb-2">
+                <Card className="bg-black text-(--colorPaletteGreenForeground1) p-4 font-mono text-xs overflow-auto max-h-96">
+                    <div className="flex items-center gap-2 mb-2 text-white border-b border-(--colorNeutralStrokeAccessible) pb-2">
                         <Document24Regular />
                         <Body1>RAW API RESPONSE</Body1>
                     </div>
@@ -486,26 +486,26 @@ export const DevDebugPage: React.FC = () => {
                             </div>
                             <div className="flex justify-between">
                                 <Caption1>Main Message:</Caption1>
-                                <Body1 className="text-[var(--colorBrandForeground1)] font-bold">{extractedInfo.message}</Body1>
+                                <Body1 className="text-(--colorBrandForeground1) font-bold">{extractedInfo.message}</Body1>
                             </div>
                             <Divider />
                             <Caption1>Detailed Errors ({extractedInfo.errors?.length || 0}):</Caption1>
                             <div className="flex flex-col gap-2 mt-1">
                                 {extractedInfo.errors?.length ? extractedInfo.errors.map((e: any, i: number) => (
-                                    <div key={i} className="flex flex-col p-2 bg-white rounded border border-[var(--colorNeutralStroke2)] shadow-sm">
+                                    <div key={i} className="flex flex-col p-2 bg-white rounded border border-(--colorNeutralStroke2) shadow-sm">
                                         <div className="flex items-center gap-2 mb-1">
                                             {e.code && <Badge appearance="filled" color="brand" size="small">{e.code}</Badge>}
                                             <Body1Strong>Field/Code</Body1Strong>                                        </div>
-                                        <Body1 className="text-[var(--colorPaletteRedForeground1)]">{e.message}</Body1>
+                                        <Body1 className="text-(--colorPaletteRedForeground1)">{e.message}</Body1>
                                     </div>
                                 )) : (
-                                    <Body1 italic className="text-[var(--colorNeutralForeground4)]">Нет детальных ошибок (только общее сообщение)</Body1>
+                                    <Body1 italic className="text-(--colorNeutralForeground4)">Нет детальных ошибок (только общее сообщение)</Body1>
                                 )}
                             </div>
                             <Divider />
                             <div className="mt-2">
                                 <Caption1>Final UI Message (getRtkErrorMessage):</Caption1>
-                                <div className="bg-yellow-100 p-2 mt-1 rounded border border-[var(--colorPaletteYellowBorder1)]">
+                                <div className="bg-yellow-100 p-2 mt-1 rounded border border-(--colorPaletteYellowBorder1)">
                                     <Body1>{getRtkErrorMessage(lastResponse)}</Body1>
                                 </div>
                             </div>

@@ -21,6 +21,8 @@ import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
 import {useComponentSize} from "@hooks/useComponentSize";
 import {Pagination} from "@components/Pagination/Pagination";
 
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
 
@@ -45,9 +47,9 @@ export const AdditionalInfosPage = () => {
         {userId: searchUserId, page: page, pageSize: PAGE_SIZE},
         {skip: !searchUserId}
     );
-    const infos = notesData?.infos ?? [];
-    const totalCount = notesData?.totalCount ?? 0;
-    const totalPages = notesData?.totalPages ?? 0;
+    const infos = notesData?.items ?? [];
+    const totalCount = notesData?.metadata?.totalCount ?? 0;
+    const totalPages = notesData?.metadata?.totalPages ?? 0;
 
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
@@ -59,7 +61,7 @@ export const AdditionalInfosPage = () => {
         <div>
             <div className="mb-4">
                 <Title2>Доп. информация</Title2>
-                <Body2 block>Заметки и дополнительные данные по пользователям</Body2>
+                <Body2>Заметки и дополнительные данные по пользователям</Body2>
             </div>
 
             <div className="flex gap-3 items-end mb-6 flex-wrap">
@@ -84,11 +86,7 @@ export const AdditionalInfosPage = () => {
                 </Button>
             </div>
 
-            {queryError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
 
             {isLoading && <Spinner label="Загрузка..." />}
 
@@ -107,9 +105,9 @@ export const AdditionalInfosPage = () => {
             {infos.length > 0 && (
                 <div className="flex flex-col gap-3">
                     <Title3>{totalCount} записей</Title3>
-                    {infos.map((info) => (
+                    {infos.map((info: { infoId: string; userId: string; infoText: string; createdBy: string; createdAt: string }) => (
                         <Card key={info.infoId} size={sizes.card}>
-                            <Body1 block>{info.infoText}</Body1>
+                            <Body1>{info.infoText}</Body1>
                             <div className="flex gap-4 mt-2 flex-wrap">
                                 <Caption1 style={{color: "var(--colorNeutralForeground3)"}}>
                                     Автор: {info.createdBy}

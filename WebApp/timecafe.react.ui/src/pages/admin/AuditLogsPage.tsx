@@ -6,8 +6,6 @@ import {
     Card,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     Title2,
     createTableColumn,
     TableCellLayout,
@@ -32,6 +30,8 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { usePagination } from "@hooks/usePagination";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
 
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 const isUuid = (str: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
@@ -54,7 +54,7 @@ const AuditUserCell = ({ userName }: { userName: string }) => {
     }
 
     if (!profile) {
-        return <span className="text-[var(--colorNeutralForeground3)]">{userName.slice(0, 8)}...</span>;
+        return <span className="text-(--colorNeutralForeground3)">{userName.slice(0, 8)}...</span>;
     }
 
     const displayName = [profile.lastName, profile.firstName].filter(Boolean).join(" ");
@@ -164,7 +164,7 @@ export const AuditLogsPage = () => {
                 </Button>
             ),
         }),
-    ], [sizes]);
+    ], []);
 
     const handleClearFilters = () => {
         setFilters({ eventType: "", userName: "" });
@@ -172,16 +172,12 @@ export const AuditLogsPage = () => {
     };
 
     return (
-        <RequirePermission permission={Permissions.AuditLogAdminRead} fallback={
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>Недостаточно прав для просмотра аудит-логов.</MessageBarBody>
-            </MessageBar>
-        }>
+        <RequirePermission permission={Permissions.AuditLogAdminRead}>
             <div>
                 <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                     <div>
                         <Title2>Аудит-логи</Title2>
-                        <Body2 block>{totalCount} записей</Body2>
+                        <Body2>{totalCount} записей</Body2>
                     </div>
                 </div>
 
@@ -209,11 +205,7 @@ export const AuditLogsPage = () => {
                     )}
                 </div>
 
-                {errorMessage && (
-                    <MessageBar intent="error" className="mb-4">
-                        <MessageBarBody>{errorMessage}</MessageBarBody>
-                    </MessageBar>
-                )}
+                <DismissableError error={errorMessage} className="mb-4" />
 
                 <Card size={sizes.card}>
                     <DataTable

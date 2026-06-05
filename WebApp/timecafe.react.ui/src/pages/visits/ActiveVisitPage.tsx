@@ -66,25 +66,46 @@ type Estimate = {
     chargedMinutes?: number;
 };
 
-const calcEstimate = (elapsedMinutes: number, billingType: BillingType, pricePerMinute: number): Estimate => {
-    const minutes = Math.max(1, Math.floor(elapsedMinutes));
+const calcEstimate = (
+    elapsedMinutes: number,
+    billingType: BillingType,
+    pricePerMinute: number,
+    minSessionMinutes: number | null,
+    roundingRule: string | null
+): Estimate => {
+    const actualDuration = elapsedMinutes;
     const safePricePerMinute = Math.max(0, pricePerMinute);
 
-    if (billingType === BillingTypeEnum.PerMinute) {
-        return {
-            total: minutes * safePricePerMinute,
-            chargedMinutes: minutes,
-            breakdown: `${formatMoneyByN(safePricePerMinute)} / мин × ${minutes} мин`,
-        };
+    let duration = actualDuration;
+    if (minSessionMinutes && duration < minSessionMinutes) {
+        duration = minSessionMinutes;
     }
 
-    const pricePerHour = safePricePerMinute * 60;
-    const hours = Math.max(1, Math.ceil(minutes / 60));
+    let roundInterval = 1;
+    if (roundingRule === "FiveMinutes") roundInterval = 5;
+    else if (roundingRule === "FifteenMinutes") roundInterval = 15;
+    else if (roundingRule === "SixtyMinutes") roundInterval = 60;
+
+    if (roundInterval > 1) {
+        duration = Math.ceil(duration / roundInterval) * roundInterval;
+    }
+
+    let total = 0;
+    let breakdown = "";
+
+    if (billingType === BillingTypeEnum.Hourly) {
+        const hours = Math.ceil(duration / 60);
+        const pricePerHour = safePricePerMinute * 60;
+        total = hours * pricePerHour;
+        breakdown = `${formatMoneyByN(pricePerHour)} / час × ${hours} ч (округлено до ${duration} мин)`;
+    } else {
+        total = duration * safePricePerMinute;
+        breakdown = `${formatMoneyByN(safePricePerMinute)} / мин × ${duration} мин (минимально: ${minSessionMinutes ?? 1} мин)`;
+    }
 
     return {
-        total: hours * pricePerHour,
-        chargedHours: hours,
-        breakdown: `${formatMoneyByN(pricePerHour)} / час × ${hours} ч`,
+        total,
+        breakdown,
     };
 };
 
@@ -191,8 +212,10 @@ export const ActiveVisitPage = () => {
         if (!isActive) return { total: 0, breakdown: "" };
         const billingType = activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute;
         const pricePerMinute = activeVisit?.tariffPricePerMinute ?? 0;
-        return calcEstimate(elapsedMinutes, billingType, pricePerMinute);
-    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, elapsedMinutes, isActive]);
+        const minSessionMinutes = activeVisit?.tariffMinSessionMinutes ?? null;
+        const roundingRule = activeVisit?.tariffRoundingRule ?? null;
+        return calcEstimate(elapsedMinutes, billingType, pricePerMinute, minSessionMinutes, roundingRule);
+    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, activeVisit?.tariffMinSessionMinutes, activeVisit?.tariffRoundingRule, elapsedMinutes, isActive]);
 
     const progressToNextHour = useMemo(() => {
         if (!isActive || activeVisit?.tariffBillingType !== BillingTypeEnum.Hourly) return null;
@@ -202,12 +225,14 @@ export const ActiveVisitPage = () => {
 
     const onFinishVisit = async () => {
         if (!activeVisit?.visitId) return;
+        setExitComplete(true);
         try {
             await requestEndVisit(activeVisit.visitId).unwrap();
             setConfirmOpen(false);
             showToast("Запрос на выход успешно отправлен", "success", "Готово");
             void refetch();
         } catch (err) {
+            setExitComplete(false);
             const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось завершить визит";
             showToast(message, "error", "Ошибка");
         }
@@ -262,7 +287,7 @@ export const ActiveVisitPage = () => {
 
     const renderRejectedState = () => (
         <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-            <Dismiss20Regular className="text-6xl opacity-50 text-[var(--colorPaletteRedForeground1)]" />
+            <Dismiss20Regular className="text-6xl opacity-50 text-(--colorPaletteRedForeground1)" />
             <Title2>Заявка отклонена</Title2>
             {activeVisit?.rejectionReason && (
                 <Body2>Причина: {activeVisit.rejectionReason}</Body2>
@@ -275,7 +300,7 @@ export const ActiveVisitPage = () => {
 
     const renderApprovedState = () => (
         <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-            <Clock20Regular className="text-6xl opacity-50 text-[var(--colorPaletteGreenForeground1)]" />
+            <Clock20Regular className="text-6xl opacity-50 text-(--colorPaletteGreenForeground1)" />
             <Title2>Визит подтверждён</Title2>
             <Body2>Можете входить в заведение!</Body2>
             <VisitStatusBadge status={VisitStatus.Approved} size="large" />
@@ -385,8 +410,10 @@ export const ActiveVisitPage = () => {
 
                 <VisitAtmosphereCard
                     billingType={activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute}
-                    progressToNextHour={progressToNextHour}
-                    elapsedMinutes={elapsedMinutes}
+                    tariffPricePerMinute={activeVisit?.tariffPricePerMinute ?? 0}
+                    minSessionMinutes={activeVisit?.tariffMinSessionMinutes ?? null}
+                    roundingRule={activeVisit?.tariffRoundingRule ?? null}
+                    guestsCount={activeVisit?.guestsCount ?? 1}
                 />
             </div>
         </>
@@ -406,7 +433,7 @@ export const ActiveVisitPage = () => {
         if (!invoice) {
             return (
                 <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-                    <Dismiss20Regular className="text-6xl opacity-50 text-[var(--colorPaletteRedForeground1)]" />
+                    <Dismiss20Regular className="text-6xl opacity-50 text-(--colorPaletteRedForeground1)" />
                     <Title2>Счёт не найден</Title2>
                     <Body2>Не удалось загрузить информацию о счёте для оплаты визита.</Body2>
                     <Button onClick={() => void refetchInvoice()}>Попробовать снова</Button>
@@ -418,7 +445,7 @@ export const ActiveVisitPage = () => {
         if (isPaid) {
             return (
                 <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-                    <Clock20Regular className="text-6xl text-[var(--colorPaletteGreenForeground1)]" />
+                    <Clock20Regular className="text-6xl text-(--colorPaletteGreenForeground1)" />
                     <Title2>Визит успешно оплачен!</Title2>
                     <Body2>Благодарим вас за визит! Ваш столик освобожден. Будем рады видеть вас снова!</Body2>
                     <Button appearance="primary" size={sizes.button} onClick={() => navigate("/visit/start")}>
@@ -442,9 +469,9 @@ export const ActiveVisitPage = () => {
                         <Divider />
                         
                         <div className="flex flex-col gap-3">
-                            <div className="flex justify-between items-center bg-[var(--colorNeutralBackground2)] p-4 rounded-xl">
+                            <div className="flex justify-between items-center bg-(--colorNeutralBackground2) p-4 rounded-xl">
                                 <Body1>Итого к оплате:</Body1>
-                                <LargeTitle className="text-[var(--colorBrandForeground1)]">{formatMoneyByN(invoice.totalAmount)}</LargeTitle>
+                                <LargeTitle className="text-(--colorBrandForeground1)">{formatMoneyByN(invoice.totalAmount)}</LargeTitle>
                             </div>
 
                             <div className="grid grid-cols-2 gap-2 text-sm p-2">
@@ -461,11 +488,11 @@ export const ActiveVisitPage = () => {
                             <Subtitle2Stronger>Способы оплаты</Subtitle2Stronger>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Card className="p-4 flex flex-col gap-3 justify-between border border-[var(--colorNeutralStroke1)]">
+                                <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
                                     <div>
                                         <Subtitle2Stronger className="block mb-1">С внутреннего баланса</Subtitle2Stronger>
                                         <Body2 className="block mb-2">Быстрая оплата в одно нажатие.</Body2>
-                                        <div className="text-sm bg-[var(--colorNeutralBackground2)] p-2 rounded-lg flex justify-between">
+                                        <div className="text-sm bg-(--colorNeutralBackground2) p-2 rounded-lg flex justify-between">
                                             <span>Ваш баланс:</span>
                                             <span className={canPayWithBalance ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
                                                 {formatMoneyByN(balanceAmount)}
@@ -482,7 +509,7 @@ export const ActiveVisitPage = () => {
                                     </Button>
                                 </Card>
 
-                                <Card className="p-4 flex flex-col gap-3 justify-between border border-[var(--colorNeutralStroke1)]">
+                                <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
                                     <div>
                                         <Subtitle2Stronger className="block mb-1">Банковской картой (Stripe)</Subtitle2Stronger>
                                         <Body2 className="block mb-2">Безопасная онлайн-оплата через Stripe Checkout.</Body2>

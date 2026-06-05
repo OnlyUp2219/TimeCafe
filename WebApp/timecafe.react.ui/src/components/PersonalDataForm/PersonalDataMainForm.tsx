@@ -92,7 +92,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
     return (
         <Card className={className} size={sizes.card}>
             <Title2 block className="!flex items-center gap-2">
-                <PersonRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                <PersonRegular className="text-(--colorBrandForeground1)" fontSize={24} />
                 Персональные данные
             </Title2>
 

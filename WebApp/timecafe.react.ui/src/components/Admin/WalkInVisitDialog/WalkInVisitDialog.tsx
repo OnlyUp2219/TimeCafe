@@ -9,7 +9,8 @@ import {
     DialogTitle,
     Field,
     Input,
-    Select,
+    Dropdown,
+    Option,
     MessageBar,
     MessageBarBody,
     Spinner,
@@ -86,8 +87,7 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
         onOpenChange(openValue);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setError(null);
 
         if (!tariffId) {
@@ -114,91 +114,100 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
 
     return (
         <Dialog open={open} onOpenChange={(_, data) => handleOpenChange(data.open)}>
-            <DialogSurface aria-describedby={undefined} style={{ maxWidth: "600px", width: "100%" }}>
+            <DialogSurface aria-describedby={undefined}>
                 <DialogBody>
                     <DialogTitle>Быстрая посадка гостя (Walk-in)</DialogTitle>
-                    <form onSubmit={handleSubmit}>
-                        <DialogContent>
-                            <div className="flex flex-col gap-4 py-2">
-                                {error && (
-                                    <MessageBar intent="error">
-                                        <MessageBarBody>{error}</MessageBarBody>
-                                    </MessageBar>
-                                )}
+                    <DialogContent>
+                        <div className="flex flex-col gap-4 py-2">
+                            {error && (
+                                <MessageBar intent="error">
+                                    <MessageBarBody>{error}</MessageBarBody>
+                                </MessageBar>
+                            )}
 
-                                <Field label="Тариф" required>
-                                    <Select
-                                        value={tariffId}
-                                        onChange={(_, data) => setTariffId(data.value)}
-                                        disabled={loadingTariffs || submitting}
-                                    >
-                                        {loadingTariffs ? (
-                                            <option value="">Загрузка тарифов...</option>
-                                        ) : tariffs && tariffs.length > 0 ? (
-                                            tariffs.map((t) => (
-                                                <option key={t.tariffId} value={t.tariffId}>
-                                                    {t.name} ({t.pricePerMinute.toFixed(2)} ₽/мин)
-                                                </option>
-                                            ))
-                                        ) : (
-                                            <option value="">Нет активных тарифов</option>
-                                        )}
-                                    </Select>
-                                </Field>
+                            <Field label="Тариф" required>
+                                <Dropdown
+                                    value={selectedTariff ? `${selectedTariff.name} (${selectedTariff.pricePerMinute.toFixed(2)} ₽/мин)` : (loadingTariffs ? "Загрузка тарифов..." : "Выберите тариф")}
+                                    selectedOptions={tariffId ? [tariffId] : []}
+                                    onOptionSelect={(_, data) => setTariffId(data.optionValue || "")}
+                                    disabled={loadingTariffs || submitting}
+                                >
+                                    {tariffs && tariffs.length > 0 ? (
+                                        tariffs.map((t) => (
+                                            <Option key={t.tariffId} value={t.tariffId} text={`${t.name} (${t.pricePerMinute.toFixed(2)} ₽/мин)`}>
+                                                {t.name} ({t.pricePerMinute.toFixed(2)} ₽/мин)
+                                            </Option>
+                                        ))
+                                    ) : (
+                                        <Option value="" text="Нет активных тарифов">Нет активных тарифов</Option>
+                                    )}
+                                </Dropdown>
+                            </Field>
 
-                                <Field label="Количество гостей" hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`} required>
-                                    <Input
-                                        type="number"
-                                        min={1}
-                                        max={maxGuestsLimit}
-                                        value={guestsCount}
-                                        onChange={(_, data) => setGuestsCount(Math.min(maxGuestsLimit, Math.max(1, Number(data.value))))}
-                                        disabled={submitting}
-                                    />
-                                </Field>
+                            <Field label="Количество гостей" hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`} required>
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={maxGuestsLimit}
+                                    value={guestsCount.toString()}
+                                    onChange={(_, data) => setGuestsCount(Math.min(maxGuestsLimit, Math.max(1, Number(data.value))))}
+                                    disabled={submitting}
+                                />
+                            </Field>
 
-                                <Field label="Столик / Ресурс (опционально)">
-                                    <Select
-                                        value={resourceId}
-                                        onChange={(_, data) => setResourceId(data.value)}
-                                        disabled={loadingResources || submitting}
-                                    >
-                                        <option value="">Не выбран (Любой свободный)</option>
-                                        {freeResources.map((res) => (
-                                            <option key={res.resourceId} value={res.resourceId}>
-                                                {res.name} (мест: {res.capacity})
-                                            </option>
-                                        ))}
-                                    </Select>
-                                </Field>
+                            <Field label="Столик / Ресурс (опционально)">
+                                <Dropdown
+                                    placeholder="Не выбран (Любой свободный)"
+                                    value={
+                                        resourceId
+                                            ? freeResources.find(r => r.resourceId === resourceId)?.name || ""
+                                            : "Не выбран (Любой свободный)"
+                                    }
+                                    selectedOptions={resourceId ? [resourceId] : []}
+                                    onOptionSelect={(_, data) => setResourceId(data.optionValue || "")}
+                                    disabled={loadingResources || submitting}
+                                >
+                                    <Option value="" text="Не выбран (Любой свободный)">
+                                        Не выбран (Любой свободный)
+                                    </Option>
+                                    {freeResources.map((res) => (
+                                        <Option
+                                            key={res.resourceId}
+                                            value={res.resourceId}
+                                            text={`${res.name} (мест: ${res.capacity})`}
+                                        >
+                                            {res.name} (мест: {res.capacity})
+                                        </Option>
+                                    ))}
+                                </Dropdown>
+                            </Field>
 
-                                <Field label="ID Пользователя (опционально, для зарегистрированных гостей)">
-                                    <Input
-                                        value={userId}
-                                        onChange={(_, data) => setUserId(data.value)}
-                                        placeholder="Введите UUID пользователя при наличии"
-                                        disabled={submitting}
-                                    />
-                                </Field>
-                            </div>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button
-                                appearance="primary"
-                                type="submit"
-                                disabled={submitting || loadingTariffs || !tariffId}
-                            >
-                                {submitting ? <Spinner size="tiny" label="Оформление..." /> : "Посадить гостя"}
-                            </Button>
-                            <Button
-                                appearance="secondary"
-                                onClick={() => handleOpenChange(false)}
-                                disabled={submitting}
-                            >
-                                Отмена
-                            </Button>
-                        </DialogActions>
-                    </form>
+                            <Field label="ID Пользователя (опционально, для зарегистрированных гостей)">
+                                <Input
+                                    value={userId}
+                                    onChange={(_, data) => setUserId(data.value)}
+                                    placeholder="Введите UUID пользователя при наличии"
+                                    disabled={submitting}
+                                />
+                            </Field>
+                        </div>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button
+                            appearance="primary"
+                            onClick={handleSubmit}
+                            disabled={submitting || loadingTariffs || !tariffId}
+                        >
+                            {submitting ? <Spinner size="tiny" label="Оформление..." /> : "Посадить гостя"}
+                        </Button>
+                        <Button
+                            appearance="secondary"
+                            onClick={() => handleOpenChange(false)}
+                            disabled={submitting}
+                        >
+                            Отмена
+                        </Button>
+                    </DialogActions>
                 </DialogBody>
             </DialogSurface>
         </Dialog>

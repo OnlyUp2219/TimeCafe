@@ -36,7 +36,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
     return (
         <Card className={className} size={sizes.card}>
             <Title2 block className="!flex items-center gap-2">
-                <MailRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                <MailRegular className="text-(--colorBrandForeground1)" fontSize={24} />
                 Электронная почта
             </Title2>
             <Body2 className="!line-clamp-2">
@@ -54,10 +54,10 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
                             </Tooltip>
                             <div className="flex items-center gap-1.5 sm:ml-2 shrink-0">
                                 {createElement(getPersonalDataStatusIcon(effectiveConfirmed), {
-                                    className: effectiveConfirmed ? "text-[var(--colorStatusSuccessForeground1)]" : (effectiveConfirmed === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]"),
+                                    className: effectiveConfirmed ? "text-(--colorStatusSuccessForeground1)" : (effectiveConfirmed === false ? "text-(--colorStatusDangerForeground1)" : "text-(--colorNeutralForeground3)"),
                                     fontSize: 16
                                 })}
-                                <Caption1 className={effectiveConfirmed ? "text-[var(--colorStatusSuccessForeground1)]" : (effectiveConfirmed === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]")}>
+                                <Caption1 className={effectiveConfirmed ? "text-(--colorStatusSuccessForeground1)" : (effectiveConfirmed === false ? "text-(--colorStatusDangerForeground1)" : "text-(--colorNeutralForeground3)")}>
                                     {!hasEmail ? "Не указан" : (effectiveConfirmed ? "Подтверждён" : "Не подтверждён")}
                                 </Caption1>
                             </div>

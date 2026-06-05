@@ -139,7 +139,7 @@ export const TransactionsSection = ({
             renderHeaderCell: () => "Сумма",
             renderCell: (tx) => (
                 <TableCellLayout truncate>
-                    <span className={tx.type === TransactionType.Withdrawal ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
+                    <span className={tx.type === TransactionType.Withdrawal ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}>
                         {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
                     </span>
                 </TableCellLayout>

@@ -22,7 +22,7 @@ export const BalanceCard: FC<BalanceCardProps> = ({ balanceRub, debtRub, loading
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                        <Money20Regular className="text-[var(--colorStatusSuccessForeground1)]" />
+                        <Money20Regular className="text-(--colorStatusSuccessForeground1)" />
                         <Subtitle2Stronger>Баланс</Subtitle2Stronger>
                     </div>
                     {loading && <Badge appearance="tint" size={sizes.badge}>Загрузка</Badge>}
@@ -34,14 +34,14 @@ export const BalanceCard: FC<BalanceCardProps> = ({ balanceRub, debtRub, loading
                 <div className="flex flex-col gap-1">
                     <Title3 className="font-semibold">{formatRub(balanceRub, 0)}</Title3>
                     {debtRub > 0 ? (
-                        <div className="flex items-center gap-1 text-[var(--colorStatusWarningForeground1)]">
+                        <div className="flex items-center gap-1 text-(--colorStatusWarningForeground1)">
                             <Warning20Regular style={{ fontSize: "14px" }} className="shrink-0" />
-                            <Caption1 className="font-medium text-[var(--colorStatusWarningForeground1)]">
+                            <Caption1 className="font-medium text-(--colorStatusWarningForeground1)">
                                 Есть задолженность: {formatRub(debtRub, 0)}
                             </Caption1>
                         </div>
                     ) : (
-                        <Caption1 className="text-[var(--colorNeutralForeground3)]">
+                        <Caption1 className="text-(--colorNeutralForeground3)">
                             Доступно для оплаты визитов
                         </Caption1>
                     )}

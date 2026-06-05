@@ -83,7 +83,7 @@ export const PasswordInput = ({
                     {PASSWORD_REQUIREMENTS.map((req, idx) => (
                         <Caption1
                             key={idx}
-                            className={metRequirements[idx] ? "text-[var(--colorPaletteGreenForeground1)]" : "text-[var(--colorPaletteRedForeground1)]"}
+                            className={metRequirements[idx] ? "text-(--colorPaletteGreenForeground1)" : "text-(--colorPaletteRedForeground1)"}
                         >
                             {metRequirements[idx] ? <CheckmarkFilled/> : <DismissFilled/>} {req.text} <br/>
                         </Caption1>

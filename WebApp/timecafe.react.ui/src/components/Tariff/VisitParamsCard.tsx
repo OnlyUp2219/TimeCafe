@@ -1,5 +1,5 @@
 import type {VisitParamsCardProps} from "@components/Tariff/VisitParamsCardProps";
-import {Body2, Button, Card, Divider, Field, Input, Tag, Title3, Select} from "@fluentui/react-components";
+import {Body2, Button, Card, Divider, Field, Input, Tag, Title3, Dropdown, Option} from "@fluentui/react-components";
 import {clamp} from "@utility/clamp";
 import {formatDurationMinutes} from "@utility/formatDurationMinutes";
 import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
@@ -70,18 +70,32 @@ export const VisitParamsCard = ({
                                 hint="Выберите свободный столик"
                                 size={sizes.field}
                             >
-                                <Select
-                                    value={selectedResourceId ?? ""}
-                                    onChange={(_, data) => setSelectedResourceId(data.value || null)}
+                                <Dropdown
+                                    placeholder="Не выбран (Любой свободный)"
+                                    value={
+                                        selectedResourceId
+                                            ? resources.find(r => r.resourceId === selectedResourceId)?.name || ""
+                                            : "Не выбран (Любой свободный)"
+                                    }
+                                    selectedOptions={selectedResourceId ? [selectedResourceId] : []}
+                                    onOptionSelect={(_, data) => {
+                                        setSelectedResourceId(data.optionValue || null);
+                                    }}
                                     size={sizes.input}
                                 >
-                                    <option value="">Не выбран (Любой свободный)</option>
+                                    <Option value="" text="Не выбран (Любой свободный)">
+                                        Не выбран (Любой свободный)
+                                    </Option>
                                     {resources.map((res) => (
-                                        <option key={res.resourceId} value={res.resourceId}>
+                                        <Option
+                                            key={res.resourceId}
+                                            value={res.resourceId}
+                                            text={`${res.name} (мест: ${res.capacity})`}
+                                        >
                                             {res.name} (мест: {res.capacity})
-                                        </option>
+                                        </Option>
                                     ))}
-                                </Select>
+                                </Dropdown>
                             </Field>
                         )}
 

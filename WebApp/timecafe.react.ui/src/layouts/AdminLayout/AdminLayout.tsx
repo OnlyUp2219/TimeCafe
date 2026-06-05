@@ -10,12 +10,12 @@ export const AdminLayout: FC = () => {
     return (
         <div className="admin-layout flex flex-col h-screen">
             {/* Mobile Header, visible only on small screens */}
-            <div className="md:hidden flex items-center p-3 border-b border-[var(--colorNeutralStroke2)] bg-white/90 backdrop-blur z-50">
+            <div className="md:hidden flex items-center p-3 border-b border-(--colorNeutralStroke2) bg-white/90 backdrop-blur z-50">
                 <Hamburger 
                     onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} 
                     aria-label="Toggle menu" 
                 />
-                <h1 className="ml-3 text-lg font-semibold text-[var(--colorNeutralForeground1)]">Admin Panel</h1>
+                <h1 className="ml-3 text-lg font-semibold text-(--colorNeutralForeground1)">Admin Panel</h1>
             </div>
 
             <div className="flex flex-1 overflow-hidden">

@@ -8,8 +8,6 @@ import {
     Caption1,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     Title2,
     createTableColumn,
     TableCellLayout,
@@ -24,12 +22,12 @@ import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
-import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 import { usePagination } from "@hooks/usePagination";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 
-import { NO_ACCESS } from "@shared/const/placeholders";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+
 
 const paymentStatusLabel = (s: number) => {
     switch (s) {
@@ -74,8 +72,8 @@ const AdminUserCell = ({ userId }: { userId: string }) => {
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
             <div className="flex flex-col min-w-0">
-                <Body1 block truncate>{displayName || userId}</Body1>
-                <Caption1 block className="font-mono text-[var(--colorNeutralForeground4)]" style={{ fontSize: '10px' }}>{userId}</Caption1>
+                <Body1 truncate>{displayName || userId}</Body1>
+                <Caption1 className="font-mono text-(--colorNeutralForeground4)" style={{ fontSize: '10px' }}>{userId}</Caption1>
             </div>
         </TableCellLayout>
     );
@@ -125,9 +123,7 @@ export const PaymentsPage = () => {
                     renderHeaderCell: () => "Сумма",
                     renderCell: (p) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingPaymentHistoryRead} fallback={NO_ACCESS}>
-                                <Body1 className="text-[var(--colorPaletteGreenForeground1)]">{formatMoney(p.amount)}</Body1>
-                            </HasPermission>
+                            <Body1 className="text-(--colorPaletteGreenForeground1)">{formatMoney(p.amount)}</Body1>
                         </TableCellLayout>
                     ),
                 }),
@@ -167,7 +163,7 @@ export const PaymentsPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [has]);
 
     return (
@@ -175,7 +171,7 @@ export const PaymentsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Платежи</Title2>
-                    <Body2 block>{totalCount} платежей</Body2>
+                    <Body2>{totalCount} платежей</Body2>
                 </div>
             </div>
 
@@ -191,11 +187,7 @@ export const PaymentsPage = () => {
                 </Field>
             </div>
 
-            {queryError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
 
             <Card size={sizes.card}>
                 <DataTable

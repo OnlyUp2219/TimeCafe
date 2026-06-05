@@ -14,8 +14,6 @@ import {
     DialogTrigger,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     Spinner,
     Switch,
     Title2,
@@ -27,6 +25,8 @@ import {
     Radio,
     Caption1,
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import {
@@ -47,7 +47,7 @@ import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 
 const formatDate = (iso: string) => {
     const d = new Date(iso);
@@ -203,7 +203,7 @@ export const PromotionsPage = () => {
                     <TableCellLayout truncate>
                         <div className="flex flex-col">
                             <Body1>{promo.name}</Body1>
-                            {promo.description && <Body2 className="text-[var(--colorNeutralForeground3)]">{promo.description}</Body2>}
+                            {promo.description && <Body2 className="text-(--colorNeutralForeground3)">{promo.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -231,7 +231,7 @@ export const PromotionsPage = () => {
                         ) : promo.type === 2 ? (
                             <div className="flex flex-col">
                                 <Badge appearance="outline" color="informative">Для тарифа</Badge>
-                                <Caption1 className="text-[var(--colorNeutralForeground3)] truncate mt-1">
+                                <Caption1 className="text-(--colorNeutralForeground3) truncate mt-1">
                                     {tariffs.find(t => t.tariffId.toLowerCase() === promo.tariffId?.toLowerCase())?.name || (tariffs.length === 0 ? "Загрузка..." : "Неизвестный тариф")}
                                 </Caption1>
                             </div>
@@ -303,19 +303,11 @@ export const PromotionsPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
-    }, [sizes, handleToggleActive, openEdit, handleDelete, has, tariffs]);
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
+    }, [handleToggleActive, openEdit, handleDelete, has, tariffs]);
 
     if (isLoading) {
         return <div className="flex justify-center p-12"><Spinner label="Загрузка акций..." /></div>;
-    }
-
-    if (queryError) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{queryError}</MessageBarBody>
-            </MessageBar>
-        );
     }
 
     return (
@@ -335,11 +327,8 @@ export const PromotionsPage = () => {
                 </div>
             </div>
 
-            {mutationError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{mutationError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={mutationError} className="mb-4" />
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable
@@ -387,7 +376,7 @@ export const PromotionsPage = () => {
                                     <Radio value="2" label="Для тарифа" />
                                 </RadioGroup>
                                 {form.type === 1 && form.isActive && hasActiveGlobal && (
-                                    <Caption1 className="text-[var(--colorPaletteRedForeground1)] mt-1 flex">
+                                    <Caption1 className="text-(--colorPaletteRedForeground1) mt-1 flex">
                                         Внимание: уже существует другая активная глобальная акция. Сначала деактивируйте её, либо сохраните эту как неактивную.
                                     </Caption1>
                                 )}
@@ -420,11 +409,7 @@ export const PromotionsPage = () => {
                                 onChange={(_, d) => setForm(f => ({ ...f, isActive: d.checked }))}
                                 label="Активна"
                             />
-                            {mutationError && (
-                                <MessageBar intent="error">
-                                    <MessageBarBody>{mutationError}</MessageBarBody>
-                                </MessageBar>
-                            )}
+                            <DismissableError error={mutationError} className="mb-3" />
                         </DialogContent>
                         <DialogActions>
                             <DialogTrigger disableButtonEnhancement>

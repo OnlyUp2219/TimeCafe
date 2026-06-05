@@ -29,7 +29,7 @@ export const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardPro
                     <Body2 block>Выберите тариф и задайте параметры.</Body2>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        <div className="rounded-2xl p-4 bg-[var(--colorNeutralBackground2)] border border-[var(--colorNeutralStroke1)]">
+                        <div className="rounded-2xl p-4 bg-(--colorNeutralBackground2) border border-(--colorNeutralStroke1)">
                             <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
                                 <div className="min-w-0">
                                     <Caption1>Ориентировочная сумма</Caption1>

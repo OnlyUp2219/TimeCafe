@@ -5,15 +5,14 @@ import {
     Body2,
     Button,
     Card,
-    MessageBar,
-    MessageBarBody,
     Title2,
     createTableColumn,
     TableCellLayout,
-    Spinner,
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular, CheckmarkCircle20Regular, DismissCircle20Regular} from "@fluentui/react-icons";
+import {ArrowLeft20Regular, CheckmarkCircle20Regular} from "@fluentui/react-icons";
 import {useGetPendingVisitsQuery, useApproveVisitMutation, useRejectVisitMutation} from "@store/api/venueApi";
 import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
 import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
@@ -134,9 +133,9 @@ export const PendingVisitsPage = () => {
         }),
         createTableColumn<VisitWithTariff>({
             columnId: "userId",
-            compare: (a, b) => a.userId.localeCompare(b.userId),
+            compare: (a, b) => (a.userId ?? "").localeCompare(b.userId ?? ""),
             renderHeaderCell: () => "Пользователь",
-            renderCell: (visit) => <UserCell userId={visit.userId} />,
+            renderCell: (visit) => <UserCell userId={visit.userId ?? ""} />,
         }),
         createTableColumn<VisitWithTariff>({
             columnId: "actions",
@@ -156,14 +155,6 @@ export const PendingVisitsPage = () => {
         return <PageLoader label="Загрузка ожидающих визитов..." />;
     }
 
-    if (queryError) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{queryError}</MessageBarBody>
-            </MessageBar>
-        );
-    }
-
     return (
         <div>
             <Button appearance="subtle" icon={<ArrowLeft20Regular/>} onClick={() => navigate("/admin/visits")} className="mb-4">
@@ -173,15 +164,12 @@ export const PendingVisitsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Ожидают подтверждения</Title2>
-                    <Body2 block>{totalCount} визитов</Body2>
+                    <Body2>{totalCount} визитов</Body2>
                 </div>
             </div>
 
-            {actionError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{actionError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={actionError} className="mb-4" />
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable

@@ -55,3 +55,64 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Ambient Glow using Fluent UI tokens */
+.tc-ambient-bg {
+  background-color: var(--colorNeutralBackground1);
+}
+
+.tc-glow-brand {
+  background-color: var(--colorBrandBackground);
+}
+
+.tc-glow-accent {
+  background-color: var(--colorCompoundBrandBackground);
+}
+
+/* Glass Panel using color-mix for transparency based on Fluent UI tokens */
+.tc-glass-panel {
+  background-color: color-mix(in srgb, var(--colorNeutralBackground1) 70%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: var(--colorNeutralStroke1);
+  border-radius: var(--borderRadius2XLarge);
+}
+
+.tc-glass-panel:hover {
+  background-color: color-mix(in srgb, var(--colorNeutralBackground1Hover) 80%, transparent);
+  border-color: var(--colorNeutralStroke1Hover);
+}
+
+/* Gradient text using Fluent tokens */
+.tc-gradient-text {
+  background-image: linear-gradient(135deg, var(--colorNeutralForeground1), var(--colorBrandForeground1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Animations */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}

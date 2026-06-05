@@ -217,7 +217,7 @@ export const PersonalDataPage = () => {
 
                     <Card className="w-full" size={sizes.card}>
                         <Title2 block className="!flex items-center gap-2">
-                            <StarRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                            <StarRegular className="text-(--colorBrandForeground1)" fontSize={24} />
                             Программа лояльности
                         </Title2>
                         <LoyaltyProgress
@@ -237,7 +237,7 @@ export const PersonalDataPage = () => {
 
                         <Card className="sm:col-span-2 lg:col-span-1" size={sizes.card}>
                             <Title2 block className="!flex items-center gap-2">
-                                <LockClosedRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                                <LockClosedRegular className="text-(--colorBrandForeground1)" fontSize={24} />
                                 Смена пароля
                             </Title2>
                             <Body2 className="!line-clamp-2">

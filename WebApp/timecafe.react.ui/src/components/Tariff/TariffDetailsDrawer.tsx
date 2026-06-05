@@ -37,7 +37,7 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
             position="bottom"
             className="!flex !flex-col !items-center"
         >
-            <div id="profileGateBackground" className="h-full w-full flex flex-col overflow-hidden bg-[var(--colorNeutralBackground2)]">
+            <div id="profileGateBackground" className="h-full w-full flex flex-col overflow-hidden bg-(--colorNeutralBackground2)">
                 <div className="profile-gate-bg" aria-hidden="true">
                     <span className="profile-gate-shape profile-gate-shape--circle" />
                     <span className="profile-gate-shape profile-gate-shape--square" />
@@ -103,11 +103,11 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
                                             <Subtitle2>Примеры расчета</Subtitle2>
                                             <div className="grid grid-cols-1 gap-2">
                                                 {tariff.calculationExamples.map((example, index) => (
-                                                    <div key={index} className="p-3 bg-[var(--colorNeutralBackground2)] rounded-lg flex justify-between items-center">
+                                                    <div key={index} className="p-3 bg-(--colorNeutralBackground2) rounded-lg flex justify-between items-center">
                                                         <div className="flex flex-col">
                                                             <Body1 className="font-semibold">{example.actualMinutes} мин</Body1>
                                                             {example.billableMinutes !== example.actualMinutes && (
-                                                                <Body2 className="text-[var(--colorNeutralForeground3)]">
+                                                                <Body2 className="text-(--colorNeutralForeground3)">
                                                                     Оплачено: {example.billableMinutes} мин
                                                                 </Body2>
                                                             )}
@@ -115,7 +115,7 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
                                                         <div className="flex flex-col items-end">
                                                             <Body1 className="font-semibold">{example.finalCost} ₽</Body1>
                                                             {example.optimizationGain > 0 && (
-                                                                <Body2 className="text-[var(--colorPaletteGreenForeground1)]">
+                                                                <Body2 className="text-(--colorPaletteGreenForeground1)">
                                                                     Выгода: {example.optimizationGain} ₽
                                                                 </Body2>
                                                             )}
@@ -149,7 +149,7 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
                                             <Subtitle2>Теги аудитории</Subtitle2>
                                             <div className="flex gap-2 flex-wrap">
                                                 {tariff.audienceTags.map((tag, index) => (
-                                                    <span key={index} className="px-2 py-1 bg-[var(--colorNeutralBackground2)] rounded-md text-sm">
+                                                    <span key={index} className="px-2 py-1 bg-(--colorNeutralBackground2) rounded-md text-sm">
                                                         {tag}
                                                     </span>
                                                 ))}

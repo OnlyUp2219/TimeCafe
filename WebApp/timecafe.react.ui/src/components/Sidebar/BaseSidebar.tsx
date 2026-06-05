@@ -295,78 +295,80 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
             )}
 
             <aside className={classNamePrefix} data-collapsed={collapsed} data-mobile-open={isOpen}>
-                <div className={collapsed ? `${classNamePrefix}__header admin-sidebar__header--collapsed` : `${classNamePrefix}__header`}>
-                    <Tooltip content={collapsed ? "Развернуть" : "Свернуть"} relationship="label">
-                        <Button
-                            appearance="subtle"
-                            size="large"
-                            icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
-                            onClick={() => onCollapsedChange(!collapsed)}
-                            className={collapsed ? "mx-auto" : "ml-auto"}
-                        />
-                    </Tooltip>
-                    {!collapsed && (
-                        <div className={`${classNamePrefix}__logo`} onClick={onLogoClick}>
-                            {logoText}
-                        </div>
-                    )}
-                </div>
+                <div className="sticky top-0 z-10 max-h-[calc(100dvh-100px)] overflow-y-auto bg-(--colorNeutralBackground1) flex flex-col hide-scrollbar">
+                    <div className={collapsed ? `${classNamePrefix}__header admin-sidebar__header--collapsed` : `${classNamePrefix}__header`}>
+                        <Tooltip content={collapsed ? "Развернуть" : "Свернуть"} relationship="label">
+                            <Button
+                                appearance="subtle"
+                                size="large"
+                                icon={collapsed ? <PanelLeftExpand20Regular /> : <PanelLeftContract20Regular />}
+                                onClick={() => onCollapsedChange(!collapsed)}
+                                className={collapsed ? "mx-auto" : "ml-auto"}
+                            />
+                        </Tooltip>
+                        {!collapsed && (
+                            <div className={`${classNamePrefix}__logo`} onClick={onLogoClick}>
+                                {logoText}
+                            </div>
+                        )}
+                    </div>
 
-                <div className={`${classNamePrefix}__desktop-nav`}>
-                    {collapsed ? (
-                        <nav className="admin-sidebar__collapsed-nav pt-0">
-                            {nav.flatMap((section) => section.items).map((item) => {
-                                const hasSubItems = item.subItems && item.subItems.length > 0;
-                                const isSubActive = hasSubItems && (item.subItems.some((sub) => selectedValue === sub.id) || selectedCategoryValue === item.id);
-                                const isActive = selectedValue === item.id || isSubActive;
+                    <div className={`${classNamePrefix}__desktop-nav`}>
+                        {collapsed ? (
+                            <nav className="admin-sidebar__collapsed-nav pt-0">
+                                {nav.flatMap((section) => section.items).map((item) => {
+                                    const hasSubItems = item.subItems && item.subItems.length > 0;
+                                    const isSubActive = hasSubItems && (item.subItems.some((sub) => selectedValue === sub.id) || selectedCategoryValue === item.id);
+                                    const isActive = selectedValue === item.id || isSubActive;
 
-                                if (hasSubItems) {
+                                    if (hasSubItems) {
+                                        return (
+                                            <Menu key={item.id} positioning="after-start">
+                                                <MenuTrigger disableButtonEnhancement>
+                                                    <Tooltip content={item.label} relationship="label" positioning="after">
+                                                        <Button
+                                                            appearance={isActive ? "primary" : "subtle"}
+                                                            size="large"
+                                                            icon={item.icon}
+                                                            className="admin-sidebar__icon-btn"
+                                                        />
+                                                    </Tooltip>
+                                                </MenuTrigger>
+                                                <MenuPopover>
+                                                    <MenuList>
+                                                        {item.subItems!.map((subItem) => (
+                                                            <MenuItem
+                                                                key={subItem.id}
+                                                                icon={subItem.icon}
+                                                                onClick={() => handleNavigate(subItem.path)}
+                                                                className={`admin-sidebar__navItem ${selectedValue === subItem.id ? "admin-sidebar__navItem--selected" : ""}`}
+                                                            >
+                                                                {subItem.label}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </MenuList>
+                                                </MenuPopover>
+                                            </Menu>
+                                        );
+                                    }
+
                                     return (
-                                        <Menu key={item.id} positioning="after-start">
-                                            <MenuTrigger disableButtonEnhancement>
-                                                <Tooltip content={item.label} relationship="label" positioning="after">
-                                                    <Button
-                                                        appearance={isActive ? "primary" : "subtle"}
-                                                        size="large"
-                                                        icon={item.icon}
-                                                        className="admin-sidebar__icon-btn"
-                                                    />
-                                                </Tooltip>
-                                            </MenuTrigger>
-                                            <MenuPopover>
-                                                <MenuList>
-                                                    {item.subItems!.map((subItem) => (
-                                                        <MenuItem
-                                                            key={subItem.id}
-                                                            icon={subItem.icon}
-                                                            onClick={() => handleNavigate(subItem.path)}
-                                                            className={`admin-sidebar__navItem ${selectedValue === subItem.id ? "admin-sidebar__navItem--selected" : ""}`}
-                                                        >
-                                                            {subItem.label}
-                                                        </MenuItem>
-                                                    ))}
-                                                </MenuList>
-                                            </MenuPopover>
-                                        </Menu>
+                                        <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
+                                            <Button
+                                                appearance={selectedValue === item.id ? "primary" : "subtle"}
+                                                size="large"
+                                                icon={item.icon}
+                                                onClick={() => handleNavigate(item.path)}
+                                                className="admin-sidebar__icon-btn"
+                                            />
+                                        </Tooltip>
                                     );
-                                }
-
-                                return (
-                                    <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
-                                        <Button
-                                            appearance={selectedValue === item.id ? "primary" : "subtle"}
-                                            size="large"
-                                            icon={item.icon}
-                                            onClick={() => handleNavigate(item.path)}
-                                            className="admin-sidebar__icon-btn"
-                                        />
-                                    </Tooltip>
-                                );
-                            })}
-                        </nav>
-                    ) : (
-                        renderNav()
-                    )}
+                                })}
+                            </nav>
+                        ) : (
+                            renderNav()
+                        )}
+                    </div>
                 </div>
 
                 <div className={`${classNamePrefix}__bottom`}>

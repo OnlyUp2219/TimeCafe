@@ -27,6 +27,7 @@ import { BillingType } from "@app-types/tariff";
 import { VisitStatus } from "@app-types/visit";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
 import { useGetBalanceQuery } from "@store/api/billingApi";
+import { useGetResourcesQuery } from "@store/api/venueApi";
 
 interface ApproveVisitDialogProps {
     open: boolean;
@@ -91,6 +92,8 @@ export const ApproveVisitDialog = ({
 
     const { data: profile } = useGetProfileByUserIdQuery(visit?.userId ?? "", { skip: !visit?.userId });
     const { data: balanceObj } = useGetBalanceQuery(visit?.userId ?? "", { skip: !visit?.userId });
+    const { data: resources } = useGetResourcesQuery();
+    const resource = resources?.find(r => r.resourceId === visit?.resourceId);
 
     const handleApprove = () => {
         if (!visit) return;
@@ -195,10 +198,10 @@ export const ApproveVisitDialog = ({
                     <DialogContent>
                         {visit && (
                             <div className="flex flex-col gap-4 py-2">
-                                <div className="bg-[var(--colorNeutralBackground2)] p-3 rounded-lg flex flex-col gap-2 border border-[var(--colorNeutralStroke2)]">
+                                <div className="bg-(--colorNeutralBackground2) p-3 rounded-lg flex flex-col gap-2 border border-(--colorNeutralStroke2)">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-2">
-                                            <Document20Regular className="text-[var(--colorBrandForegroundLink)]" />
+                                            <Document20Regular className="text-(--colorBrandForegroundLink)" />
                                             <span className="font-semibold text-base">{visit.tariffName}</span>
                                         </div>
                                         <Badge color="brand" appearance="tint">
@@ -207,17 +210,17 @@ export const ApproveVisitDialog = ({
                                     </div>
                                     {visit.tariffDescription && (
                                         <div className="flex">
-                                            <Caption1 className="text-[var(--colorNeutralForeground2)] italic">
+                                            <Caption1 className="text-(--colorNeutralForeground2) italic">
                                                 {visit.tariffDescription}
                                             </Caption1>
                                         </div>
                                     )}
                                     <Divider className="my-1" />
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-[var(--colorNeutralForeground3)] flex items-center gap-1.5">
+                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
                                             <Money20Regular /> Стоимость:
                                         </span>
-                                        <span className="font-semibold text-[var(--colorBrandForegroundLink)]">
+                                        <span className="font-semibold text-(--colorBrandForegroundLink)">
                                             {visit.tariffPricePerMinute} ₽ / мин
                                             {visit.tariffBillingType === 1 && ` (${visit.tariffPricePerMinute * 60} ₽/ч)`}
                                         </span>
@@ -241,7 +244,7 @@ export const ApproveVisitDialog = ({
                                     )}
                                 </div>
 
-                                <div className="bg-[var(--colorNeutralBackground3)] p-3 rounded-lg flex flex-col gap-3 border border-[var(--colorNeutralStroke3)]">
+                                <div className="bg-(--colorNeutralBackground3) p-3 rounded-lg flex flex-col gap-3 border border-(--colorNeutralStroke3)">
                                     <div className="flex items-center gap-3">
                                         <Avatar
                                             name={userFullName}
@@ -250,7 +253,7 @@ export const ApproveVisitDialog = ({
                                         />
                                         <div className="flex flex-col min-w-0">
                                             <span className="font-medium text-sm truncate">{userFullName}</span>
-                                            <span className="text-xs text-[var(--colorNeutralForeground3)] truncate font-mono">
+                                            <span className="text-xs text-(--colorNeutralForeground3) truncate font-mono">
                                                 ID: {visit.userId}
                                             </span>
                                         </div>
@@ -259,7 +262,7 @@ export const ApproveVisitDialog = ({
                                     <Divider />
 
                                     <div className="flex items-center justify-between text-sm">
-                                        <span className="text-[var(--colorNeutralForeground3)] flex items-center gap-1.5">
+                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
                                             <Wallet20Regular /> Текущий баланс:
                                         </span>
                                         <Badge
@@ -273,14 +276,14 @@ export const ApproveVisitDialog = ({
 
                                 <div className="flex flex-col gap-2.5 text-sm px-1">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[var(--colorNeutralForeground3)] flex items-center gap-1.5">
+                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
                                             <Clock20Regular /> Время запроса:
                                         </span>
                                         <div className="flex flex-col items-end">
                                             <span className="font-medium">{formatDateTime(visit.entryTime)}</span>
                                             {getRelativeTime(visit.entryTime) && (
                                                 <div className="flex">
-                                                    <Caption1 className="text-[var(--colorBrandForegroundLink)]">
+                                                    <Caption1 className="text-(--colorBrandForegroundLink)">
                                                         {getRelativeTime(visit.entryTime)}
                                                     </Caption1>
                                                 </div>
@@ -288,8 +291,19 @@ export const ApproveVisitDialog = ({
                                         </div>
                                     </div>
 
+                                    {visit.resourceId && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
+                                                <People20Regular /> Столик / Зона:
+                                            </span>
+                                            <span className="font-medium">
+                                                {resource ? resource.name : `ID: ${visit.resourceId.slice(0, 8)}`}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[var(--colorNeutralForeground3)] flex items-center gap-1.5">
+                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
                                             <People20Regular /> Количество гостей:
                                         </span>
                                         <span className="font-medium">
@@ -299,7 +313,7 @@ export const ApproveVisitDialog = ({
 
                                     {visit.plannedMinutes && (
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[var(--colorNeutralForeground3)] flex items-center gap-1.5">
+                                            <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
                                                 <Clock20Regular /> Планируемое время:
                                             </span>
                                             <span className="font-medium">

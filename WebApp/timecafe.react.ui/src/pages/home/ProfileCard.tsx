@@ -36,23 +36,23 @@ export const ProfileCard: FC<ProfileCardProps> = ({ profile, email, phone, email
                         <Divider className="my-1" />
                         <div className="flex flex-col gap-4 mt-1.5 w-full">
                             <div className="flex items-start gap-2.5 min-w-0">
-                                <Mail20Regular style={{ fontSize: "18px" }} className="text-[var(--colorBrandForeground1)] shrink-0 mt-0.5" />
+                                <Mail20Regular style={{ fontSize: "18px" }} className="text-(--colorBrandForeground1) shrink-0 mt-0.5" />
                                 <div className="flex flex-col min-w-0 gap-1">
                                     <div className="flex flex-col">
-                                        <Caption1 className="text-[var(--colorNeutralForeground3)]">Email</Caption1>
+                                        <Caption1 className="text-(--colorNeutralForeground3)">Email</Caption1>
                                         <Text className="truncate font-medium">{email || "Не указана"}</Text>
                                     </div>
                                     {email && (
                                         <div className="flex items-center gap-1">
                                             {emailConfirmed ? (
                                                 <>
-                                                    <Checkmark20Regular className="text-[var(--colorStatusSuccessForeground1)]" />
-                                                    <Caption1 className="text-[var(--colorStatusSuccessForeground1)]">Подтверждён</Caption1>
+                                                    <Checkmark20Regular className="text-(--colorStatusSuccessForeground1)" />
+                                                    <Caption1 className="text-(--colorStatusSuccessForeground1)">Подтверждён</Caption1>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Dismiss20Regular className="text-[var(--colorStatusDangerForeground1)]" />
-                                                    <Caption1 className="text-[var(--colorStatusDangerForeground1)]">Не подтверждён</Caption1>
+                                                    <Dismiss20Regular className="text-(--colorStatusDangerForeground1)" />
+                                                    <Caption1 className="text-(--colorStatusDangerForeground1)">Не подтверждён</Caption1>
                                                 </>
                                             )}
                                         </div>
@@ -61,23 +61,23 @@ export const ProfileCard: FC<ProfileCardProps> = ({ profile, email, phone, email
                             </div>
 
                             <div className="flex items-start gap-2.5 min-w-0">
-                                <Phone20Regular style={{ fontSize: "18px" }} className="text-[var(--colorBrandForeground1)] shrink-0 mt-0.5" />
+                                <Phone20Regular style={{ fontSize: "18px" }} className="text-(--colorBrandForeground1) shrink-0 mt-0.5" />
                                 <div className="flex flex-col min-w-0 gap-1">
                                     <div className="flex flex-col">
-                                        <Caption1 className="text-[var(--colorNeutralForeground3)]">Телефон</Caption1>
+                                        <Caption1 className="text-(--colorNeutralForeground3)">Телефон</Caption1>
                                         <Text className="font-medium">{phone || "Не указан"}</Text>
                                     </div>
                                     {phone && (
                                         <div className="flex items-center gap-1">
                                             {phoneConfirmed ? (
                                                 <>
-                                                    <Checkmark20Regular className="text-[var(--colorStatusSuccessForeground1)]" />
-                                                    <Caption1 className="text-[var(--colorStatusSuccessForeground1)]">Подтверждён</Caption1>
+                                                    <Checkmark20Regular className="text-(--colorStatusSuccessForeground1)" />
+                                                    <Caption1 className="text-(--colorStatusSuccessForeground1)">Подтверждён</Caption1>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Dismiss20Regular className="text-[var(--colorStatusDangerForeground1)]" />
-                                                    <Caption1 className="text-[var(--colorStatusDangerForeground1)]">Не подтверждён</Caption1>
+                                                    <Dismiss20Regular className="text-(--colorStatusDangerForeground1)" />
+                                                    <Caption1 className="text-(--colorStatusDangerForeground1)">Не подтверждён</Caption1>
                                                 </>
                                             )}
                                         </div>
@@ -91,7 +91,7 @@ export const ProfileCard: FC<ProfileCardProps> = ({ profile, email, phone, email
         } else {
             return (
                 <div className="flex flex-col gap-3 items-center text-center p-4 h-full justify-center">
-                    <Warning20Regular className="text-[var(--colorStatusWarningForeground1)]" style={{ fontSize: "40px", height: "40px", width: "40px" }} />
+                    <Warning20Regular className="text-(--colorStatusWarningForeground1)" style={{ fontSize: "40px", height: "40px", width: "40px" }} />
                     <Body2 className="max-w-[400px]">
                         Заполните профиль, чтобы продолжить пользовательский сценарий.
                     </Body2>

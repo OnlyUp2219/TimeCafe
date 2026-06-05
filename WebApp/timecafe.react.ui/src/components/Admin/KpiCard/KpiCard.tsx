@@ -18,7 +18,7 @@ export const KpiCard = ({title, value, icon, onClick}: KpiCardProps) => {
         >
             <div className="flex items-center justify-between">
                 <div className="min-w-0 flex-1 flex flex-col gap-1">
-                    <Body2 className="line-clamp-3 text-[var(--colorNeutralForeground3)]">{title}</Body2>
+                    <Body2 className="line-clamp-3 text-(--colorNeutralForeground3)">{title}</Body2>
                     <Title2>{value}</Title2>
                 </div>
                 <div className="text-2xl opacity-50 shrink-0 ml-2">{icon}</div>

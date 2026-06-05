@@ -8,16 +8,16 @@ import {
     Button,
     Card,
     Caption1,
-    MessageBar,
-    MessageBarBody,
-    Spinner,
     Switch,
     Title2,
     createTableColumn,
     TableCellLayout,
     Tooltip,
+    MessageBar,
+    MessageBarBody,
     MessageBarTitle,
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";
 import {
@@ -26,6 +26,7 @@ import {
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllPromotionsQuery,
+    type Promotion,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -36,7 +37,7 @@ import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
 import { PageLoader } from "@components/PageLoader/PageLoader";
@@ -128,7 +129,7 @@ export const TariffsPage = () => {
                     >
                         <div className="flex flex-col">
                             <Body1 >{tariff.name}</Body1>
-                            {tariff.description && <Body2 className="text-[var(--colorNeutralForeground3)] !line-clamp-2">{tariff.description}</Body2>}
+                            {tariff.description && <Body2 className="text-(--colorNeutralForeground3) line-clamp-2!">{tariff.description}</Body2>}
                         </div>
                     </TableCellLayout>
                 ),
@@ -138,9 +139,9 @@ export const TariffsPage = () => {
                 compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
                 renderHeaderCell: () => "Цена",
                 renderCell: (tariff) => {
-                    const activePromos = promotions.filter((p: any) => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
-                    const globalPromo = activePromos.filter((p: any) => p.type === 1).sort((a: any, b: any) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
-                    const tariffPromo = activePromos.filter((p: any) => p.type === 2 && p.tariffId === tariff.tariffId).sort((a: any, b: any) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const activePromos = promotions.filter((p: Promotion) => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
+                    const globalPromo = activePromos.filter((p: Promotion) => p.type === 1).sort((a: Promotion, b: Promotion) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
+                    const tariffPromo = activePromos.filter((p: Promotion) => p.type === 2 && p.tariffId === tariff.tariffId).sort((a: Promotion, b: Promotion) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
                     const bestPromo = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
 
 
@@ -154,8 +155,8 @@ export const TariffsPage = () => {
                                 <Body1>
                                     {hasDiscount ? (
                                         <span className="flex items-center gap-2">
-                                            <span className="line-through text-[var(--colorNeutralForeground4)] text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
-                                            <span className="text-[var(--colorPaletteRedForeground1)] font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
+                                            <span className="line-through text-(--colorNeutralForeground4) text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
+                                            <span className="text-(--colorPaletteRedForeground1) font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
                                         </span>
                                     ) : (
                                         <span>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</span>
@@ -165,7 +166,7 @@ export const TariffsPage = () => {
                                     {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
                                     {hasDiscount && (
                                         <Tooltip content={maxCap !== undefined && bestPromo > maxCap ? `Акция ${bestPromo}% ограничена системным лимитом ${maxCap}%` : "Применена лучшая акция"} relationship="label">
-                                            <span className="ml-1 text-[var(--colorPaletteRedForeground1)] cursor-help">
+                                            <span className="ml-1 text-(--colorPaletteRedForeground1) cursor-help">
                                                 (-{appliedDiscount}%){maxCap !== undefined && bestPromo > maxCap && " *"}
                                             </span>
                                         </Tooltip>
@@ -239,19 +240,11 @@ export const TariffsPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
-    }, [sizes, handleToggleActive, openEdit, handleDelete, has, promotions, maxCap]);
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
+    }, [handleToggleActive, openEdit, handleDelete, has, promotions, maxCap]);
 
     if (isLoading) {
         return <PageLoader label="Загрузка тарифов..." />;
-    }
-
-    if (queryError) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{queryError}</MessageBarBody>
-            </MessageBar>
-        );
     }
 
     return (
@@ -271,6 +264,9 @@ export const TariffsPage = () => {
                 </div>
             </div>
 
+            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={mutationError} className="mb-4" />
+
             <MessageBar intent="info" shape="square" icon={<Info20Regular />}>
                 <MessageBarBody>
                     <MessageBarTitle>Информация о тарификации</MessageBarTitle>
@@ -288,12 +284,6 @@ export const TariffsPage = () => {
                     </div>
                 </MessageBarBody>
             </MessageBar>
-
-            {mutationError && (
-                <MessageBar intent="error">
-                    <MessageBarBody>{mutationError}</MessageBarBody>
-                </MessageBar>
-            )}
 
             <Card size={sizes.card}>
                 <DataTable

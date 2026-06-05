@@ -7,8 +7,6 @@ import {
     Card,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     CardFooter,
     CardHeader,
     Title2,
@@ -16,7 +14,6 @@ import {
     Dropdown,
     Option,
     Divider,
-    Spinner,
     Title1,
     Subtitle1,
     ColorPicker as FluentColorPicker,
@@ -39,8 +36,11 @@ import {
     MenuTrigger,
     MenuPopover,
     MenuList,
-    MenuItem
+    MenuItem,
+
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import { ArrowLeft20Regular, Color20Regular, Add20Regular, Delete20Regular, MoreHorizontal20Regular } from "@fluentui/react-icons";
 import { tinycolor } from "@ctrl/tinycolor";
 import {
@@ -58,7 +58,7 @@ import { PageLoader } from "@components/PageLoader/PageLoader";
 const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
     const color = useMemo(() => tinycolor(value).toHsv(), [value]);
 
-    const handleColorChange = (_: any, data: { color: any }) => {
+    const handleColorChange = (_: React.SyntheticEvent | Event, data: { color: { h: number; s: number; v: number; a?: number } }) => {
         const tc = tinycolor(data.color);
         const newColor = (data.color.a ?? 1) < 1
             ? tc.toHex8String()
@@ -76,7 +76,7 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
             <Popover trapFocus>
                 <PopoverTrigger disableButtonEnhancement>
                     <div
-                        className="w-10 h-8 border border-[var(--colorNeutralStroke2)] cursor-pointer rounded shadow-sm transition-transform hover:scale-110"
+                        className="w-10 h-8 border border-(--colorNeutralStroke2) cursor-pointer rounded shadow-sm transition-transform hover:scale-110"
                         style={{ backgroundColor: value }}
                     />
                 </PopoverTrigger>
@@ -93,7 +93,7 @@ const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: 
                                     <AlphaSlider aria-label="Alpha" />
                                 </div>
                                 <div
-                                    className="w-12 h-12 rounded shadow-sm border border-[var(--colorNeutralStroke2)]"
+                                    className="w-12 h-12 rounded shadow-sm border border-(--colorNeutralStroke2)"
                                     style={{ backgroundColor: value }}
                                 />
                             </div>
@@ -207,10 +207,10 @@ const emptyConfig: ThemeConfig = {
 const LayerPreview = memo(({ layer }: { layer: PatternLayer }) => {
     const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
     return (
-        <div className="relative w-full h-32 rounded-lg border-2 border-dashed border-[var(--colorNeutralStroke1)] overflow-hidden bg-slate-50 flex items-center justify-center">
+        <div className="relative w-full h-32 rounded-lg border-2 border-dashed border-(--colorNeutralStroke1) overflow-hidden bg-slate-50 flex items-center justify-center">
             <div className="absolute inset-0 opacity-10 bg-slate-900" style={{ backgroundImage: 'radial-gradient(#000 10%, transparent 10%)', backgroundSize: '10px 10px' }} />
             <div style={{ ...styles, inset: 0 }} />
-            <Caption1 className="absolute bottom-1 right-2 text-[var(--colorNeutralForeground4)]">Предпросмотр слоя</Caption1>
+            <Caption1 className="absolute bottom-1 right-2 text-(--colorNeutralForeground4)">Предпросмотр слоя</Caption1>
         </div>
     );
 });
@@ -218,7 +218,7 @@ const LayerPreview = memo(({ layer }: { layer: PatternLayer }) => {
 const MiniPreview = memo(({ layer }: { layer: PatternLayer }) => {
     const styles = useMemo(() => getPatternLayerStyles(layer), [layer]);
     return (
-        <div className="w-5 h-5 rounded border border-[var(--colorNeutralStroke2)] relative overflow-hidden bg-slate-100">
+        <div className="w-5 h-5 rounded border border-(--colorNeutralStroke2) relative overflow-hidden bg-slate-100">
             <div style={{ ...styles, inset: 0, transform: (styles.transform || '') + ' scale(0.5)' }} />
         </div>
     );
@@ -313,11 +313,7 @@ export const ThemeEditorPage = () => {
 
             </div>
             <Divider />
-            {error && (
-                <MessageBar intent="error" >
-                    <MessageBarBody>{error}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={error} className="mb-4" />
 
             <div className="flex gap-4 flex-wrap ">
                 <div className="flex flex-col gap-4 flex-1">
@@ -350,7 +346,7 @@ export const ThemeEditorPage = () => {
                                     selectedOptions={[form.config.type]}
                                     onOptionSelect={(_, d) => setForm(f => ({
                                         ...f,
-                                        config: { ...f.config, type: d.optionValue as any }
+                                        config: { ...f.config, type: d.optionValue as ThemeConfig["type"] }
                                     }))}
                                 >
                                     <Option value="solid" text="Сплошной">Сплошной</Option>
@@ -383,7 +379,7 @@ export const ThemeEditorPage = () => {
                                                 <Tooltip content="Удалить" relationship="label">
                                                     <Button
                                                         appearance="secondary"
-                                                        icon={<Delete20Regular className="text-[var(--colorPaletteRedForeground1)]" />}
+                                                        icon={<Delete20Regular className="text-(--colorPaletteRedForeground1)" />}
                                                         onClick={() => setForm(f => ({
                                                             ...f,
                                                             config: { ...f.config, colors: f.config.colors.filter((_, idx) => idx !== i) }
@@ -446,7 +442,7 @@ export const ThemeEditorPage = () => {
                                             selectedValue={selectedTab}
                                             onTabSelect={(_, d) => setSelectedTab(d.value as string)}
                                         >
-                                            {(form.config.patterns || []).map((layer, idx) => (
+                                            {(form.config.patterns || []).map((_layer, idx) => (
                                                 <OverflowItem key={idx} id={idx.toString()}>
                                                     <Tab
                                                         value={idx.toString()}
@@ -467,7 +463,7 @@ export const ThemeEditorPage = () => {
                                         <div className="absolute top-2 right-2 flex gap-2">
                                             <Popover>
                                                 <PopoverTrigger disableButtonEnhancement>
-                                                    <Button size="large" appearance="subtle" icon={<Delete20Regular className="text-[var(--colorPaletteRedForeground1)]" />} />
+                                                    <Button size="large" appearance="subtle" icon={<Delete20Regular className="text-(--colorPaletteRedForeground1)" />} />
                                                 </PopoverTrigger>
                                                 <PopoverSurface>
                                                     <div className="flex flex-col gap-2">
@@ -500,7 +496,7 @@ export const ThemeEditorPage = () => {
                                                     selectedOptions={[layer.type]}
                                                     onOptionSelect={(_, d) => {
                                                         const newPatterns = [...(form.config.patterns || [])];
-                                                        newPatterns[idx] = { ...newPatterns[idx], type: d.optionValue as any };
+                                                        newPatterns[idx] = { ...newPatterns[idx], type: d.optionValue as PatternLayer["type"] };
                                                         setForm(f => ({ ...f, config: { ...f.config, patterns: newPatterns } }));
                                                     }}
                                                 >
@@ -661,8 +657,8 @@ export const ThemeEditorPage = () => {
 
                 <div className="flex flex-col gap-4 flex-1  pl-2 pr-2" style={{ backgroundColor: "var(--colorNeutralBackground2)" }}>
                     <div className="flex flex-col">
-                        <Body2 className="uppercase text-[var(--colorNeutralForeground4)]">Предпросмотр</Body2>
-                        <Body2 className="text-[var(--colorNeutralForeground3)]">Живой результат</Body2>
+                        <Body2 className="uppercase text-(--colorNeutralForeground4)">Предпросмотр</Body2>
+                        <Body2 className="text-(--colorNeutralForeground3)">Живой результат</Body2>
                     </div>
 
                     <div className="flex flex-col gap-4 w-full h-full justify-center items-center content-center">
@@ -675,8 +671,8 @@ export const ThemeEditorPage = () => {
                         />
 
                         <Card className="w-[420px]">
-                            <Subtitle1 block className="mb-2 font-bold">Совет по дизайну</Subtitle1>
-                            <Caption1 className="text-[var(--colorNeutralForeground2)] leading-relaxed italic block">
+                            <Subtitle1 className="mb-2 font-bold">Совет по дизайну</Subtitle1>
+                            <Caption1 className="text-(--colorNeutralForeground2) leading-relaxed italic">
                                 Используйте 2-3 гармоничных цвета для градиента. Мелкие узоры (dots) с низкой прозрачностью (10-20%) придают карточке премиальный вид.
                             </Caption1>
                         </Card>

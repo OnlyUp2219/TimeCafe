@@ -54,10 +54,11 @@ import { Permissions } from "@shared/auth/permissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { formatMoney } from "@shared/const/FormatMoney.ts";
 import { txTypeLabel } from "@shared/const/TxTypeLabel.ts";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
 
-import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
+import { NO_DATA } from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string | null) => {
     if (!iso) return NO_DATA;
@@ -236,7 +237,7 @@ export const UserDetailPage = () => {
             renderHeaderCell: () => "Сумма",
             renderCell: (tx) => (
                 <TableCellLayout truncate>
-                    <span className={tx.type === TransactionType.Withdrawal ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
+                    <span className={tx.type === TransactionType.Withdrawal ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}>
                         {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
                     </span>
                 </TableCellLayout>
@@ -305,326 +306,309 @@ export const UserDetailPage = () => {
         return <div ><Spinner /></div>;
     }
 
-    if (errorMessage) return (
-        <MessageBar intent="error">
-            <MessageBarBody>{errorMessage}</MessageBarBody>
-        </MessageBar>
-    );
-
-    if (!user) return (
-        <div>
-            <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
-                Назад
-            </Button>
-            <MessageBar intent="warning" className="mt-4">
-                <MessageBarBody>Пользователь не найден</MessageBarBody>
-            </MessageBar>
-        </div>
-    );
-
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 flex-wrap">
                 <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
                     Назад к списку
                 </Button>
-                <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
-                    <Button appearance="outline" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
-                        Управление ролями
-                    </Button>
-                </HasPermission>
+                {user && (
+                    <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
+                        <Button appearance="outline" icon={<PeopleSettings20Regular />} onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                            Управление ролями
+                        </Button>
+                    </HasPermission>
+                )}
             </div>
 
-            <Card size={sizes.card}>
-                <div className="flex items-start gap-4 flex-wrap ">
-                    <div className="flex items-start gap-4 flex-1">
-                        <SecureAvatar
-                            name={displayName}
-                            size={72}
-                            photoUrl={profile?.photoUrl}
-                        />
-                        <div className="flex gap-2 flex-wrap  flex-col">
-                            <Title2>{displayName}</Title2>
-                            <Body1 block>{contactLine}</Body1>
-                            <Body2 block className="text-[var(--colorNeutralForeground3)] ">{user.role} · {user.status}</Body2>
-                            <div className="flex gap-2 flex-wrap">
-                                {nickname && <Badge appearance="outline">{nickname}</Badge>}
-                                {user && <Badge appearance="tint" color={user.emailConfirmed ? "success" : "warning"}>{user.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
-                                {user && <Badge appearance="tint" color={user.phoneNumberConfirmed ? "success" : "warning"}>{user.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
-                                {profile && <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>{profileStatusLabel(profile.profileStatus)}</Badge>}
+            <DismissableError error={errorMessage} className="mb-4" />
+
+            {!user && !userLoading && (
+                <MessageBar intent="warning" className="mt-4">
+                    <MessageBarBody>Пользователь не найден</MessageBarBody>
+                </MessageBar>
+            )}
+
+            {user && (
+                <>
+                    <Card size={sizes.card}>
+                        <div className="flex items-start gap-4 flex-wrap ">
+                            <div className="flex items-start gap-4 flex-1">
+                                <SecureAvatar
+                                    name={displayName}
+                                    size={72}
+                                    photoUrl={profile?.photoUrl}
+                                />
+                                <div className="flex gap-2 flex-wrap  flex-col">
+                                    <Title2>{displayName}</Title2>
+                                    <Body1>{contactLine}</Body1>
+                                    <Body2 block className="text-(--colorNeutralForeground3) ">{user.role} · {user.status}</Body2>
+                                    <div className="flex gap-2 flex-wrap">
+                                        {nickname && <Badge appearance="outline">{nickname}</Badge>}
+                                        {user && <Badge appearance="tint" color={user.emailConfirmed ? "success" : "warning"}>{user.emailConfirmed ? "Email подтверждён" : "Email не подтверждён"}</Badge>}
+                                        {user && <Badge appearance="tint" color={user.phoneNumberConfirmed ? "success" : "warning"}>{user.phoneNumberConfirmed ? "Телефон подтверждён" : "Телефон не подтверждён"}</Badge>}
+                                        {profile && <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>{profileStatusLabel(profile.profileStatus)}</Badge>}
+                                    </div>
+                                    <Caption1 block className="text-(--colorNeutralForeground4)">{user.id}</Caption1>
+                                </div>
                             </div>
-                            <Caption1 block className="text-[var(--colorNeutralForeground4)]">{user.id}</Caption1>
+                            <div className="flex gap-2">
+                                <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
+                                    <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
+                                        Роли
+                                    </Button>
+                                </HasPermission>
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <HasPermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
-                            <Button appearance="outline" onClick={() => navigate(`/admin/users/${id}/roles`)}>
-                                Роли
-                            </Button>
+                    </Card>
+
+                    <div className="flex flex-wrap gap-4 justify-between">
+                        <HasPermission can={Permissions.BillingBalanceRead}>
+                            <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                                <Body2>Баланс</Body2>
+                                <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}>
+                                    {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
+                                </Title3>
+                            </Card>
+                        </HasPermission>
+                        <HasPermission can={Permissions.VenueVisitRead}>
+                            <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                                <Body2>Визитов всего</Body2>
+                                <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
+                            </Card>
+                        </HasPermission>
+                        <HasPermission can={Permissions.BillingBalanceRead}>
+                            <Card size={sizes.card} className="flex-1 min-w-[200px]">
+                                <Body2>Потрачено</Body2>
+                                <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                            </Card>
+                        </HasPermission>
+                        <HasPermission can={Permissions.VenueLoyaltyRead}>
+                            <Card size={sizes.card} className="flex-1 min-w-[300px]">
+                                <Body1Strong block className="mb-2">Программа лояльности</Body1Strong>
+                                <LoyaltyProgress
+                                    visitCount={profile?.visitCount || 0}
+                                    currentDiscount={loyalty?.personalDiscountPercent || 0}
+                                />
+                            </Card>
                         </HasPermission>
                     </div>
-                </div>
-            </Card>
 
-            <div className="flex flex-wrap gap-4 justify-between">
-                <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                    <Body2 block>Баланс</Body2>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3 className={!balanceLoading && (balance?.currentBalance ?? 0) < 0 ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
-                            {balanceLoading ? NO_DATA : formatMoney(balance?.currentBalance ?? 0)}
-                        </Title3>
-                    </HasPermission>
-                </Card>
-                <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                    <Body2 block>Визитов всего</Body2>
-                    <HasPermission can={Permissions.VenueVisitRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3>{visitsLoading ? NO_DATA : visits.length}</Title3>
-                    </HasPermission>
-                </Card>
-                <Card size={sizes.card} className="flex-1 min-w-[200px]">
-                    <Body2 block>Потрачено</Body2>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
-                    </HasPermission>
-                </Card>
-                <Card size={sizes.card} className="flex-1 min-w-[300px]">
-                    <Body1Strong block className="mb-2">Программа лояльности</Body1Strong>
-                    <HasPermission can={Permissions.VenueLoyaltyRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
-                        <LoyaltyProgress
-                            visitCount={profile?.visitCount || 0}
-                            currentDiscount={loyalty?.personalDiscountPercent || 0}
-                        />
-                    </HasPermission>
-                </Card>
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-                <HasPermission
-                    can={Permissions.UserProfileProfileRead}
-                    fallback={
-                        <Card size={sizes.card}>
-                            <Title3 className="mb-3">Профиль</Title3>
-                            <MessageBar intent="warning">
-                                <MessageBarBody>Недостаточно прав для просмотра детального профиля</MessageBarBody>
-                            </MessageBar>
-                        </Card>
-                    }
-                >
-                    <Card className="flex-[1.3] flex-grow basis-[400px]" size={sizes.card}>
-                        <Title3 >Профиль</Title3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <Body2 block>Имя</Body2>
-                                <Body1 block>{profile?.firstName || NO_DATA}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Фамилия</Body2>
-                                <Body1 block>{profile?.lastName || NO_DATA}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Отчество</Body2>
-                                <Body1 block>{profile?.middleName || NO_DATA}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Пол</Body2>
-                                <Body1 block>{genderLabel(profile?.gender)}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Дата рождения</Body2>
-                                <Body1 block>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Email</Body2>
-                                <Body1 block>{profile?.email || user.email}</Body1>
-                            </div>
-                            <div>
-                                <Body2 block>Телефон</Body2>
-                                <Body1 block>{profile?.phoneNumber || NO_DATA}</Body1>
-                            </div>
-                            <div className="sm:col-span-2">
-                                <Body2 block>Статус профиля</Body2>
-                                <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
-                            </div>
-                            {profile?.banReason && (
-                                <div className="sm:col-span-2">
-                                    <Body2 block>Причина блокировки</Body2>
-                                    <Body1 block className="text-[var(--colorPaletteRedForeground1)]">{profile.banReason}</Body1>
-                                </div>
-                            )}
-                        </div>
-                    </Card>
-                </HasPermission>
-
-                <HasPermission can={Permissions.UserProfileAdditionalInfoRead}>
-                    <Card className="flex-1 flex-grow basis-[300px] min-h-[360px] flex flex-col" size={sizes.card}>
-                        <div className="flex items-center justify-between gap-3">
-                            <Title3>Заметки</Title3>
-                            <HasPermission can={Permissions.UserProfileAdditionalInfoCreate}>
-                                <Dialog open={addNoteOpen} onOpenChange={(_e, data) => { setAddNoteOpen(data.open); if (!data.open) setNoteError(null); }}>
-                                    <DialogTrigger disableButtonEnhancement>
-                                        <Button appearance="outline" size="small">+ Добавить</Button>
-                                    </DialogTrigger>
-                                    <DialogSurface>
-                                        <DialogBody>
-                                            <DialogTitle>Новая заметка</DialogTitle>
-                                            <DialogContent>
-                                                <TextareaWithCounter
-                                                    label="Текст заметки"
-                                                    value={newNoteText}
-                                                    onChange={(val) => {
-                                                        setNewNoteText(val);
-                                                        if (noteError) setNoteError(null);
-                                                    }}
-                                                    maxLength={2000}
-                                                    placeholder="Введите текст заметки..."
-                                                    rows={6}
-                                                    validationMessage={noteError}
-                                                    validationState={noteError ? "error" : "none"}
-                                                />
-                                            </DialogContent>
-                                            <DialogActions>
-                                                <DialogTrigger disableButtonEnhancement>
-                                                    <Button appearance="secondary">Отмена</Button>
-                                                </DialogTrigger>
-                                                <Button appearance="primary" onClick={handleAddNote} disabled={!newNoteText.trim() || creatingNote}>
-                                                    {creatingNote ? "Сохранение..." : "Сохранить"}
-                                                </Button>
-                                            </DialogActions>
-                                        </DialogBody>
-                                    </DialogSurface>
-                                </Dialog>
-                            </HasPermission>
-                        </div>
-
-                        <div className="flex flex-col gap-3 flex-1">
-                            {notesLoading && <Spinner size="small" />}
-                            {!notesLoading && adminNotes.length === 0 && (
-                                <div className="flex-1 flex items-center justify-center">
-                                    <EmptyState
-                                        title="Нет данных"
-                                        description="Добавьте первую заметку для этого пользователя"
-                                    />
-                                </div>
-                            )}
-                            <div className="flex-1">
-                                {adminNotes.map((info) => (
-                                    <Card appearance="filled-alternative" key={info.infoId} className="!flex !flex-row !flex-wrap mb-3 last:mb-0">
-                                        <div className="flex-1">
-                                            <Body1 block className="!line-clamp-4 break-words">{info.infoText}</Body1>
-                                            <Caption1>Добавлено: {info.createdBy || NO_DATA} · {formatDateTime(info.createdAt)}</Caption1>
+                    <div className="flex flex-wrap gap-4">
+                        <HasPermission can={Permissions.UserProfileProfileRead}>
+                            <Card className="flex-[1.3] flex-grow basis-[400px]" size={sizes.card}>
+                                <Title3 >Профиль</Title3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <Body2>Имя</Body2>
+                                        <Body1>{profile?.firstName || NO_DATA}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Фамилия</Body2>
+                                        <Body1>{profile?.lastName || NO_DATA}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Отчество</Body2>
+                                        <Body1>{profile?.middleName || NO_DATA}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Пол</Body2>
+                                        <Body1>{genderLabel(profile?.gender)}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Дата рождения</Body2>
+                                        <Body1>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Email</Body2>
+                                        <Body1>{profile?.email || user.email}</Body1>
+                                    </div>
+                                    <div>
+                                        <Body2>Телефон</Body2>
+                                        <Body1>{profile?.phoneNumber || NO_DATA}</Body1>
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <Body2>Статус профиля</Body2>
+                                        <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
+                                    </div>
+                                    {profile?.banReason && (
+                                        <div className="sm:col-span-2">
+                                            <Body2>Причина блокировки</Body2>
+                                            <Body1 block className="text-(--colorPaletteRedForeground1)">{profile.banReason}</Body1>
                                         </div>
-                                        <div className="flex gap-1 shrink-0">
-                                            <Dialog>
-                                                <DialogTrigger disableButtonEnhancement>
-                                                    <Tooltip content="Просмотреть заметку" relationship="label">
-                                                        <Button
-                                                            appearance="subtle"
-                                                            size="small"
-                                                            icon={<Eye20Regular />}
-                                                            aria-label="Просмотреть заметку"
+                                    )}
+                                </div>
+                            </Card>
+                        </HasPermission>
+
+                        <HasPermission can={Permissions.UserProfileAdditionalInfoRead}>
+                            <Card className="flex-1 flex-grow basis-[300px] min-h-[360px] flex flex-col" size={sizes.card}>
+                                <div className="flex items-center justify-between gap-3">
+                                    <Title3>Заметки</Title3>
+                                    <HasPermission can={Permissions.UserProfileAdditionalInfoCreate}>
+                                        <Dialog open={addNoteOpen} onOpenChange={(_e, data) => { setAddNoteOpen(data.open); if (!data.open) setNoteError(null); }}>
+                                            <DialogTrigger disableButtonEnhancement>
+                                                <Button appearance="outline" size="small">+ Добавить</Button>
+                                            </DialogTrigger>
+                                            <DialogSurface>
+                                                <DialogBody>
+                                                    <DialogTitle>Новая заметка</DialogTitle>
+                                                    <DialogContent>
+                                                        <TextareaWithCounter
+                                                            label="Текст заметки"
+                                                            value={newNoteText}
+                                                            onChange={(val) => {
+                                                                setNewNoteText(val);
+                                                                if (noteError) setNoteError(null);
+                                                            }}
+                                                            maxLength={2000}
+                                                            placeholder="Введите текст заметки..."
+                                                            rows={6}
+                                                            validationMessage={noteError}
+                                                            validationState={noteError ? "error" : "none"}
                                                         />
-                                                    </Tooltip>
-                                                </DialogTrigger>
-                                                <DialogSurface>
-                                                    <DialogBody>
-                                                        <DialogTitle>Просмотр заметки</DialogTitle>
-                                                        <DialogContent>
-                                                            <div className="whitespace-pre-wrap break-words py-2">
-                                                                <Body1>{info.infoText}</Body1>
-                                                            </div>
-                                                            <div className="mt-4 pt-2 border-t border-neutral-200">
-                                                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
-                                                                    Автор: {info.createdBy || NO_DATA}
-                                                                </Caption1>
-                                                                <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
-                                                                    Дата: {formatDateTime(info.createdAt)}
-                                                                </Caption1>
-                                                            </div>
-                                                        </DialogContent>
-                                                        <DialogActions>
-                                                            <DialogTrigger disableButtonEnhancement>
-                                                                <Button appearance="secondary">Закрыть</Button>
-                                                            </DialogTrigger>
-                                                        </DialogActions>
-                                                    </DialogBody>
-                                                </DialogSurface>
-                                            </Dialog>
-
-                                            <HasPermission can={Permissions.UserProfileAdditionalInfoDelete}>
-                                                <Tooltip content="Удалить заметку" relationship="label">
-                                                    <Button
-                                                        appearance="subtle"
-                                                        size="small"
-                                                        icon={<Delete20Regular />}
-                                                        onClick={() => handleDeleteNote(info.infoId)}
-                                                        aria-label="Удалить заметку"
-                                                    />
-                                                </Tooltip>
-                                            </HasPermission>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-
-                            {totalNotes > 0 && (
-                                <div className="mt-auto pt-2 flex justify-end border-t border-neutral-100">
-                                    <Pagination
-                                        currentPage={notesPage}
-                                        totalPages={Math.ceil(totalNotes / NOTES_PAGE_SIZE)}
-                                        onPageChange={setNotesPage}
-                                        size="small"
-                                    />
+                                                    </DialogContent>
+                                                    <DialogActions>
+                                                        <DialogTrigger disableButtonEnhancement>
+                                                            <Button appearance="secondary">Отмена</Button>
+                                                        </DialogTrigger>
+                                                        <Button appearance="primary" onClick={handleAddNote} disabled={!newNoteText.trim() || creatingNote}>
+                                                            {creatingNote ? "Сохранение..." : "Сохранить"}
+                                                        </Button>
+                                                    </DialogActions>
+                                                </DialogBody>
+                                            </DialogSurface>
+                                        </Dialog>
+                                    </HasPermission>
                                 </div>
-                            )}
+
+                                <div className="flex flex-col gap-3 flex-1">
+                                    {notesLoading && <Spinner size="small" />}
+                                    {!notesLoading && adminNotes.length === 0 && (
+                                        <div className="flex-1 flex items-center justify-center">
+                                            <EmptyState
+                                                title="Нет данных"
+                                                description="Добавьте первую заметку для этого пользователя"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        {adminNotes.map((info) => (
+                                            <Card appearance="filled-alternative" key={info.infoId} className="flex! flex-row! flex-wrap! mb-3 last:mb-0">
+                                                <div className="flex-1">
+                                                    <Body1 block className="line-clamp-4! wrap-break-word">{info.infoText}</Body1>
+                                                    <Caption1>Добавлено: {info.createdBy || NO_DATA} · {formatDateTime(info.createdAt)}</Caption1>
+                                                </div>
+                                                <div className="flex gap-1 shrink-0">
+                                                    <Dialog>
+                                                        <DialogTrigger disableButtonEnhancement>
+                                                            <Tooltip content="Просмотреть заметку" relationship="label">
+                                                                <Button
+                                                                    appearance="subtle"
+                                                                    size="small"
+                                                                    icon={<Eye20Regular />}
+                                                                    aria-label="Просмотреть заметку"
+                                                                />
+                                                            </Tooltip>
+                                                        </DialogTrigger>
+                                                        <DialogSurface>
+                                                            <DialogBody>
+                                                                <DialogTitle>Просмотр заметки</DialogTitle>
+                                                                <DialogContent>
+                                                                    <div className="whitespace-pre-wrap break-words py-2">
+                                                                        <Body1>{info.infoText}</Body1>
+                                                                    </div>
+                                                                    <div className="mt-4 pt-2 border-t border-neutral-200">
+                                                                        <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                                                            Автор: {info.createdBy || NO_DATA}
+                                                                        </Caption1>
+                                                                        <Caption1 block style={{ color: "var(--colorNeutralForeground3)" }}>
+                                                                            Дата: {formatDateTime(info.createdAt)}
+                                                                        </Caption1>
+                                                                    </div>
+                                                                </DialogContent>
+                                                                <DialogActions>
+                                                                    <DialogTrigger disableButtonEnhancement>
+                                                                        <Button appearance="secondary">Закрыть</Button>
+                                                                    </DialogTrigger>
+                                                                </DialogActions>
+                                                            </DialogBody>
+                                                        </DialogSurface>
+                                                    </Dialog>
+
+                                                    <HasPermission can={Permissions.UserProfileAdditionalInfoDelete}>
+                                                        <Tooltip content="Удалить заметку" relationship="label">
+                                                            <Button
+                                                                appearance="subtle"
+                                                                size="small"
+                                                                icon={<Delete20Regular />}
+                                                                onClick={() => handleDeleteNote(info.infoId)}
+                                                                aria-label="Удалить заметку"
+                                                            />
+                                                        </Tooltip>
+                                                    </HasPermission>
+                                                </div>
+                                            </Card>
+                                        ))}
+                                    </div>
+
+                                    {totalNotes > 0 && (
+                                        <div className="mt-auto pt-2 flex justify-end border-t border-neutral-100">
+                                            <Pagination
+                                                currentPage={notesPage}
+                                                totalPages={Math.ceil(totalNotes / NOTES_PAGE_SIZE)}
+                                                onPageChange={setNotesPage}
+                                                size="small"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        </HasPermission>
+                    </div>
+
+                    <HasPermission can={Permissions.BillingTransactionRead}>
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                <Title3>Транзакции</Title3>
+                                <Body2>{txTotalCount} записей</Body2>
+                            </div>
+                            <DismissableError error={txErrorMessage} className="mb-3" />
+                            <Card className="overflow-x-auto" size={sizes.card}>
+                                <DataTable
+                                    items={transactions}
+                                    columns={txColumns}
+                                    getRowId={(tx) => tx.transactionId}
+                                    loading={txLoading}
+                                    columnSizingOptions={txColumnSizingOptions}
+                                />
+                            </Card>
+                            <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                                <Body1>Показано {transactions.length} из {txTotalCount}</Body1>
+                                <Pagination currentPage={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
+                            </div>
                         </div>
-                    </Card>
-                </HasPermission>
-            </div>
+                    </HasPermission>
 
-            <HasPermission can={Permissions.BillingTransactionRead}>
-                <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                        <Title3>Транзакции</Title3>
-                        <Body2>{txTotalCount} записей</Body2>
-                    </div>
-                    {txErrorMessage && (
-                        <MessageBar intent="error" className="mb-3">
-                            <MessageBarBody>{txErrorMessage}</MessageBarBody>
-                        </MessageBar>
-                    )}
-                    <Card className="overflow-x-auto" size={sizes.card}>
-                        <DataTable
-                            items={transactions}
-                            columns={txColumns}
-                            getRowId={(tx) => tx.transactionId}
-                            loading={txLoading}
-                            columnSizingOptions={txColumnSizingOptions}
-                        />
-                    </Card>
-                    <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
-                        <Body1>Показано {transactions.length} из {txTotalCount}</Body1>
-                        <Pagination currentPage={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
-                    </div>
-                </div>
-            </HasPermission>
-
-            <HasPermission can={Permissions.VenueVisitRead}>
-                <div>
-                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                        <Title3>История визитов</Title3>
-                        <Body2>{visits.length} визитов</Body2>
-                    </div>
-                    <Card className="overflow-x-auto" size={sizes.card}>
-                        <DataTable
-                            items={visits}
-                            columns={visitColumns}
-                            getRowId={(v) => v.visitId}
-                            loading={visitsLoading}
-                            columnSizingOptions={visitColumnSizingOptions}
-                        />
-                    </Card>
-                </div>
-            </HasPermission>
+                    <HasPermission can={Permissions.VenueVisitRead}>
+                        <div>
+                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                                <Title3>История визитов</Title3>
+                                <Body2>{visits.length} визитов</Body2>
+                            </div>
+                            <Card className="overflow-x-auto" size={sizes.card}>
+                                <DataTable
+                                    items={visits}
+                                    columns={visitColumns}
+                                    getRowId={(v) => v.visitId}
+                                    loading={visitsLoading}
+                                    columnSizingOptions={visitColumnSizingOptions}
+                                />
+                            </Card>
+                        </div>
+                    </HasPermission>
+                </>
+            )}
         </div>
     );
 };

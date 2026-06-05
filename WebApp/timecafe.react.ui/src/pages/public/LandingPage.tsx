@@ -13,26 +13,25 @@ import {
     Caption1,
     Subtitle1,
     Subtitle2Stronger,
+    Title1,
     Title2,
     Title3,
     tokens,
-
 } from "@fluentui/react-components";
-import type {FC} from "react";
-import {useMemo} from "react";
-import {useNavigate} from "react-router-dom";
-import {Header} from "@components/Header/Header";
-import {Footer} from "@components/Footer/Footer";
-import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
+import type { FC } from "react";
+import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Header } from "@components/Header/Header";
+import { Footer } from "@components/Footer/Footer";
+import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
 import {
     Clock20Regular,
     MailCheckmark20Regular,
     Money20Regular,
     PersonAdd20Regular,
+    ArrowRight20Regular,
 } from "@fluentui/react-icons";
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
-
-
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 type FaqItem = {
     question: string;
@@ -45,16 +44,16 @@ export const LandingPage: FC = () => {
     const steps = useMemo(
         () => [
             {
-                title: "Регистрируетесь",
-                description: "Создайте аккаунт и подтвердите контакты",
+                title: "1. Регистрация",
+                description: "Создайте аккаунт и подтвердите контакты за пару минут.",
             },
             {
-                title: "Выбираете тариф",
-                description: "Поминутно или почасово — как вам удобнее",
+                title: "2. Выбор тарифа",
+                description: "Выберите поминутный или почасовой тариф перед визитом.",
             },
             {
-                title: "Контролируете визит",
-                description: "Время и стоимость — прозрачно и в реальном времени",
+                title: "3. Контроль",
+                description: "Следите за таймером и стоимостью прямо со смартфона.",
             },
         ],
         []
@@ -64,27 +63,31 @@ export const LandingPage: FC = () => {
         () => [
             {
                 title: "Прозрачный расчёт",
-                description: "Понимайте, за что платите, без сюрпризов",
+                description: "Вы всегда знаете, за что платите. Таймер работает в реальном времени.",
                 tag: "Визиты",
-                icon: <Clock20Regular/>,
+                icon: <Clock20Regular />,
+                colSpan: "sm:col-span-2",
             },
             {
-                title: "Баланс и операции",
-                description: "Пополнение и история транзакций в одном месте",
+                title: "Удобный баланс",
+                description: "Пополнение в один клик и полная история операций.",
                 tag: "Финансы",
-                icon: <Money20Regular/>,
+                icon: <Money20Regular />,
+                colSpan: "sm:col-span-1",
             },
             {
-                title: "Статусы профиля",
-                description: "Черновик → Активный — всё понятно и предсказуемо",
+                title: "Система статусов",
+                description: "Понятный путь от Черновика до Активного гостя.",
                 tag: "Профиль",
-                icon: <PersonAdd20Regular/>,
+                icon: <PersonAdd20Regular />,
+                colSpan: "sm:col-span-1",
             },
             {
-                title: "Подтверждение контактов",
-                description: "Безопасный вход и восстановление доступа",
+                title: "Надёжность",
+                description: "Привязка телефона защищает ваш аккаунт от потери доступа.",
                 tag: "Безопасность",
-                icon: <MailCheckmark20Regular/>,
+                icon: <MailCheckmark20Regular />,
+                colSpan: "sm:col-span-2",
             },
         ],
         []
@@ -94,13 +97,15 @@ export const LandingPage: FC = () => {
         () => [
             {
                 title: "Поминутно",
-                description: "Честная оплата за фактическое время",
+                description: "Идеально для коротких визитов и спонтанных встреч. Платите строго за проведенное время.",
                 highlight: "Гибко",
+                price: `3 ${CURRENCY_SYMBOL} / мин`,
             },
             {
                 title: "Почасово",
-                description: "Удобно для длительных визитов",
-                highlight: "Просто",
+                description: "Выгоднее для длительной работы или долгих посиделок с друзьями.",
+                highlight: "Популярно",
+                price: `150 ${CURRENCY_SYMBOL} / час`,
             },
         ],
         []
@@ -117,231 +122,195 @@ export const LandingPage: FC = () => {
                 answer: "Да. Стоимость рассчитывается по выбранному тарифу и времени визита.",
             },
             {
-                question: "Почему нужна верификация телефона?",
-                answer: "Подтверждение телефона помогает защитить аккаунт и упрощает восстановление доступа, а также позволяет поддерживать связь по важным уведомлениям.",
-            },
-            {
                 question: "Что если баланс станет недостаточным?",
-                answer: "Вы сможете пополнить баланс. В будущем — обработка задолженности и удобные сценарии оплаты.",
+                answer: "Вы сможете пополнить баланс. При нехватке средств визит может быть приостановлен администратором.",
             },
         ],
         []
     );
 
     return (
-        <main
-            className="min-h-screen relative overflow-x-hidden"
-            id="Landing Page"
-        >
-            <Header variant="public"/>
+        <main className="min-h-screen relative overflow-x-hidden flex flex-col" id="Landing Page">
+            {/* Animated Ambient Background using Fluent UI Tokens */}
+            <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden tc-ambient-bg">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[100px] opacity-30 tc-glow-brand animate-pulse-slow"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full blur-[120px] opacity-20 tc-glow-accent animate-pulse-slow delay-1000"></div>
+            </div>
 
+            <Header variant="public" />
 
+            <div className="flex-1 flex flex-col gap-24 py-16 mx-auto w-full max-w-[1400px] px-6 relative z-10">
+                {/* Hero Section */}
+                <section className="flex flex-col md:flex-row items-center gap-12 pt-8">
+                    <div className="flex-1 flex flex-col gap-6 items-start">
+                        <Tag appearance="brand" size="large" className="rounded-full shadow-lg">Новый уровень комфорта</Tag>
 
-            <div className="flex flex-col gap-10 py-10 mx-auto w-full max-w-[1400px] px-4 sm:px-6">
-                <section className="flex flex-col gap-2">
-                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-10">
-                        <div className="flex flex-col gap-4">
-                            <Tag appearance="outline" className="w-fit">TimeCafe</Tag>
+                        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text tc-gradient-text pb-2">
+                            Плати только за время.
+                        </h1>
 
-                            <Title2>
-                                Плати только за время — без сюрпризов
-                            </Title2>
+                        <Body1 className="text-lg md:text-xl max-w-lg opacity-90 leading-relaxed" style={{ color: 'var(--colorNeutralForeground2)' }}>
+                            Никаких скрытых платежей. Прозрачный таймер, удобное пополнение баланса и полная статистика визитов в один клик.
+                        </Body1>
 
-                            <Body1 block>
-                                Запускайте визит, следите за таймером и прогнозом стоимости в реальном времени.
-                            </Body1>
-                            <Body1 block>
-                                Баланс, история операций и статусы профиля — всегда под рукой.
-                            </Body1>
-
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                <Button appearance="primary" onClick={() => navigate("/register")}
-                                        className="sm:w-auto">
-                                    Зарегистрироваться
-                                </Button>
-                                <Button appearance="secondary" onClick={() => navigate("/login")}
-                                        className="sm:w-auto">
-                                    Войти
-                                </Button>
-                            </div>
-
-                            <div className="flex flex-wrap gap-3">
-                                <Badge appearance="tint" size="extra-large" shape="circular">Прозрачный расчёт</Badge>
-                                <Badge appearance="tint" size="extra-large" shape="circular">Баланс</Badge>
-                                <Badge appearance="tint" size="extra-large" shape="circular">Визиты</Badge>
-                                <Badge appearance="tint" size="extra-large" shape="circular">Профиль</Badge>
-                            </div>
-                        </div>
-
-                        <div className="hidden sm:block">
-                            <div
-                                className="rounded-2xl p-4"
-                                style={{
-                                    backgroundImage: `linear-gradient(180deg, ${tokens.colorBrandBackground2} 0%, ${tokens.colorNeutralBackground1} 100%)`,
-                                    boxShadow: tokens.shadow4,
-                                    border: `1px solid ${tokens.colorNeutralStroke1}`,
-                                }}
-                            >
-                                <div className="grid grid-cols-1 gap-3">
-                                    <HoverTiltCard className=" h-full">
-                                        <div className="flex items-center justify-between">
-                                            <Subtitle2Stronger>Баланс</Subtitle2Stronger>
-                                            <Badge appearance="outline">Demo</Badge>
-                                        </div>
-                                        <Divider className="my-3"/>
-                                        <Title3>750 {CURRENCY_SYMBOL}</Title3>
-                                        <Caption1>Доступно для оплаты визитов</Caption1>
-                                    </HoverTiltCard>
-
-                                    <HoverTiltCard className="h-full">
-                                        <div className="flex items-center justify-between">
-                                            <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
-                                            <Badge appearance="outline">Demo</Badge>
-                                        </div>
-                                        <Divider className="my-3"/>
-                                        <div className="flex items-baseline justify-between">
-                                            <Title3>1:42</Title3>
-                                            <Caption1>примерно 155 {CURRENCY_SYMBOL}</Caption1>
-                                        </div>
-                                        <Caption1>Тариф: часовой</Caption1>
-                                    </HoverTiltCard>
-                                </div>
-                            </div>
+                        <div className="flex flex-wrap gap-4 mt-4">
+                            <Button appearance="primary" size="large" onClick={() => navigate("/register")} icon={<ArrowRight20Regular />} iconPosition="after" className="shadow-xl">
+                                Начать визит
+                            </Button>
+                            <Button appearance="subtle" size="large" onClick={() => navigate("/login")}>
+                                Войти в аккаунт
+                            </Button>
                         </div>
                     </div>
-                </section>
 
-                <section className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-2">
-                        <Title3 block>Как это работает</Title3>
-                        <Body2 block>Три шага — и вы в деле</Body2>
-                    </div>
-
-                    <div className=" grid grid-cols-1 gap-3  sm:grid-cols-3">
-                        {steps.map((s, idx) => (
-                            <HoverTiltCard key={s.title} className="p-4 h-full">
-                                <div className="flex items-start justify-between">
-                                    <Subtitle2Stronger block>{s.title}</Subtitle2Stronger>
-                                    <Tag appearance="brand">{idx + 1}</Tag>
-                                </div>
-                                <Body2>
-                                    {s.description}
-                                </Body2>
-                            </HoverTiltCard>
-                        ))}
-                    </div>
-                </section>
-
-                <section className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-2">
-                        <Title3 block>Возможности</Title3>
-                        <Body2 block>Всё, что нужно гостю: визиты, баланс, профиль</Body2>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {clientFeatures.map((f) => (
-                            <HoverTiltCard key={f.title} className="h-full">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div className="flex min-w-0 items-start gap-3">
-                                        <Badge
-                                            appearance="tint" shape="rounded" size="extra-large"
-                                        >
-                                            {f.icon}
-                                        </Badge>
-                                        <div className="min-w-0 gap-2 flex flex-col">
-                                            <Subtitle2Stronger block>{f.title}</Subtitle2Stronger>
-                                            <Body2>
-                                                {f.description}
-                                            </Body2>
-                                        </div>
+                    <div className="flex-1 w-full max-w-md relative perspective-1000">
+                        {/* Floating Glass Card */}
+                        <div className="tc-glass-panel p-6 border shadow-2xl transform rotate-y-[-10deg] rotate-x-[5deg] hover:rotate-0 transition-transform duration-700 ease-out">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--colorBrandBackground2)' }}>
+                                        <Clock20Regular style={{ color: 'var(--colorBrandForeground2)' }} />
                                     </div>
-                                    <Badge appearance="tint" size="large" shape="rounded"
-                                           className="shrink-0">{f.tag}</Badge>
+                                    <div>
+                                        <Subtitle2Stronger block>Активный визит</Subtitle2Stronger>
+                                        <Caption1 style={{ color: 'var(--colorNeutralForeground3)' }}>Стол №4</Caption1>
+                                    </div>
                                 </div>
-                            </HoverTiltCard>
+                                <Badge appearance="filled" color="success">В процессе</Badge>
+                            </div>
+
+                            <div className="flex justify-between items-end mb-4">
+                                <div>
+                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">Прошло времени</Caption1>
+                                    <div className="text-4xl font-light tabular-nums" style={{ color: 'var(--colorNeutralForeground1)' }}>1:42:05</div>
+                                </div>
+                                <div className="text-right">
+                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">К оплате</Caption1>
+                                    <Title3 style={{ color: 'var(--colorBrandForeground1)' }}>155 {CURRENCY_SYMBOL}</Title3>
+                                </div>
+                            </div>
+
+                            <Divider className="my-4" />
+                            <div className="flex justify-between items-center">
+                                <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>Тариф: Поминутно</Body2>
+                                <Button appearance="transparent" size="small">Детали</Button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Steps Section */}
+                <section className="flex flex-col gap-10">
+                    <div className="text-center max-w-2xl mx-auto flex flex-col gap-3">
+                        <Title2>Как это работает</Title2>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Всё просто. Вы управляете временем, мы заботимся об остальном.</Body1>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {steps.map((s, idx) => (
+                            <div key={s.title} className="tc-glass-panel p-8 border flex flex-col gap-4 hover:-translate-y-1 transition-transform duration-300">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl font-bold shadow-sm" style={{ backgroundColor: 'var(--colorBrandBackground)', color: 'var(--colorNeutralForegroundOnBrand)' }}>
+                                    {idx + 1}
+                                </div>
+                                <Subtitle1>{s.title}</Subtitle1>
+                                <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>{s.description}</Body1>
+                            </div>
                         ))}
                     </div>
                 </section>
 
-                <section className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-2">
-                        <Title3 block>Тарифы</Title3>
-                        <Body2 block>
-                            Тариф выбирается перед визитом, оплата — по факту времени
-                        </Body2>
+                {/* Bento Grid Features */}
+                <section className="flex flex-col gap-10">
+                    <div className="flex flex-col gap-3">
+                        <Title2>Всё под контролем</Title2>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Возможности, созданные для вашего удобства.</Body1>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 auto-rows-[200px]">
+                        {clientFeatures.map((f) => (
+                            <div key={f.title} className={`tc-glass-panel p-6 border flex flex-col justify-between group overflow-hidden relative ${f.colSpan}`}>
+                                <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[50px] opacity-0 group-hover:opacity-20 transition-opacity duration-500 tc-glow-brand"></div>
+
+                                <div className="flex justify-between items-start z-10">
+                                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm" style={{ backgroundColor: 'var(--colorNeutralBackground3)' }}>
+                                        {f.icon}
+                                    </div>
+                                    <Badge appearance="outline">{f.tag}</Badge>
+                                </div>
+                                <div className="z-10">
+                                    <Subtitle1 block className="mb-2">{f.title}</Subtitle1>
+                                    <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>{f.description}</Body2>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Tariffs Section */}
+                <section className="flex flex-col gap-10">
+                    <div className="text-center max-w-2xl mx-auto flex flex-col gap-3">
+                        <Title2>Честные тарифы</Title2>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Никакой переплаты. Выбирайте формат, который подходит именно вам.</Body1>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
                         {tariffCards.map((t) => (
-                            <HoverTiltCard key={t.title} className="p-4 h-full">
-                                <div className="flex items-center justify-between">
-                                    <Subtitle1 block>{t.title}</Subtitle1>
-                                    <Tag appearance="brand">{t.highlight}</Tag>
+                            <div key={t.title} className="tc-glass-panel p-8 border flex flex-col gap-6 relative overflow-hidden group">
+                                {t.highlight === "Популярно" && (
+                                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl shadow-md z-20">
+                                        {t.highlight}
+                                    </div>
+                                )}
+                                <div className="z-10">
+                                    <Title3 block className="mb-2">{t.title}</Title3>
+                                    <div className="text-3xl font-bold" style={{ color: 'var(--colorBrandForeground1)' }}>{t.price}</div>
                                 </div>
-                                <Body2 className="mt-2">
-                                    {t.description}
-                                </Body2>
-                                <div className="mt-4">
-                                    <Button appearance="primary" onClick={() => navigate("/register")}
-                                            className="w-full sm:w-auto">
-                                        Начать
-                                    </Button>
-                                </div>
-                            </HoverTiltCard>
+                                <Body1 style={{ color: 'var(--colorNeutralForeground2)' }} className="flex-1 z-10">{t.description}</Body1>
+                                <Button appearance={t.highlight === "Популярно" ? "primary" : "outline"} size="large" onClick={() => navigate("/register")} className="w-full mt-4 z-10">
+                                    Выбрать
+                                </Button>
+                            </div>
                         ))}
                     </div>
                 </section>
 
-                <section className="flex flex-col gap-2">
-                    <div className="flex flex-col gap-2">
-                        <Title3 block>FAQ</Title3>
-                        <Body2 block>Короткие ответы на частые вопросы</Body2>
-                    </div>
-
-                    <div>
-                        <Card>
-                            <Accordion collapsible defaultOpenItems={[0]}>
+                {/* FAQ & CTA */}
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start pb-10">
+                    <div className="flex flex-col gap-6">
+                        <div>
+                            <Title2 block className="mb-3">Частые вопросы</Title2>
+                            <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Остались сомнения? Вот ответы на популярные вопросы.</Body1>
+                        </div>
+                        <div className="tc-glass-panel border p-2">
+                            <Accordion collapsible>
                                 {faq.map((item, idx) => (
                                     <AccordionItem key={item.question} value={idx}>
                                         <AccordionHeader>{item.question}</AccordionHeader>
                                         <AccordionPanel>
-                                            <Body2 block>{item.answer}</Body2>
+                                            <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>{item.answer}</Body2>
                                         </AccordionPanel>
                                     </AccordionItem>
                                 ))}
                             </Accordion>
-                        </Card>
+                        </div>
                     </div>
 
-                    <div
-                        className="mt-6 rounded-2xl p-4 sm:mt-8 sm:p-6"
-                        style={{
-                            backgroundColor: tokens.colorNeutralBackground1,
-                            boxShadow: tokens.shadow4,
-                            border: `1px solid ${tokens.colorNeutralStroke1}`,
-                        }}
-                    >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div>
-                                <Title3 block>Готовы попробовать?</Title3>
-                                <Body2 block>Создайте аккаунт и начните первый визит</Body2>
-                            </div>
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                                <Button appearance="primary" onClick={() => navigate("/register")}
-                                        className="sm:w-auto">
-                                    Регистрация
-                                </Button>
-                                <Button appearance="secondary" onClick={() => navigate("/login")}
-                                        className="sm:w-auto">
-                                    Войти
-                                </Button>
-                            </div>
+                    <div className="tc-glass-panel p-10 border shadow-2xl relative overflow-hidden flex flex-col justify-center items-center text-center h-full min-h-[300px]">
+                        <div className="absolute inset-0 opacity-10 tc-ambient-bg" style={{ background: 'linear-gradient(135deg, var(--colorBrandBackground), var(--colorNeutralBackground1))' }}></div>
+                        <div className="relative z-10 flex flex-col items-center gap-6">
+                            <Title2>Готовы начать?</Title2>
+                            <Body1 style={{ color: 'var(--colorNeutralForeground2)' }} className="max-w-sm">
+                                Присоединяйтесь к TimeCafe и наслаждайтесь комфортом нового уровня.
+                            </Body1>
+                            <Button appearance="primary" size="large" onClick={() => navigate("/register")} className="px-10 py-6 text-lg rounded-xl shadow-lg hover:scale-105 transition-transform">
+                                Создать аккаунт
+                            </Button>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <Footer/>
+            <Footer />
         </main>
     );
 };

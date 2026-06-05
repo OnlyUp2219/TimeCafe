@@ -18,7 +18,7 @@ export const WeekSpentCard: FC<WeekSpentCardProps> = ({spent, onNavigate}) => {
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                        <ArrowTrendingLines20Regular className="text-[var(--colorBrandForeground1)]" />
+                        <ArrowTrendingLines20Regular className="text-(--colorBrandForeground1)" />
                         <Subtitle2Stronger>Неделя</Subtitle2Stronger>
                     </div>
                 </div>
@@ -27,9 +27,9 @@ export const WeekSpentCard: FC<WeekSpentCardProps> = ({spent, onNavigate}) => {
 
             <div className="flex flex-col gap-1.5">
                 <Title3 className="font-semibold">{formatRub(spent, 0)}</Title3>
-                <div className="flex items-center gap-1.5 text-[var(--colorNeutralForeground3)]">
-                    <Calendar20Regular style={{ fontSize: "14px" }} className="shrink-0 text-[var(--colorNeutralForeground3)]" />
-                    <Caption1 className="text-[var(--colorNeutralForeground3)]">Расходы за последние 7 дней</Caption1>
+                <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3)">
+                    <Calendar20Regular style={{ fontSize: "14px" }} className="shrink-0 text-(--colorNeutralForeground3)" />
+                    <Caption1 className="text-(--colorNeutralForeground3)">Расходы за последние 7 дней</Caption1>
                 </div>
             </div>
             <div className="mt-4">

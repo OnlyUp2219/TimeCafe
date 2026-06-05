@@ -50,7 +50,7 @@ export const VisitCard: FC<VisitCardProps> = ({
             <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                        <Clock20Regular className={isActive ? "text-[var(--colorBrandForeground1)] animate-pulse" : ""} />
+                        <Clock20Regular className={isActive ? "text-(--colorBrandForeground1) animate-pulse" : ""} />
                         <Subtitle2Stronger>Визит</Subtitle2Stronger>
                     </div>
                     <Tag appearance={cfg?.appearance ?? "outline"}>
@@ -62,8 +62,8 @@ export const VisitCard: FC<VisitCardProps> = ({
 
             <div className="flex flex-row justify-between gap-4 flex-wrap">
                 <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5 text-[var(--colorNeutralForeground3)]">
-                        <Timer20Regular style={{ fontSize: "14px" }} className="shrink-0 text-[var(--colorNeutralForeground3)]" />
+                    <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3)">
+                        <Timer20Regular style={{ fontSize: "14px" }} className="shrink-0 text-(--colorNeutralForeground3)" />
                         <Caption1>Длительность</Caption1>
                     </div>
                     <Title3 className="font-semibold mt-0.5">
@@ -71,28 +71,28 @@ export const VisitCard: FC<VisitCardProps> = ({
                     </Title3>
                 </div>
                 <div className="flex flex-col gap-1 text-right sm:items-end">
-                    <div className="flex items-center gap-1.5 text-[var(--colorNeutralForeground3)] sm:justify-end">
-                        <Receipt20Regular style={{ fontSize: "14px" }} className="shrink-0 text-[var(--colorNeutralForeground3)]" />
+                    <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3) sm:justify-end">
+                        <Receipt20Regular style={{ fontSize: "14px" }} className="shrink-0 text-(--colorNeutralForeground3)" />
                         <Caption1>Оценка</Caption1>
                     </div>
-                    <Title3 className="font-semibold mt-0.5 text-[var(--colorBrandForeground1)]">
+                    <Title3 className="font-semibold mt-0.5 text-(--colorBrandForeground1)">
                         {isActive && estimateTotal != null ? formatMoneyByN(estimateTotal) : `— ${CURRENCY_SYMBOL}`}
                     </Title3>
                 </div>
             </div>
 
             {isActive ? (
-                <div className="flex items-center gap-1.5 text-[var(--colorNeutralForeground2)]">
+                <div className="flex items-center gap-1.5 text-(--colorNeutralForeground2)">
                     <span className="flex h-2 w-2 relative">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: "var(--colorStatusSuccessForeground1)" }}></span>
                         <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: "var(--colorStatusSuccessForeground1)" }}></span>
                     </span>
-                    <Caption1 className="font-medium text-[var(--colorNeutralForeground2)]">{visitInfo}</Caption1>
+                    <Caption1 className="font-medium text-(--colorNeutralForeground2)">{visitInfo}</Caption1>
                 </div>
             ) : (
-                <div className="flex items-center gap-1.5 text-[var(--colorNeutralForeground3)]">
+                <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3)">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--colorNeutralStroke1)" }}></span>
-                    <Caption1 className="text-[var(--colorNeutralForeground3)]">{visitInfo}</Caption1>
+                    <Caption1 className="text-(--colorNeutralForeground3)">{visitInfo}</Caption1>
                 </div>
             )}
 

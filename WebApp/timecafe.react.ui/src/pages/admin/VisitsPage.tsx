@@ -1,18 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Body1,
     Body2,
     Button,
     Card,
-    MessageBar,
-    MessageBarBody,
     Title2,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Eye20Regular, Clock20Regular } from "@fluentui/react-icons";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 import { useGetVisitsPageQuery, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -23,10 +22,9 @@ import { VisitStatusBadge } from "@components/VisitStatusBadge";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
-import { useState } from "react";
 import { VisitStatus } from "@app-types/visit";
 
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
@@ -58,7 +56,7 @@ const UserCell = ({ userId }: { userId: string | null }) => {
     if (!userId) {
         return (
             <TableCellLayout truncate title="Анонимный гость (Walk-in)">
-                <Body2 className="text-xs text-[var(--colorNeutralForeground3)]">Анонимный гость (Walk-in)</Body2>
+                <Body2 className="text-xs text-(--colorNeutralForeground3)">Анонимный гость (Walk-in)</Body2>
             </TableCellLayout>
         );
     }
@@ -193,7 +191,17 @@ export const VisitsPage = () => {
                 renderHeaderCell: () => "Действия",
                 renderCell: (visit) => (
                     <HasPermission can={Permissions.VenueVisitRead}>
-                        <Button appearance="subtle" icon={<Eye20Regular />} onClick={() => openDialog(visit)}>
+                        <Button
+                            appearance="subtle"
+                            icon={<Eye20Regular />}
+                            onClick={() => {
+                                if (visit.status === VisitStatus.Pending) {
+                                    openDialog(visit);
+                                } else {
+                                    navigate(`/admin/visits/${visit.visitId}`);
+                                }
+                            }}
+                        >
                             Открыть
                         </Button>
                     </HasPermission>
@@ -201,19 +209,11 @@ export const VisitsPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [navigate, has]);
 
     if (isLoading) {
         return <PageLoader label="Загрузка визитов..." />;
-    }
-
-    if (queryError) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{queryError}</MessageBarBody>
-            </MessageBar>
-        );
     }
 
     return (
@@ -246,11 +246,8 @@ export const VisitsPage = () => {
                 </div>
             </div>
 
-            {actionError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{actionError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={actionError} className="mb-4" />
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable

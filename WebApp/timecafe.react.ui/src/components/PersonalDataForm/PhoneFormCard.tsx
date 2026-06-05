@@ -76,7 +76,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
         <>
             <Card className={className} size={sizes.card}>
                 <Title2 block className="!flex items-center gap-2">
-                    <PhoneRegular className="text-[var(--colorBrandForeground1)]" fontSize={24} />
+                    <PhoneRegular className="text-(--colorBrandForeground1)" fontSize={24} />
                     Телефон
                 </Title2>
                 <Body2 className="!line-clamp-2">
@@ -94,10 +94,10 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                 </Tooltip>
                                 <div className="flex items-center gap-1.5 sm:ml-2 shrink-0">
                                     {createElement(getPersonalDataStatusIcon(confirmedForUi), {
-                                        className: confirmedForUi ? "text-[var(--colorStatusSuccessForeground1)]" : (confirmedForUi === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]"),
+                                        className: confirmedForUi ? "text-(--colorStatusSuccessForeground1)" : (confirmedForUi === false ? "text-(--colorStatusDangerForeground1)" : "text-(--colorNeutralForeground3)"),
                                         fontSize: 16
                                     })}
-                                    <Caption1 className={confirmedForUi ? "text-[var(--colorStatusSuccessForeground1)]" : (confirmedForUi === false ? "text-[var(--colorStatusDangerForeground1)]" : "text-[var(--colorNeutralForeground3)]")}>
+                                    <Caption1 className={confirmedForUi ? "text-(--colorStatusSuccessForeground1)" : (confirmedForUi === false ? "text-(--colorStatusDangerForeground1)" : "text-(--colorNeutralForeground3)")}>
                                         {!hasPhone ? "Не указан" : (phoneNumberConfirmed ? "Подтверждён" : "Не подтверждён")}
                                     </Caption1>
                                 </div>
@@ -125,7 +125,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
                                 </Button>
                             </div>
                         </div>
-                        {phoneError && <Caption1 className="text-[var(--colorPaletteRedForeground1)]">{phoneError}</Caption1>}
+                        {phoneError && <Caption1 className="text-(--colorPaletteRedForeground1)">{phoneError}</Caption1>}
                     </div>
                 </div>
 

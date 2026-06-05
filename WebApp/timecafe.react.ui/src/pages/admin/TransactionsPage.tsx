@@ -7,8 +7,6 @@ import {
     Card,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     Title2,
     Title3,
     createTableColumn,
@@ -23,12 +21,13 @@ import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 import type { BillingTransaction } from "@app-types/billing";
 import { TransactionType, TransactionSource, TransactionStatus } from "@app-types/billing";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
-import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
+import { NO_DATA } from "@shared/const/placeholders";
 
 const formatDateTime = (iso: string) =>
     new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -95,7 +94,7 @@ export const TransactionsPage = () => {
         { page: currentPage, pageSize, userId: userId || undefined },
     );
 
-    const transactions = data?.items ?? [];
+    const transactions = useMemo(() => data?.items ?? [], [data]);
     const totalPages = data?.metadata?.totalPages ?? 1;
     const totalCount = data?.metadata?.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
@@ -131,7 +130,7 @@ export const TransactionsPage = () => {
                     renderCell: (tx) => (
                         <TableCellLayout truncate>
                             <div className="min-w-0">
-                                <Body2 block className="font-mono text-[var(--colorNeutralForeground4)]">{tx.userId.slice(0, 12)}…</Body2>
+                                <Body2 className="font-mono text-(--colorNeutralForeground4)">{tx.userId.slice(0, 12)}…</Body2>
                             </div>
                         </TableCellLayout>
                     ),
@@ -171,11 +170,9 @@ export const TransactionsPage = () => {
                     renderHeaderCell: () => "Сумма",
                     renderCell: (tx) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingTransactionRead} fallback={NO_ACCESS}>
-                                <span className={tx.type === TransactionType.Withdrawal ? "text-[var(--colorPaletteRedForeground1)]" : "text-[var(--colorPaletteGreenForeground1)]"}>
-                                    {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
-                                </span>
-                            </HasPermission>
+                            <span className={tx.type === TransactionType.Withdrawal ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}>
+                                {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
+                            </span>
                         </TableCellLayout>
                     ),
                 }),
@@ -188,9 +185,7 @@ export const TransactionsPage = () => {
                     renderHeaderCell: () => "Баланс после",
                     renderCell: (tx) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingTransactionRead} fallback={NO_ACCESS}>
-                                {formatMoney(tx.balanceAfter)}
-                            </HasPermission>
+                            {formatMoney(tx.balanceAfter)}
                         </TableCellLayout>
                     ),
                 }),
@@ -204,37 +199,38 @@ export const TransactionsPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [has]);
+
 
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Транзакции</Title2>
-                    <Body2 block>Все финансовые операции · {totalCount} записей</Body2>
+                    <Body2>Все финансовые операции · {totalCount} записей</Body2>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-4 mb-4">
                 <Card size={sizes.card}>
-                    <Body2 block>Всего</Body2>
+                    <Body2>Всего</Body2>
                     <Title3>{totalCount}</Title3>
                 </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Пополнения (на стр.)</Body2>
-                    <HasPermission can={Permissions.BillingTransactionRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                <HasPermission can={Permissions.BillingTransactionRead}>
+                    <Card size={sizes.card}>
+                        <Body2>Пополнения (на стр.)</Body2>
                         <Title3 style={{ color: "var(--colorPaletteGreenForeground1)" }}>{formatMoney(totalDeposits)}</Title3>
-                    </HasPermission>
-                </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Списания (на стр.)</Body2>
-                    <HasPermission can={Permissions.BillingTransactionRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                    </Card>
+                </HasPermission>
+                <HasPermission can={Permissions.BillingTransactionRead}>
+                    <Card size={sizes.card}>
+                        <Body2>Списания (на стр.)</Body2>
                         <Title3 style={{ color: "var(--colorPaletteRedForeground1)" }}>{formatMoney(totalWithdrawals)}</Title3>
-                    </HasPermission>
-                </Card>
+                    </Card>
+                </HasPermission>
                 <Card size={sizes.card}>
-                    <Body2 block>Выполнено (на стр.)</Body2>
+                    <Body2>Выполнено (на стр.)</Body2>
                     <Title3>{completedCount}</Title3>
                 </Card>
             </div>
@@ -256,11 +252,7 @@ export const TransactionsPage = () => {
                 )}
             </div>
 
-            {errorMessage && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{errorMessage}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={errorMessage} className="mb-4" />
 
             <Card size={sizes.card}>
                 <DataTable

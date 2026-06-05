@@ -6,9 +6,6 @@ import {
     Card,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
-    Spinner,
     Title1,
     Title2,
     Tooltip,
@@ -24,6 +21,8 @@ import {
     TagPickerGroup,
     Tag
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import { ArrowLeft20Regular, Save20Regular, Dismiss20Regular } from "@fluentui/react-icons";
 import {
     useGetAllThemesQuery,
@@ -295,11 +294,7 @@ export const TariffEditorPage = () => {
             </div>
             <Divider />
 
-            {error && (
-                <MessageBar intent="error">
-                    <MessageBarBody>{error}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={error} className="mb-4" />
 
             <div className="flex gap-4 flex-wrap">
                 <div className="flex flex-col gap-4 flex-1">
@@ -337,7 +332,7 @@ export const TariffEditorPage = () => {
                         />
 
                         <div className="flex flex-wrap gap-4">
-                            <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required size={sizes.field} hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined} className="flex-[1]">
+                            <Field label={`Цена за минуту (${CURRENCY_SYMBOL})`} required size={sizes.field} hint={perHour ? `≈ ${perHour} ${CURRENCY_SYMBOL}/час` : undefined} className="flex-1">
                                 <Input
                                     type="number"
                                     size={sizes.input}
@@ -488,16 +483,16 @@ export const TariffEditorPage = () => {
                     style={{ backgroundColor: "var(--colorNeutralBackground2)" }}
                 >
                     <div className="flex flex-col">
-                        <Body2 className="uppercase text-[var(--colorNeutralForeground4)]">Предпросмотр</Body2>
-                        <Body2 className="text-[var(--colorNeutralForeground3)]">Живой результат</Body2>
+                        <Body2 className="uppercase text-(--colorNeutralForeground4)">Предпросмотр</Body2>
+                        <Body2 className="text-(--colorNeutralForeground3)">Живой результат</Body2>
                     </div>
 
                     <div className="flex flex-col gap-4 w-full h-full justify-center items-center content-center">
                         <TariffCard tariff={mockTariff} />
 
                         <Card className="w-[320px]">
-                            <Subtitle2 block className="mb-2 font-bold">Справка</Subtitle2>
-                            <Caption1 className="text-[var(--colorNeutralForeground2)] leading-relaxed italic block">
+                            <Subtitle2 className="mb-2 font-bold">Справка</Subtitle2>
+                            <Caption1 className="text-(--colorNeutralForeground2) leading-relaxed italic">
                                 Предпросмотр показывает, как тариф будет выглядеть в карусели выбора тарифов для гостей.
                             </Caption1>
                         </Card>

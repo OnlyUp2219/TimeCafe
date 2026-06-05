@@ -1,16 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
     Avatar,
     Badge,
     Body1,
     Body2,
     Card,
-    MessageBar,
-    MessageBarBody,
     Title2,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { useGetProfilesPageQuery } from "@store/api/profileApi";
 import type { Profile } from "@app-types/profile";
@@ -21,6 +21,7 @@ import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
+import { type Permission } from "@shared/auth/permissions";
 
 const statusLabel = (s: number) => {
     switch (s) {
@@ -115,23 +116,23 @@ export const ProfilesPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [has]);
+
+    if (isLoading) {
+        return <PageLoader label="Загрузка профилей..." />;
+    }
 
     return (
         <div>
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Профили</Title2>
-                    <Body2 block>{totalCount} профилей</Body2>
+                    <Body2>{totalCount} профилей</Body2>
                 </div>
             </div>
 
-            {queryError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
 
             <Card size={sizes.card}>
                 <DataTable

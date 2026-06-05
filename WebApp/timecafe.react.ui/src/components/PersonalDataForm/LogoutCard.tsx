@@ -22,7 +22,7 @@ export const LogoutCard: FC<LogoutCardProps> = ({className, onLogout}) => {
             <div className="flex h-full flex-col gap-2 justify-between">
                 <div>
                     <Title2 block className="!flex items-center gap-2">
-                        <ArrowExitRegular className="text-[var(--colorStatusDangerForeground1)]" fontSize={24} />
+                        <ArrowExitRegular className="text-(--colorStatusDangerForeground1)" fontSize={24} />
                         Выйти из аккаунта
                     </Title2>
  

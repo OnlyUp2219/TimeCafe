@@ -65,7 +65,7 @@ export const Pagination = ({
         return pages.map((item, idx) => {
             if (item === "dots-left" || item === "dots-right") {
                 return (
-                    <span key={`${item}-${idx}`} className="px-2 text-[var(--colorNeutralForeground3)] self-center">
+                    <span key={`${item}-${idx}`} className="px-2 text-(--colorNeutralForeground3) self-center">
                         ...
                     </span>
                 );

@@ -182,7 +182,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 </Button>
                             </div>
                         )}
-                        {phoneError && <Caption1 className="text-[var(--colorPaletteRedForeground1)]">{phoneError}</Caption1>}
+                        {phoneError && <Caption1 className="text-(--colorPaletteRedForeground1)">{phoneError}</Caption1>}
                     </div>
                 </div>
 

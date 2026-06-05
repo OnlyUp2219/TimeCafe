@@ -128,7 +128,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
                             />
                         </div>
                     )}
-                    <h1 className="text-lg font-semibold tracking-tight text-[var(--colorNeutralForeground1)] sm:text-xl">TimeCafe</h1>
+                    <h1 className="text-lg font-semibold tracking-tight text-(--colorNeutralForeground1) sm:text-xl">TimeCafe</h1>
                     {!isPublic && isActiveVisit && activeVisitDuration && (
                         <div className="hidden items-center gap-2 sm:flex">
                             <Tag appearance="brand" icon={<Clock20Regular />}>

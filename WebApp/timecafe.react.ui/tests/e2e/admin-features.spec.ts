@@ -268,6 +268,35 @@ test.describe("Admin Features Mocked E2E Tests", () => {
             });
         });
 
+        await page.route(/\/auth\/admin\/users\/some-user-id/, async (route) => {
+            await route.fulfill({
+                status: 200,
+                contentType: "application/json",
+                body: JSON.stringify({
+                    user: {
+                        id: "some-user-id",
+                        email: "ivan@timecafe.local",
+                        name: "Иван",
+                        role: "client",
+                        status: "active",
+                        emailConfirmed: true,
+                        phoneNumberConfirmed: true,
+                        phoneNumber: "+79998887766",
+                        profile: {
+                            firstName: "Иван",
+                            lastName: "Иванов",
+                            middleName: "Иванович",
+                            profileStatus: 1
+                        },
+                        balance: {
+                            currentBalance: 3200,
+                            debt: 0
+                        }
+                    }
+                })
+            });
+        });
+
         await page.route(/\/userprofile\/profiles\/some-user-id/, async (route) => {
             await route.fulfill({
                 status: 200,
@@ -286,13 +315,18 @@ test.describe("Admin Features Mocked E2E Tests", () => {
             });
         });
 
-        await page.route(/\/billing\/balances\/some-user-id/, async (route) => {
+        await page.route(/\/billing\/balance\/some-user-id/, async (route) => {
             await route.fulfill({
                 status: 200,
                 contentType: "application/json",
                 body: JSON.stringify({
-                    userId: "some-user-id",
-                    currentBalance: 3200
+                    balance: {
+                        userId: "some-user-id",
+                        currentBalance: 3200,
+                        totalDeposited: 3200,
+                        totalSpent: 0,
+                        debt: 0
+                    }
                 })
             });
         });
@@ -311,7 +345,8 @@ test.describe("Admin Features Mocked E2E Tests", () => {
                             source: 2,
                             status: 2,
                             createdAt: new Date().toISOString(),
-                            comment: "Пополнение через администратора"
+                            comment: "Пополнение через администратора",
+                            balanceAfter: 1500
                         }
                     ],
                     metadata: {
@@ -422,7 +457,7 @@ test.describe("Admin Features Mocked E2E Tests", () => {
         await expect(addPromoButton).toBeVisible();
         await addPromoButton.click();
 
-        await expect(page.getByRole("heading", {name: "Создать акцию"}).first()).toBeVisible();
+        await expect(page.getByRole("heading", {name: "Новая акция"}).first()).toBeVisible();
         await page.getByRole("button", {name: "Отмена"}).click();
     });
 
@@ -434,8 +469,8 @@ test.describe("Admin Features Mocked E2E Tests", () => {
         await page.getByTestId("login-submit").click();
         await page.waitForURL(/\/home$/);
 
-        await page.goto("/admin/audit");
-        await page.waitForURL(/\/admin\/audit$/);
+        await page.goto("/admin/audit-logs");
+        await page.waitForURL(/\/admin\/audit-logs$/);
 
         await expect(page.getByText("Аудит-логи").first()).toBeVisible({timeout: 10000});
         await expect(page.getByText("UserLogin").first()).toBeVisible();

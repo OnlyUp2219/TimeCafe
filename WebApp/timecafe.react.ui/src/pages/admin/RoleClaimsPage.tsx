@@ -15,10 +15,13 @@ import {
     CounterBadge,
     useHeadlessFlatTree_unstable,
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import type {
     TreeCheckedChangeData,
     TreeItemValue,
     HeadlessFlatTreeItemProps,
+    TreeSelectionValue,
 } from "@fluentui/react-components";
 import { ArrowLeft20Regular, Save20Regular } from "@fluentui/react-icons";
 import { useGetRoleClaimsByNameQuery, useUpdateRoleClaimsMutation, useGetPermissionsQuery } from "@store/api/adminApi";
@@ -91,8 +94,8 @@ export const RoleClaimsPage = () => {
     const { data: permissionsData, isLoading: permsLoading } = useGetPermissionsQuery();
     const [updateRoleClaims, { isLoading: saving }] = useUpdateRoleClaimsMutation();
 
-    const currentClaims = roleClaimsData?.roleClaim?.claims ?? [];
-    const allPermissions = permissionsData?.permissions ?? [];
+    const currentClaims = useMemo(() => roleClaimsData?.roleClaim?.claims ?? [], [roleClaimsData]);
+    const allPermissions = useMemo(() => permissionsData?.permissions ?? [], [permissionsData]);
 
     const groupedPermissions = useMemo(() => {
         const groups: Record<string, Record<string, string[]>> = {};
@@ -108,12 +111,12 @@ export const RoleClaimsPage = () => {
     }, [allPermissions]);
 
     const flatTreeItems = useMemo(() => {
-        const items: (HeadlessFlatTreeItemProps & { content: React.ReactNode; service?: string; entity?: string })[] = [];
+        const items: (HeadlessFlatTreeItemProps & { itemContent: React.ReactNode; service?: string; entity?: string })[] = [];
         Object.entries(groupedPermissions).forEach(([service, entities]) => {
             const serviceLabel = SERVICE_LABELS[service] ?? service;
             items.push({
                 value: service,
-                content: serviceLabel,
+                itemContent: serviceLabel,
                 itemType: "branch",
                 service
             });
@@ -123,7 +126,7 @@ export const RoleClaimsPage = () => {
                 items.push({
                     value: entityValue,
                     parentValue: service,
-                    content: ENTITY_LABELS[entity] ?? entity,
+                    itemContent: ENTITY_LABELS[entity] ?? entity,
                     itemType: "branch",
                     service,
                     entity
@@ -134,10 +137,10 @@ export const RoleClaimsPage = () => {
                     items.push({
                         value: perm,
                         parentValue: entityValue,
-                        content: (
+                        itemContent: (
                             <>
                                 {formatPermissionLabel(actionParts)}
-                                <span className="text-xs text-[var(--colorNeutralForeground3)] ml-2 font-mono">{perm}</span>
+                                <span className="text-xs text-(--colorNeutralForeground3) ml-2 font-mono">{perm}</span>
                             </>
                         ),
                         itemType: "leaf"
@@ -160,9 +163,9 @@ export const RoleClaimsPage = () => {
     }, [currentClaims, allPermissions, normalizedRoleName, initializedRole, claimsLoading]);
 
     const checkedItemsMap = useMemo(() => {
-        const map = new Map<TreeItemValue, "checked" | "mixed">();
+        const map = new Map<TreeItemValue, TreeSelectionValue>();
 
-        selectedLeaves.forEach(leaf => map.set(leaf, "checked"));
+        selectedLeaves.forEach(leaf => map.set(leaf, true));
 
         Object.entries(groupedPermissions).forEach(([service, entities]) => {
             let serviceTotal = 0;
@@ -175,7 +178,7 @@ export const RoleClaimsPage = () => {
                 });
 
                 if (entityChecked === perms.length && perms.length > 0) {
-                    map.set(`${service}.${entity}`, "checked");
+                    map.set(`${service}.${entity}`, true);
                 } else if (entityChecked > 0) {
                     map.set(`${service}.${entity}`, "mixed");
                 }
@@ -185,7 +188,7 @@ export const RoleClaimsPage = () => {
             });
 
             if (serviceChecked === serviceTotal && serviceTotal > 0) {
-                map.set(service, "checked");
+                map.set(service, true);
             } else if (serviceChecked > 0) {
                 map.set(service, "mixed");
             }
@@ -253,19 +256,6 @@ export const RoleClaimsPage = () => {
         return <div className="flex justify-center p-20"><Spinner label="Загрузка прав..." /></div>;
     }
 
-    if (claimsError2) {
-        return (
-            <div className="p-8">
-                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/roles")} className="mb-4">
-                    Назад к ролям
-                </Button>
-                <MessageBar intent="error">
-                    <MessageBarBody>{claimsError2}</MessageBarBody>
-                </MessageBar>
-            </div>
-        );
-    }
-
     if (!normalizedRoleName) {
         return (
             <div className="p-8">
@@ -274,7 +264,7 @@ export const RoleClaimsPage = () => {
                 </Button>
                 <Card size={sizes.card}>
                     <Title2>Роль не указана</Title2>
-                    <Body2 block>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
+                    <Body2>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
                 </Card>
             </div>
         );
@@ -289,9 +279,9 @@ export const RoleClaimsPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Permissions роли</Title2>
-                    <Body2 block className="flex items-center gap-2 mt-1">
+                    <Body2 className="flex items-center gap-2 mt-1">
                         <Badge appearance="filled" size="large">{normalizedRoleName}</Badge>
-                        <span className="text-[var(--colorNeutralForeground3)]">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
+                        <span className="text-(--colorNeutralForeground3)">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
                     </Body2>
                 </div>
                 <HasPermission can={Permissions.RbacRoleClaimsUpdate}>
@@ -307,11 +297,8 @@ export const RoleClaimsPage = () => {
                 </HasPermission>
             </div>
 
-            {mutationError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{mutationError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={claimsError2} className="mb-4" />
+            <DismissableError error={mutationError} className="mb-4" />
 
             {saved && (
                 <MessageBar intent="success" className="mb-4">
@@ -324,7 +311,7 @@ export const RoleClaimsPage = () => {
             ) : (
                 <FlatTree {...flatTree.getTreeProps()} aria-label="Permissions">
                     {Array.from(flatTree.items(), (item) => {
-                        const { content, service, entity, ...treeItemProps } = item.getTreeItemProps() as any;
+                        const { itemContent, service, entity, ...treeItemProps } = item.getTreeItemProps() as ReturnType<typeof item.getTreeItemProps> & { itemContent?: React.ReactNode; service?: string; entity?: string };
 
                         let badgeCount = 0;
                         if (service && !entity) {
@@ -349,7 +336,7 @@ export const RoleClaimsPage = () => {
                                         ) : undefined
                                     }
                                 >
-                                    {content}
+                                    {itemContent}
                                 </TreeItemLayout>
                             </FlatTreeItem>
                         );

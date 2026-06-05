@@ -6,8 +6,6 @@ import {
     Badge,
     Card,
     Caption1,
-    MessageBar,
-    MessageBarBody,
     Title2,
     Title3,
     createTableColumn,
@@ -22,11 +20,12 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
-import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
+import { NO_DATA } from "@shared/const/placeholders";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 
 const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
 const formatDate = (iso: string) =>
@@ -41,8 +40,8 @@ const AdminUserCell = ({ userId }: { userId: string }) => {
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
             <div className="flex flex-col min-w-0">
-                <Body1 block truncate>{displayName || userId}</Body1>
-                <Caption1 block className="font-mono text-[var(--colorNeutralForeground4)]" style={{ fontSize: '10px' }}>{userId}</Caption1>
+                <Body1 truncate>{displayName || userId}</Body1>
+                <Caption1 className="font-mono text-(--colorNeutralForeground4)" style={{ fontSize: '10px' }}>{userId}</Caption1>
             </div>
         </TableCellLayout>
     );
@@ -74,7 +73,7 @@ export const BalancesPage = () => {
         { refetchOnMountOrArgChange: true }
     );
 
-    const balances = data?.items ?? [];
+    const balances = useMemo(() => data?.items ?? [], [data]);
     const totalCount = data?.metadata?.totalCount ?? 0;
     const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
@@ -121,11 +120,9 @@ export const BalancesPage = () => {
                     renderHeaderCell: () => "Баланс",
                     renderCell: (b) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                                <Body1 style={{ color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)" }}>
-                                    {formatMoney(b.currentBalance)}
-                                </Body1>
-                            </HasPermission>
+                            <Body1 style={{ color: b.currentBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)" }}>
+                                {formatMoney(b.currentBalance)}
+                            </Body1>
                         </TableCellLayout>
                     ),
                 }),
@@ -138,9 +135,7 @@ export const BalancesPage = () => {
                     renderHeaderCell: () => "Пополнено",
                     renderCell: (b) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                                {formatMoney(b.totalDeposited)}
-                            </HasPermission>
+                            {formatMoney(b.totalDeposited)}
                         </TableCellLayout>
                     ),
                 }),
@@ -153,9 +148,7 @@ export const BalancesPage = () => {
                     renderHeaderCell: () => "Потрачено",
                     renderCell: (b) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                                {formatMoney(b.totalSpent)}
-                            </HasPermission>
+                            {formatMoney(b.totalSpent)}
                         </TableCellLayout>
                     ),
                 }),
@@ -168,11 +161,9 @@ export const BalancesPage = () => {
                     renderHeaderCell: () => "Долг",
                     renderCell: (b) => (
                         <TableCellLayout truncate>
-                            <HasPermission can={Permissions.BillingBalanceRead} fallback={NO_ACCESS}>
-                                <Body1 style={{ color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined }}>
-                                    {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
-                                </Body1>
-                            </HasPermission>
+                            <Body1 style={{ color: b.debt > 0 ? "var(--colorPaletteRedForeground1)" : undefined }}>
+                                {b.debt > 0 ? formatMoney(b.debt) : NO_DATA}
+                            </Body1>
                         </TableCellLayout>
                     ),
                 }),
@@ -186,7 +177,7 @@ export const BalancesPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [has]);
 
     return (
@@ -194,42 +185,38 @@ export const BalancesPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Балансы</Title2>
-                    <Body2 block>{totalCount} пользователей</Body2>
+                    <Body2>{totalCount} пользователей</Body2>
                 </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-4 mb-4">
                 <Card size={sizes.card}>
-                    <Body2 block>Всего балансов</Body2>
+                    <Body2>Всего балансов</Body2>
                     <Title3>{totalCount}</Title3>
                 </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Суммарный баланс (стр.)</Body2>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                <HasPermission can={Permissions.BillingBalanceRead}>
+                    <Card size={sizes.card}>
+                        <Body2>Суммарный баланс (стр.)</Body2>
                         <Title3 style={{ color: totalBalance >= 0 ? "var(--colorPaletteGreenForeground1)" : "var(--colorPaletteRedForeground1)" }}>
                             {formatMoney(totalBalance)}
                         </Title3>
-                    </HasPermission>
-                </Card>
-                <Card size={sizes.card}>
-                    <Body2 block>Суммарный долг (стр.)</Body2>
-                    <HasPermission can={Permissions.BillingBalanceRead} fallback={<Title3>{NO_ACCESS}</Title3>}>
+                    </Card>
+                </HasPermission>
+                <HasPermission can={Permissions.BillingBalanceRead}>
+                    <Card size={sizes.card}>
+                        <Body2>Суммарный долг (стр.)</Body2>
                         <Title3 style={{ color: totalDebt > 0 ? "var(--colorPaletteRedForeground1)" : undefined }}>
                             {totalDebt > 0 ? formatMoney(totalDebt) : NO_DATA}
                         </Title3>
-                    </HasPermission>
-                </Card>
+                    </Card>
+                </HasPermission>
                 <Card size={sizes.card}>
-                    <Body2 block>Должников (стр.)</Body2>
+                    <Body2>Должников (стр.)</Body2>
                     <Title3>{debtorsCount}</Title3>
                 </Card>
             </div>
 
-            {queryError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{queryError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
 
             <Card size={sizes.card}>
                 <DataTable

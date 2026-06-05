@@ -12,23 +12,35 @@ export const MainLayout: FC = () => {
     const isSidebarOpen = useAppSelector((state) => state.ui.isSideBarOpen);
 
     return (
-        <div className="main-layout">
-            <Header
-                onMenuToggle={() => dispatch(toggleSidebar())}
-                isSidebarOpen={isSidebarOpen}
-            />
+        <div className="main-layout min-h-[100dvh]" style={{
+            display: "grid",
+            gridTemplateColumns: "auto 1fr",
+            gridTemplateRows: "auto 1fr auto",
+            gridTemplateAreas: `
+                "header header"
+                "sidebar main"
+                "footer footer"
+            `
+        }}>
+            <div style={{ gridArea: "header" }}>
+                <Header
+                    onMenuToggle={() => dispatch(toggleSidebar())}
+                    isSidebarOpen={isSidebarOpen}
+                />
+                <ProfileCompletionGate />
+            </div>
 
-            <ProfileCompletionGate />
-
-                
-            <main className="main-layout__main flex flex-1 min-w-0">
+            <div style={{ gridArea: "sidebar" }} className="bg-(--colorNeutralBackground1) border-r border-(--colorNeutralStroke2)">
                 <Sidebar />
-                <div className="flex-1 min-w-0 flex flex-col">
-                    <Outlet/>
-                </div>
+            </div>
+
+            <main style={{ gridArea: "main" }} className="flex flex-col min-w-0">
+                <Outlet />
             </main>
 
-            <Footer/>
+            <div style={{ gridArea: "footer" }}>
+                <Footer />
+            </div>
         </div>
     );
 };

@@ -13,14 +13,14 @@ import {
     DialogTrigger,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
     Spinner,
     Title2,
     createTableColumn,
     TableCellLayout,
     Body1,
 } from "@fluentui/react-components";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, LockClosed20Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-import { Permissions } from "@shared/auth/permissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 
 import { usePagination } from "@hooks/usePagination";
 
@@ -46,7 +46,7 @@ export const RolesPage = () => {
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
     const { data, isLoading, error } = useGetRolesQuery(undefined, { refetchOnMountOrArgChange: true });
-    const roles = data?.roles ?? [];
+    const roles = useMemo(() => data?.roles ?? [], [data]);
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminRoles");
@@ -132,19 +132,11 @@ export const RolesPage = () => {
             }),
         ];
 
-        return allColumns.filter(col => !col.permission || has(col.permission as any));
+        return allColumns.filter(col => !col.permission || has(col.permission as Permission));
     }, [handleDelete, navigate, has]);
 
     if (isLoading) {
         return <PageLoader label="Загрузка ролей..." />;
-    }
-
-    if (queryError) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{queryError}</MessageBarBody>
-            </MessageBar>
-        );
     }
 
     return (
@@ -152,7 +144,7 @@ export const RolesPage = () => {
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Роли</Title2>
-                    <Body2 block>{totalCount} ролей</Body2>
+                    <Body2>{totalCount} ролей</Body2>
                 </div>
                 <HasPermission can={Permissions.RbacRoleCreate}>
                     <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
@@ -161,11 +153,8 @@ export const RolesPage = () => {
                 </HasPermission>
             </div>
 
-            {mutationError && (
-                <MessageBar intent="error" className="mb-4">
-                    <MessageBarBody>{mutationError}</MessageBarBody>
-                </MessageBar>
-            )}
+            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={mutationError} className="mb-4" />
 
             <Card size={sizes.card}>
                 <DataTable
@@ -202,11 +191,7 @@ export const RolesPage = () => {
                                     size={sizes.input}
                                 />
                             </Field>
-                            {mutationError && (
-                                <MessageBar intent="error">
-                                    <MessageBarBody>{mutationError}</MessageBarBody>
-                                </MessageBar>
-                            )}
+                            <DismissableError error={mutationError} className="mb-3" />
                         </DialogContent>
                         <DialogActions>
                             <DialogTrigger disableButtonEnhancement>

@@ -4,7 +4,9 @@ import type {Permission} from "@shared/auth/permissions";
 
 interface RequirePermissionProps {
     permission?: Permission;
+    can?: Permission;
     any?: Permission[];
+    anyOf?: Permission[];
     all?: Permission[];
     fallback?: ReactNode;
     children: ReactNode;
@@ -12,7 +14,9 @@ interface RequirePermissionProps {
 
 export const RequirePermission: FC<RequirePermissionProps> = ({
     permission,
+    can,
     any,
+    anyOf,
     all,
     fallback = null,
     children,
@@ -21,8 +25,11 @@ export const RequirePermission: FC<RequirePermissionProps> = ({
 
     if (!loaded) return null;
 
-    if (permission && !has(permission)) return <>{fallback}</>;
-    if (any && !hasAny(any)) return <>{fallback}</>;
+    const perm = permission ?? can;
+    const anyPerms = any ?? anyOf;
+
+    if (perm && !has(perm)) return <>{fallback}</>;
+    if (anyPerms && !hasAny(anyPerms)) return <>{fallback}</>;
     if (all && !hasAll(all)) return <>{fallback}</>;
 
     return <>{children}</>;

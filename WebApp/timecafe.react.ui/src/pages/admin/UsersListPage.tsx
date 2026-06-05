@@ -9,26 +9,26 @@ import {
     Card,
     Field,
     Input,
-    MessageBar,
-    MessageBarBody,
-    Spinner,
     Title2,
     createTableColumn,
     TableCellLayout,
-    Select,
+    Dropdown,
+    Option,
 } from "@fluentui/react-components";
-import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { Eye20Regular } from "@fluentui/react-icons";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { Permissions, type Permission } from "@shared/auth/permissions";
 import type { User } from "@app-types/user";
 import { useGetUsersCompositeQuery } from "@store/api/adminApi";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import { NO_DATA, NO_ACCESS } from "@shared/const/placeholders";
+import { NO_DATA } from "@shared/const/placeholders";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
@@ -53,7 +53,11 @@ const ProfileNameCell = ({ user }: { user: User }) => {
     return (
         <HasPermission
             can={Permissions.UserProfileProfileRead}
-            fallback={<TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>{NO_ACCESS}</TableCellLayout>}
+            fallback={
+                <TableCellLayout truncate media={<Avatar name={user.name || user.email} />}>
+                    {user.name || user.email}
+                </TableCellLayout>
+            }
         >
             <TableCellLayout
                 truncate
@@ -61,7 +65,6 @@ const ProfileNameCell = ({ user }: { user: User }) => {
                     <SecureAvatar
                         name={displayName || user.email}
                         photoUrl={profile?.photoUrl}
-
                     />
                 }
             >
@@ -73,9 +76,7 @@ const ProfileNameCell = ({ user }: { user: User }) => {
 
 const ProfilePhoneCell = ({ user }: { user: User }) => {
     return (
-        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
-            <TableCellLayout truncate>{user.phoneNumber || NO_DATA}</TableCellLayout>
-        </HasPermission>
+        <TableCellLayout truncate>{user.phoneNumber || NO_DATA}</TableCellLayout>
     );
 };
 
@@ -101,13 +102,11 @@ const ProfileStatusCell = ({ user }: { user: User }) => {
     const profile = user.profile;
     if (!profile) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
-        <HasPermission can={Permissions.UserProfileProfileRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
-            <TableCellLayout truncate>
-                <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
-                    {profileStatusLabel(profile.profileStatus)}
-                </Badge>
-            </TableCellLayout>
-        </HasPermission>
+        <TableCellLayout truncate>
+            <Badge appearance="tint" color={profileStatusColor(profile.profileStatus)}>
+                {profileStatusLabel(profile.profileStatus)}
+            </Badge>
+        </TableCellLayout>
     );
 };
 
@@ -115,9 +114,7 @@ const BalanceCell = ({ user }: { user: User }) => {
     const balance = user.balance;
     if (balance === undefined || balance === null) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
     return (
-        <HasPermission can={Permissions.BillingBalanceRead} fallback={<TableCellLayout truncate>{NO_ACCESS}</TableCellLayout>}>
-            <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>
-        </HasPermission>
+        <TableCellLayout truncate>{formatMoneyByN(balance.currentBalance)}</TableCellLayout>
     );
 };
 
@@ -142,8 +139,8 @@ export const UsersListPage = () => {
     });
 
     const users = data?.items ?? [];
-    const totalPages = data?.metadata.totalPages ?? 1;
-    const totalCount = data?.metadata.totalCount ?? 0;
+    const totalPages = data?.metadata?.totalPages ?? 1;
+    const totalCount = data?.metadata?.totalCount ?? 0;
     const errorMessage = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const handleClearFilters = useCallback(() => {
@@ -245,69 +242,70 @@ export const UsersListPage = () => {
                 }),
             ];
 
-            return allColumns.filter(col => !col.permission || has(col.permission as any));
+            return allColumns.filter(col => !col.permission || has(col.permission as Permission));
         },
-        [sizes, navigate, has]
+        [navigate, has]
     );
 
     if (isLoading) {
         return <PageLoader label="Загрузка пользователей..." />;
     }
 
-    if (errorMessage) {
-        return (
-            <MessageBar intent="error" className="mb-4">
-                <MessageBarBody>{errorMessage}</MessageBarBody>
-            </MessageBar>
-        );
-    }
-
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
-                    <Title2>Пользователи</Title2>
-                    <Body2 block>{totalCount} зарегистрированных пользователей</Body2>
+        <RequirePermission can={Permissions.AccountAdminRead}>
+            <div>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+                    <div>
+                        <Title2>Пользователи</Title2>
+                        <Body2>{totalCount} зарегистрированных пользователей</Body2>
+                    </div>
+                </div>
+
+                <DismissableError error={errorMessage} className="mb-4" />
+
+                <div className="flex gap-4 flex-wrap items-end mb-4">
+                    <Field label="Поиск по email" size={sizes.field}>
+                        <Input size={sizes.input} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по имени, email..." />
+                    </Field>
+                    <Field label="Статус" size={sizes.field}>
+                        <Dropdown
+                            size={sizes.input}
+                            value={statusFilter === "active" ? "Active" : statusFilter === "inactive" ? "Inactive" : "Все статусы"}
+                            selectedOptions={[statusFilter]}
+                            onOptionSelect={(_, data) => setStatusFilter(data.optionValue || "")}
+                        >
+                            <Option value="">Все статусы</Option>
+                            <Option value="active">Active</Option>
+                            <Option value="inactive">Inactive</Option>
+                        </Dropdown>
+                    </Field>
+                    <Button appearance="secondary" size={sizes.button} onClick={handleClearFilters}>
+                        Сбросить фильтры
+                    </Button>
+                </div>
+
+                <Card size={sizes.card}>
+                    <DataTable
+                        items={users}
+                        columns={columns}
+                        getRowId={(user) => user.id}
+                        loading={isLoading}
+                        columnSizingOptions={columnSizingOptions}
+                    />
+                </Card>
+
+                <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                    <Body1>Показано {users.length} из {totalCount}</Body1>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
                 </div>
             </div>
-
-            <div className="flex gap-4 flex-wrap items-end mb-4">
-                <Field label="Поиск по email" size={sizes.field}>
-                    <Input size={sizes.input} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по имени, email..." />
-                </Field>
-                <Field label="Статус" size={sizes.field}>
-                    <Select size={sizes.input} value={statusFilter} onChange={(_, data) => setStatusFilter(data.value)}>
-                        <option value="">Все статусы</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                    </Select>
-                </Field>
-                <Button appearance="secondary" size={sizes.button} onClick={handleClearFilters}>
-                    Сбросить фильтры
-                </Button>
-            </div>
-
-            <Card size={sizes.card}>
-                <DataTable
-                    items={users}
-                    columns={columns}
-                    getRowId={(user) => user.id}
-                    loading={isLoading}
-                    columnSizingOptions={columnSizingOptions}
-                />
-            </Card>
-
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-                <Body1>Показано {users.length} из {totalCount}</Body1>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    totalCount={totalCount}
-                />
-            </div>
-        </div>
+        </RequirePermission>
     );
 };

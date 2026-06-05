@@ -13,6 +13,7 @@ const statusConfig: Record<VisitStatus, {label: string; color: "brand" | "danger
     3: {label: "Активен", color: "success"},
     4: {label: "Завершён", color: "informative"},
     5: {label: "Отменён", color: "important"},
+    6: {label: "Ожидает оплаты", color: "warning"},
 };
 
 export const VisitStatusBadge = ({status, size = "medium"}: VisitStatusBadgeProps) => {
