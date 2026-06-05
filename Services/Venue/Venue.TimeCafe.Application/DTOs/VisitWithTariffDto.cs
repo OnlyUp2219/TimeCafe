@@ -11,6 +11,7 @@ public class VisitWithTariffDto
     public VisitStatus Status { get; set; }
     public Guid? ApprovedByUserId { get; set; }
     public Guid? ResourceId { get; set; }
+    public int? ResourceMaxGuests { get; set; }
     public DateTimeOffset? ApprovedAt { get; set; }
     public string? RejectionReason { get; set; }
 

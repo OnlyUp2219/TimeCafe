@@ -16,6 +16,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                where v.VisitId == visitId
                                select new VisitWithTariffDto
                                {
@@ -23,6 +25,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -47,6 +50,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment)
                                select new VisitWithTariffDto
                                {
@@ -54,6 +59,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -81,6 +87,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                where v.Status == VisitStatus.Active
                                orderby v.EntryTime descending
                                select new VisitWithTariffDto
@@ -89,6 +97,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -114,6 +123,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                where v.UserId == userId
                                orderby v.EntryTime descending
                                select new VisitWithTariffDto
@@ -122,6 +133,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -149,6 +161,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                orderby v.EntryTime descending
                                select new VisitWithTariffDto
                                {
@@ -156,6 +170,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,
@@ -203,6 +218,8 @@ public class VisitRepository(
             async cancellationToken => await (from v in _context.Visits
                                join t in _context.Tariffs on v.TariffId equals t.TariffId into tGroup
                                from t in tGroup.DefaultIfEmpty()
+                               join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
+                               from r in rGroup.DefaultIfEmpty()
                                where v.Status == VisitStatus.Pending
                                orderby v.EntryTime descending
                                select new VisitWithTariffDto
@@ -211,6 +228,7 @@ public class VisitRepository(
                                    UserId = v.UserId,
                                    TariffId = v.TariffId,
                                    ResourceId = v.ResourceId,
+                                   ResourceMaxGuests = r != null ? (int?)r.Capacity : null,
                                    EntryTime = v.EntryTime,
                                    ExitTime = v.ExitTime,
                                    CalculatedCost = v.CalculatedCost,

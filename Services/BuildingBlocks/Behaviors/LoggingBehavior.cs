@@ -30,7 +30,14 @@ public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TReque
         string responseJson = string.Empty;
         try
         {
-            responseJson = JsonSerializer.Serialize(response, JsonOptions);
+            if (response is IResultBase resultBase && resultBase.IsFailed)
+            {
+                responseJson = $"<failed: {string.Join(", ", resultBase.Errors.Select(e => e.Message))}>";
+            }
+            else
+            {
+                responseJson = JsonSerializer.Serialize(response, JsonOptions);
+            }
         }
         catch (Exception ex)
         {
