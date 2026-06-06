@@ -40,8 +40,8 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
 
     useEffect(() => {
         if (!isActiveVisit) return;
-        const timerId = window.setInterval(() => setNowMs(Date.now()), 1000);
-        return () => window.clearInterval(timerId);
+        const timerId = globalThis.setInterval(() => setNowMs(Date.now()), 1000);
+        return () => globalThis.clearInterval(timerId);
     }, [isActiveVisit]);
 
     const activeVisitDuration = useMemo(() => {

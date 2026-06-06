@@ -253,7 +253,7 @@ export const TariffEditorPage = () => {
     const currentRoundingRule = roundingRules.find(r => r.value === form.roundingRule);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between sticky z-30 flex-wrap gap-2">
                 <div className="flex items-center gap-4">
                     <Tooltip content="Назад" relationship="label">
@@ -294,7 +294,7 @@ export const TariffEditorPage = () => {
             </div>
             <Divider />
 
-            <DismissableError error={error} className="mb-4" />
+            <DismissableError error={error} />
 
             <div className="flex gap-4 flex-wrap">
                 <div className="flex flex-col gap-4 flex-1">

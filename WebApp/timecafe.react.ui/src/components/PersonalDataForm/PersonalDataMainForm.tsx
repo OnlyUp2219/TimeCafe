@@ -1,11 +1,5 @@
-import {useEffect, useId, useMemo, useState, type FC} from "react";
-import {Badge, Button, Card, Field, Input, Label, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
-import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
-import type {Profile} from "@app-types/profile";
-import {DateInput} from "@components/FormFields";
-import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";
-import {normalizeDate} from "@utility/normalizeDate";
-import {useComponentSize} from "@hooks/useComponentSize";
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import {useEffect, useId, useMemo, useState, type FC} from "react";import {Badge, Button, Card, Field, Input, Label, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";import type {Profile} from "@app-types/profile";import {DateInput} from "@components/FormFields";import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";import {normalizeDate} from "@utility/normalizeDate";import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface PersonalDataMainFormProps {
     profile: Profile;
@@ -65,7 +59,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
     const fullName = `${firstName} ${lastName}${middleName ? ` ${middleName}` : ""}`.trim();
     const genderText = genderId === 1 ? "Мужчина" : genderId === 2 ? "Женщина" : "Не указан";
-    const birthDateText = birthDate ? birthDate.toLocaleDateString() : "—";
+    const birthDateText = birthDate ? birthDate.toLocaleDateString() : NO_DATA;
 
     const handleSave = () => {
         onSave?.({
@@ -113,7 +107,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
                             />
 
                             <div className="flex flex-col gap-1">
-                                <Text weight="semibold" size={400}>{fullName || "—"}</Text>
+                                <Text weight="semibold" size={400}>{fullName || NO_DATA}</Text>
                                 <Text>Пол: {genderText}</Text>
                                 <Text>Дата рождения: {birthDateText}</Text>
                             </div>
@@ -206,3 +200,5 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
         </Card>
     );
 };
+
+

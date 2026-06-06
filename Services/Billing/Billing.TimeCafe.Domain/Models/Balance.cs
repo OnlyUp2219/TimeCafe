@@ -67,4 +67,13 @@ public class Balance
         Debt = 0;
         LastUpdated = DateTimeOffset.UtcNow;
     }
+
+    public void RecordSpent(decimal amount)
+    {
+        if (amount <= 0)
+            return;
+
+        TotalSpent += amount;
+        LastUpdated = DateTimeOffset.UtcNow;
+    }
 }

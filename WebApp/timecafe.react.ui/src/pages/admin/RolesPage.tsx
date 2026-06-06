@@ -37,6 +37,7 @@ import { PageLoader } from "@components/PageLoader/PageLoader";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 
 import { usePagination } from "@hooks/usePagination";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 
 
 export const RolesPage = () => {
@@ -140,70 +141,72 @@ export const RolesPage = () => {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
-                    <Title2>Роли</Title2>
-                    <Body2>{totalCount} ролей</Body2>
+        <RequirePermission can={Permissions.RbacRoleRead}>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
+                        <Title2>Роли</Title2>
+                        <Body2>{totalCount} ролей</Body2>
+                    </div>
+                    <HasPermission can={Permissions.RbacRoleCreate}>
+                        <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
+                            Создать роль
+                        </Button>
+                    </HasPermission>
                 </div>
-                <HasPermission can={Permissions.RbacRoleCreate}>
-                    <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={() => { setDialogOpen(true); setMutationError(null); }}>
-                        Создать роль
-                    </Button>
-                </HasPermission>
+
+                <DismissableError error={queryError} />
+                <DismissableError error={mutationError} />
+
+                <Card size={sizes.card}>
+                    <DataTable
+                        items={paginatedRoles}
+                        columns={columns}
+                        getRowId={(r) => r.roleId}
+                        loading={isLoading}
+                        columnSizingOptions={columnSizingOptions}
+                    />
+                </Card>
+
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                    <Body1>Показано {paginatedRoles.length} из {totalCount}</Body1>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
+                </div>
+
+                <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
+                    <DialogSurface>
+                        <DialogBody>
+                            <DialogTitle>Создать роль</DialogTitle>
+                            <DialogContent className="flex flex-col gap-4">
+                                <Field label="Название роли" required size={sizes.field}>
+                                    <Input
+                                        value={roleName}
+                                        onChange={(_, d) => setRoleName(d.value)}
+                                        placeholder="Manager"
+                                        size={sizes.input}
+                                    />
+                                </Field>
+                                <DismissableError error={mutationError} className="mb-3" />
+                            </DialogContent>
+                            <DialogActions>
+                                <DialogTrigger disableButtonEnhancement>
+                                    <Button appearance="secondary" size={sizes.button}>Отмена</Button>
+                                </DialogTrigger>
+                                <Button appearance="primary" size={sizes.button} onClick={handleCreate} disabled={saving || !roleName}>
+                                    {saving ? <Spinner size="tiny" /> : "Создать"}
+                                </Button>
+                            </DialogActions>
+                        </DialogBody>
+                    </DialogSurface>
+                </Dialog>
             </div>
-
-            <DismissableError error={queryError} className="mb-4" />
-            <DismissableError error={mutationError} className="mb-4" />
-
-            <Card size={sizes.card}>
-                <DataTable
-                    items={paginatedRoles}
-                    columns={columns}
-                    getRowId={(r) => r.roleId}
-                    loading={isLoading}
-                    columnSizingOptions={columnSizingOptions}
-                />
-            </Card>
-
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-                <Body1>Показано {paginatedRoles.length} из {totalCount}</Body1>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    totalCount={totalCount}
-                />
-            </div>
-
-            <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
-                <DialogSurface>
-                    <DialogBody>
-                        <DialogTitle>Создать роль</DialogTitle>
-                        <DialogContent className="flex flex-col gap-4">
-                            <Field label="Название роли" required size={sizes.field}>
-                                <Input
-                                    value={roleName}
-                                    onChange={(_, d) => setRoleName(d.value)}
-                                    placeholder="Manager"
-                                    size={sizes.input}
-                                />
-                            </Field>
-                            <DismissableError error={mutationError} className="mb-3" />
-                        </DialogContent>
-                        <DialogActions>
-                            <DialogTrigger disableButtonEnhancement>
-                                <Button appearance="secondary" size={sizes.button}>Отмена</Button>
-                            </DialogTrigger>
-                            <Button appearance="primary" size={sizes.button} onClick={handleCreate} disabled={saving || !roleName}>
-                                {saving ? <Spinner size="tiny" /> : "Создать"}
-                            </Button>
-                        </DialogActions>
-                    </DialogBody>
-                </DialogSurface>
-            </Dialog>
-        </div>
+        </RequirePermission>
     );
 };

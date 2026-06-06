@@ -3,10 +3,10 @@ import {getApiBaseUrl} from "@api/apiBaseUrl";
 
 export const useExternalAuthLogin = () => {
     const apiBase = getApiBaseUrl();
-    const returnUrl = `${window.location.origin}/external-callback`;
+    const returnUrl = `${globalThis.location.origin}/external-callback`;
 
     const loginWithProvider = useCallback((provider: "google" | "microsoft") => {
-        window.location.href = `${apiBase}/auth/authenticate/login/${provider}?returnUrl=${encodeURIComponent(returnUrl)}`;
+        globalThis.location.href = `${apiBase}/auth/authenticate/login/${provider}?returnUrl=${encodeURIComponent(returnUrl)}`;
     }, [apiBase, returnUrl]);
 
     const handleGoogleLogin = useCallback(() => loginWithProvider("google"), [loginWithProvider]);

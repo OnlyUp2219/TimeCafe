@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import {
-    Avatar,
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { useMemo } from "react";import {
+Avatar,
     Badge,
     Body1,
     Body2,
@@ -9,26 +9,14 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import { PageLoader } from "@components/PageLoader/PageLoader";
-import { DismissableError } from "@components/DismissableError/DismissableError";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { useGetProfilesPageQuery } from "@store/api/profileApi";
-import type { Profile } from "@app-types/profile";
-import { ProfileStatus } from "@app-types/profile";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { DataTable } from "@components/DataTable/DataTable";
-import { Pagination } from "@components/Pagination/Pagination";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { usePermissions } from "@hooks/usePermissions";
-import { type Permission } from "@shared/auth/permissions";
+import { PageLoader } from "@components/PageLoader/PageLoader";import { DismissableError } from "@components/DismissableError/DismissableError";import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { useGetProfilesPageQuery } from "@store/api/profileApi";import type { Profile } from "@app-types/profile";import { ProfileStatus } from "@app-types/profile";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { useComponentSize } from "@hooks/useComponentSize";import { usePermissions } from "@hooks/usePermissions";import { type Permission } from "@shared/auth/permissions";
 
 const statusLabel = (s: number) => {
     switch (s) {
         case ProfileStatus.Pending: return "Ожидает";
         case ProfileStatus.Completed: return "Заполнен";
         case ProfileStatus.Banned: return "Заблокирован";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -45,7 +33,7 @@ const genderLabel = (g: number) => {
     switch (g) {
         case 1: return "М";
         case 2: return "Ж";
-        default: return "—";
+        default: return NO_DATA;
     }
 };
 
@@ -90,7 +78,7 @@ export const ProfilesPage = () => {
                 columnId: "email",
                 compare: (a, b) => (a.email ?? "").localeCompare(b.email ?? ""),
                 renderHeaderCell: () => "Email",
-                renderCell: (p) => <TableCellLayout truncate>{p.email || "—"}</TableCellLayout>,
+                renderCell: (p) => <TableCellLayout truncate>{p.email || NO_DATA}</TableCellLayout>,
             }),
             createTableColumn<Profile>({
                 columnId: "gender",
@@ -102,7 +90,7 @@ export const ProfilesPage = () => {
                 columnId: "birthDate",
                 compare: (a, b) => (a.birthDate ?? "").localeCompare(b.birthDate ?? ""),
                 renderHeaderCell: () => "Дата рождения",
-                renderCell: (p) => <TableCellLayout truncate>{p.birthDate ? new Date(p.birthDate).toLocaleDateString("ru-RU") : "—"}</TableCellLayout>,
+                renderCell: (p) => <TableCellLayout truncate>{p.birthDate ? new Date(p.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</TableCellLayout>,
             }),
             createTableColumn<Profile>({
                 columnId: "status",
@@ -124,7 +112,7 @@ export const ProfilesPage = () => {
     }
 
     return (
-        <div>
+        <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                     <Title2>Профили</Title2>
@@ -132,7 +120,7 @@ export const ProfilesPage = () => {
                 </div>
             </div>
 
-            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={queryError} />
 
             <Card size={sizes.card}>
                 <DataTable
@@ -144,7 +132,7 @@ export const ProfilesPage = () => {
                 />
             </Card>
 
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
                 <Body1>Показано {profiles.length} из {totalCount}</Body1>
                 <Pagination
                     currentPage={currentPage}
@@ -158,3 +146,5 @@ export const ProfilesPage = () => {
         </div>
     );
 };
+
+

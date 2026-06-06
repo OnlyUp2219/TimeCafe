@@ -15,6 +15,7 @@ import {
     Body1Strong,
     Input,
     Field,
+    Body2,
 } from "@fluentui/react-components";
 import {
     Bug24Regular,
@@ -240,11 +241,14 @@ export const DevDebugPage: React.FC = () => {
     );
 
     return (
-        <div className="flex flex-col gap-6 p-4">
+        <div className="flex flex-col gap-2 p-4">
             {ToasterElement}
 
-            <div className="flex items-center justify-between">
-                <Title2>Debug & Error Handling</Title2>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
+                    <Title2>Debug & Error Handling</Title2>
+                    <Body2>Панель для тестирования и отладки</Body2>
+                </div>
                 <div className="flex items-center gap-4 bg-gray-100 p-2 rounded-lg">
                     <Body1>Режим уведомлений:</Body1>
                     <Switch

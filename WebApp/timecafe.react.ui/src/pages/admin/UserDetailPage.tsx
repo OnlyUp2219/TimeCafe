@@ -39,7 +39,6 @@ import {
     useGetProfileByUserIdReadOnlyQuery
 } from "@store/api/profileApi";
 import { useAppSelector } from "@store/hooks";
-import { Gender, ProfileStatus } from "@app-types/profile";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
@@ -47,81 +46,18 @@ import { Pagination } from "@components/Pagination/Pagination";
 import { EmptyState } from "@components/EmptyState/EmptyState";
 import { useComponentSize } from "@hooks/useComponentSize";
 import type { BillingTransaction } from "@app-types/billing";
-import { TransactionSource, TransactionType } from "@app-types/billing";
+import { TransactionType } from "@app-types/billing";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
-import { VisitStatus } from "@app-types/visit";
 import { Permissions } from "@shared/auth/permissions";
 import { HasPermission } from "@components/Guard/HasPermission";
-import { formatMoney } from "@shared/const/FormatMoney.ts";
-import { txTypeLabel } from "@shared/const/TxTypeLabel.ts";
 import { DismissableError } from "@components/DismissableError/DismissableError";
-
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
-
 import { NO_DATA } from "@shared/const/placeholders";
-
-const formatDateTime = (iso: string | null) => {
-    if (!iso) return NO_DATA;
-    return new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-};
-
-const txTypeColor = (t: number): "success" | "danger" | "informative" => {
-    switch (t) {
-        case TransactionType.Deposit: return "success";
-        case TransactionType.Withdrawal: return "danger";
-        default: return "informative";
-    }
-};
-
-const txSourceLabel = (s: number) => {
-    switch (s) {
-        case TransactionSource.Visit: return "Визит";
-        case TransactionSource.Manual: return "Вручную";
-        case TransactionSource.Payment: return "Платёж";
-        case TransactionSource.Refund: return "Возврат";
-        default: return NO_DATA;
-    }
-};
-
-const visitStatusLabel = (s: number) => s === VisitStatus.Active ? "Активен" : "Завершён";
-const visitStatusColor = (s: number): "success" | "informative" => s === VisitStatus.Active ? "success" : "informative";
-
-const genderLabel = (gender?: number) => {
-    switch (gender) {
-        case Gender.Male:
-            return "Мужской";
-        case Gender.Female:
-            return "Женский";
-        default:
-            return "Не указан";
-    }
-};
-
-const profileStatusLabel = (status?: number) => {
-    switch (status) {
-        case ProfileStatus.Pending:
-            return "Ожидает заполнения";
-        case ProfileStatus.Completed:
-            return "Заполнен";
-        case ProfileStatus.Banned:
-            return "Заблокирован";
-        default:
-            return "Неизвестно";
-    }
-};
-
-const profileStatusColor = (status?: number): "warning" | "success" | "danger" => {
-    switch (status) {
-        case ProfileStatus.Pending:
-            return "warning";
-        case ProfileStatus.Completed:
-            return "success";
-        case ProfileStatus.Banned:
-            return "danger";
-        default:
-            return "warning";
-    }
-};
+import { formatDateTime } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
+import { txTypeColor, txSourceLabel, txTypeLabel } from "@utility/billingUtils";
+import { visitStatusLabel, visitStatusColor } from "@utility/visitUtils";
+import { genderLabel, profileStatusLabel, profileStatusColor } from "@utility/userUtils";
 
 import { usePagination } from "@hooks/usePagination";
 
@@ -307,7 +243,7 @@ export const UserDetailPage = () => {
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2 flex-wrap">
                 <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
                     Назад к списку
@@ -321,10 +257,10 @@ export const UserDetailPage = () => {
                 )}
             </div>
 
-            <DismissableError error={errorMessage} className="mb-4" />
+            <DismissableError error={errorMessage} />
 
             {!user && !userLoading && (
-                <MessageBar intent="warning" className="mt-4">
+                <MessageBar intent="warning" >
                     <MessageBarBody>Пользователь не найден</MessageBarBody>
                 </MessageBar>
             )}
@@ -487,7 +423,7 @@ export const UserDetailPage = () => {
                                     {!notesLoading && adminNotes.length === 0 && (
                                         <div className="flex-1 flex items-center justify-center">
                                             <EmptyState
-                                                title="Нет данных"
+                                                title={NO_DATA}
                                                 description="Добавьте первую заметку для этого пользователя"
                                             />
                                         </div>
@@ -568,12 +504,12 @@ export const UserDetailPage = () => {
                     </div>
 
                     <HasPermission can={Permissions.BillingTransactionRead}>
-                        <div className="mb-6">
-                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                        <div>
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                                 <Title3>Транзакции</Title3>
                                 <Body2>{txTotalCount} записей</Body2>
                             </div>
-                            <DismissableError error={txErrorMessage} className="mb-3" />
+                            <DismissableError error={txErrorMessage} />
                             <Card className="overflow-x-auto" size={sizes.card}>
                                 <DataTable
                                     items={transactions}
@@ -583,7 +519,7 @@ export const UserDetailPage = () => {
                                     columnSizingOptions={txColumnSizingOptions}
                                 />
                             </Card>
-                            <div className="flex items-center justify-between mt-3 flex-wrap gap-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                                 <Body1>Показано {transactions.length} из {txTotalCount}</Body1>
                                 <Pagination currentPage={txPage} totalPages={txTotalPages} onPageChange={setTxPage} />
                             </div>
@@ -592,7 +528,7 @@ export const UserDetailPage = () => {
 
                     <HasPermission can={Permissions.VenueVisitRead}>
                         <div>
-                            <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
                                 <Title3>История визитов</Title3>
                                 <Body2>{visits.length} визитов</Body2>
                             </div>

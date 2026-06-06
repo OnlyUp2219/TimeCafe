@@ -277,18 +277,20 @@ export const ThemeEditorPage = () => {
     if (id && loadingThemes) return <PageLoader label="Загрузка темы..." />;
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between sticky z-30">
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between sticky z-30 flex-wrap gap-4">
                 <div className="flex items-center gap-4">
-                    <Tooltip content="Назад" relationship="label">
-                        <Button
-                            appearance="subtle"
-                            icon={<ArrowLeft20Regular />}
-                            onClick={() => navigate("/admin/themes")}
-                        />
-                    </Tooltip>
                     <div>
-                        <Title1>{id ? "Редактирование темы" : "Новая визуальная тема"}</Title1>
+                        <Tooltip content="Назад" relationship="label">
+                            <Button
+                                appearance="subtle"
+                                icon={<ArrowLeft20Regular />}
+                                onClick={() => navigate("/admin/themes")}
+                            />
+                        </Tooltip>
+                    </div>
+                    <div className="flex flex-col">
+                        <Title2>{id ? "Редактирование темы" : "Новая визуальная тема"}</Title2>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -313,7 +315,7 @@ export const ThemeEditorPage = () => {
 
             </div>
             <Divider />
-            <DismissableError error={error} className="mb-4" />
+            <DismissableError error={error} />
 
             <div className="flex gap-4 flex-wrap ">
                 <div className="flex flex-col gap-4 flex-1">

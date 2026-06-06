@@ -30,6 +30,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 
 const SERVICE_LABELS: Record<string, string> = {
     "userprofile": "👤 UserProfile",
@@ -264,21 +265,23 @@ export const RoleClaimsPage = () => {
                 </Button>
                 <Card size={sizes.card}>
                     <Title2>Роль не указана</Title2>
-                    <Body2>Переход выполнен без имени роли, поэтому редактирование permissions недоступно.</Body2>
+                    <Body2>Переход выполнен без имени роли, поэтому редактирование прав недоступно.</Body2>
                 </Card>
             </div>
         );
     }
 
     return (
-        <div>
-            <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/roles")} className="mb-4">
-                Назад к ролям
-            </Button>
+        <div className="flex flex-col gap-2">
+            <div>
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/roles")}>
+                    Назад к ролям
+                </Button>
+            </div>
 
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
-                    <Title2>Permissions роли</Title2>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
+                    <Title2>Права роли</Title2>
                     <Body2 className="flex items-center gap-2 mt-1">
                         <Badge appearance="filled" size="large">{normalizedRoleName}</Badge>
                         <span className="text-(--colorNeutralForeground3)">{selectedLeaves.size} из {allPermissions.length} выбрано</span>
@@ -297,19 +300,19 @@ export const RoleClaimsPage = () => {
                 </HasPermission>
             </div>
 
-            <DismissableError error={claimsError2} className="mb-4" />
-            <DismissableError error={mutationError} className="mb-4" />
+            <DismissableError error={claimsError2} />
+            <DismissableError error={mutationError} />
 
             {saved && (
-                <MessageBar intent="success" className="mb-4">
-                    <MessageBarBody>Permissions сохранены</MessageBarBody>
+                <MessageBar intent="success">
+                    <MessageBarBody>Права сохранены</MessageBarBody>
                 </MessageBar>
             )}
 
             {allPermissions.length === 0 ? (
-                <Body2>Нет доступных permissions</Body2>
+                <Body2>Нет доступных прав</Body2>
             ) : (
-                <FlatTree {...flatTree.getTreeProps()} aria-label="Permissions">
+                <FlatTree {...flatTree.getTreeProps()} aria-label="Права">
                     {Array.from(flatTree.items(), (item) => {
                         const { itemContent, service, entity, ...treeItemProps } = item.getTreeItemProps() as ReturnType<typeof item.getTreeItemProps> & { itemContent?: React.ReactNode; service?: string; entity?: string };
 

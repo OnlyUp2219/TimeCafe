@@ -93,7 +93,7 @@ export function EmailPendingCard({onGoToLogin, mockLink}: EmailPendingCardProps)
                 {canOpenMockLink && (
                     <TooltipButton
                         appearance="primary"
-                        onClick={() => window.open(internalMockLink, "_blank")}
+                        onClick={() => globalThis.open(internalMockLink, "_blank")}
                         tooltip="Открыть mock-ссылку из письма"
                         label="Открыть ссылку"
                         className="w-full order-1 sm:order-2"

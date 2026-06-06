@@ -11,16 +11,18 @@ import {
 } from "@fluentui/react-components";
 
 import {
-    TransactionSource,
-    TransactionStatus,
     TransactionType,
     type BillingTransaction,
 } from "@app-types/billing";
 
 import { DataTable } from "@components/DataTable";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { NO_DATA } from "@shared/const/placeholders";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { Pagination } from "@components/Pagination";
+import { formatDateTime } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
+import { txTypeLabel, txTypeColor, txSourceLabel, txStatusLabel, txStatusColor } from "@utility/billingUtils";
 
 type TransactionsSectionProps = {
     transactions: BillingTransaction[];
@@ -28,57 +30,6 @@ type TransactionsSectionProps = {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
-};
-
-const formatDateTime = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-
-const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
-
-const txTypeLabel = (t: number) => {
-    switch (t) {
-        case TransactionType.Deposit: return "Пополнение";
-        case TransactionType.Withdrawal: return "Списание";
-        case TransactionType.Adjustment: return "Корректировка";
-        default: return "Нет данных";
-    }
-};
-
-const txTypeColor = (t: number): "success" | "danger" | "informative" => {
-    switch (t) {
-        case TransactionType.Deposit: return "success";
-        case TransactionType.Withdrawal: return "danger";
-        default: return "informative";
-    }
-};
-
-const txSourceLabel = (s: number) => {
-    switch (s) {
-        case TransactionSource.Visit: return "Визит";
-        case TransactionSource.Manual: return "Вручную";
-        case TransactionSource.Payment: return "Платёж";
-        case TransactionSource.Refund: return "Возврат";
-        default: return "Нет данных";
-    }
-};
-
-const txStatusLabel = (s: number) => {
-    switch (s) {
-        case TransactionStatus.Pending: return "Ожидание";
-        case TransactionStatus.Completed: return "Выполнена";
-        case TransactionStatus.Failed: return "Ошибка";
-        case TransactionStatus.PartialCompleted: return "Частично";
-        default: return "Нет данных";
-    }
-};
-
-const txStatusColor = (s: number): "warning" | "success" | "danger" | "informative" => {
-    switch (s) {
-        case TransactionStatus.Pending: return "warning";
-        case TransactionStatus.Completed: return "success";
-        case TransactionStatus.Failed: return "danger";
-        default: return "informative";
-    }
 };
 
 export const TransactionsSection = ({
@@ -149,7 +100,7 @@ export const TransactionsSection = ({
             columnId: "comment",
             compare: (a, b) => (a.comment ?? "").localeCompare(b.comment ?? ""),
             renderHeaderCell: () => "Комментарий",
-            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || "—"}</TableCellLayout>,
+            renderCell: (tx) => <TableCellLayout truncate>{tx.comment || NO_DATA}</TableCellLayout>,
         }),
     ], []);
 

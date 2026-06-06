@@ -1,5 +1,5 @@
-import {useState, useEffect} from "react";
-import {useSearchParams} from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
     Body1,
     Body2,
@@ -14,22 +14,22 @@ import {
     Title2,
     Title3,
 } from "@fluentui/react-components";
-import {Search20Regular} from "@fluentui/react-icons";
-import {useGetAdditionalInfosByUserIdQuery} from "@store/api/profileApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {Pagination} from "@components/Pagination/Pagination";
+import { Search20Regular } from "@fluentui/react-icons";
+import { useGetAdditionalInfosByUserIdQuery } from "@store/api/profileApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { Pagination } from "@components/Pagination/Pagination";
 
 import { DismissableError } from "@components/DismissableError/DismissableError";
 
 const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
+    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 import { usePagination } from "@hooks/usePagination";
 
 export const AdditionalInfosPage = () => {
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
     const [searchParams] = useSearchParams();
     const [userId, setUserId] = useState(searchParams.get("userId") ?? "");
     const [searchUserId, setSearchUserId] = useState(searchParams.get("userId") ?? "");
@@ -43,9 +43,9 @@ export const AdditionalInfosPage = () => {
         }
     }, [searchParams]);
 
-    const {data: notesData, isLoading, error} = useGetAdditionalInfosByUserIdQuery(
-        {userId: searchUserId, page: page, pageSize: PAGE_SIZE},
-        {skip: !searchUserId}
+    const { data: notesData, isLoading, error } = useGetAdditionalInfosByUserIdQuery(
+        { userId: searchUserId, page: page, pageSize: PAGE_SIZE },
+        { skip: !searchUserId }
     );
     const infos = notesData?.items ?? [];
     const totalCount = notesData?.metadata?.totalCount ?? 0;
@@ -58,13 +58,13 @@ export const AdditionalInfosPage = () => {
     };
 
     return (
-        <div>
-            <div className="mb-4">
+        <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
                 <Title2>Доп. информация</Title2>
                 <Body2>Заметки и дополнительные данные по пользователям</Body2>
             </div>
 
-            <div className="flex gap-3 items-end mb-6 flex-wrap">
+            <div className="flex gap-3 items-end flex-wrap">
                 <Field label="ID пользователя" size={sizes.field}>
                     <Input
                         size={sizes.input}
@@ -72,7 +72,7 @@ export const AdditionalInfosPage = () => {
                         onChange={(e) => setUserId(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         placeholder="Введите userId..."
-                        style={{minWidth: 320}}
+                        style={{ minWidth: 320 }}
                     />
                 </Field>
                 <Button
@@ -86,7 +86,7 @@ export const AdditionalInfosPage = () => {
                 </Button>
             </div>
 
-            <DismissableError error={queryError} className="mb-4" />
+            <DismissableError error={queryError} />
 
             {isLoading && <Spinner label="Загрузка..." />}
 
@@ -109,10 +109,10 @@ export const AdditionalInfosPage = () => {
                         <Card key={info.infoId} size={sizes.card}>
                             <Body1>{info.infoText}</Body1>
                             <div className="flex gap-4 mt-2 flex-wrap">
-                                <Caption1 style={{color: "var(--colorNeutralForeground3)"}}>
+                                <Caption1 style={{ color: "var(--colorNeutralForeground3)" }}>
                                     Автор: {info.createdBy}
                                 </Caption1>
-                                <Caption1 style={{color: "var(--colorNeutralForeground3)"}}>
+                                <Caption1 style={{ color: "var(--colorNeutralForeground3)" }}>
                                     {formatDate(info.createdAt)}
                                 </Caption1>
                             </div>
@@ -120,7 +120,7 @@ export const AdditionalInfosPage = () => {
                     ))}
 
                     {totalCount > PAGE_SIZE && (
-                        <div className="mt-4 flex justify-center">
+                        <div className="flex justify-center">
                             <Pagination
                                 currentPage={page}
                                 totalPages={totalPages}

@@ -1,7 +1,6 @@
-import { useCallback, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-    Avatar,
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { useCallback, useMemo, useState } from "react";import { useNavigate } from "react-router-dom";import {
+Avatar,
     Badge,
     Body1,
     Body2,
@@ -17,34 +16,19 @@ import {
     MessageBarBody,
     MessageBarTitle,
 } from "@fluentui/react-components";
-import { DismissableError } from "@components/DismissableError/DismissableError";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";
-import {
-    useGetTariffsPageQuery,
+import { DismissableError } from "@components/DismissableError/DismissableError";import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";import {
+useGetTariffsPageQuery,
     useDeleteTariffMutation,
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllPromotionsQuery,
     type Promotion,
 } from "@store/api/venueApi";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import type { TariffWithTheme } from "@app-types/tariffWithTheme";
-import { BillingType } from "@app-types/tariff";
-import { DataTable } from "@components/DataTable/DataTable";
-import { Pagination } from "@components/Pagination/Pagination";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { usePermissions } from "@hooks/usePermissions";
-import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions, type Permission } from "@shared/auth/permissions";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
-import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
-import { PageLoader } from "@components/PageLoader/PageLoader";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import type { TariffWithTheme } from "@app-types/tariffWithTheme";import { BillingType } from "@app-types/tariff";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { useComponentSize } from "@hooks/useComponentSize";import { usePermissions } from "@hooks/usePermissions";import { HasPermission } from "@components/Guard/HasPermission";import { Permissions, type Permission } from "@shared/auth/permissions";import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";import { PageLoader } from "@components/PageLoader/PageLoader";import { usePagination } from "@hooks/usePagination";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
-import { usePagination } from "@hooks/usePagination";
+
 
 
 export const TariffsPage = () => {
@@ -192,7 +176,7 @@ export const TariffsPage = () => {
                 compare: (a, b) => (a.themeName ?? "").localeCompare(b.themeName ?? ""),
                 renderHeaderCell: () => "Тема",
                 renderCell: (tariff) => (
-                    <TableCellLayout truncate>{tariff.themeName || "—"}</TableCellLayout>
+                    <TableCellLayout truncate>{tariff.themeName || NO_DATA}</TableCellLayout>
                 ),
             }),
             createTableColumn<TariffWithTheme>({
@@ -248,70 +232,74 @@ export const TariffsPage = () => {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex flex-col">
-                    <Title2>Тарифы</Title2>
-                    <Body2>{totalCount} тарифов</Body2>
-                </div>
-                <div className="flex gap-2">
-                    <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
-                    <HasPermission can={Permissions.VenueTariffCreate}>
-                        <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                            Добавить тариф
-                        </Button>
-                    </HasPermission>
-                </div>
-            </div>
-
-            <DismissableError error={queryError} className="mb-4" />
-            <DismissableError error={mutationError} className="mb-4" />
-
-            <MessageBar intent="info" shape="square" icon={<Info20Regular />}>
-                <MessageBarBody>
-                    <MessageBarTitle>Информация о тарификации</MessageBarTitle>
-                    <div className="flex flex-col gap-1">
-                        <Body1>
-                            Система выбирает лучшую из активных акций (Глобальная или Тарифная) и применяет её к базовой стоимости.
-                        </Body1>
-                        <Caption1 italic>
-                            {maxCap !== undefined ? (
-                                <>* Итоговая скидка ограничена системным лимитом <b>{maxCap}%</b>. При расчете визита к ней также плюсуется персональная скидка гостя.</>
-                            ) : (
-                                <>* Системный лимит скидки не определен (данные не загружены).</>
-                            )}
-                        </Caption1>
+        <RequirePermission can={Permissions.VenueTariffRead}>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
+                        <Title2>Тарифы</Title2>
+                        <Body2>{totalCount} тарифов</Body2>
                     </div>
-                </MessageBarBody>
-            </MessageBar>
+                    <div className="flex gap-2">
+                        <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
+                        <HasPermission can={Permissions.VenueTariffCreate}>
+                            <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                                Добавить тариф
+                            </Button>
+                        </HasPermission>
+                    </div>
+                </div>
 
-            <Card size={sizes.card}>
-                <DataTable
-                    items={tariffs}
-                    columns={columns}
-                    getRowId={(t) => t.tariffId}
-                    loading={isLoading}
-                    columnSizingOptions={columnSizingOptions}
-                />
-            </Card>
+                <DismissableError error={queryError} />
+                <DismissableError error={mutationError} />
 
-            <div className="flex items-center justify-between flex-wrap gap-2">
-                <Body1>Показано {tariffs.length} из {totalCount}</Body1>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    totalCount={totalCount}
+                <MessageBar intent="info" shape="square" icon={<Info20Regular />}>
+                    <MessageBarBody>
+                        <MessageBarTitle>Информация о тарификации</MessageBarTitle>
+                        <div className="flex flex-col gap-1">
+                            <Body1>
+                                Система выбирает лучшую из активных акций (Глобальная или Тарифная) и применяет её к базовой стоимости.
+                            </Body1>
+                            <Caption1 italic>
+                                {maxCap !== undefined ? (
+                                    <>* Итоговая скидка ограничена системным лимитом <b>{maxCap}%</b>. При расчете визита к ней также плюсуется персональная скидка гостя.</>
+                                ) : (
+                                    <>* Системный лимит скидки не определен (данные не загружены).</>
+                                )}
+                            </Caption1>
+                        </div>
+                    </MessageBarBody>
+                </MessageBar>
+
+                <Card size={sizes.card}>
+                    <DataTable
+                        items={tariffs}
+                        columns={columns}
+                        getRowId={(t) => t.tariffId}
+                        loading={isLoading}
+                        columnSizingOptions={columnSizingOptions}
+                    />
+                </Card>
+
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                    <Body1>Показано {tariffs.length} из {totalCount}</Body1>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
+                </div>
+
+                <TariffDetailsDrawer
+                    open={detailsOpen}
+                    onOpenChange={setDetailsOpen}
+                    tariffId={detailsTariff?.tariffId ?? null}
                 />
             </div>
-
-            <TariffDetailsDrawer
-                open={detailsOpen}
-                onOpenChange={setDetailsOpen}
-                tariffId={detailsTariff?.tariffId ?? null}
-            />
-        </div>
+        </RequirePermission>
     );
 };
+
+

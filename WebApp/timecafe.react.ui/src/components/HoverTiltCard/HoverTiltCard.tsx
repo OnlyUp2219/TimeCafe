@@ -32,7 +32,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
 
     const cancelPendingFrame = () => {
         if (rafRef.current) {
-            window.cancelAnimationFrame(rafRef.current);
+            globalThis.cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
         }
     };
@@ -46,7 +46,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
         if (!elementRef.current) return;
         if (rafRef.current) return;
 
-        rafRef.current = window.requestAnimationFrame(() => {
+        rafRef.current = globalThis.requestAnimationFrame(() => {
             rafRef.current = null;
             if (!hoverRef.current) return;
             const el = elementRef.current;

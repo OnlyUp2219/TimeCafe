@@ -12,6 +12,7 @@ import {
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
+import { NO_DATA } from "@shared/const/placeholders";
 import { usePermissions } from "@hooks/usePermissions";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
@@ -125,7 +126,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                         <div className="min-w-0">
                             <Body1 truncate wrap={false} block title={avatarName}>{avatarName || "Админ"}</Body1>
                             <Caption1 truncate wrap={false} block title={email ?? undefined}>
-                                {email && email.length > 20 ? `${email.substring(0, 20)}...` : (email ?? "—")}
+                                {email && email.length > 20 ? `${email.substring(0, 20)}...` : email || NO_DATA}
                             </Caption1>
                         </div>
                     </div>

@@ -231,7 +231,7 @@ export const BillingPage = () => {
     }, [transactions]);
 
     const handleCallAdmin = useCallback(() => {
-        window.open(TELEGRAM_SUPPORT_URL, "_blank");
+        globalThis.open(TELEGRAM_SUPPORT_URL, "_blank");
     }, []);
 
     return (

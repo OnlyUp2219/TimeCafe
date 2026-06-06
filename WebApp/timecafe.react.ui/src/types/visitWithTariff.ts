@@ -7,6 +7,7 @@ export type VisitWithTariff =
         userId: string | null;
         tariffId: string;
         resourceId: string | null;
+        resourceMaxGuests: number | null;
         entryTime: string;
         exitTime: string | null;
         calculatedCost: number | null;

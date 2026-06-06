@@ -56,7 +56,7 @@ export const ActivityChartCard = ({points}: ActivityChartCardProps) => {
 
             <ResponsiveContainer height={200}>
                 <VerticalBarChart
-                    culture={typeof window !== "undefined" ? window.navigator.language : "ru-RU"}
+                    culture={typeof window !== "undefined" ? globalThis.navigator.language : "ru-RU"}
                     data={chartPoints}
                     maxBarWidth={250}
                     hideLegend={true}

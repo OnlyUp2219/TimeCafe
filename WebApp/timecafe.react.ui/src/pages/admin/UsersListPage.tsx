@@ -33,17 +33,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-
-const getUserStatusBadgeClass = (status: string): string => {
-    switch (status.toLowerCase()) {
-        case "active":
-            return "dark-green";
-        case "inactive":
-            return "dark-red";
-        default:
-            return "beige";
-    }
-};
+import { authStatusColor } from "@utility/authUtils";
 
 const ProfileNameCell = ({ user }: { user: User }) => {
     const profile = user.profile;
@@ -201,12 +191,7 @@ export const UsersListPage = () => {
                     renderHeaderCell: () => "Статус аккаунта",
                     renderCell: (user) => (
                         <TableCellLayout truncate>
-                            <Badge
-                                appearance="tint"
-                                shape="rounded"
-
-                                className={getUserStatusBadgeClass(user.status)}
-                            >
+                            <Badge appearance="tint" color={authStatusColor(user.status)}>
                                 {user.status}
                             </Badge>
                         </TableCellLayout>
@@ -253,17 +238,15 @@ export const UsersListPage = () => {
 
     return (
         <RequirePermission can={Permissions.AccountAdminRead}>
-            <div>
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                    <div>
-                        <Title2>Пользователи</Title2>
-                        <Body2>{totalCount} зарегистрированных пользователей</Body2>
-                    </div>
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-col">
+                    <Title2>Пользователи</Title2>
+                    <Body2>{totalCount} зарегистрированных пользователей</Body2>
                 </div>
 
-                <DismissableError error={errorMessage} className="mb-4" />
+                <DismissableError error={errorMessage} />
 
-                <div className="flex gap-4 flex-wrap items-end mb-4">
+                <div className="flex gap-4 flex-wrap items-end">
                     <Field label="Поиск по email" size={sizes.field}>
                         <Input size={sizes.input} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Поиск по имени, email..." />
                     </Field>

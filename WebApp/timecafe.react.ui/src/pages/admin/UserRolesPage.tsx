@@ -68,12 +68,12 @@ export const UserRolesPage = () => {
 
     return (
         <RequirePermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
-            <div>
+            <div className="flex flex-col gap-2">
                 <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate(`/admin/users/${id}`)} className="mb-4">
                     Назад к пользователю
                 </Button>
 
-                <div className="mb-4">
+                <div>
                     <Title2>Роли пользователя</Title2>
                     {user && (
                         <div className="flex items-center gap-3 mt-2">
@@ -83,11 +83,11 @@ export const UserRolesPage = () => {
                     )}
                 </div>
 
-                <DismissableError error={mutationError} className="mb-4" />
+                <DismissableError error={mutationError} />
 
                 <div className="flex flex-col gap-4">
                     <Card size={sizes.card}>
-                        <Title3 className="mb-3">Текущие роли</Title3>
+                        <Title3>Текущие роли</Title3>
                         {userRoles.length === 0 ? (
                             <Body2>Нет назначенных ролей</Body2>
                         ) : (
@@ -112,7 +112,7 @@ export const UserRolesPage = () => {
                     </Card>
 
                     <Card size={sizes.card}>
-                        <Title3 className="mb-3">Доступные роли</Title3>
+                        <Title3 >Доступные роли</Title3>
                         <div className="flex flex-wrap gap-2">
                             {allRoles
                                 .filter(r => !userRoles.includes(r.roleName) && r.roleName !== "SuperAdmin")

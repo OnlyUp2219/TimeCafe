@@ -23,64 +23,16 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import type { BillingTransaction } from "@app-types/billing";
-import { TransactionType, TransactionSource, TransactionStatus } from "@app-types/billing";
+import { TransactionType, TransactionStatus } from "@app-types/billing";
 import { DismissableError } from "@components/DismissableError/DismissableError";
-
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { NO_DATA } from "@shared/const/placeholders";
-
-const formatDateTime = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-
-const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
-
-const txTypeLabel = (t: number) => {
-    switch (t) {
-        case TransactionType.Deposit: return "Пополнение";
-        case TransactionType.Withdrawal: return "Списание";
-        case TransactionType.Adjustment: return "Корректировка";
-        default: return NO_DATA;
-    }
-};
-
-const txTypeColor = (t: number): "success" | "danger" | "informative" => {
-    switch (t) {
-        case TransactionType.Deposit: return "success";
-        case TransactionType.Withdrawal: return "danger";
-        default: return "informative";
-    }
-};
-
-const txSourceLabel = (s: number) => {
-    switch (s) {
-        case TransactionSource.Visit: return "Визит";
-        case TransactionSource.Manual: return "Вручную";
-        case TransactionSource.Payment: return "Платёж";
-        case TransactionSource.Refund: return "Возврат";
-        default: return NO_DATA;
-    }
-};
-
-const txStatusLabel = (s: number) => {
-    switch (s) {
-        case TransactionStatus.Pending: return "Ожидание";
-        case TransactionStatus.Completed: return "Выполнена";
-        case TransactionStatus.Failed: return "Ошибка";
-        case TransactionStatus.PartialCompleted: return "Частично";
-        default: return NO_DATA;
-    }
-};
-
-const txStatusColor = (s: number): "warning" | "success" | "danger" | "informative" => {
-    switch (s) {
-        case TransactionStatus.Pending: return "warning";
-        case TransactionStatus.Completed: return "success";
-        case TransactionStatus.Failed: return "danger";
-        default: return "informative";
-    }
-};
-
+import { formatDateTime } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
+import { txTypeLabel, txTypeColor, txSourceLabel, txStatusLabel, txStatusColor } from "@utility/billingUtils";
 import { usePagination } from "@hooks/usePagination";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { ArrowClockwise20Regular } from "@fluentui/react-icons";
 
 export const TransactionsPage = () => {
     const { sizes } = useComponentSize();
@@ -90,8 +42,9 @@ export const TransactionsPage = () => {
 
     const setUserId = (id: string) => setFilters({ userId: id });
 
-    const { data, isLoading, error } = useGetAdminTransactionsQuery(
+    const { data, isLoading, error, refetch } = useGetAdminTransactionsQuery(
         { page: currentPage, pageSize, userId: userId || undefined },
+        { refetchOnMountOrArgChange: true }
     );
 
     const transactions = useMemo(() => data?.items ?? [], [data]);
@@ -203,16 +156,20 @@ export const TransactionsPage = () => {
     }, [has]);
 
 
+    if (isLoading) return <PageLoader label="Загрузка транзакций..." />;
+
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
+        <RequirePermission can={Permissions.BillingAdminRead}>
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
                     <Title2>Транзакции</Title2>
                     <Body2>Все финансовые операции · {totalCount} записей</Body2>
                 </div>
+                <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
             </div>
 
-            <div className="grid gap-4 md:grid-cols-4 mb-4">
+            <div className="grid gap-4 md:grid-cols-4 ">
                 <Card size={sizes.card}>
                     <Body2>Всего</Body2>
                     <Title3>{totalCount}</Title3>
@@ -235,7 +192,7 @@ export const TransactionsPage = () => {
                 </Card>
             </div>
 
-            <div className="flex gap-4 flex-wrap items-end mb-4">
+            <div className="flex gap-4 flex-wrap items-end ">
                 <Field label="Фильтр по ID пользователя" size={sizes.field}>
                     <Input
                         size={sizes.input}
@@ -252,7 +209,7 @@ export const TransactionsPage = () => {
                 )}
             </div>
 
-            <DismissableError error={errorMessage} className="mb-4" />
+            <DismissableError error={errorMessage} />
 
             <Card size={sizes.card}>
                 <DataTable
@@ -264,7 +221,7 @@ export const TransactionsPage = () => {
                 />
             </Card>
 
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+            <div className="flex items-center justify-between  flex-wrap gap-2">
                 <Body1>Показано {transactions.length} из {totalCount}</Body1>
                 <Pagination
                     currentPage={currentPage}
@@ -276,5 +233,6 @@ export const TransactionsPage = () => {
                 />
             </div>
         </div>
+        </RequirePermission>
     );
 };

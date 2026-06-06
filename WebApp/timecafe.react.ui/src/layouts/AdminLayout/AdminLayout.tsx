@@ -1,8 +1,8 @@
-import type {FC} from "react";
-import {useState} from "react";
-import {Outlet} from "react-router-dom";
-import {AdminSidebar} from "./AdminSidebar";
-import {Hamburger} from "@fluentui/react-components";
+import type { FC } from "react";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import { AdminSidebar } from "./AdminSidebar";
+import { Hamburger } from "@fluentui/react-components";
 
 export const AdminLayout: FC = () => {
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
@@ -10,10 +10,10 @@ export const AdminLayout: FC = () => {
     return (
         <div className="admin-layout flex flex-col h-screen">
             {/* Mobile Header, visible only on small screens */}
-            <div className="md:hidden flex items-center p-3 border-b border-(--colorNeutralStroke2) bg-white/90 backdrop-blur z-50">
-                <Hamburger 
-                    onClick={() => setIsMobileNavOpen(!isMobileNavOpen)} 
-                    aria-label="Toggle menu" 
+            <div className="md:hidden flex items-center p-3 border-b border-(--colorNeutralStroke2) bg-(--colorNeutralBackground1) z-50" >
+                <Hamburger
+                    onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
+                    aria-label="Toggle menu"
                 />
                 <h1 className="ml-3 text-lg font-semibold text-(--colorNeutralForeground1)">Admin Panel</h1>
             </div>

@@ -60,12 +60,12 @@ export const ResetPasswordPage = () => {
     };
 
     const handleGoToEmail = () => {
-        window.open("https://mail.google.com", "_blank");
+        globalThis.open("https://mail.google.com", "_blank");
     };
 
     const handleOpenCallbackUrl = () => {
         if (callbackUrl) {
-            window.open(callbackUrl, "_blank");
+            globalThis.open(callbackUrl, "_blank");
         }
     };
 

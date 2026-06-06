@@ -1,3 +1,4 @@
+import { NO_DATA } from "@shared/const/placeholders";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,9 +9,11 @@ import {
     Title2,
     createTableColumn,
     TableCellLayout,
+    Badge,
+    Tooltip,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Eye20Regular, Clock20Regular } from "@fluentui/react-icons";
+import { Eye20Regular, Clock20Regular, Warning20Regular } from "@fluentui/react-icons";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { useGetVisitsPageQuery, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
@@ -25,31 +28,25 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { useGetBalancesBulkQuery } from "@store/api/billingApi";
 import { VisitStatus } from "@app-types/visit";
-
+import { usePagination } from "@hooks/usePagination";
+import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-import { NO_DATA } from "@shared/const/placeholders";
-
-
-
-const formatDateTime = (iso: string | null) => {
-    if (!iso) return NO_DATA;
-    const d = new Date(iso);
-    return d.toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-};
+import { getUserFullName } from "@utility/userUtils";
+import { formatDateTime } from "@utility/dateUtils";
 
 const formatCost = (cost: number | null, status: VisitStatus) => {
     if (status === VisitStatus.Cancelled || status === VisitStatus.Rejected) {
         return `0.00 ${CURRENCY_SYMBOL}`;
     }
-    if (cost == null) return "—";
+    if (cost == null) return NO_DATA;
     return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
 };
 
-import { usePagination } from "@hooks/usePagination";
 
-import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";
 
 const UserCell = ({ userId }: { userId: string | null }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
@@ -60,9 +57,7 @@ const UserCell = ({ userId }: { userId: string | null }) => {
             </TableCellLayout>
         );
     }
-    const userFullName = profile && (profile.firstName || profile.lastName)
-        ? [profile.lastName, profile.firstName, profile.middleName].filter(Boolean).join(" ")
-        : "Загрузка...";
+    const userFullName = getUserFullName(profile, userId);
 
     return (
         <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
@@ -122,6 +117,9 @@ export const VisitsPage = () => {
     const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
+    const userIds = useMemo(() => [...new Set(visits.map(v => v.userId).filter(Boolean) as string[])], [visits]);
+    const { data: balances } = useGetBalancesBulkQuery(userIds, { skip: userIds.length === 0 });
+
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         tariff: { minWidth: 120, defaultWidth: 200 },
         status: { minWidth: 80, defaultWidth: 120 },
@@ -129,6 +127,7 @@ export const VisitsPage = () => {
         exitTime: { minWidth: 130, defaultWidth: 170 },
         cost: { minWidth: 80, defaultWidth: 120 },
         userId: { minWidth: 100, defaultWidth: 180 },
+        warnings: { minWidth: 150, defaultWidth: 250 },
     }), []);
 
     const columns: TableColumnDefinition<VisitWithTariff>[] = useMemo(() => {
@@ -149,7 +148,14 @@ export const VisitsPage = () => {
                 renderHeaderCell: () => "Статус",
                 renderCell: (visit) => (
                     <TableCellLayout truncate>
-                        <VisitStatusBadge status={visit.status} />
+                        <div className="flex items-center gap-2">
+                            <VisitStatusBadge status={visit.status} />
+                            {visit.isFinishRequested && (
+                                <Badge color="danger" appearance="filled" size="small" title="Запрошен выход">
+                                    🚨
+                                </Badge>
+                            )}
+                        </div>
                     </TableCellLayout>
                 ),
             }),
@@ -167,7 +173,7 @@ export const VisitsPage = () => {
                 renderHeaderCell: () => "Выход",
                 renderCell: (visit) => (
                     <TableCellLayout truncate>
-                        {visit.status === VisitStatus.Completed ? formatDateTime(visit.exitTime) : "—"}
+                        {visit.status === VisitStatus.Completed ? formatDateTime(visit.exitTime) : NO_DATA}
                     </TableCellLayout>
                 ),
             }),
@@ -193,6 +199,7 @@ export const VisitsPage = () => {
                     <HasPermission can={Permissions.VenueVisitRead}>
                         <Button
                             appearance="subtle"
+                            size={sizes.button}
                             icon={<Eye20Regular />}
                             onClick={() => {
                                 if (visit.status === VisitStatus.Pending) {
@@ -207,83 +214,114 @@ export const VisitsPage = () => {
                     </HasPermission>
                 ),
             }),
+            createTableColumn<VisitWithTariff>({
+                columnId: "warnings",
+                compare: () => 0,
+                renderHeaderCell: () => "Предупреждения",
+                renderCell: (visit) => {
+                    const warnings: string[] = [];
+                    if (visit.resourceMaxGuests != null && visit.guestsCount > visit.resourceMaxGuests) {
+                        warnings.push(`Вместимость (макс: ${visit.resourceMaxGuests})`);
+                    }
+                    if (visit.userId && balances && balances[visit.userId] != null) {
+                        const balance = balances[visit.userId];
+                        if (balance < 0 || (visit.status === VisitStatus.Active && balance < (visit.calculatedCost ?? 0))) {
+                            warnings.push(`Долг/Меньше цены (${balance} ₽)`);
+                        }
+                    }
+                    if (warnings.length === 0) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;
+                    return (
+                        <TableCellLayout>
+                            <Tooltip content={warnings.join("\n")} relationship="label">
+                                <span className="flex items-center text-(--colorPaletteRedForeground1)">
+                                    <Warning20Regular />
+                                </span>
+                            </Tooltip>
+                        </TableCellLayout>
+                    );
+                },
+            }),
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as Permission));
-    }, [navigate, has]);
+    }, [navigate, has, balances]);
 
     if (isLoading) {
         return <PageLoader label="Загрузка визитов..." />;
     }
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
-                    <Title2>Визиты</Title2>
-                    <div className="flex">
+        <RequirePermission can={Permissions.VenueVisitRead}>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
+                        <Title2>Визиты</Title2>
                         <Body2>{totalCount} визитов</Body2>
                     </div>
+                    <div className="flex gap-2">
+                        <HasPermission can={Permissions.VenueVisitCreate}>
+                            <Button
+                                appearance="primary"
+                                size={sizes.button}
+                                onClick={() => setWalkInOpen(true)}
+                            >
+                                Быстрая посадка (Walk-in)
+                            </Button>
+                        </HasPermission>
+                        <HasPermission can={Permissions.VenueVisitViewPending}>
+                            <Button
+                                appearance="outline"
+                                size={sizes.button}
+                                icon={<Clock20Regular />}
+                                onClick={() => navigate("/admin/visits/pending")}
+                            >
+                                Ожидают подтверждения
+                            </Button>
+                        </HasPermission>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <HasPermission can={Permissions.VenueVisitCreate}>
-                        <Button
-                            appearance="primary"
-                            onClick={() => setWalkInOpen(true)}
-                        >
-                            Быстрая посадка (Walk-in)
-                        </Button>
-                    </HasPermission>
-                    <HasPermission can={Permissions.VenueVisitViewPending}>
-                        <Button
-                            appearance="outline"
-                            icon={<Clock20Regular />}
-                            onClick={() => navigate("/admin/visits/pending")}
-                        >
-                            Ожидают подтверждения
-                        </Button>
-                    </HasPermission>
+
+                <DismissableError error={queryError} />
+                <DismissableError error={actionError} />
+
+                <Card className="overflow-x-auto" size={sizes.card}>
+                    <DataTable
+                        items={visits}
+                        columns={columns}
+                        getRowId={(v) => v.visitId}
+                        loading={isLoading}
+                        columnSizingOptions={columnSizingOptions}
+                    />
+                </Card>
+
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                    <Body1>Показано {visits.length} из {totalCount}</Body1>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
                 </div>
-            </div>
-
-            <DismissableError error={queryError} className="mb-4" />
-            <DismissableError error={actionError} className="mb-4" />
-
-            <Card className="overflow-x-auto" size={sizes.card}>
-                <DataTable
-                    items={visits}
-                    columns={columns}
-                    getRowId={(v) => v.visitId}
-                    loading={isLoading}
-                    columnSizingOptions={columnSizingOptions}
+                <ApproveVisitDialog
+                    open={dialogOpen}
+                    visit={selectedVisit}
+                    onOpenChange={setDialogOpen}
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    approving={approving}
+                    rejecting={rejecting}
                 />
-            </Card>
-
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-                <Body1>Показано {visits.length} из {totalCount}</Body1>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    totalCount={totalCount}
+                <WalkInVisitDialog
+                    open={walkInOpen}
+                    onOpenChange={setWalkInOpen}
+                    onSuccess={() => void refetch()}
                 />
             </div>
-            <ApproveVisitDialog
-                open={dialogOpen}
-                visit={selectedVisit}
-                onOpenChange={setDialogOpen}
-                onApprove={handleApprove}
-                onReject={handleReject}
-                approving={approving}
-                rejecting={rejecting}
-            />
-            <WalkInVisitDialog
-                open={walkInOpen}
-                onOpenChange={setWalkInOpen}
-                onSuccess={() => void refetch()}
-            />
-        </div>
+        </RequirePermission>
     );
 };
+
+

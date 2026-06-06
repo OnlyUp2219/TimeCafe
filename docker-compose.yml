@@ -68,8 +68,7 @@ services:
     ports:
       - "5601:5601"
     depends_on:
-      elasticsearch:
-        condition: service_healthy
+      - elasticsearch
     networks:
       - timecafe-network
     healthcheck:
@@ -113,8 +112,7 @@ services:
     environment:
       - ES_URL=http://elasticsearch:9200
     depends_on:
-      elasticsearch:
-        condition: service_healthy
+      - elasticsearch
     networks:
       - timecafe-network
     command: ["stdio"]
@@ -144,6 +142,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_SECURITY_ALLOW_EMBEDDING=true
+      - PROMETHEUS_URL=http://prometheus:9090
     volumes:
       - ./infra/grafana/provisioning:/etc/grafana/provisioning
       - grafana-data:/var/lib/grafana
@@ -190,8 +189,6 @@ services:
     ports:
       - "8001:8001"
     depends_on:
-      elasticsearch:
-        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
@@ -397,8 +394,6 @@ services:
     ports:
       - "8010:8010"
     depends_on:
-      elasticsearch:
-        condition: service_healthy
       auth-service:
         condition: service_healthy
       profile-service:

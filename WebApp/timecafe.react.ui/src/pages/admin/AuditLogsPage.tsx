@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
-import {
-    Body1,
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { useMemo, useState } from "react";import {
+Body1,
     Body2,
     Button,
     Card,
@@ -16,21 +16,7 @@ import {
     DialogContent,
     DialogActions,
 } from "@fluentui/react-components";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Eye20Regular } from "@fluentui/react-icons";
-import { DataTable } from "@components/DataTable/DataTable";
-import { Pagination } from "@components/Pagination/Pagination";
-import { RequirePermission } from "@components/RequirePermission/RequirePermission";
-import { Permissions } from "@shared/auth/permissions";
-import { useGetAuditLogsQuery } from "@store/api/adminApi";
-import type { AuditLogDto } from "@store/api/adminApi";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { usePagination } from "@hooks/usePagination";
-import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
-
-import { DismissableError } from "@components/DismissableError/DismissableError";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { Eye20Regular } from "@fluentui/react-icons";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { RequirePermission } from "@components/RequirePermission/RequirePermission";import { Permissions } from "@shared/auth/permissions";import { useGetAuditLogsQuery } from "@store/api/adminApi";import type { AuditLogDto } from "@store/api/adminApi";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { useComponentSize } from "@hooks/useComponentSize";import { usePagination } from "@hooks/usePagination";import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { formatDateTime } from "@utility/dateUtils";import { DismissableError } from "@components/DismissableError/DismissableError";import { getUserFullName } from "@utility/userUtils";
 
 const isUuid = (str: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
@@ -57,13 +43,10 @@ const AuditUserCell = ({ userName }: { userName: string }) => {
         return <span className="text-(--colorNeutralForeground3)">{userName.slice(0, 8)}...</span>;
     }
 
-    const displayName = [profile.lastName, profile.firstName].filter(Boolean).join(" ");
-    return <span>{displayName || profile.firstName || userName}</span>;
+    const displayName = getUserFullName(profile, userName);
+    return <span>{displayName}</span>;
 };
 
-
-const formatDateTime = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
 const formatDuration = (ms: number) => {
     if (ms < 1000) return `${ms} мс`;
@@ -172,16 +155,16 @@ export const AuditLogsPage = () => {
     };
 
     return (
-        <RequirePermission permission={Permissions.AuditLogAdminRead}>
-            <div>
-                <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                    <div>
+        <RequirePermission can={Permissions.AuditLogAdminRead}>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
                         <Title2>Аудит-логи</Title2>
                         <Body2>{totalCount} записей</Body2>
                     </div>
                 </div>
 
-                <div className="flex gap-4 flex-wrap items-end mb-4">
+                <div className="flex gap-4 flex-wrap items-end">
                     <Field label="Тип события" size={sizes.field}>
                         <Input
                             size={sizes.input}
@@ -205,7 +188,7 @@ export const AuditLogsPage = () => {
                     )}
                 </div>
 
-                <DismissableError error={errorMessage} className="mb-4" />
+                <DismissableError error={errorMessage} />
 
                 <Card size={sizes.card}>
                     <DataTable
@@ -217,7 +200,7 @@ export const AuditLogsPage = () => {
                     />
                 </Card>
 
-                <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     <Body1>Показано {logs.length} из {totalCount}</Body1>
                     <Pagination
                         currentPage={currentPage}
@@ -245,7 +228,7 @@ export const AuditLogsPage = () => {
                                         <div><strong>Пользователь:</strong> <AuditUserCell userName={selectedLog.userName} /></div>
                                         <div><strong>Машина/Домен:</strong> {selectedLog.machineName} ({selectedLog.domainName})</div>
                                         <div><strong>Длительность:</strong> {formatDuration(selectedLog.duration)}</div>
-                                        <div><strong>Correlation ID:</strong> {selectedLog.correlationId || "—"}</div>
+                                        <div><strong>Correlation ID:</strong> {selectedLog.correlationId || NO_DATA}</div>
                                     </div>
                                     <hr style={{ border: "0", borderTop: "1px solid var(--colorNeutralStroke1)" }} />
                                     <div className="flex flex-col gap-2">
@@ -288,3 +271,5 @@ export const AuditLogsPage = () => {
         </RequirePermission>
     );
 };
+
+

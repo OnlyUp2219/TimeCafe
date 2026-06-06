@@ -19,7 +19,6 @@ import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { NO_DATA } from "@shared/const/placeholders";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
@@ -27,15 +26,13 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 
-const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
-const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+import { formatDateTime as formatDate } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
+import { getUserFullName } from "@utility/userUtils";
 
 const AdminUserCell = ({ userId }: { userId: string }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
-    const displayName = profile?.firstName || profile?.lastName
-        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
-        : profile?.email || null;
+    const displayName = getUserFullName(profile, userId);
 
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
@@ -181,9 +178,9 @@ export const BalancesPage = () => {
     }, [has]);
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
                     <Title2>Балансы</Title2>
                     <Body2>{totalCount} пользователей</Body2>
                 </div>

@@ -59,7 +59,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
     const hasMockLink = useMemo(() => Boolean(callbackUrl), [callbackUrl]);
 
     const parseCallbackParams = (url: string) => {
-        const parsed = new URL(url, window.location.origin);
+        const parsed = new URL(url, globalThis.location.origin);
         return {
             userId: parsed.searchParams.get("userId") || "",
             token: (parsed.searchParams.get("token") || "").replace(/ /g, "+"),

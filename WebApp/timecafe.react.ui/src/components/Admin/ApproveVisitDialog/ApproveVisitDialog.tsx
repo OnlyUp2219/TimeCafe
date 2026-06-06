@@ -13,6 +13,8 @@ import {
     Badge,
     Caption1,
     Avatar,
+    Body1,
+    Body2,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -21,6 +23,8 @@ import {
     Document20Regular,
     People20Regular,
     Wallet20Regular,
+    Warning20Regular,
+    Calculator20Regular,
 } from "@fluentui/react-icons";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
 import { BillingType } from "@app-types/tariff";
@@ -39,44 +43,12 @@ interface ApproveVisitDialogProps {
     rejecting?: boolean;
 }
 
-const formatDateTime = (iso: string | null) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    return d.toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-};
-
-const getRelativeTime = (iso: string | null) => {
-    if (!iso) return "";
-    const diffMs = Date.now() - new Date(iso).getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    if (diffMins < 1) return "только что";
-    if (diffMins < 60) return `${diffMins} мин. назад`;
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours} ч. назад`;
-    return "";
-};
-
-const getGuestsWord = (count: number) => {
-    const mod10 = count % 10;
-    const mod100 = count % 100;
-    if (mod10 === 1 && mod100 !== 11) return "гость";
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "гостя";
-    return "гостей";
-};
-
-const formatRoundingRule = (rule: string | null | undefined) => {
-    if (!rule) return "нет";
-    if (rule === "FiveMinutes") return "до 5 мин.";
-    if (rule === "FifteenMinutes") return "до 15 мин.";
-    if (rule === "SixtyMinutes") return "до 1 ч.";
-    return rule;
-};
+import { formatDateTime, getRelativeTime } from "@utility/dateUtils";
+import { getGuestsWord, formatRoundingRule } from "@utility/formatUtils";
+import { getBalanceColor } from "@utility/billingUtils";
+import { getUserFullName } from "@utility/userUtils";
+import { calcVisitEstimate } from "@utility/visitEstimate";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 export const ApproveVisitDialog = ({
     open,
@@ -180,13 +152,21 @@ export const ApproveVisitDialog = ({
         );
     };
 
-    const userFullName = profile && (profile.firstName || profile.lastName)
-        ? [profile.firstName, profile.middleName, profile.lastName].filter(Boolean).join(" ")
-        : "Имя не указано";
+    const userFullName = getUserFullName(profile, visit?.userId);
 
     const balance = balanceObj?.currentBalance ?? 0;
-    const isNegativeBalance = balance < 0;
-    const isZeroBalance = balance === 0;
+    const balanceColor = getBalanceColor(balance);
+
+    const warnings: string[] = [];
+    if (visit && resource?.capacity != null && (visit.guestsCount || 1) > resource.capacity) {
+        warnings.push(`Превышена вместимость (макс: ${resource.capacity} чел., гостей: ${visit.guestsCount || 1})`);
+    }
+    if (visit?.userId && balanceObj && balance < 0) {
+        warnings.push(`Отрицательный баланс (${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
+    }
+
+    const plannedMinutes = visit?.plannedMinutes ?? (visit?.tariffMinSessionMinutes ?? 60);
+    const estimate = visit ? calcVisitEstimate(plannedMinutes, visit.tariffBillingType as any, visit.tariffPricePerMinute) : null;
 
     return (
         <Dialog open={open} onOpenChange={(_, data) => handleOpenChange(data.open)}>
@@ -221,8 +201,8 @@ export const ApproveVisitDialog = ({
                                             <Money20Regular /> Стоимость:
                                         </span>
                                         <span className="font-semibold text-(--colorBrandForegroundLink)">
-                                            {visit.tariffPricePerMinute} ₽ / мин
-                                            {visit.tariffBillingType === 1 && ` (${visit.tariffPricePerMinute * 60} ₽/ч)`}
+                                            {visit.tariffPricePerMinute} {CURRENCY_SYMBOL} / мин
+                                            {visit.tariffBillingType === 1 && ` (${visit.tariffPricePerMinute * 60} ${CURRENCY_SYMBOL}/ч)`}
                                         </span>
                                     </div>
                                     {(visit.tariffMinSessionMinutes || visit.tariffRoundingRule) && (
@@ -244,35 +224,56 @@ export const ApproveVisitDialog = ({
                                     )}
                                 </div>
 
-                                <div className="bg-(--colorNeutralBackground3) p-3 rounded-lg flex flex-col gap-3 border border-(--colorNeutralStroke3)">
-                                    <div className="flex items-center gap-3">
-                                        <Avatar
-                                            name={userFullName}
-                                            image={profile?.photoUrl ? { src: profile.photoUrl } : undefined}
-                                            size={36}
-                                        />
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="font-medium text-sm truncate">{userFullName}</span>
-                                            <span className="text-xs text-(--colorNeutralForeground3) truncate font-mono">
-                                                ID: {visit.userId}
+                                {visit.userId ? (
+                                    <div className="bg-(--colorNeutralBackground3) p-3 rounded-lg flex flex-col gap-3 border border-(--colorNeutralStroke3)">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar
+                                                name={userFullName}
+                                                image={profile?.photoUrl ? { src: profile.photoUrl } : undefined}
+                                                size={36}
+                                            />
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-medium text-sm truncate">{userFullName}</span>
+                                                <span className="text-xs text-(--colorNeutralForeground3) truncate font-mono">
+                                                    ID: {visit.userId}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <Divider />
+
+                                        <div className="flex items-center justify-between text-sm">
+                                            <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
+                                                <Wallet20Regular /> Текущий баланс:
                                             </span>
+                                            <Badge
+                                                color={balanceColor}
+                                                appearance="filled"
+                                            >
+                                                {balance.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                            </Badge>
                                         </div>
                                     </div>
-
-                                    <Divider />
-
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
-                                            <Wallet20Regular /> Текущий баланс:
-                                        </span>
-                                        <Badge
-                                            color={isNegativeBalance ? "danger" : isZeroBalance ? "warning" : "success"}
-                                            appearance="filled"
-                                        >
-                                            {balance.toLocaleString("ru-RU")} ₽
-                                        </Badge>
+                                ) : (
+                                    <div className="bg-(--colorNeutralBackground3) p-3 rounded-lg flex items-center gap-3 border border-(--colorNeutralStroke3)">
+                                        <Person20Regular className="text-(--colorNeutralForeground3)" />
+                                        <Body2 className="text-(--colorNeutralForeground3)">Анонимный гость (Walk-in)</Body2>
                                     </div>
-                                </div>
+                                )}
+
+                                {resource && (
+                                    <div className="bg-(--colorNeutralBackground2) p-3 rounded-lg flex items-center justify-between text-sm border border-(--colorNeutralStroke2)">
+                                        <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
+                                            <People20Regular /> Зона / Столик:
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-medium">{resource.name}</span>
+                                            {resource.capacity > 0 && (
+                                                <Badge appearance="outline" size="small">макс: {resource.capacity} чел.</Badge>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="flex flex-col gap-2.5 text-sm px-1">
                                     <div className="flex items-center justify-between">
@@ -290,17 +291,6 @@ export const ApproveVisitDialog = ({
                                             )}
                                         </div>
                                     </div>
-
-                                    {visit.resourceId && (
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
-                                                <People20Regular /> Столик / Зона:
-                                            </span>
-                                            <span className="font-medium">
-                                                {resource ? resource.name : `ID: ${visit.resourceId.slice(0, 8)}`}
-                                            </span>
-                                        </div>
-                                    )}
 
                                     <div className="flex items-center justify-between">
                                         <span className="text-(--colorNeutralForeground3) flex items-center gap-1.5">
@@ -322,6 +312,40 @@ export const ApproveVisitDialog = ({
                                         </div>
                                     )}
                                 </div>
+
+                                {estimate && (
+                                    <div className="bg-(--colorNeutralBackground2) p-3 rounded-lg flex flex-col gap-2 border border-(--colorBrandStroke1)">
+                                        <Body2 className="flex items-center gap-2 font-semibold">
+                                            <Calculator20Regular className="text-(--colorBrandForeground1)" />
+                                            Ожидаемая стоимость
+                                        </Body2>
+                                        <Divider className="my-1" />
+                                        <div className="flex items-center justify-between text-sm">
+                                            <Caption1 className="text-(--colorNeutralForeground3)">{estimate.breakdown}</Caption1>
+                                            <Body1 className="font-semibold text-(--colorBrandForeground1)">{estimate.total.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}</Body1>
+                                        </div>
+                                        {balance > 0 && (
+                                            <div className="flex items-center justify-between text-sm">
+                                                <Caption1 className="text-(--colorNeutralForeground3)">Баланс после списания:</Caption1>
+                                                <Body1 className={`font-semibold ${balance - estimate.total < 0 ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}`}>
+                                                    {(balance - estimate.total).toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                                </Body1>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {warnings.length > 0 && (
+                                    <div className="border border-(--colorStatusWarningBorderActive) bg-(--colorStatusWarningBackground1) p-3 rounded-lg flex flex-col gap-2">
+                                        <Body2 className="flex items-center gap-2">
+                                            <Warning20Regular className="text-(--colorStatusWarningForeground1)" />
+                                            Предупреждения
+                                        </Body2>
+                                        {warnings.map((w, i) => (
+                                            <Body1 key={i} className="text-(--colorStatusWarningForeground1)">• {w}</Body1>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {mode === "reject" && (
                                     <div className="mt-2">

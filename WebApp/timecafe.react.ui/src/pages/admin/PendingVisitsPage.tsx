@@ -1,5 +1,5 @@
-import {useMemo, useState} from "react";
-import {useNavigate} from "react-router-dom";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
     Body1,
     Body2,
@@ -11,28 +11,28 @@ import {
 } from "@fluentui/react-components";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 
-import type {TableColumnDefinition, TableColumnSizingOptions} from "@fluentui/react-components";
-import {ArrowLeft20Regular, CheckmarkCircle20Regular} from "@fluentui/react-icons";
-import {useGetPendingVisitsQuery, useApproveVisitMutation, useRejectVisitMutation} from "@store/api/venueApi";
-import {getRtkErrorMessage} from "@shared/api/errors/extractRtkError";
-import type {FetchBaseQueryError} from "@reduxjs/toolkit/query";
-import type {VisitWithTariff} from "@app-types/visitWithTariff";
-import {DataTable} from "@components/DataTable/DataTable";
-import {Pagination} from "@components/Pagination/Pagination";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {VisitStatusBadge} from "@components/VisitStatusBadge";
-import {ApproveVisitDialog} from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
-import {usePagination} from "@hooks/usePagination";
-import {NO_DATA} from "@shared/const/placeholders";
-import {PageLoader} from "@components/PageLoader/PageLoader";
-import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { ArrowLeft20Regular, CheckmarkCircle20Regular } from "@fluentui/react-icons";
+import { useGetPendingVisitsQuery, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { VisitWithTariff } from "@app-types/visitWithTariff";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { VisitStatusBadge } from "@components/VisitStatusBadge";
+import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
+import { usePagination } from "@hooks/usePagination";
+import { NO_DATA } from "@shared/const/placeholders";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { formatDateTime } from "@utility/dateUtils";
+import { getUserFullName } from "@utility/userUtils";
 
 const UserCell = ({ userId }: { userId: string }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
-    const userFullName = profile && (profile.firstName || profile.lastName)
-        ? [profile.firstName, profile.middleName, profile.lastName].filter(Boolean).join(" ")
-        : "Загрузка...";
-    
+    const userFullName = getUserFullName(profile, userId);
+
     return (
         <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
             <Body2 className="text-xs">{profile ? userFullName : `${userId.slice(0, 8)}…`}</Body2>
@@ -41,21 +41,16 @@ const UserCell = ({ userId }: { userId: string }) => {
 };
 
 
-const formatDateTime = (iso: string | null) => {
-    if (!iso) return NO_DATA;
-    const d = new Date(iso);
-    return d.toLocaleString("ru-RU", {day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"});
-};
 
 export const PendingVisitsPage = () => {
 
 
     const navigate = useNavigate();
-    const {sizes} = useComponentSize();
-    const {page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize} = usePagination("adminPendingVisits");
-    const {data, isLoading, error} = useGetPendingVisitsQuery(
-        {page: currentPage, pageSize},
-        {refetchOnMountOrArgChange: true}
+    const { sizes } = useComponentSize();
+    const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminPendingVisits");
+    const { data, isLoading, error } = useGetPendingVisitsQuery(
+        { page: currentPage, pageSize },
+        { refetchOnMountOrArgChange: true }
     );
     const visits = data?.items ?? [];
     const totalCount = data?.metadata?.totalCount ?? 0;
@@ -66,8 +61,8 @@ export const PendingVisitsPage = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
 
-    const [approveVisit, {isLoading: approving}] = useApproveVisitMutation();
-    const [rejectVisit, {isLoading: rejecting}] = useRejectVisitMutation();
+    const [approveVisit, { isLoading: approving }] = useApproveVisitMutation();
+    const [rejectVisit, { isLoading: rejecting }] = useRejectVisitMutation();
 
     const handleApprove = async (visitId: string) => {
         setActionError(null);
@@ -82,7 +77,7 @@ export const PendingVisitsPage = () => {
     const handleReject = async (visitId: string, reason: string) => {
         setActionError(null);
         try {
-            await rejectVisit({visitId, reason}).unwrap();
+            await rejectVisit({ visitId, reason }).unwrap();
             setDialogOpen(false);
         } catch (err) {
             setActionError(getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось отклонить визит");
@@ -95,11 +90,11 @@ export const PendingVisitsPage = () => {
     };
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        tariff: {minWidth: 120, defaultWidth: 200},
-        status: {minWidth: 140, defaultWidth: 180},
-        entryTime: {minWidth: 130, defaultWidth: 170},
-        userId: {minWidth: 100, defaultWidth: 180},
-        actions: {minWidth: 120, defaultWidth: 200},
+        tariff: { minWidth: 120, defaultWidth: 200 },
+        status: { minWidth: 140, defaultWidth: 180 },
+        entryTime: { minWidth: 130, defaultWidth: 170 },
+        userId: { minWidth: 100, defaultWidth: 180 },
+        actions: { minWidth: 120, defaultWidth: 200 },
     }), []);
 
     const columns: TableColumnDefinition<VisitWithTariff>[] = useMemo(() => [
@@ -156,20 +151,24 @@ export const PendingVisitsPage = () => {
     }
 
     return (
-        <div>
-            <Button appearance="subtle" icon={<ArrowLeft20Regular/>} onClick={() => navigate("/admin/visits")} className="mb-4">
-                Назад к визитам
-            </Button>
+        <div className="flex flex-col gap-2">
+            <div>
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/visits")}>
+                    Назад к визитам
+                </Button>
+            </div>
 
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
                     <Title2>Ожидают подтверждения</Title2>
                     <Body2>{totalCount} визитов</Body2>
                 </div>
             </div>
 
-            <DismissableError error={queryError} className="mb-4" />
-            <DismissableError error={actionError} className="mb-4" />
+            <div className="flex flex-col gap-2">
+                <DismissableError error={queryError} />
+                <DismissableError error={actionError} />
+            </div>
 
             <Card className="overflow-x-auto" size={sizes.card}>
                 <DataTable
@@ -181,7 +180,7 @@ export const PendingVisitsPage = () => {
                 />
             </Card>
 
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
                 <Body1>Показано {visits.length} из {totalCount}</Body1>
                 <Pagination
                     currentPage={currentPage}

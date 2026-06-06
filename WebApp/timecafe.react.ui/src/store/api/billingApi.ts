@@ -93,6 +93,15 @@ export const billingApi = createApi({
             providesTags: (_result, _error, userId) => [{type: "Debt", id: userId}],
         }),
 
+        getBalancesBulk: builder.query<Record<string, number>, string[]>({
+            query: (userIds) => ({
+                url: "/billing/balance/bulk",
+                method: "POST",
+                body: userIds,
+            }),
+            providesTags: ["Balance"],
+        }),
+
         getTransactionHistory: builder.query<
             GetTransactionHistoryResponse,
             GetTransactionHistoryArgs
@@ -198,4 +207,5 @@ export const {
     useGetInvoicesPageQuery,
     usePayInvoiceMutation,
     useInitializeStripeInvoicePaymentMutation,
+    useGetBalancesBulkQuery,
 } = billingApi;

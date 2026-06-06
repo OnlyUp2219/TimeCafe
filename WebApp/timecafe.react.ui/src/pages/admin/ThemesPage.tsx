@@ -10,7 +10,8 @@ import {
     Subtitle2,
     Divider,
     Subtitle1,
-    Title1
+    Title1,
+    Title2
 } from "@fluentui/react-components";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 
@@ -58,11 +59,11 @@ export const ThemesPage = () => {
 
     return (
         <RequirePermission can={Permissions.VenueThemeRead}>
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center ">
-                    <div>
-                        <Title1>Визуальные темы</Title1>
-                        <Caption1 className="text-(--colorNeutralForeground3)">Управление оформлением карточек тарифов ({totalCount})</Caption1>
+            <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center flex-wrap gap-4">
+                    <div className="flex flex-col">
+                        <Title2>Визуальные темы</Title2>
+                        <Body2>{totalCount} визуальных тем</Body2>
                     </div>
                     <div className="flex gap-2">
                         <Button appearance="subtle" size="large" icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
@@ -79,7 +80,7 @@ export const ThemesPage = () => {
                     </div>
                 </div>
 
-                <DismissableError error={finalError} className="mb-4" />
+                <DismissableError error={finalError} />
 
                 {themes.length === 0 && (
                     <Card appearance="filled-alternative" size="large" className="items-center justify-center !min-h-[250px] ">
@@ -150,7 +151,7 @@ export const ThemesPage = () => {
                             })}
                         </div>
 
-                        <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
                             <Body1>Показано {themes.length} из {totalCount}</Body1>
                             <Pagination
                                 currentPage={currentPage}

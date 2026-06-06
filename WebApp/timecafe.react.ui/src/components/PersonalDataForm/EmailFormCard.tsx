@@ -1,11 +1,5 @@
-import { createElement, useState, type FC } from "react";
-import { Body1Strong, Body2, Button, Card, Title2, Tooltip, Caption1 } from "@fluentui/react-components";
-import { Edit20Filled, MailRegular } from "@fluentui/react-icons";
-import { EmailVerificationModal } from "@components/EmailVerificationModal/EmailVerificationModal";
-import { useAppDispatch, useAppSelector } from "@store/hooks";
-import { hydrateAuthFromCurrentUser } from "@shared/auth/hydrateAuthFromCurrentUser";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { getPersonalDataStatusIcon } from "@components/PersonalDataForm/personalDataStatus";
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { createElement, useState, type FC } from "react";import { Body1Strong, Body2, Button, Card, Title2, Tooltip, Caption1 } from "@fluentui/react-components";import { Edit20Filled, MailRegular } from "@fluentui/react-icons";import { EmailVerificationModal } from "@components/EmailVerificationModal/EmailVerificationModal";import { useAppDispatch, useAppSelector } from "@store/hooks";import { hydrateAuthFromCurrentUser } from "@shared/auth/hydrateAuthFromCurrentUser";import { useComponentSize } from "@hooks/useComponentSize";import { getPersonalDataStatusIcon } from "@components/PersonalDataForm/personalDataStatus";
 
 export interface EmailFormCardProps {
     loading?: boolean;
@@ -49,7 +43,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
                         <div className="flex items-center gap-2 min-w-0 flex-wrap">
                             <Tooltip content={`Email: ${effectiveEmail || "не указан"}`} relationship="label">
                                 <Body1Strong className="!line-clamp-1 max-w-[25ch] md:max-w-[40ch] !truncate">
-                                    {effectiveEmail || "—"}
+                                    {effectiveEmail || NO_DATA}
                                 </Body1Strong>
                             </Tooltip>
                             <div className="flex items-center gap-1.5 sm:ml-2 shrink-0">
@@ -92,3 +86,5 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
         </Card>
     );
 };
+
+

@@ -198,6 +198,16 @@ public sealed class ProcessStripeWebhookCommandHandler(
         await _uow.Invoices.UpdateAsync(invoice, cancellationToken);
         await _uow.Payments.UpdateAsync(payment, cancellationToken);
 
+        if (invoice.UserId.HasValue)
+        {
+            var balance = await _uow.Balances.GetByIdAsync(invoice.UserId.Value, cancellationToken);
+            if (balance != null)
+            {
+                balance.RecordSpent(invoice.TotalAmount);
+                await _uow.Balances.UpdateAsync(balance, cancellationToken);
+            }
+        }
+
         await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);
 
         await _publishEndpoint.Publish(new InvoicePaidEvent

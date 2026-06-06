@@ -12,6 +12,8 @@ import {
 } from "@fluentui/react-components";
 import { Dismiss20Regular } from "@fluentui/react-icons";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
+import { formatDateTime } from "@utility/dateUtils";
+import { getGuestsWord } from "@utility/formatUtils";
 
 interface VisitCancelDialogProps {
     open: boolean;
@@ -21,25 +23,6 @@ interface VisitCancelDialogProps {
     cancelling: boolean;
 }
 
-const formatDateTime = (iso: string | null) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    return d.toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-};
-
-const getGuestsWord = (count: number) => {
-    const mod10 = count % 10;
-    const mod100 = count % 100;
-    if (mod10 === 1 && mod100 !== 11) return "гость";
-    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return "гостя";
-    return "гостей";
-};
 
 export const VisitCancelDialog: FC<VisitCancelDialogProps> = ({
     open,

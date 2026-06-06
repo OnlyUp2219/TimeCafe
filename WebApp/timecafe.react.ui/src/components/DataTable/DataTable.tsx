@@ -17,6 +17,7 @@ import type {TableColumnDefinition, TableRowId, DataGridProps, TableColumnSizing
 import {useRef, useMemo, useCallback} from "react";
 import type {ReactNode} from "react";
 import {EmptyState} from "@components/EmptyState/EmptyState";
+import { NO_DATA } from "@shared/const/placeholders";
 
 export type DataTableProps<TItem> = {
     items: TItem[];
@@ -40,7 +41,7 @@ export function DataTable<TItem>({
     columns,
     getRowId,
     loading = false,
-    emptyMessage = "Нет данных",
+    emptyMessage = NO_DATA,
     ariaLabel = "Data table",
     className,
     sortable = true,

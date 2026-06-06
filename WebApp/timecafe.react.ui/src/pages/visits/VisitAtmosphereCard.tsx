@@ -1,10 +1,5 @@
-import type {FC} from "react";
-import {Body1, Divider, Subtitle2Stronger} from "@fluentui/react-components";
-import {Info20Regular} from "@fluentui/react-icons";
-import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
-import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";
-import {useComponentSize} from "@hooks/useComponentSize";
-import {formatMoneyByN} from "@utility/formatMoney";
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import type {FC} from "react";import {Body1, Divider, Subtitle2Stronger} from "@fluentui/react-components";import {Info20Regular} from "@fluentui/react-icons";import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";import {useComponentSize} from "@hooks/useComponentSize";import {formatMoneyByN} from "@utility/formatMoney";
 
 interface VisitAtmosphereCardProps {
     billingType: BillingType;
@@ -51,7 +46,7 @@ export const VisitAtmosphereCard: FC<VisitAtmosphereCardProps> = ({
                     <Divider/>
                     <div className="flex justify-between items-center">
                         <Body1>Минимум:</Body1>
-                        <Body1 className="font-semibold">{minSessionMinutes ? `${minSessionMinutes} мин.` : "—"}</Body1>
+                        <Body1 className="font-semibold">{minSessionMinutes ? `${minSessionMinutes} мин.` : NO_DATA}</Body1>
                     </div>
                     <Divider/>
                     <div className="flex justify-between items-center">
@@ -68,3 +63,5 @@ export const VisitAtmosphereCard: FC<VisitAtmosphereCardProps> = ({
         </HoverTiltCard>
     );
 };
+
+

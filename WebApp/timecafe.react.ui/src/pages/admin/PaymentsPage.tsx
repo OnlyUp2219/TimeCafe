@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import {
-    Avatar,
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { useMemo } from "react";import {
+Avatar,
     Badge,
     Body1,
     Body2,
@@ -12,62 +12,11 @@ import {
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { useGetAdminPaymentsQuery } from "@store/api/adminApi";
-import type { AdminPaymentDto } from "@store/api/adminApi";
-import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { DataTable } from "@components/DataTable/DataTable";
-import { Pagination } from "@components/Pagination/Pagination";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { usePermissions } from "@hooks/usePermissions";
-import { Permissions, type Permission } from "@shared/auth/permissions";
-import { usePagination } from "@hooks/usePagination";
-import { DismissableError } from "@components/DismissableError/DismissableError";
-
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
-
-
-const paymentStatusLabel = (s: number) => {
-    switch (s) {
-        case 0: return "Ожидание";
-        case 1: return "Выполнен";
-        case 2: return "Ошибка";
-        case 3: return "Возврат";
-        case 4: return "Отменён";
-        default: return "—";
-    }
-};
-
-const paymentStatusColor = (s: number): "warning" | "success" | "danger" | "informative" => {
-    switch (s) {
-        case 0: return "warning";
-        case 1: return "success";
-        case 2: return "danger";
-        case 3: return "informative";
-        case 4: return "danger";
-        default: return "warning";
-    }
-};
-
-const paymentMethodLabel = (m: number) => {
-    switch (m) {
-        case 0: return "Stripe";
-        case 1: return "Вручную";
-        default: return "—";
-    }
-};
-
-const formatMoney = (v: number) => `${v.toFixed(2)} ${CURRENCY_SYMBOL}`;
-const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { useGetAdminPaymentsQuery } from "@store/api/adminApi";import type { AdminPaymentDto } from "@store/api/adminApi";import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { useComponentSize } from "@hooks/useComponentSize";import { usePermissions } from "@hooks/usePermissions";import { Permissions, type Permission } from "@shared/auth/permissions";import { usePagination } from "@hooks/usePagination";import { DismissableError } from "@components/DismissableError/DismissableError";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { paymentStatusLabel, paymentStatusColor, paymentMethodLabel } from "@utility/billingUtils";import { formatDateTime as formatDate } from "@utility/dateUtils";import { formatMoney } from "@utility/formatUtils";import { getUserFullName } from "@utility/userUtils";
 
 const AdminUserCell = ({ userId }: { userId: string }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
-    const displayName = profile?.firstName || profile?.lastName
-        ? `${profile.firstName || ''} ${profile.lastName || ''}`.trim()
-        : profile?.email || null;
+    const displayName = getUserFullName(profile, userId);
 
     return (
         <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
@@ -151,7 +100,7 @@ export const PaymentsPage = () => {
                 renderHeaderCell: () => "External ID",
                 renderCell: (p) => (
                     <TableCellLayout truncate>
-                        <Caption1 className="font-mono">{p.externalPaymentId ? p.externalPaymentId.slice(0, 16) + "…" : "—"}</Caption1>
+                        <Caption1 className="font-mono">{p.externalPaymentId ? p.externalPaymentId.slice(0, 16) + "…" : NO_DATA}</Caption1>
                     </TableCellLayout>
                 ),
             }),
@@ -167,15 +116,15 @@ export const PaymentsPage = () => {
     }, [has]);
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div>
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex flex-col">
                     <Title2>Платежи</Title2>
                     <Body2>{totalCount} платежей</Body2>
                 </div>
             </div>
 
-            <div className="flex gap-4 flex-wrap items-end mb-4">
+            <div className="flex gap-4 flex-wrap items-end">
                 <Field label="Фильтр по userId" size={sizes.field}>
                     <Input
                         size={sizes.input}
@@ -213,3 +162,5 @@ export const PaymentsPage = () => {
         </div>
     );
 };
+
+

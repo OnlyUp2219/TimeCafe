@@ -21,19 +21,21 @@ import { KpiCard } from "@components/Admin/KpiCard";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
+import { NO_DATA } from "@shared/const/placeholders";
 
 export const DashboardPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
+
     const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 });
     const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 1 });
     const { data: pendingData, isLoading: pendingLoading } = useGetPendingVisitsQuery({ page: 1, pageSize: 1 });
     const { data: systemStatus, isLoading: systemStatusLoading } = useGetSystemStatusQuery(undefined, { pollingInterval: 10000 });
     const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
-    const usersValue = usersLoading ? "..." : (usersData?.metadata.totalCount ?? "—");
-    const visitsValue = visitsLoading ? "..." : (visitsData?.metadata?.totalCount ?? "—");
-    const pendingValue = pendingLoading ? "..." : (pendingData?.metadata?.totalCount ?? "—");
+    const usersValue = usersLoading ? NO_DATA : (usersData?.metadata?.totalCount ?? NO_DATA);
+    const visitsValue = visitsLoading ? NO_DATA : (visitsData?.metadata?.totalCount ?? NO_DATA);
+    const pendingValue = pendingLoading ? NO_DATA : (pendingData?.metadata?.totalCount ?? NO_DATA);
 
     const isAuthOnline = systemStatus?.Auth === "Online";
     const isVenueOnline = systemStatus?.Venue === "Online";
@@ -41,15 +43,15 @@ export const DashboardPage = () => {
     const isUserProfileOnline = systemStatus?.UserProfile === "Online";
 
     return (
-        <div>
-            <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
                 <Title2>Дашборд</Title2>
-                <Body1 className="mt-1">Обзор системы TimeCafe</Body1>
+                <Body1>Обзор системы TimeCafe</Body1>
             </div>
 
-            <DismissableError error={errorMessage} className="mb-4" />
+            <DismissableError error={errorMessage} />
 
-            <div className="flex gap-4 flex-wrap mb-6">
+            <div className="flex gap-4 flex-wrap">
                 <HasPermission can={Permissions.AccountAdminRead}>
                     <KpiCard
                         title="Пользователи"
@@ -77,14 +79,14 @@ export const DashboardPage = () => {
                 <HasPermission can={Permissions.BillingPaymentHistoryRead}>
                     <KpiCard
                         title="Выручка (₽)"
-                        value="—"
+                        value={NO_DATA}
                         icon={<Money20Regular />}
                         onClick={() => navigate("/admin/payments")}
                     />
                 </HasPermission>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <HasPermission can={Permissions.AuditLogAdminRead}>
                     <Card className="p-4 cursor-pointer" size={sizes.card} onClick={() => navigate("/admin/monitoring/grafana")}>
                         <div className="flex justify-between items-center mb-2">
@@ -194,3 +196,4 @@ export const DashboardPage = () => {
         </div>
     );
 };
+

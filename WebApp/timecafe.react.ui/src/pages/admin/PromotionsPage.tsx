@@ -1,3 +1,4 @@
+import { NO_DATA } from "@shared/const/placeholders";
 import { useCallback, useMemo, useState } from "react";
 import {
     Badge,
@@ -25,10 +26,9 @@ import {
     Radio,
     Caption1,
 } from "@fluentui/react-components";
-import { DismissableError } from "@components/DismissableError/DismissableError";
-
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
+import { DismissableError } from "@components/DismissableError/DismissableError";
 import {
     useGetAllPromotionsQuery,
     useGetPromotionsPageQuery,
@@ -48,6 +48,9 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { usePagination } from "@app/hooks/usePagination";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 
 const formatDate = (iso: string) => {
     const d = new Date(iso);
@@ -74,11 +77,9 @@ const emptyForm: PromotionFormState = {
     validFrom: "",
     validTo: "",
     isActive: true,
-    type: 1, // Global
+    type: 1,
     tariffId: "",
 };
-
-import { usePagination } from "@hooks/usePagination";
 
 export const PromotionsPage = () => {
     const { sizes } = useComponentSize();
@@ -216,7 +217,7 @@ export const PromotionsPage = () => {
                     <TableCellLayout truncate>
                         {promo.discountPercent != null
                             ? <Badge appearance="outline">{promo.discountPercent}%</Badge>
-                            : "—"}
+                            : NO_DATA}
                     </TableCellLayout>
                 ),
             }),
@@ -293,10 +294,10 @@ export const PromotionsPage = () => {
                 renderCell: (promo) => (
                     <div className="flex gap-1">
                         <HasPermission can={Permissions.VenuePromotionUpdate}>
-                            <Button appearance="subtle" icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
+                            <Button appearance="subtle" size={sizes.button} icon={<Edit20Regular />} onClick={() => openEdit(promo)} />
                         </HasPermission>
                         <HasPermission can={Permissions.VenuePromotionDelete}>
-                            <Button appearance="subtle" icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
+                            <Button appearance="subtle" size={sizes.button} icon={<Delete20Regular />} onClick={() => handleDelete(promo.promotionId)} />
                         </HasPermission>
                     </div>
                 ),
@@ -304,52 +305,55 @@ export const PromotionsPage = () => {
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as Permission));
-    }, [handleToggleActive, openEdit, handleDelete, has, tariffs]);
+    }, [handleToggleActive, openEdit, handleDelete, has, tariffs, sizes.button]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-12"><Spinner label="Загрузка акций..." /></div>;
+        return <PageLoader label="Загрузка акций..." />;
     }
 
     return (
-        <div>
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
-                <div className="flex flex-col">
-                    <Title2>Акции</Title2>
-                    <Body2>{totalCount} акций</Body2>
+        <RequirePermission can={Permissions.VenuePromotionRead}>
+            <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div className="flex flex-col">
+                        <Title2>Акции</Title2>
+                        <Body2>{totalCount} созданных акций</Body2>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
+                        <HasPermission can={Permissions.VenuePromotionCreate}>
+                            <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
+                                Добавить акцию
+                            </Button>
+                        </HasPermission>
+                    </div>
                 </div>
-                <div className="flex gap-2">
-                    <Button appearance="subtle" size={sizes.button} icon={<ArrowClockwise20Regular />} onClick={() => refetch()} />
-                    <HasPermission can={Permissions.VenuePromotionCreate}>
-                        <Button appearance="primary" size={sizes.button} icon={<Add20Regular />} onClick={openCreate}>
-                            Добавить акцию
-                        </Button>
-                    </HasPermission>
+
+                <DismissableError error={queryError} />
+                <DismissableError error={mutationError} />
+
+                <Card className="overflow-x-auto" size={sizes.card}>
+                    <DataTable
+                        items={promotions}
+                        columns={columns}
+                        getRowId={(p) => p.promotionId}
+                        loading={isLoading}
+                        columnSizingOptions={columnSizingOptions}
+                    />
+                </Card>
+
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                    <Body1>Показано {promotions.length} из {totalCount}</Body1>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                        pageSize={pageSize}
+                        onPageSizeChange={setPageSize}
+                        totalCount={totalCount}
+                    />
                 </div>
-            </div>
-
-            <DismissableError error={queryError} className="mb-4" />
-            <DismissableError error={mutationError} className="mb-4" />
-
-            <Card className="overflow-x-auto" size={sizes.card}>
-                <DataTable
-                    items={promotions}
-                    columns={columns}
-                    getRowId={(p) => p.promotionId}
-                    loading={isLoading}
-                    columnSizingOptions={columnSizingOptions}
-                />
-            </Card>
-
-            <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-                <Body1>Показано {promotions.length} из {totalCount}</Body1>
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
-                    totalCount={totalCount}
-                />
             </div>
 
             <Dialog open={dialogOpen} onOpenChange={(_, d) => setDialogOpen(d.open)}>
@@ -409,7 +413,7 @@ export const PromotionsPage = () => {
                                 onChange={(_, d) => setForm(f => ({ ...f, isActive: d.checked }))}
                                 label="Активна"
                             />
-                            <DismissableError error={mutationError} className="mb-3" />
+                            <DismissableError error={mutationError} />
                         </DialogContent>
                         <DialogActions>
                             <DialogTrigger disableButtonEnhancement>
@@ -422,6 +426,6 @@ export const PromotionsPage = () => {
                     </DialogBody>
                 </DialogSurface>
             </Dialog>
-        </div>
+        </RequirePermission>
     );
 };

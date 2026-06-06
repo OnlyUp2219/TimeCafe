@@ -31,7 +31,7 @@ export const SupportCard = ({telegramUrl, onCallAdmin}: SupportCardProps) => {
                     icon={<ChatRegular />}
                     tooltip="Открыть чат в Telegram"
                     label="Чат в Telegram"
-                    onClick={() => window.open(telegramUrl, "_blank")}
+                    onClick={() => globalThis.open(telegramUrl, "_blank")}
                     size={sizes.button}
                 />
                 <TooltipButton

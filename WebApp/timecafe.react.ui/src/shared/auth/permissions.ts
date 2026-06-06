@@ -17,6 +17,8 @@ export const Permissions = {
     BillingTransactionRead: "billing.transaction.read",
     BillingPaymentInitialize: "billing.payment.initialize",
     BillingPaymentHistoryRead: "billing.payment.read",
+    BillingAdminRead: "billing.admin.read",
+    BillingAdminWrite: "billing.admin.write",
     BillingInvoiceRead: "billing.invoice.read",
     BillingInvoicePay: "billing.invoice.pay",
     BillingInvoiceAdminRead: "billing.invoice.admin.read",

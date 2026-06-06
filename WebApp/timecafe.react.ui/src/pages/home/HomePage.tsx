@@ -60,8 +60,8 @@ export const HomePage = () => {
 
     useEffect(() => {
         if (!isActiveVisit) return;
-        const id = window.setInterval(() => setNow(Date.now()), 1000);
-        return () => window.clearInterval(id);
+        const id = globalThis.setInterval(() => setNow(Date.now()), 1000);
+        return () => globalThis.clearInterval(id);
     }, [isActiveVisit]);
 
     const activeElapsedSeconds = useMemo(() => {

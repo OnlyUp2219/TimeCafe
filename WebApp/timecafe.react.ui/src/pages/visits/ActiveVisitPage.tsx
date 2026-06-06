@@ -152,12 +152,12 @@ export const ActiveVisitPage = () => {
         try {
             const res = await initializeStripePayment({
                 invoiceId: invoice.invoiceId,
-                successUrl: window.location.href,
-                cancelUrl: window.location.href
+                successUrl: globalThis.location.href,
+                cancelUrl: globalThis.location.href
             }).unwrap();
             
             if (res.checkoutUrl) {
-                window.location.href = res.checkoutUrl;
+                globalThis.location.href = res.checkoutUrl;
             } else {
                 showToast("Не удалось сгенерировать ссылку Stripe Checkout", "error", "Ошибка");
             }

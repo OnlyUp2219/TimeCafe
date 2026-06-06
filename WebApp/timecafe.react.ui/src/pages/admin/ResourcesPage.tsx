@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-    Button,
+﻿import { NO_DATA } from "@shared/const/placeholders";
+import { useState } from "react";import { useNavigate } from "react-router-dom";import {
+Button,
     Card,
     Title2,
     Subtitle2,
@@ -19,11 +18,8 @@ import {
     Field,
     Input,
 } from "@fluentui/react-components";
-import { DismissableError } from "@components/DismissableError/DismissableError";
-import { HasPermission } from "@components/Guard/HasPermission";
-import { Permissions } from "@shared/auth/permissions";
-import {
-    Grid20Regular,
+import { DismissableError } from "@components/DismissableError/DismissableError";import { HasPermission } from "@components/Guard/HasPermission";import { Permissions } from "@shared/auth/permissions";import {
+Grid20Regular,
     Person20Regular,
     Clock20Regular,
     Money20Regular,
@@ -33,7 +29,7 @@ import {
     Delete20Regular,
 } from "@fluentui/react-icons";
 import {
-    useGetActiveVisitsQuery,
+useGetActiveVisitsQuery,
     useGetResourcesQuery,
     useGetResourceGroupsQuery,
     useCreateResourceMutation,
@@ -45,14 +41,7 @@ import {
     type Resource,
     type ResourceGroup,
 } from "@store/api/venueApi";
-import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
-import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
-import { useComponentSize } from "@hooks/useComponentSize";
-import { PageLoader } from "@components/PageLoader/PageLoader";
-import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { useComponentSize } from "@hooks/useComponentSize";import { PageLoader } from "@components/PageLoader/PageLoader";import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 
 const ActiveUserLabel = ({ userId }: { userId: string | null }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
@@ -209,13 +198,11 @@ export const ResourcesPage = () => {
 
     return (
         <RequirePermission can={Permissions.VenueResourceRead}>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col">
                         <Title2>Интерактивная карта столов</Title2>
-                        <Caption1 className="text-(--colorNeutralForeground3)">
-                            Мониторинг занятости ресурсов и быстрая посадка гостей
-                        </Caption1>
+                        <Body2>Мониторинг занятости ресурсов и посадка</Body2>
                     </div>
                     <div className="flex gap-2">
                         <HasPermission can={Permissions.VenueResourceCreate}>
@@ -241,7 +228,7 @@ export const ResourcesPage = () => {
                     </div>
                 </div>
 
-                <DismissableError error={errorMessage} className="mb-4" />
+                <DismissableError error={errorMessage} />
 
                 <div className="flex flex-col gap-8">
                     {resourceGroups.map((group) => {
@@ -352,7 +339,7 @@ export const ResourcesPage = () => {
                                                                     Тариф: {activeVisit.tariffName} (
                                                                     {activeVisit.calculatedCost != null
                                                                         ? `${activeVisit.calculatedCost.toFixed(2)} ${CURRENCY_SYMBOL}`
-                                                                        : "—"}
+                                                                        : NO_DATA}
                                                                     )
                                                                 </Body2>
                                                             </div>
@@ -505,3 +492,5 @@ export const ResourcesPage = () => {
         </RequirePermission>
     );
 };
+
+

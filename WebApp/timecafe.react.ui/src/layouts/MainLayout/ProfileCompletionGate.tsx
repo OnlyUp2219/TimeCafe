@@ -90,8 +90,8 @@ export const ProfileCompletionGate: FC = () => {
         const raw = import.meta.env.VITE_HTTP_TIMEOUT_MS as string | undefined;
         const parsed = raw ? Number(raw) : NaN;
         const timeoutMs = Number.isFinite(parsed) && parsed > 0 ? parsed : 15000;
-        const timer = window.setTimeout(() => setLoadingTimedOut(true), timeoutMs + 1500);
-        return () => window.clearTimeout(timer);
+        const timer = globalThis.setTimeout(() => setLoadingTimedOut(true), timeoutMs + 1500);
+        return () => globalThis.clearTimeout(timer);
     }, [profileFetching]);
 
     const [firstName, setFirstName] = useState("");
@@ -264,7 +264,7 @@ export const ProfileCompletionGate: FC = () => {
 
                                     const nextPhone = phoneDraft.trim();
                                     const currentPhone = (authPhoneNumber ?? profile?.phoneNumber ?? "").trim();
-                                    const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed) && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1" && localStorage.getItem("isE2E") !== "true";
+                                    const phoneNeedsVerification = Boolean(nextPhone) && (nextPhone !== currentPhone || !authPhoneConfirmed) && globalThis.location.hostname !== "localhost" && globalThis.location.hostname !== "127.0.0.1" && localStorage.getItem("isE2E") !== "true";
 
                                     if (phoneNeedsVerification) {
                                         const validation = validatePhoneNumber(nextPhone);
