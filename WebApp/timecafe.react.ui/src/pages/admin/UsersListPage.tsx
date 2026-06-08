@@ -181,7 +181,7 @@ export const UsersListPage = () => {
                     renderHeaderCell: () => "Роль",
                     renderCell: (user) => (
                         <TableCellLayout truncate>
-                            <Badge appearance="outline">{user.role}</Badge>
+                            <Badge appearance="tint" color="informative">{user.role}</Badge>
                         </TableCellLayout>
                     ),
                 }),

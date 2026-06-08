@@ -9,15 +9,26 @@ import {useComponentSize} from "@hooks/useComponentSize";
 interface VisitDetailsCardProps {
     tariffName: string;
     billingType: BillingType;
-    estimateTotal: number;
-    estimateBreakdown: string;
+    estimate: {
+        total: number;
+        breakdown: string;
+        baseTotal: number;
+        discountTotal: number;
+        appliedDiscountPercent: number;
+        isDiscounted: boolean;
+    };
+    personalDiscount: number;
+    globalDiscount: number;
+    tariffDiscount: number;
 }
 
 export const VisitDetailsCard: FC<VisitDetailsCardProps> = ({
     tariffName,
     billingType,
-    estimateTotal,
-    estimateBreakdown,
+    estimate,
+    personalDiscount,
+    globalDiscount,
+    tariffDiscount,
 }) => {
     const { sizes } = useComponentSize();
 
@@ -60,8 +71,37 @@ export const VisitDetailsCard: FC<VisitDetailsCardProps> = ({
                             </div>
  
                             <div className="flex flex-col items-end gap-2 text-right">
-                                <Title1 block>{formatMoneyByN(estimateTotal)}</Title1>
-                                <Body1 block>{estimateBreakdown}</Body1>
+                                {estimate.isDiscounted && (
+                                    <Title3 block className="line-through text-(--colorNeutralForeground3)">
+                                        {formatMoneyByN(estimate.baseTotal)}
+                                    </Title3>
+                                )}
+                                <Title1 block className={estimate.isDiscounted ? "text-(--colorBrandForeground1)" : ""}>
+                                    {formatMoneyByN(estimate.total)}
+                                </Title1>
+                                <Body1 block className="text-(--colorNeutralForeground3)">{estimate.breakdown}</Body1>
+                                
+                                {estimate.isDiscounted && (
+                                    <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1 w-full text-left">
+                                        {personalDiscount > 0 && (
+                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                <span>Скидка лояльности:</span>
+                                                <span className="font-semibold">-{personalDiscount}%</span>
+                                            </div>
+                                        )}
+                                        {Math.max(globalDiscount, tariffDiscount) > 0 && (
+                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                <span>Акционная скидка:</span>
+                                                <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                            </div>
+                                        )}
+                                        <Divider className="my-1" />
+                                        <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
+                                            <span>Итоговая скидка:</span>
+                                            <span>-{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

@@ -12,30 +12,28 @@ import {
 import {Clock20Regular, Timer20Regular, Receipt20Regular} from "@fluentui/react-icons";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
-import {formatMoneyByN} from "@utility/formatMoney";
-import {CURRENCY_SYMBOL} from "@shared/const/currency";
 import {VisitStatus} from "@app-types/visit";
 import {useComponentSize} from "@hooks/useComponentSize";
 
 interface VisitCardProps {
     status?: number;
     elapsedSeconds: number;
-    estimateTotal: number | null;
+
     visitInfo: string;
     onNavigateVisit: () => void;
     onNavigateBilling: () => void;
 }
 
-const statusConfig: Record<number, {label: string; appearance: "brand" | "outline" | "warning" | "success"}> = {
-    [VisitStatus.Pending]: {label: "Ожидает", appearance: "warning"},
-    [VisitStatus.Approved]: {label: "Подтверждён", appearance: "success"},
+const statusConfig: Record<number, {label: string; appearance: "brand" | "outline"}> = {
+    [VisitStatus.Pending]: {label: "Ожидает", appearance: "outline"},
+    [VisitStatus.Approved]: {label: "Подтверждён", appearance: "outline"},
     [VisitStatus.Active]: {label: "Активен", appearance: "brand"},
 };
 
 export const VisitCard: FC<VisitCardProps> = ({
     status,
     elapsedSeconds,
-    estimateTotal,
+
     visitInfo,
     onNavigateVisit,
     onNavigateBilling,
@@ -73,10 +71,10 @@ export const VisitCard: FC<VisitCardProps> = ({
                 <div className="flex flex-col gap-1 text-right sm:items-end">
                     <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3) sm:justify-end">
                         <Receipt20Regular style={{ fontSize: "14px" }} className="shrink-0 text-(--colorNeutralForeground3)" />
-                        <Caption1>Оценка</Caption1>
+                        <Caption1>Счёт</Caption1>
                     </div>
-                    <Title3 className="font-semibold mt-0.5 text-(--colorBrandForeground1)">
-                        {isActive && estimateTotal != null ? formatMoneyByN(estimateTotal) : `— ${CURRENCY_SYMBOL}`}
+                    <Title3 className="font-semibold mt-0.5 text-(--colorNeutralForeground3)">
+                        {isActive ? `В процессе` : `—`}
                     </Title3>
                 </div>
             </div>

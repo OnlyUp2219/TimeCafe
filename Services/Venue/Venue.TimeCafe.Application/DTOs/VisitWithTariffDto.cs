@@ -23,5 +23,6 @@ public class VisitWithTariffDto
     public string? TariffRoundingRule { get; set; }
     public int? PlannedMinutes { get; set; }
     public int GuestsCount { get; set; }
+    public bool IsFinishRequested { get; set; }
 }
 

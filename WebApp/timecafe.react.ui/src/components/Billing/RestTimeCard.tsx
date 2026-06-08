@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Caption1, Card, Subtitle2Stronger, Title2, Dropdown, Option, Input, Label } from "@fluentui/react-components";
+import { Caption1, Card, Title2, Dropdown, Option, Input, Label } from "@fluentui/react-components";
 import { formatDurationMinutes } from "@utility/formatDurationMinutes";
 import { formatRub } from "@utility/formatRub";
 import type { Tariff } from "@app-types/tariff";
 import { useComponentSize } from "@hooks/useComponentSize";
 import "@pages/billing/billing.css";
 
+type TariffWithDiscount = Tariff & { discountedPricePerMinute?: number };
+
 type RestTimeCardProps = {
     availableRub: number;
-    tariffs: Tariff[];
+    tariffs: TariffWithDiscount[];
     initialTariffId?: string;
 };
 
@@ -21,8 +23,8 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
     const totalRub = Math.max(0, availableRub) + extraAmount;
 
     const selectedTariff = tariffs.find(t => t.tariffId === selectedId) || tariffs[0];
-    const pricePerMinuteRub = selectedTariff?.pricePerMinute || 0;
-    const minutes = pricePerMinuteRub > 0 ? Math.floor(totalRub / pricePerMinuteRub) : 0;
+    const actualPricePerMinute = selectedTariff?.discountedPricePerMinute ?? selectedTariff?.pricePerMinute ?? 0;
+    const minutes = actualPricePerMinute > 0 ? Math.floor(totalRub / actualPricePerMinute) : 0;
 
     return (
         <Card className="flex h-full flex-col justify-between gap-4 tc-billing-rest-card" size={sizes.card}>
@@ -45,11 +47,15 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                             selectedOptions={selectedTariff ? [selectedTariff.tariffId] : []}
                             onOptionSelect={(_, data) => setSelectedId(data.optionValue)}
                         >
-                            {tariffs.map(t => (
-                                <Option key={t.tariffId} value={t.tariffId}>
-                                    {t.name} ({formatRub(t.pricePerMinute, 0)}/мин)
+                            {tariffs.map(t => {
+                                const p = t.discountedPricePerMinute ?? t.pricePerMinute;
+                                const isDiscounted = p < t.pricePerMinute;
+                                return (
+                                <Option key={t.tariffId} value={t.tariffId} text={t.name}>
+                                    {t.name} ({isDiscounted ? `${formatRub(p, 2)}/мин (скидка)` : `${formatRub(t.pricePerMinute, 0)}/мин`})
                                 </Option>
-                            ))}
+                                );
+                            })}
                         </Dropdown>
                     </div>
 
@@ -61,7 +67,7 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                             min={0}
                             placeholder="0"
                             value={extraAmountStr}
-                            onChange={(e, data) => setExtraAmountStr(data.value)}
+                            onChange={(_, data) => setExtraAmountStr(data.value)}
                         />
                     </div>
                 </div>

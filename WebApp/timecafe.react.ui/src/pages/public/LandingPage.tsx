@@ -5,7 +5,6 @@ import {
     AccordionPanel,
     Badge,
     Button,
-    Card,
     Divider,
     Tag,
     Body1,
@@ -13,17 +12,14 @@ import {
     Caption1,
     Subtitle1,
     Subtitle2Stronger,
-    Title1,
     Title2,
     Title3,
-    tokens,
 } from "@fluentui/react-components";
 import type { FC } from "react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@components/Header/Header";
 import { Footer } from "@components/Footer/Footer";
-import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
 import {
     Clock20Regular,
     MailCheckmark20Regular,
@@ -143,7 +139,7 @@ export const LandingPage: FC = () => {
                 {/* Hero Section */}
                 <section className="flex flex-col md:flex-row items-center gap-12 pt-8">
                     <div className="flex-1 flex flex-col gap-6 items-start">
-                        <Tag appearance="brand" size="large" className="rounded-full shadow-lg">Новый уровень комфорта</Tag>
+                        <Tag appearance="brand" size="medium" className="rounded-full shadow-lg">Новый уровень комфорта</Tag>
 
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text tc-gradient-text pb-2">
                             Плати только за время.
@@ -257,9 +253,13 @@ export const LandingPage: FC = () => {
                         {tariffCards.map((t) => (
                             <div key={t.title} className="tc-glass-panel p-8 border flex flex-col gap-6 relative overflow-hidden group">
                                 {t.highlight === "Популярно" && (
-                                    <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-bold px-4 py-1 rounded-bl-xl shadow-md z-20">
+                                    <Tag 
+                                        appearance="brand"
+                                        size="medium"
+                                        className="absolute top-0 right-0 px-3 py-1 font-semibold rounded-bl-xl shadow-md z-20"
+                                    >
                                         {t.highlight}
-                                    </div>
+                                    </Tag>
                                 )}
                                 <div className="z-10">
                                     <Title3 block className="mb-2">{t.title}</Title3>

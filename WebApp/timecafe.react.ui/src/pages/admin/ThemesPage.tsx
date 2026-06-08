@@ -10,7 +10,6 @@ import {
     Subtitle2,
     Divider,
     Subtitle1,
-    Title1,
     Title2
 } from "@fluentui/react-components";
 import { DismissableError } from "@components/DismissableError/DismissableError";

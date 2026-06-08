@@ -8,7 +8,8 @@ import {
     tokens,
     Tooltip
 } from "@fluentui/react-components";
-import { FC, useState } from "react";
+import { useState } from "react";
+import type { FC } from "react";
 
 const useStyles = makeStyles({
     grid: {

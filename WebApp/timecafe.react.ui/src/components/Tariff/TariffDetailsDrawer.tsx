@@ -11,10 +11,12 @@ import {
     DrawerBody,
     Subtitle2,
     Card,
+    Caption1,
 } from "@fluentui/react-components";
 import { Dismiss20Regular } from "@fluentui/react-icons";
-import { BillingType as BillingTypeEnum, type Tariff } from "@app-types/tariff";
+import { BillingType as BillingTypeEnum } from "@app-types/tariff";
 import { useGetTariffByIdQuery } from "@store/api/venueApi";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 interface TariffDetailsDrawerProps {
     open: boolean;
@@ -93,8 +95,8 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
                                     <div className="flex flex-col gap-2">
                                         <Subtitle2>Стоимость</Subtitle2>
                                         <Body1>
-                                            {tariff.pricePerMinute} ₽ / мин
-                                            ({tariff.pricePerMinute * 60} ₽ / час)
+                                            {tariff.pricePerMinute} {CURRENCY_SYMBOL} / мин
+                                            ({tariff.pricePerMinute * 60} {CURRENCY_SYMBOL} / час)
                                         </Body1>
                                     </div>
 
@@ -113,11 +115,11 @@ export const TariffDetailsDrawer: FC<TariffDetailsDrawerProps> = ({
                                                             )}
                                                         </div>
                                                         <div className="flex flex-col items-end">
-                                                            <Body1 className="font-semibold">{example.finalCost} ₽</Body1>
+                                                            <Body1 className="font-semibold">{example.finalCost} {CURRENCY_SYMBOL}</Body1>
                                                             {example.optimizationGain > 0 && (
-                                                                <Body2 className="text-(--colorPaletteGreenForeground1)">
-                                                                    Выгода: {example.optimizationGain} ₽
-                                                                </Body2>
+                                                                <Caption1 className="text-(--colorPaletteGreenForeground1) font-medium">
+                                                                    Выгода: {example.optimizationGain} {CURRENCY_SYMBOL}
+                                                                </Caption1>
                                                             )}
                                                         </div>
                                                     </div>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Title2, Subtitle1, Card } from "@fluentui/react-components";
+import { Title2 } from "@fluentui/react-components";
 
 export const GrafanaPage: React.FC = () => {
     return (

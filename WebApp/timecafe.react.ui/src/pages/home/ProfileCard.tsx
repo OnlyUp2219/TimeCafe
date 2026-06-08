@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Avatar, Body2, Button, Divider, Subtitle2Stronger, Tag, Text, Title3, Caption1, Badge } from "@fluentui/react-components";
+import { Body2, Button, Divider, Subtitle2Stronger, Tag, Text, Title3, Caption1 } from "@fluentui/react-components";
 import { PersonRegular, Mail20Regular, Phone20Regular, Warning20Regular, Checkmark20Regular, Dismiss20Regular } from "@fluentui/react-icons";
 import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
 import type { Profile } from "@app-types/profile";

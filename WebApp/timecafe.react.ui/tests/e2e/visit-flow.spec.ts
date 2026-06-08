@@ -145,6 +145,45 @@ const setupFlowApiMocks = async (page: Page, userId: string) => {
         });
     });
 
+    await page.route("**/venue/promotions*", async (route) => {
+        if (route.request().method() !== "GET") {
+            await route.continue();
+            return;
+        }
+
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify([
+                {
+                    promotionId: "test-promo-1",
+                    name: "Глобальная скидка",
+                    discountPercent: 15,
+                    isActive: true,
+                    type: 0,
+                    validFrom: "2020-01-01T00:00:00.000Z",
+                    validTo: "2030-01-01T00:00:00.000Z"
+                }
+            ]),
+        });
+    });
+
+    await page.route("**/userprofile/loyalty/*", async (route) => {
+        if (route.request().method() !== "GET") {
+            await route.continue();
+            return;
+        }
+
+        await route.fulfill({
+            status: 200,
+            contentType: "application/json",
+            body: JSON.stringify({
+                personalDiscountPercent: 5,
+                levelName: "Silver"
+            }),
+        });
+    });
+
     await page.route("**/venue/visits/has-active/*", async (route) => {
         if (route.request().method() !== "GET") {
             await route.continue();
@@ -312,6 +351,8 @@ test("Visit flow start-active-end", async ({page, request}) => {
     await page.getByTestId("visit-active-exit").click();
 
     await expect(page.getByTestId("visit-end-dialog-title")).toBeVisible();
+    await expect(page.getByText("Итоговая скидка:")).toBeVisible();
+    await expect(page.getByText("-15%")).toBeVisible();
     await closePhoneModal();
     await page.getByTestId("visit-end-confirm").click();
 

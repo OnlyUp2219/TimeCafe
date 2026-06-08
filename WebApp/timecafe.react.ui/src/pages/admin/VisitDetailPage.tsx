@@ -11,14 +11,16 @@ import {
     Title2,
     Title3,
     Subtitle2Stronger,
+    Tooltip,
+    Divider,
 } from "@fluentui/react-components";
-import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, Money20Regular, Clock20Regular, Warning20Regular } from "@fluentui/react-icons";
-import { useGetVisitByIdQuery, useFixateVisitTimeMutation, useApproveVisitMutation, useRejectVisitMutation, useForceEndVisitMutation } from "@store/api/venueApi";
+import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, Clock20Regular, Warning20Regular, Money20Regular, Payment20Regular, Wallet20Regular } from "@fluentui/react-icons";
+import { useGetVisitByIdQuery, useFixateVisitTimeMutation, useApproveVisitMutation, useRejectVisitMutation, useForceEndVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { VisitStatus } from "@app-types/visit";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { Permissions } from "@shared/auth/permissions";
@@ -32,6 +34,9 @@ import { RequirePermission } from "@app/components/RequirePermission/RequirePerm
 import { getUserFullName } from "@utility/userUtils";
 import { formatDateTime } from "@utility/dateUtils";
 import { formatMoney } from "@utility/formatUtils";
+import { formatMoneyByN } from "@utility/formatMoney";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { calcVisitEstimate } from "@utility/visitEstimate";
 
 export const VisitDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -44,7 +49,7 @@ export const VisitDetailPage = () => {
     const [fixateVisitTime, { isLoading: ending }] = useFixateVisitTimeMutation();
     const [approveVisit, { isLoading: approving }] = useApproveVisitMutation();
     const [rejectVisit, { isLoading: rejecting }] = useRejectVisitMutation();
-    const [payInvoice, { isLoading: paying }] = usePayInvoiceMutation();
+    const [payInvoice] = usePayInvoiceMutation();
     const [forceEndVisit, { isLoading: forcingEnd }] = useForceEndVisitMutation();
 
     const visit = visitData;
@@ -55,6 +60,33 @@ export const VisitDetailPage = () => {
 
     const { data: profile } = useGetProfileByUserIdQuery(visit?.userId ?? "", { skip: !visit?.userId });
     const { data: balanceObj } = useGetBalanceQuery(visit?.userId ?? "", { skip: !visit?.userId });
+    const { data: promotions } = useGetAllPromotionsQuery();
+    const { data: loyalty } = useGetUserLoyaltyQuery(visit?.userId ?? "", { skip: !visit?.userId });
+
+    const nowStr = new Date().toISOString();
+    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
+    const globalDiscount = activePromotions.filter(p => p.type === 0).reduce((max, p) => Math.max(max, p.discountPercent ?? 0), 0);
+    const tariffDiscount = activePromotions.filter(p => p.type === 1 && p.tariffId === visit?.tariffId).reduce((max, p) => Math.max(max, p.discountPercent ?? 0), 0);
+    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
+
+    const estimate = useMemo(() => {
+        if (!visit || visit.status !== VisitStatus.Active) return null;
+        const now = new Date();
+        const start = new Date(visit.entryTime);
+        const elapsedSeconds = Math.max(0, Math.floor((now.getTime() - start.getTime()) / 1000));
+        const elapsedMinutes = Math.max(1, Math.ceil(elapsedSeconds / 60));
+
+        return calcVisitEstimate(
+            elapsedMinutes,
+            visit.tariffBillingType,
+            visit.tariffPricePerMinute,
+            visit.tariffMinSessionMinutes,
+            visit.tariffRoundingRule,
+            globalDiscount,
+            tariffDiscount,
+            personalDiscount
+        );
+    }, [visit, promotions, loyalty]);
 
     const userFullName = getUserFullName(profile, visit?.userId);
 
@@ -67,7 +99,7 @@ export const VisitDetailPage = () => {
     }
     if (visit?.userId && balanceObj) {
         if (balance < 0 || (visit.status === VisitStatus.Active && balance < (visit.calculatedCost ?? 0))) {
-            warnings.push(`У пользователя недостаточно средств (Текущий баланс: ${balance.toLocaleString("ru-RU")} ₽)`);
+            warnings.push(`У пользователя недостаточно средств (Текущий баланс: ${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
         }
     }
 
@@ -96,10 +128,11 @@ export const VisitDetailPage = () => {
         if (visit?.status === VisitStatus.WaitingForPayment) {
             const interval = setInterval(() => {
                 void refetch();
+                if (!invoice) void refetchInvoice();
             }, 2000);
             return () => clearInterval(interval);
         }
-    }, [visit?.status, refetch]);
+    }, [visit?.status, refetch, refetchInvoice, invoice]);
 
     const handleEnd = async () => {
         if (!id) return;
@@ -150,7 +183,6 @@ export const VisitDetailPage = () => {
         setEndError(null);
         try {
             await payInvoice({ invoiceId: invoice.invoiceId, method }).unwrap();
-            // Polling will automatically pick up the status change.
             void refetchInvoice();
             void refetch();
         } catch (err) {
@@ -187,28 +219,32 @@ export const VisitDetailPage = () => {
                         </HasPermission>
                         <HasPermission can={Permissions.VenueVisitUpdate}>
                             {visit?.status === VisitStatus.Active && (
-                                <Button
-                                    size={sizes.button}
-                                    appearance="primary"
-                                    icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
-                                    onClick={handleEnd}
-                                    disabled={ending}
-                                >
-                                    Завершить визит
-                                </Button>
+                                <Tooltip content="Фиксирует время визита и выставляет счет, но ожидает оплаты для закрытия визита" relationship="label">
+                                    <Button
+                                        size={sizes.button}
+                                        appearance="primary"
+                                        icon={ending ? <Spinner size="tiny" /> : <Checkmark20Regular />}
+                                        onClick={handleEnd}
+                                        disabled={ending}
+                                    >
+                                        Завершить визит
+                                    </Button>
+                                </Tooltip>
                             )}
                         </HasPermission>
                         <HasPermission can={Permissions.VenueVisitForceEnd}>
                             {visit?.status === VisitStatus.Active && !visit?.isFinishRequested && (
-                                <Button
-                                    size={sizes.button}
-                                    appearance="secondary"
-                                    icon={forcingEnd ? <Spinner size="tiny" /> : <Clock20Regular />}
-                                    onClick={handleForceEnd}
-                                    disabled={forcingEnd}
-                                >
-                                    Принудительный выход
-                                </Button>
+                                <Tooltip content="Немедленно закрывает визит и отменяет выставленные счета (использовать в крайних случаях)" relationship="label">
+                                    <Button
+                                        size={sizes.button}
+                                        appearance="secondary"
+                                        icon={forcingEnd ? <Spinner size="tiny" /> : <Clock20Regular />}
+                                        onClick={handleForceEnd}
+                                        disabled={forcingEnd}
+                                    >
+                                        Принудительный выход
+                                    </Button>
+                                </Tooltip>
                             )}
                         </HasPermission>
                     </div>
@@ -250,7 +286,7 @@ export const VisitDetailPage = () => {
                                         color={balance < 0 ? "danger" : balance === 0 ? "warning" : "success"}
                                         appearance="filled"
                                     >
-                                        {balance.toLocaleString("ru-RU")} ₽
+                                        {balance.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
                                     </Badge>
                                 </div>
                             )}
@@ -263,7 +299,7 @@ export const VisitDetailPage = () => {
                             <div className="flex flex-col gap-2">
                                 <Body2 className="font-semibold flex items-center gap-2">
                                     <Warning20Regular className="text-(--colorStatusWarningForeground1)" />
-                                    Предупреждения
+                                    <span>Предупреждения</span>
                                 </Body2>
                                 <div className="flex flex-col gap-1">
                                     {warnings.map((w, i) => (
@@ -296,15 +332,17 @@ export const VisitDetailPage = () => {
                                         <div className="flex flex-col gap-2">
                                             <Body2>Провести оплату вручную:</Body2>
                                             <div className="flex gap-2 flex-wrap">
-                                                <Button size={sizes.button} appearance="primary" onClick={() => handleReceivePayment(2)}>
+                                                <Button size={sizes.button} appearance="primary" icon={<Money20Regular />} onClick={() => handleReceivePayment(2)}>
                                                     Наличные
                                                 </Button>
-                                                <Button size={sizes.button} appearance="secondary" onClick={() => handleReceivePayment(1)}>
+                                                <Button size={sizes.button} appearance="secondary" icon={<Payment20Regular />} onClick={() => handleReceivePayment(1)}>
                                                     Терминал
                                                 </Button>
-                                                <Button size={sizes.button} appearance="secondary" onClick={() => handleReceivePayment(3)}>
-                                                    Перевод (Онлайн)
-                                                </Button>
+                                                {visit.userId && (
+                                                    <Button size={sizes.button} appearance="secondary" icon={<Wallet20Regular />} onClick={() => handleReceivePayment(3)}>
+                                                        С баланса гостя
+                                                    </Button>
+                                                )}
                                             </div>
                                         </div>
                                     </HasPermission>
@@ -374,13 +412,50 @@ export const VisitDetailPage = () => {
                                         <Caption1 className="text-(--colorNeutralForeground3)">Запланировано</Caption1>
                                         <Body1>{visit?.plannedMinutes ? `${visit.plannedMinutes} мин.` : "Без ограничений"}</Body1>
                                     </div>
-                                    <div className="flex flex-col min-w-[120px]">
+                                    <div className="flex flex-col min-w-[150px]">
                                         <Caption1 className="text-(--colorNeutralForeground3)">Текущая стоимость</Caption1>
-                                        {visit?.status === VisitStatus.Active || visit?.status === VisitStatus.WaitingForPayment || visit?.status === VisitStatus.Completed
-                                            ? <Title3 style={{ color: "var(--colorBrandForeground1)" }}>
-                                                {formatMoney(visit?.calculatedCost ?? (visit?.tariffPricePerMinute ?? 0) * elapsedMinutes * (visit?.guestsCount || 1))}
+                                        {estimate ? (
+                                            <div className="flex flex-col">
+                                                <div className="flex items-end gap-2">
+                                                    {estimate.isDiscounted && (
+                                                        <span className="line-through text-(--colorNeutralForeground3) text-sm">
+                                                            {formatMoneyByN(estimate.baseTotal)}
+                                                        </span>
+                                                    )}
+                                                    <Title3 style={{ color: "var(--colorBrandForeground1)" }}>
+                                                        {formatMoneyByN(estimate.total)}
+                                                    </Title3>
+                                                </div>
+                                                <Body2 className="text-(--colorNeutralForeground3) mt-1">{estimate.breakdown}</Body2>
+                                                {estimate.isDiscounted && (
+                                                    <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1 w-full text-left">
+                                                        {personalDiscount > 0 && (
+                                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                                <span>Скидка лояльности:</span>
+                                                                <span className="font-semibold">-{personalDiscount}%</span>
+                                                            </div>
+                                                        )}
+                                                        {Math.max(globalDiscount, tariffDiscount) > 0 && (
+                                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                                <span>Акционная скидка:</span>
+                                                                <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                                            </div>
+                                                        )}
+                                                        <Divider className="my-1" />
+                                                        <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
+                                                            <span>Итоговая скидка:</span>
+                                                            <span>-{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : visit?.status === VisitStatus.WaitingForPayment || visit?.status === VisitStatus.Completed ? (
+                                            <Title3 style={{ color: "var(--colorBrandForeground1)" }}>
+                                                {formatMoney(visit.calculatedCost ?? 0)}
                                             </Title3>
-                                            : <Body1 className="text-(--colorNeutralForeground3)">—</Body1>}
+                                        ) : (
+                                            <Body1 className="text-(--colorNeutralForeground3)">—</Body1>
+                                        )}
                                     </div>
                                 </div>
                             </div>

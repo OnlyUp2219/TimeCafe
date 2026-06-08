@@ -1,6 +1,6 @@
 import { type FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Avatar, Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
+import { Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { clearTokens } from "@store/authSlice";
 import { setSidebarCollapsed } from "@store/uiSlice";
@@ -8,7 +8,7 @@ import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
     SignOut20Regular, Eye20Regular, Bug24Regular, ShieldSettings20Regular,
-    DocumentText20Regular, HeartPulse20Regular, Grid20Regular
+    DocumentText20Regular, Grid20Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";

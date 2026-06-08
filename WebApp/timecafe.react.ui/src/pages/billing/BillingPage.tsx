@@ -30,7 +30,7 @@ import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import { useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery, useInitializeStripeCheckoutMutation } from "@store/api/billingApi";
 
 const TELEGRAM_SUPPORT_URL = "https://t.me/OnlyUp_S";
-import { useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery } from "@store/api/venueApi";
+import { useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVisitQuery, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 
 import { usePagination } from "@hooks/usePagination";
 import { useComponentSize } from "@hooks/useComponentSize";
@@ -51,6 +51,8 @@ export const BillingPage = () => {
     const { data: tariffsData } = useGetActiveTariffsQuery();
     const { data: hasActive } = useHasActiveVisitQuery(userId ?? "", { skip: !userId });
     const { data: activeVisitData } = useGetActiveVisitByUserQuery(userId ?? "", { skip: !userId || !hasActive });
+    const { data: loyalty } = useGetUserLoyaltyQuery(userId ?? "", { skip: !userId });
+    const { data: promotions } = useGetAllPromotionsQuery();
     const [initCheckout, { isLoading: initializingCheckout, error: checkoutRtkError, reset: resetCheckout }] = useInitializeStripeCheckoutMutation();
 
     const balanceRub = balance?.currentBalance ?? 0;
@@ -58,19 +60,35 @@ export const BillingPage = () => {
     const pagination = txData?.metadata ?? { page: 1, pageSize, totalCount: 0, totalPages: 0 };
     const checkoutError = checkoutRtkError ? getRtkErrorMessage(checkoutRtkError) || "Не удалось инициализировать пополнение" : null;
 
-    const tariffs: Tariff[] = useMemo(() => {
+    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
+    const nowStr = new Date().toISOString();
+    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
+    const globalDiscount = activePromotions.length > 0
+        ? Math.max(0, ...activePromotions.filter(p => p.type === 0).map(p => p.discountPercent ?? 0))
+        : 0;
+
+    const tariffs: (Tariff & { discountedPricePerMinute?: number })[] = useMemo(() => {
         if (!tariffsData) return [];
-        return tariffsData.map((t) => ({
-            tariffId: t.tariffId,
-            name: t.name,
-            description: t.description ?? "",
-            billingType: t.billingType,
-            pricePerMinute: t.pricePerMinute,
-            isActive: t.isActive,
-            themeName: t.themeName,
-            themeEmoji: t.themeEmoji ?? null,
-        }));
-    }, [tariffsData]);
+        return tariffsData.map((t) => {
+            const tariffDiscount = activePromotions.length > 0
+                ? Math.max(0, ...activePromotions.filter(p => p.type === 1 && p.tariffId === t.tariffId).map(p => p.discountPercent ?? 0))
+                : 0;
+            const bestPromotion = Math.max(globalDiscount, tariffDiscount);
+            const appliedDiscountPercent = Math.min(bestPromotion + personalDiscount, 50);
+
+            return {
+                tariffId: t.tariffId,
+                name: t.name,
+                description: t.description ?? "",
+                billingType: t.billingType,
+                pricePerMinute: t.pricePerMinute,
+                discountedPricePerMinute: t.pricePerMinute * (1 - appliedDiscountPercent / 100),
+                isActive: t.isActive,
+                themeName: t.themeName,
+                themeEmoji: t.themeEmoji ?? null,
+            };
+        });
+    }, [tariffsData, activePromotions, globalDiscount, personalDiscount]);
 
     const [draftAmountText, setDraftAmountText] = useState("");
 
@@ -148,13 +166,7 @@ export const BillingPage = () => {
         await openCheckout(amount, "Погашение задолженности");
     }, [debtRub, openCheckout]);
 
-    const onLoadMoreTransactions = useCallback(() => {
-        if (!userId) return;
-        if (pagination.page >= pagination.totalPages) return;
-        setPage(pagination.page + 1);
-    }, [pagination.page, pagination.totalPages, userId]);
 
-    const canLoadMoreTransactions = pagination.page < pagination.totalPages;
 
     const weeklyActivity = useMemo<BillingActivityPoint[]>(() => {
         const today = new Date();

@@ -1,6 +1,6 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import {createElement, useState, type FC} from "react";import {
-Badge,
+import { NO_DATA } from "@shared/const/placeholders";
+import {createElement, useState, type FC} from "react";
+import {
     Body1,
     Body1Strong,
     Body2,
@@ -13,11 +13,18 @@ Badge,
     DialogContent,
     DialogSurface,
     DialogTitle,
-    Tag,
     Title2,
     Tooltip,
 } from "@fluentui/react-components";
-import {Delete20Regular, Edit20Filled, PhoneRegular} from "@fluentui/react-icons";import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";import {useAppDispatch, useAppSelector} from "@store/hooks";import {useClearPhoneNumberMutation} from "@store/api/authApi";import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";import {getPersonalDataStatusClass, getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";import {useComponentSize} from "@hooks/useComponentSize";
+import {Delete20Regular, Edit20Filled, PhoneRegular} from "@fluentui/react-icons";
+import {PhoneVerificationModal} from "@components/PhoneVerificationModal/PhoneVerificationModal";
+import {useAppDispatch, useAppSelector} from "@store/hooks";
+import {useClearPhoneNumberMutation} from "@store/api/authApi";
+import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
+import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
+import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
+import {getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface PhoneFormCardProps {
     loading?: boolean;

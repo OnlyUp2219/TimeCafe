@@ -1,5 +1,5 @@
 import type {FC} from "react";
-import {Badge, Body2, Button, Card, Title2, tokens} from "@fluentui/react-components";
+import {Body2, Button, Card, Title2, tokens} from "@fluentui/react-components";
 import {ArrowExitFilled, ArrowExitRegular} from "@fluentui/react-icons";
 import {useComponentSize} from "@hooks/useComponentSize";
 

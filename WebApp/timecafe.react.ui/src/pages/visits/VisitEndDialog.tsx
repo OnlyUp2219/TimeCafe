@@ -23,6 +23,13 @@ interface VisitEndDialogProps {
     duration: string;
     estimateTotal: number;
     estimateBreakdown: string;
+    estimateBaseTotal: number;
+    estimateDiscountTotal: number;
+    estimateAppliedDiscountPercent: number;
+    estimateIsDiscounted: boolean;
+    personalDiscount: number;
+    globalDiscount: number;
+    tariffDiscount: number;
     confirming: boolean;
 }
 
@@ -34,6 +41,13 @@ export const VisitEndDialog: FC<VisitEndDialogProps> = ({
     duration,
     estimateTotal,
     estimateBreakdown,
+    estimateBaseTotal,
+    estimateDiscountTotal,
+    estimateAppliedDiscountPercent,
+    estimateIsDiscounted,
+    personalDiscount,
+    globalDiscount,
+    tariffDiscount,
     confirming,
 }) => (
     <Dialog open={open} onOpenChange={(_, data) => onOpenChange(data.open)}>
@@ -69,9 +83,39 @@ export const VisitEndDialog: FC<VisitEndDialogProps> = ({
 
                                 <div className="flex items-center justify-between gap-3">
                                     <Body1 block>Итого к списанию</Body1>
-                                    <Title3>{formatMoneyByN(estimateTotal)}</Title3>
+                                    <div className="flex flex-col items-end gap-1">
+                                        {estimateIsDiscounted && (
+                                            <span className="line-through text-(--colorNeutralForeground3) text-sm">
+                                                {formatMoneyByN(estimateBaseTotal)}
+                                            </span>
+                                        )}
+                                        <Title3>{formatMoneyByN(estimateTotal)}</Title3>
+                                    </div>
                                 </div>
-                                <Body1>{estimateBreakdown}</Body1>
+                                <div className="flex flex-col gap-1 items-end w-full">
+                                    <Body1 className="text-right">{estimateBreakdown}</Body1>
+                                    {estimateIsDiscounted && (
+                                        <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-2 w-full text-left">
+                                            {personalDiscount > 0 && (
+                                                <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                    <span>Скидка лояльности:</span>
+                                                    <span className="font-semibold">-{personalDiscount}%</span>
+                                                </div>
+                                            )}
+                                            {Math.max(globalDiscount, tariffDiscount) > 0 && (
+                                                <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                    <span>Акционная скидка:</span>
+                                                    <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                                </div>
+                                            )}
+                                            <Divider className="my-1" />
+                                            <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
+                                                <span>Итоговая скидка:</span>
+                                                <span>-{estimateAppliedDiscountPercent}% (-{formatMoneyByN(estimateDiscountTotal)})</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </Card>
                     </div>

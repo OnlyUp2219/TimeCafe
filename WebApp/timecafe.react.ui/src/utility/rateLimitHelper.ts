@@ -12,9 +12,9 @@ export interface RateLimitedResponse<T> {
     status: number;
 }
 
-const parseHeader = (headers: Record<string, string>, key: string): number | undefined => {
+const parseHeader = (headers: any, key: string): number | undefined => {
     const value = headers[key];
-    return value ? Number.parseInt(value, 10) : undefined;
+    return value ? Number.parseInt(String(value), 10) : undefined;
 };
 
 export async function withRateLimit<T>(

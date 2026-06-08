@@ -16,7 +16,6 @@ import {
 } from "@app-types/billing";
 
 import { DataTable } from "@components/DataTable";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { NO_DATA } from "@shared/const/placeholders";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { Pagination } from "@components/Pagination";

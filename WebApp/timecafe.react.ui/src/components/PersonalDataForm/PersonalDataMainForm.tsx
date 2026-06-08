@@ -1,5 +1,12 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import {useEffect, useId, useMemo, useState, type FC} from "react";import {Badge, Button, Card, Field, Input, Label, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";import type {Profile} from "@app-types/profile";import {DateInput} from "@components/FormFields";import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";import {normalizeDate} from "@utility/normalizeDate";import {useComponentSize} from "@hooks/useComponentSize";
+import { NO_DATA } from "@shared/const/placeholders";
+import {useEffect, useId, useMemo, useState, type FC} from "react";
+import {Button, Card, Field, Input, Label, Radio, RadioGroup, Text, Title2} from "@fluentui/react-components";
+import {Edit20Filled, PersonRegular} from "@fluentui/react-icons";
+import type {Profile} from "@app-types/profile";
+import {DateInput} from "@components/FormFields";
+import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";
+import {normalizeDate} from "@utility/normalizeDate";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 export interface PersonalDataMainFormProps {
     profile: Profile;

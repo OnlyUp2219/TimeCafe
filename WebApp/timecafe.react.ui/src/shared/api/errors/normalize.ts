@@ -102,7 +102,6 @@ const normalizeFromLegacy = (data: unknown, fallbackStatusCode: number): ApiErro
     // Проверяем наличие признаков "старого" формата
     const hasSuccess = typeof obj.success === "boolean";
     const hasErrorField = typeof obj.error === "string";
-    const hasMessage = typeof obj.message === "string";
 
     if (!hasSuccess && !hasErrorField) return null;
 

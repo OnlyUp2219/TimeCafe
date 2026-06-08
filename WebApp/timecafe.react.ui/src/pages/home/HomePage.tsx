@@ -7,13 +7,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAppSelector } from "@store/hooks";
 
-import { calcVisitEstimate } from "@utility/visitEstimate";
 import { VisitStatus } from "@app-types/visit";
 import { TransactionType, type BillingTransaction } from "@app-types/billing";
 import { useGetActiveVisitByUserQuery, useHasActiveVisitQuery } from "@store/api/venueApi";
 import { useGetBalanceQuery, useGetDebtQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
-import { useComponentSize } from "@hooks/useComponentSize";
+
 import { BalanceCard } from "./BalanceCard";
 import { VisitCard } from "./VisitCard";
 import { WeekSpentCard } from "./WeekSpentCard";
@@ -40,7 +39,7 @@ export const HomePage = () => {
     );
 
     const balanceRub = balance?.currentBalance ?? 0;
-    const transactions: BillingTransaction[] = useMemo(() => txData?.transactions ?? [], [txData?.transactions]);
+    const transactions: BillingTransaction[] = useMemo(() => txData?.items ?? [], [txData?.items]);
 
     const visitStatus = activeVisitData?.status;
     const isActiveVisit = hasActive && visitStatus === VisitStatus.Active;
@@ -68,20 +67,6 @@ export const HomePage = () => {
         if (!isActiveVisit || !startedAtMs) return 0;
         return Math.max(0, Math.floor((now - startedAtMs) / 1000));
     }, [isActiveVisit, startedAtMs, now]);
-
-    const activeElapsedMinutes = useMemo(
-        () => Math.max(1, Math.ceil(activeElapsedSeconds / 60)),
-        [activeElapsedSeconds]
-    );
-
-    const activeEstimate = useMemo(() => {
-        if (!isActiveVisit || !activeVisitData) return null;
-        return calcVisitEstimate(
-            activeElapsedMinutes,
-            activeVisitData.tariffBillingType,
-            activeVisitData.tariffPricePerMinute
-        );
-    }, [activeElapsedMinutes, activeVisitData, isActiveVisit]);
 
     const displayName = useMemo(() => {
         const firstName = profile?.firstName?.trim();
@@ -140,7 +125,7 @@ export const HomePage = () => {
                 <VisitCard
                     status={visitStatus}
                     elapsedSeconds={activeElapsedSeconds}
-                    estimateTotal={activeEstimate?.total ?? null}
+
                     visitInfo={visitInfoText}
                     onNavigateVisit={() => navigate(hasAnyVisit ? "/visit/active" : "/visit/start")}
                     onNavigateBilling={() => navigate("/billing")}

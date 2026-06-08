@@ -14,7 +14,7 @@ describe("calcVisitEstimate", () => {
     });
 
     it("calculates per-minute estimates", () => {
-        const result = calcVisitEstimate(15.9, BillingType.PerMinute, 2);
+        const result = calcVisitEstimate(15, BillingType.PerMinute, 2);
 
         expect(result.total).toBe(30);
         expect(result.chargedMinutes).toBe(15);

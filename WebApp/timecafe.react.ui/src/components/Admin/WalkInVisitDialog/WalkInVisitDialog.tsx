@@ -18,6 +18,7 @@ import {
 import { useGetActiveTariffsQuery, useWalkInVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 interface WalkInVisitDialogProps {
     open: boolean;
@@ -127,15 +128,15 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
 
                             <Field label="Тариф" required>
                                 <Dropdown
-                                    value={selectedTariff ? `${selectedTariff.name} (${selectedTariff.pricePerMinute.toFixed(2)} ₽/мин)` : (loadingTariffs ? "Загрузка тарифов..." : "Выберите тариф")}
+                                    value={selectedTariff ? `${selectedTariff.name} (${selectedTariff.pricePerMinute.toFixed(2)} ${CURRENCY_SYMBOL}/мин)` : (loadingTariffs ? "Загрузка тарифов..." : "Выберите тариф")}
                                     selectedOptions={tariffId ? [tariffId] : []}
                                     onOptionSelect={(_, data) => setTariffId(data.optionValue || "")}
                                     disabled={loadingTariffs || submitting}
                                 >
                                     {tariffs && tariffs.length > 0 ? (
                                         tariffs.map((t) => (
-                                            <Option key={t.tariffId} value={t.tariffId} text={`${t.name} (${t.pricePerMinute.toFixed(2)} ₽/мин)`}>
-                                                {t.name} ({t.pricePerMinute.toFixed(2)} ₽/мин)
+                                            <Option key={t.tariffId} value={t.tariffId} text={`${t.name} (${t.pricePerMinute.toFixed(2)} ${CURRENCY_SYMBOL}/мин)`}>
+                                                {t.name} ({t.pricePerMinute.toFixed(2)} {CURRENCY_SYMBOL}/мин)
                                             </Option>
                                         ))
                                     ) : (

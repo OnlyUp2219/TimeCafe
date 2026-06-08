@@ -14,7 +14,6 @@ import {
     Dropdown,
     Option,
     Divider,
-    Title1,
     Subtitle1,
     ColorPicker as FluentColorPicker,
     ColorSlider,
@@ -53,6 +52,7 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { EmojiPicker } from "@components/EmojiPicker/EmojiPicker";
 import { parseThemeConfig, getThemeStyles, getPatternLayerStyles, type ThemeConfig, type PatternLayer } from "@utility/themeStyles";
 import { PageLoader } from "@components/PageLoader/PageLoader";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 
 const ColorPicker = memo(({ value, onChange }: { value: string; onChange: (val: string) => void }) => {
@@ -144,7 +144,7 @@ const ThemePreviewCard = memo(({ config, emoji, name, textColor, className }: { 
 
             <div className="flex flex-col gap-1 px-3 relative z-10">
                 <Caption1 style={{ color: textColor, opacity: 0.7 }}>Стандартный</Caption1>
-                <Title2 style={{ color: textColor }}>15.00 ₽ / мин</Title2>
+                <Title2 style={{ color: textColor }}>15.00 {CURRENCY_SYMBOL} / мин</Title2>
             </div>
 
             <CardFooter className="relative z-10">

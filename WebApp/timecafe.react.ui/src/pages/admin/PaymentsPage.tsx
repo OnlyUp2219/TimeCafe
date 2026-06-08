@@ -1,5 +1,6 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { useMemo } from "react";import {
+import { NO_DATA } from "@shared/const/placeholders";
+import { useMemo } from "react";
+import {
 Avatar,
     Badge,
     Body1,
@@ -12,7 +13,24 @@ Avatar,
     createTableColumn,
     TableCellLayout,
 } from "@fluentui/react-components";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { useGetAdminPaymentsQuery } from "@store/api/adminApi";import type { AdminPaymentDto } from "@store/api/adminApi";import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { useComponentSize } from "@hooks/useComponentSize";import { usePermissions } from "@hooks/usePermissions";import { Permissions, type Permission } from "@shared/auth/permissions";import { usePagination } from "@hooks/usePagination";import { DismissableError } from "@components/DismissableError/DismissableError";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { paymentStatusLabel, paymentStatusColor, paymentMethodLabel } from "@utility/billingUtils";import { formatDateTime as formatDate } from "@utility/dateUtils";import { formatMoney } from "@utility/formatUtils";import { getUserFullName } from "@utility/userUtils";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { useGetAdminPaymentsQuery } from "@store/api/adminApi";
+import type { AdminPaymentDto } from "@store/api/adminApi";
+import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
+import { Permissions, type Permission } from "@shared/auth/permissions";
+import { usePagination } from "@hooks/usePagination";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+
+import { paymentStatusLabel, paymentStatusColor, paymentMethodLabel } from "@utility/billingUtils";
+import { formatDateTime as formatDate } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
+import { getUserFullName } from "@utility/userUtils";
 
 const AdminUserCell = ({ userId }: { userId: string }) => {
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);

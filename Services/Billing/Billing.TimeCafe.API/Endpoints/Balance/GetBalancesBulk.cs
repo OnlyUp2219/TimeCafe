@@ -11,7 +11,7 @@ public class GetBalancesBulk : ICarterModule
             var query = new GetBalancesBulkQuery(userIds);
             var result = await sender.Send(query);
             
-            return result.ToHttpResult(onSuccess: r => TypedResults.Ok(r));
+            return result.ToHttpResult(r => TypedResults.Ok(r));
         })
         .WithTags("Balance")
         .WithName("GetBalancesBulk")

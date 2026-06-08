@@ -18,23 +18,22 @@ import {
     Sticker20Regular,
     Dismiss20Regular,
     ArrowLeft20Regular,
+    Payment20Regular,
 } from "@fluentui/react-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useAppSelector } from "@store/hooks";
 import { useNavigate } from "react-router-dom";
-import { BillingType as BillingTypeEnum, type BillingType } from "@app-types/tariff";
+import { BillingType as BillingTypeEnum } from "@app-types/tariff";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import { useComponentSize } from "@hooks/useComponentSize";
-
-
-
+import { calcVisitEstimate } from "@utility/visitEstimate";
 import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
 import "./visits.css";
 import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useGetActiveVisitByUserQuery, useRequestEndVisitMutation, useCancelVisitMutation } from "@store/api/venueApi";
-import { useGetInvoiceByVisitIdQuery, usePayInvoiceMutation, useInitializeStripeInvoicePaymentMutation, useGetBalanceQuery } from "@store/api/billingApi";
+import { useGetActiveVisitByUserQuery, useRequestEndVisitMutation, useCancelVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
+import { useGetInvoiceByVisitIdQuery, usePayInvoiceMutation, useInitializeStripeInvoicePaymentMutation, useInitializeStripeCheckoutMutation, useGetBalanceQuery } from "@store/api/billingApi";
 import { VisitStatus } from "@app-types/visit";
 import { VisitEndDialog } from "./VisitEndDialog";
 import { VisitCancelDialog } from "./VisitCancelDialog";
@@ -59,56 +58,6 @@ const formatDuration = (totalSeconds: number) => {
     return `${hours}ч ${pad2(minutes)}м ${pad2(seconds)}с`;
 };
 
-type Estimate = {
-    total: number;
-    breakdown: string;
-    chargedHours?: number;
-    chargedMinutes?: number;
-};
-
-const calcEstimate = (
-    elapsedMinutes: number,
-    billingType: BillingType,
-    pricePerMinute: number,
-    minSessionMinutes: number | null,
-    roundingRule: string | null
-): Estimate => {
-    const actualDuration = elapsedMinutes;
-    const safePricePerMinute = Math.max(0, pricePerMinute);
-
-    let duration = actualDuration;
-    if (minSessionMinutes && duration < minSessionMinutes) {
-        duration = minSessionMinutes;
-    }
-
-    let roundInterval = 1;
-    if (roundingRule === "FiveMinutes") roundInterval = 5;
-    else if (roundingRule === "FifteenMinutes") roundInterval = 15;
-    else if (roundingRule === "SixtyMinutes") roundInterval = 60;
-
-    if (roundInterval > 1) {
-        duration = Math.ceil(duration / roundInterval) * roundInterval;
-    }
-
-    let total = 0;
-    let breakdown = "";
-
-    if (billingType === BillingTypeEnum.Hourly) {
-        const hours = Math.ceil(duration / 60);
-        const pricePerHour = safePricePerMinute * 60;
-        total = hours * pricePerHour;
-        breakdown = `${formatMoneyByN(pricePerHour)} / час × ${hours} ч (округлено до ${duration} мин)`;
-    } else {
-        total = duration * safePricePerMinute;
-        breakdown = `${formatMoneyByN(safePricePerMinute)} / мин × ${duration} мин (минимально: ${minSessionMinutes ?? 1} мин)`;
-    }
-
-    return {
-        total,
-        breakdown,
-    };
-};
-
 export const ActiveVisitPage = () => {
     const navigate = useNavigate();
     const { showToast, ToasterElement } = useProgressToast();
@@ -124,6 +73,7 @@ export const ActiveVisitPage = () => {
     const [requestEndVisit, { isLoading: endingVisit }] = useRequestEndVisitMutation();
     const [payInvoice, { isLoading: payingInvoice }] = usePayInvoiceMutation();
     const [initializeStripePayment, { isLoading: initializingStripe }] = useInitializeStripeInvoicePaymentMutation();
+    const [initializeStripeCheckout] = useInitializeStripeCheckoutMutation();
     const [cancelVisit, { isLoading: cancellingVisit }] = useCancelVisitMutation();
 
     const { data: invoice, isLoading: loadingInvoice, refetch: refetchInvoice } = useGetInvoiceByVisitIdQuery(
@@ -134,6 +84,8 @@ export const ActiveVisitPage = () => {
     );
 
     const { data: userBalance } = useGetBalanceQuery(userId ?? "", { skip: !userId });
+    const { data: loyalty } = useGetUserLoyaltyQuery(userId ?? "", { skip: !userId });
+    const { data: promotions } = useGetAllPromotionsQuery();
 
     const handlePayFromBalance = async () => {
         if (!invoice) return;
@@ -155,7 +107,7 @@ export const ActiveVisitPage = () => {
                 successUrl: globalThis.location.href,
                 cancelUrl: globalThis.location.href
             }).unwrap();
-            
+
             if (res.checkoutUrl) {
                 globalThis.location.href = res.checkoutUrl;
             } else {
@@ -173,6 +125,26 @@ export const ActiveVisitPage = () => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
     const [exitComplete, setExitComplete] = useState(false);
+
+    const [gracePeriodEnd, setGracePeriodEnd] = useState<number | null>(null);
+    const [graceSecondsLeft, setGraceSecondsLeft] = useState(0);
+
+    useEffect(() => {
+        if (activeVisit?.isFinishRequested && !gracePeriodEnd) {
+            setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
+        } else if (!activeVisit?.isFinishRequested && gracePeriodEnd) {
+            setGracePeriodEnd(null);
+        }
+    }, [activeVisit?.isFinishRequested, gracePeriodEnd]);
+
+    useEffect(() => {
+        if (!gracePeriodEnd) return;
+        const interval = globalThis.setInterval(() => {
+            const left = Math.max(0, Math.floor((gracePeriodEnd - Date.now()) / 1000));
+            setGraceSecondsLeft(left);
+        }, 1000);
+        return () => globalThis.clearInterval(interval);
+    }, [gracePeriodEnd]);
 
     const isActive = activeVisit?.status === VisitStatus.Active;
 
@@ -208,20 +180,26 @@ export const ActiveVisitPage = () => {
 
     const elapsedMinutes = useMemo(() => Math.max(1, Math.ceil(elapsedSeconds / 60)), [elapsedSeconds]);
 
+    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
+    const nowStr = new Date().toISOString();
+    const activePromotions = promotions?.filter((p: any) => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
+    const globalDiscount = activePromotions.length > 0
+        ? Math.max(0, ...activePromotions.filter((p: any) => p.type === 0).map((p: any) => p.discountPercent ?? 0))
+        : 0;
+    const tariffDiscount = (activeVisit && activePromotions.length > 0)
+        ? Math.max(0, ...activePromotions.filter((p: any) => p.type === 1 && p.tariffId === activeVisit.tariffId).map((p: any) => p.discountPercent ?? 0))
+        : 0;
+
     const estimate = useMemo(() => {
-        if (!isActive) return { total: 0, breakdown: "" };
+        if (!isActive) return { total: 0, breakdown: "", baseTotal: 0, discountTotal: 0, appliedDiscountPercent: 0, isDiscounted: false };
         const billingType = activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute;
         const pricePerMinute = activeVisit?.tariffPricePerMinute ?? 0;
         const minSessionMinutes = activeVisit?.tariffMinSessionMinutes ?? null;
         const roundingRule = activeVisit?.tariffRoundingRule ?? null;
-        return calcEstimate(elapsedMinutes, billingType, pricePerMinute, minSessionMinutes, roundingRule);
-    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, activeVisit?.tariffMinSessionMinutes, activeVisit?.tariffRoundingRule, elapsedMinutes, isActive]);
+        return calcVisitEstimate(elapsedMinutes, billingType, pricePerMinute, minSessionMinutes, roundingRule, globalDiscount, tariffDiscount, personalDiscount);
+    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, activeVisit?.tariffMinSessionMinutes, activeVisit?.tariffRoundingRule, elapsedMinutes, isActive, globalDiscount, tariffDiscount, personalDiscount]);
 
-    const progressToNextHour = useMemo(() => {
-        if (!isActive || activeVisit?.tariffBillingType !== BillingTypeEnum.Hourly) return null;
-        const minutesIntoHour = elapsedMinutes % 60;
-        return minutesIntoHour / 60;
-    }, [activeVisit?.tariffBillingType, elapsedMinutes, isActive]);
+
 
     const onFinishVisit = async () => {
         if (!activeVisit?.visitId) return;
@@ -229,11 +207,33 @@ export const ActiveVisitPage = () => {
         try {
             await requestEndVisit(activeVisit.visitId).unwrap();
             setConfirmOpen(false);
+            setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
             showToast("Запрос на выход успешно отправлен", "success", "Готово");
             void refetch();
         } catch (err) {
             setExitComplete(false);
             const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось завершить визит";
+            showToast(message, "error", "Ошибка");
+        }
+    };
+
+    const handleGraceStripeCheckout = async () => {
+        if (!userId) return;
+        try {
+            const res = await initializeStripeCheckout({
+                userId,
+                amount: estimate.total,
+                successUrl: globalThis.location.href,
+                cancelUrl: globalThis.location.href
+            }).unwrap();
+
+            if (res.checkoutUrl) {
+                globalThis.location.href = res.checkoutUrl;
+            } else {
+                showToast("Не удалось сгенерировать ссылку Stripe Checkout", "error", "Ошибка");
+            }
+        } catch (err) {
+            const message = getRtkErrorMessage(err as FetchBaseQueryError) || "Не удалось инициализировать оплату Stripe";
             showToast(message, "error", "Ошибка");
         }
     };
@@ -319,7 +319,7 @@ export const ActiveVisitPage = () => {
                         </div>
                     </div>
                 )}
-                
+
                 <HoverTiltCard className="order-2 lg:order-1 lg:col-span-8" size={sizes.card}>
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -333,6 +333,11 @@ export const ActiveVisitPage = () => {
                                 </Tag>
                                 <Tag appearance="outline" data-testid="visit-active-estimate"
                                     icon={<Money20Regular />} >{formatMoneyByN(estimate.total)}</Tag>
+                                {estimate.isDiscounted && (
+                                    <Tag appearance="brand" color="success">
+                                        -{estimate.appliedDiscountPercent}%
+                                    </Tag>
+                                )}
                             </div>
                         </div>
                         <Divider />
@@ -371,16 +376,49 @@ export const ActiveVisitPage = () => {
                             <Subtitle2Stronger>Действия</Subtitle2Stronger>
                         </div>
                         <Divider />
-                        <Button
-                            appearance="primary"
-                            icon={<DoorArrowRight20Regular />}
-                            data-testid="visit-active-exit"
-                            onClick={() => setConfirmOpen(true)}
-                            disabled={exitComplete || endingVisit || activeVisit?.isFinishRequested}
-                            size={sizes.button}
-                        >
-                            {activeVisit?.isFinishRequested ? "Ожидание фиксации времени" : "Выход из заведения"}
-                        </Button>
+                        {activeVisit?.isFinishRequested && gracePeriodEnd !== null ? (
+                            <div className="flex flex-col gap-4 p-4 bg-(--colorStatusWarningBackground1) rounded-xl border border-(--colorStatusWarningBorder1)">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-(--colorStatusWarningForeground1)">
+                                        <Clock20Regular />
+                                        <Subtitle2Stronger>Ожидаем оплату</Subtitle2Stronger>
+                                    </div>
+                                    <Title1 className="text-(--colorStatusWarningForeground1)">
+                                        {Math.floor(graceSecondsLeft / 60)}:{(graceSecondsLeft % 60).toString().padStart(2, '0')}
+                                    </Title1>
+                                </div>
+                                <Body1>Вы можете пополнить баланс онлайн или оплатить на кассе. Если время выйдет, таймер будет продолжен.</Body1>
+                                <div className="flex flex-col gap-2">
+                                    <Button
+                                        appearance="primary"
+                                        onClick={handleGraceStripeCheckout}
+                                        icon={<Payment20Regular />}
+                                    >
+                                        Пополнить через Stripe
+                                    </Button>
+                                    <Button
+                                        onClick={() => setGracePeriodEnd(null)}
+                                        icon={<Money20Regular />}
+                                        disabled={userBalance?.currentBalance !== undefined && userBalance.currentBalance < estimate.total}
+                                    >
+                                        {userBalance?.currentBalance !== undefined && userBalance.currentBalance < estimate.total
+                                            ? "Недостаточно средств на балансе"
+                                            : "У меня хватает баланса"}
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                appearance="primary"
+                                icon={<DoorArrowRight20Regular />}
+                                data-testid="visit-active-exit"
+                                onClick={() => setConfirmOpen(true)}
+                                disabled={exitComplete || endingVisit || activeVisit?.isFinishRequested}
+                                size={sizes.button}
+                            >
+                                {activeVisit?.isFinishRequested ? "Ожидание фиксации времени" : "Выход из заведения"}
+                            </Button>
+                        )}
 
                         <div className="flex flex-col gap-2">
                             <div className="flex items-center justify-between gap-3">
@@ -404,8 +442,10 @@ export const ActiveVisitPage = () => {
                 <VisitDetailsCard
                     tariffName={activeVisit?.tariffName ?? "Тариф"}
                     billingType={activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute}
-                    estimateTotal={estimate.total}
-                    estimateBreakdown={estimate.breakdown}
+                    estimate={estimate}
+                    personalDiscount={personalDiscount}
+                    globalDiscount={globalDiscount}
+                    tariffDiscount={tariffDiscount}
                 />
 
                 <VisitAtmosphereCard
@@ -467,7 +507,7 @@ export const ActiveVisitPage = () => {
                             <Subtitle2Stronger>Счёт на оплату визита</Subtitle2Stronger>
                         </div>
                         <Divider />
-                        
+
                         <div className="flex flex-col gap-3">
                             <div className="flex justify-between items-center bg-(--colorNeutralBackground2) p-4 rounded-xl">
                                 <Body1>Итого к оплате:</Body1>
@@ -486,35 +526,37 @@ export const ActiveVisitPage = () => {
                         <Divider />
                         <div className="flex flex-col gap-3">
                             <Subtitle2Stronger>Способы оплаты</Subtitle2Stronger>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
-                                    <div>
-                                        <Subtitle2Stronger className="block mb-1">С внутреннего баланса</Subtitle2Stronger>
-                                        <Body2 className="block mb-2">Быстрая оплата в одно нажатие.</Body2>
-                                        <div className="text-sm bg-(--colorNeutralBackground2) p-2 rounded-lg flex justify-between">
-                                            <span>Ваш баланс:</span>
-                                            <span className={canPayWithBalance ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
-                                                {formatMoneyByN(balanceAmount)}
-                                            </span>
+
+                            <div className={`grid grid-cols-1 ${userId ? 'md:grid-cols-2' : ''} gap-4`}>
+                                {userId && (
+                                    <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
+                                        <div>
+                                            <Subtitle2Stronger className="block mb-1">С внутреннего баланса</Subtitle2Stronger>
+                                            <Body2 className="block mb-2">Быстрая оплата в одно нажатие.</Body2>
+                                            <div className="text-sm bg-(--colorNeutralBackground2) p-2 rounded-lg flex justify-between">
+                                                <span>Ваш баланс:</span>
+                                                <span className={canPayWithBalance ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
+                                                    {formatMoneyByN(balanceAmount)}
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <Button 
-                                        appearance="primary" 
-                                        onClick={() => void handlePayFromBalance()}
-                                        disabled={!canPayWithBalance || payingInvoice}
-                                        icon={<Money20Regular />}
-                                    >
-                                        Оплатить с баланса
-                                    </Button>
-                                </Card>
+                                        <Button
+                                            appearance="primary"
+                                            onClick={() => void handlePayFromBalance()}
+                                            disabled={!canPayWithBalance || payingInvoice}
+                                            icon={<Money20Regular />}
+                                        >
+                                            Оплатить с баланса
+                                        </Button>
+                                    </Card>
+                                )}
 
                                 <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
                                     <div>
                                         <Subtitle2Stronger className="block mb-1">Банковской картой (Stripe)</Subtitle2Stronger>
                                         <Body2 className="block mb-2">Безопасная онлайн-оплата через Stripe Checkout.</Body2>
                                     </div>
-                                    <Button 
+                                    <Button
                                         appearance="primary"
                                         onClick={() => void handlePayViaStripe()}
                                         disabled={initializingStripe}
@@ -600,8 +642,15 @@ export const ActiveVisitPage = () => {
                 onConfirm={() => void onFinishVisit()}
                 tariffName={activeVisit?.tariffName ?? "Тариф"}
                 duration={formatDuration(elapsedSeconds)}
+                estimateBaseTotal={estimate.baseTotal}
+                estimateDiscountTotal={estimate.discountTotal}
+                estimateAppliedDiscountPercent={estimate.appliedDiscountPercent}
+                estimateIsDiscounted={estimate.isDiscounted}
                 estimateTotal={estimate.total}
                 estimateBreakdown={estimate.breakdown}
+                personalDiscount={personalDiscount}
+                globalDiscount={globalDiscount}
+                tariffDiscount={tariffDiscount}
                 confirming={endingVisit}
             />
             <VisitCancelDialog

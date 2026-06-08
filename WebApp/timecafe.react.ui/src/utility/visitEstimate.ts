@@ -6,26 +6,71 @@ export type VisitEstimate = {
     breakdown: string;
     chargedHours?: number;
     chargedMinutes?: number;
+    baseTotal: number;
+    discountTotal: number;
+    appliedDiscountPercent: number;
+    isDiscounted: boolean;
 };
 
-export const calcVisitEstimate = (elapsedMinutes: number, billingType: BillingType, pricePerMinute: number): VisitEstimate => {
-    const minutes = Math.max(1, Math.floor(elapsedMinutes));
+export const calcVisitEstimate = (
+    elapsedMinutes: number,
+    billingType: BillingType,
+    pricePerMinute: number,
+    minSessionMinutes: number | null = null,
+    roundingRule: string | null = null,
+    globalDiscount = 0,
+    tariffDiscount = 0,
+    personalDiscount = 0,
+    maxDiscountPercent = 50
+): VisitEstimate => {
+    const actualDuration = elapsedMinutes;
     const safePricePerMinute = Math.max(0, pricePerMinute);
 
-    if (billingType === BillingTypeEnum.PerMinute) {
-        return {
-            total: minutes * safePricePerMinute,
-            chargedMinutes: minutes,
-            breakdown: `${formatMoneyByN(safePricePerMinute)} / мин × ${minutes} мин`,
-        };
+    let duration = actualDuration;
+    if (minSessionMinutes && duration < minSessionMinutes) {
+        duration = minSessionMinutes;
     }
 
-    const pricePerHour = safePricePerMinute * 60;
-    const hours = Math.max(1, Math.ceil(minutes / 60));
+    let roundInterval = 1;
+    if (roundingRule === "FiveMinutes") roundInterval = 5;
+    else if (roundingRule === "FifteenMinutes") roundInterval = 15;
+    else if (roundingRule === "SixtyMinutes") roundInterval = 60;
+
+    if (roundInterval > 1) {
+        duration = Math.ceil(duration / roundInterval) * roundInterval;
+    }
+
+    const bestPromotion = Math.max(globalDiscount, tariffDiscount);
+    const appliedDiscountPercent = Math.min(bestPromotion + personalDiscount, maxDiscountPercent);
+    const isDiscounted = appliedDiscountPercent > 0;
+
+    let baseTotal = 0;
+    let breakdown = "";
+    let chargedMinutes: number | undefined;
+    let chargedHours: number | undefined;
+
+    if (billingType === BillingTypeEnum.Hourly) {
+        const hours = Math.max(1, Math.ceil(duration / 60));
+        const pricePerHour = safePricePerMinute * 60;
+        baseTotal = hours * pricePerHour;
+        chargedHours = hours;
+        breakdown = `${formatMoneyByN(pricePerHour)} / час × ${hours} ч`;
+    } else {
+        baseTotal = duration * safePricePerMinute;
+        chargedMinutes = duration;
+        breakdown = `${formatMoneyByN(safePricePerMinute)} / мин × ${duration} мин`;
+    }
+
+    const total = baseTotal * (1 - appliedDiscountPercent / 100);
 
     return {
-        total: hours * pricePerHour,
-        chargedHours: hours,
-        breakdown: `${formatMoneyByN(pricePerHour)} / час × ${hours} ч`,
+        total,
+        baseTotal,
+        discountTotal: baseTotal - total,
+        appliedDiscountPercent,
+        isDiscounted,
+        chargedHours,
+        chargedMinutes,
+        breakdown,
     };
 };

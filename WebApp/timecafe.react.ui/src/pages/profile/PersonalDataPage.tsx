@@ -1,5 +1,5 @@
 import {
-    Badge,
+
     Body2,
     Button,
     Card,
@@ -9,7 +9,6 @@ import {
     MessageBarBody,
     MessageBarTitle,
     Title2,
-    Subtitle2,
     Dialog,
     DialogSurface,
     DialogBody,
@@ -49,7 +48,7 @@ export const PersonalDataPage = () => {
     const dispatch = useAppDispatch();
     const userId = useAppSelector((state) => state.auth.userId);
     const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
-    const { data: loyalty, isLoading: loyaltyLoading } = useGetUserLoyaltyQuery(userId, { skip: !userId });
+    const { data: loyalty } = useGetUserLoyaltyQuery(userId, { skip: !userId });
 
     const { showToast, ToasterElement } = useProgressToast();
     const [logoutMutation] = useLogoutMutation();
@@ -87,8 +86,6 @@ export const PersonalDataPage = () => {
         },
         [profile, userId, updateProfileMutation, showToast]
     );
-
-    const backgroundOpacityClass = profile ? "opacity-[0.08]" : "opacity-[0.1]";
 
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [photoBusy, setPhotoBusy] = useState(false);

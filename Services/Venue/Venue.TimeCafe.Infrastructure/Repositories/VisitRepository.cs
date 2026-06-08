@@ -37,7 +37,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -74,7 +75,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -109,7 +111,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .ToListAsync(cancellationToken),
@@ -145,7 +148,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -182,7 +186,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -243,7 +248,8 @@ public class VisitRepository(
                                    TariffMinSessionMinutes = t != null ? t.MinSessionMinutes : null,
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
-                                   GuestsCount = v.GuestsCount
+                                   GuestsCount = v.GuestsCount,
+                                   IsFinishRequested = v.IsFinishRequested
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)

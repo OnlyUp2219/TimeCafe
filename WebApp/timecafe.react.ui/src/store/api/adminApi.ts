@@ -45,13 +45,6 @@ export interface GetUsersArgs {
     status?: string;
 }
 
-interface AdminPagination {
-    currentPage: number;
-    pageSize: number;
-    totalCount: number;
-    totalPages: number;
-}
-
 export interface AdminBalanceDto {
     userId: string;
     currentBalance: number;

@@ -184,7 +184,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                         </NavCategoryItem>
                                         <NavSubItemGroup>
                                             {item.subItems.map((subItem) => (
-                                                <NavSubItem key={subItem.id} value={subItem.id} icon={subItem.icon} className="admin-sidebar__navItem">
+                                                <NavSubItem key={subItem.id} value={subItem.id} className="admin-sidebar__navItem">
                                                     {subItem.label}
                                                 </NavSubItem>
                                             ))}
@@ -254,7 +254,7 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                                 </NavCategoryItem>
                                                 <NavSubItemGroup>
                                                     {item.subItems.map((subItem) => (
-                                                        <NavSubItem key={subItem.id} value={subItem.id} icon={subItem.icon} className="admin-sidebar__navItem">
+                                                        <NavSubItem key={subItem.id} value={subItem.id} className="admin-sidebar__navItem">
                                                             {subItem.label}
                                                         </NavSubItem>
                                                     ))}
@@ -318,12 +318,12 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                             <nav className="admin-sidebar__collapsed-nav pt-0">
                                 {nav.flatMap((section) => section.items).map((item) => {
                                     const hasSubItems = item.subItems && item.subItems.length > 0;
-                                    const isSubActive = hasSubItems && (item.subItems.some((sub) => selectedValue === sub.id) || selectedCategoryValue === item.id);
+                                    const isSubActive = hasSubItems && (item.subItems!.some((sub) => selectedValue === sub.id) || selectedCategoryValue === item.id);
                                     const isActive = selectedValue === item.id || isSubActive;
 
                                     if (hasSubItems) {
                                         return (
-                                            <Menu key={item.id} positioning="after-start">
+                                            <Menu key={item.id} positioning="after-top">
                                                 <MenuTrigger disableButtonEnhancement>
                                                     <Tooltip content={item.label} relationship="label" positioning="after">
                                                         <Button

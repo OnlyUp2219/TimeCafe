@@ -27,11 +27,11 @@ import {
     Calculator20Regular,
 } from "@fluentui/react-icons";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
-import { BillingType } from "@app-types/tariff";
+
 import { VisitStatus } from "@app-types/visit";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
 import { useGetBalanceQuery } from "@store/api/billingApi";
-import { useGetResourcesQuery } from "@store/api/venueApi";
+import { useGetResourcesQuery, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 
 interface ApproveVisitDialogProps {
     open: boolean;
@@ -65,6 +65,8 @@ export const ApproveVisitDialog = ({
     const { data: profile } = useGetProfileByUserIdQuery(visit?.userId ?? "", { skip: !visit?.userId });
     const { data: balanceObj } = useGetBalanceQuery(visit?.userId ?? "", { skip: !visit?.userId });
     const { data: resources } = useGetResourcesQuery();
+    const { data: loyalty } = useGetUserLoyaltyQuery(visit?.userId ?? "", { skip: !visit?.userId });
+    const { data: promotions } = useGetAllPromotionsQuery();
     const resource = resources?.find(r => r.resourceId === visit?.resourceId);
 
     const handleApprove = () => {
@@ -165,8 +167,18 @@ export const ApproveVisitDialog = ({
         warnings.push(`Отрицательный баланс (${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
     }
 
+    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
+    const nowStr = new Date().toISOString();
+    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
+    const globalDiscount = activePromotions.length > 0
+        ? Math.max(0, ...activePromotions.filter(p => p.type === 0).map(p => p.discountPercent ?? 0))
+        : 0;
+    const tariffDiscount = (visit && activePromotions.length > 0)
+        ? Math.max(0, ...activePromotions.filter(p => p.type === 1 && p.tariffId === visit.tariffId).map(p => p.discountPercent ?? 0))
+        : 0;
+
     const plannedMinutes = visit?.plannedMinutes ?? (visit?.tariffMinSessionMinutes ?? 60);
-    const estimate = visit ? calcVisitEstimate(plannedMinutes, visit.tariffBillingType as any, visit.tariffPricePerMinute) : null;
+    const estimate = visit ? calcVisitEstimate(plannedMinutes, visit.tariffBillingType as any, visit.tariffPricePerMinute, visit.tariffMinSessionMinutes ?? null, visit.tariffRoundingRule ?? null, globalDiscount, tariffDiscount, personalDiscount) : null;
 
     return (
         <Dialog open={open} onOpenChange={(_, data) => handleOpenChange(data.open)}>
@@ -185,7 +197,7 @@ export const ApproveVisitDialog = ({
                                             <span className="font-semibold text-base">{visit.tariffName}</span>
                                         </div>
                                         <Badge color="brand" appearance="tint">
-                                            {visit.tariffBillingType === 0 ? "Поминутно" : "Почасово"}
+                                            {visit.tariffBillingType === 1 ? "Почасово" : "Поминутно"}
                                         </Badge>
                                     </div>
                                     {visit.tariffDescription && (
@@ -322,10 +334,40 @@ export const ApproveVisitDialog = ({
                                         <Divider className="my-1" />
                                         <div className="flex items-center justify-between text-sm">
                                             <Caption1 className="text-(--colorNeutralForeground3)">{estimate.breakdown}</Caption1>
-                                            <Body1 className="font-semibold text-(--colorBrandForeground1)">{estimate.total.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}</Body1>
+                                            <div className="flex items-center gap-1.5">
+                                                {estimate.isDiscounted && (
+                                                    <span className="line-through text-(--colorNeutralForeground3) text-xs">
+                                                        {estimate.baseTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                                    </span>
+                                                )}
+                                                <Body1 className="font-semibold text-(--colorBrandForeground1)">
+                                                    {estimate.total.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                                </Body1>
+                                            </div>
                                         </div>
-                                        {balance > 0 && (
-                                            <div className="flex items-center justify-between text-sm">
+                                        {estimate.isDiscounted && (
+                                            <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1">
+                                                {personalDiscount > 0 && (
+                                                    <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                        <span>Скидка лояльности:</span>
+                                                        <span className="font-semibold">-{personalDiscount}%</span>
+                                                    </div>
+                                                )}
+                                                {Math.max(globalDiscount, tariffDiscount) > 0 && (
+                                                    <div className="flex justify-between text-(--colorNeutralForeground2)">
+                                                        <span>Акционная скидка:</span>
+                                                        <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                                    </div>
+                                                )}
+                                                <Divider className="my-1" />
+                                                <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
+                                                    <span>Итоговая скидка:</span>
+                                                    <span>-{estimate.appliedDiscountPercent}% (-{estimate.discountTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL})</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {visit.userId && balanceObj && (
+                                            <div className="flex items-center justify-between text-sm mt-1">
                                                 <Caption1 className="text-(--colorNeutralForeground3)">Баланс после списания:</Caption1>
                                                 <Body1 className={`font-semibold ${balance - estimate.total < 0 ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}`}>
                                                     {(balance - estimate.total).toLocaleString("ru-RU")} {CURRENCY_SYMBOL}

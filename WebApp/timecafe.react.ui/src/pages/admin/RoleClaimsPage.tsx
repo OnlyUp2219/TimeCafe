@@ -30,7 +30,6 @@ import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions } from "@shared/auth/permissions";
-import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 
 const SERVICE_LABELS: Record<string, string> = {
     "userprofile": "👤 UserProfile",
