@@ -1,5 +1,5 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { type FC, useEffect, useMemo } from "react";import { Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";import { useLocation, useNavigate } from "react-router-dom";import { clearTokens, selectUserId } from "@store/authSlice";import { useAppDispatch, useAppSelector } from "@store/hooks";import { setSelectedNav, setSidebarOpen, setSidebarCollapsed } from "@store/uiSlice";import { useHasActiveVisitQuery } from "@store/api/venueApi";import { Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Eye20Regular, SignOut20Regular } from "@fluentui/react-icons";import { usePermissions } from "@hooks/usePermissions";import { AdminPanelPermission } from "@shared/auth/permissions";import { BaseSidebar, type NavSectionType, type NavItemType } from "./BaseSidebar";import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
+import { NO_DATA } from "@shared/const/placeholders";
+import { type FC, useEffect, useMemo } from "react";import { Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";import { useLocation, useNavigate } from "react-router-dom";import { clearTokens, selectUserId } from "@store/authSlice";import { useAppDispatch, useAppSelector } from "@store/hooks";import { setSelectedNav, setSidebarOpen, setSidebarCollapsed } from "@store/uiSlice";import { useHasActiveVisitQuery } from "@store/api/venueApi";import { Home20Regular, Person20Regular, Clock20Regular, Money20Regular, Eye20Regular, SignOut20Regular, QuestionCircle20Regular } from "@fluentui/react-icons";import { usePermissions } from "@hooks/usePermissions";import { AdminPanelPermission } from "@shared/auth/permissions";import { BaseSidebar, type NavSectionType, type NavItemType } from "./BaseSidebar";import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 
 export const Sidebar: FC = () => {
     const dispatch = useAppDispatch();
@@ -31,6 +31,12 @@ export const Sidebar: FC = () => {
                     { id: "profile", label: "Персональные данные", path: "/personal-data", icon: <Person20Regular /> },
                     visitItem,
                     { id: "billing", label: "Баланс и транзакции", path: "/billing", icon: <Money20Regular /> },
+                ],
+            },
+            {
+                title: "Поддержка",
+                items: [
+                    { id: "help", label: "Справка", path: "/help", icon: <QuestionCircle20Regular /> },
                 ],
             },
         ];
@@ -120,6 +126,3 @@ export const Sidebar: FC = () => {
         />
     );
 };
-
-
-

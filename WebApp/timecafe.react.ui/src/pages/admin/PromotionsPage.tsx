@@ -42,6 +42,7 @@ import {
 import type { Promotion } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { formatDateTime } from "@utility/dateUtils";
 import { DataTable } from "@components/DataTable/DataTable";
 import { Pagination } from "@components/Pagination/Pagination";
 import { useComponentSize } from "@hooks/useComponentSize";
@@ -49,7 +50,6 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
-import { formatDateTime } from "@utility/formatDate";
 import { usePagination } from "@app/hooks/usePagination";
 import { PageLoader } from "@components/PageLoader/PageLoader";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
@@ -397,7 +397,7 @@ export const PromotionsPage = () => {
                                         size={sizes.dropdown}
                                     >
                                         {tariffs.map(t => (
-                                            <Option key={t.tariffId} value={t.tariffId}>
+                                            <Option key={t.tariffId} value={t.tariffId} text={`${t.name} (${t.pricePerMinute} ${CURRENCY_SYMBOL}/мин)`}>
                                                 {t.name} ({t.pricePerMinute} {CURRENCY_SYMBOL}/мин)
                                             </Option>
                                         ))}

@@ -49,7 +49,7 @@ import { AuditLogsPage } from "@pages/admin/AuditLogsPage";
 import { ResourcesPage } from "@pages/admin/ResourcesPage";
 import { GrafanaPage } from "@pages/admin/GrafanaPage";
 import { KibanaPage } from "@pages/admin/KibanaPage";
-
+import { HelpPage } from "@pages/help/HelpPage";
 const AppRoutes = () => {
     const navigate = useNavigate();
     const { showToast, ToasterElement } = useProgressToast();
@@ -106,6 +106,7 @@ const AppRoutes = () => {
                     <Route path="/visit/start" element={<TariffSelectionPage />} />
                     <Route path="/visit/active" element={<ActiveVisitPage />} />
                     <Route path="/billing" element={<BillingPage />} />
+                    <Route path="/help" element={<HelpPage />} />
                 </Route>
                 <Route element={<AdminRoute><AdminLayout /></AdminRoute>}>
                     <Route index path="/admin" element={<Navigate to="/admin/dashboard" replace />} />

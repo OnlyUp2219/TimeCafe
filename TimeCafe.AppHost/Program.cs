@@ -217,13 +217,22 @@ builder.AddContainer("grafana", "grafana/grafana", "latest")
     .WithEnvironment("PROMETHEUS_URL", "http://host.docker.internal:9090")
     .WaitFor(prometheus);
 
-builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
+var customApiUrl = Environment.GetEnvironmentVariable("VITE_API_BASE_URL");
+var frontend = builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
     .WithReference(yarpProxy)
     .WithHttpEndpoint(port: 9301, isProxied: false)
     .WithHttpsEndpoint(port: 9302)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("BROWSER", "none")
-    .WithEnvironment("VITE_API_BASE_URL", yarpProxy.GetEndpoint("api"));
+    .WithEnvironment("BROWSER", "none");
+
+if (!string.IsNullOrEmpty(customApiUrl))
+{
+    frontend.WithEnvironment("VITE_API_BASE_URL", customApiUrl);
+}
+else
+{
+    frontend.WithEnvironment("VITE_API_BASE_URL", yarpProxy.GetEndpoint("api"));
+}
 
 await builder.Build().RunAsync();
 

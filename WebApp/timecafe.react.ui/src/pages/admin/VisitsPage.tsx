@@ -13,7 +13,7 @@ import {
     Tooltip,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
-import { Eye20Regular, Clock20Regular, Warning20Regular, UserPlus20Regular } from "@fluentui/react-icons";
+import { Eye20Regular, Clock20Regular, Warning20Regular } from "@fluentui/react-icons";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { useGetVisitsPageQuery, useApproveVisitMutation, useRejectVisitMutation } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
@@ -37,7 +37,6 @@ import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { PageLoader } from "@components/PageLoader/PageLoader";
 import { getUserFullName } from "@utility/userUtils";
 import { formatDateTime } from "@utility/dateUtils";
-import { formatMoney } from "@utility/formatMoney";
 
 const formatCost = (cost: number | null, status: VisitStatus) => {
     if (status === VisitStatus.Cancelled || status === VisitStatus.Rejected) {
