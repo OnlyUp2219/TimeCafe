@@ -118,29 +118,34 @@ Console.ResetColor();
 if (File.Exists(envPath))
 {
     Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine("\nОбновление VITE_API_BASE_URL в файле .env...");
+    Console.WriteLine("\nОбновление .env параметров для туннелей...");
     Console.ResetColor();
     
     var lines = File.ReadAllLines(envPath);
-    bool updated = false;
-    for (int i = 0; i < lines.Length; i++)
+    var list = new System.Collections.Generic.List<string>(lines);
+    
+    void UpdateOrAdd(string key, string value)
     {
-        if (lines[i].StartsWith("VITE_API_BASE_URL="))
+        bool found = false;
+        for (int i = 0; i < list.Count; i++)
         {
-            lines[i] = $"VITE_API_BASE_URL={backendUrl}";
-            updated = true;
+            if (list[i].StartsWith($"{key}="))
+            {
+                list[i] = $"{key}={value}";
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            list.Add($"{key}={value}");
         }
     }
     
-    if (!updated)
-    {
-        var newLines = new string[lines.Length + 1];
-        Array.Copy(lines, newLines, lines.Length);
-        newLines[lines.Length] = $"VITE_API_BASE_URL={backendUrl}";
-        lines = newLines;
-    }
+    UpdateOrAdd("VITE_API_BASE_URL", backendUrl);
+    UpdateOrAdd("CORS_EXTRA_ORIGINS", frontendUrl);
     
-    File.WriteAllLines(envPath, lines);
+    File.WriteAllLines(envPath, list);
     Console.ForegroundColor = ConsoleColor.Green;
     Console.WriteLine("Файл .env обновлен!");
     Console.ResetColor();

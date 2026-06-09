@@ -196,6 +196,12 @@ var yarpProxy = builder.AddProject<Projects.YarpProxy>("yarp-proxy")
     .WaitFor(auditApi);
 yarpProxy.WithEnvironment("ASPNETCORE_URLS", ReferenceExpression.Create($"http://+:{yarpProxy.GetEndpoint("api").Property(EndpointProperty.TargetPort)}"));
 
+var corsExtraGlobal = builder.Configuration["CORS_EXTRA_ORIGINS"] ?? builder.Configuration["CORS:ExtraOrigins"];
+if (!string.IsNullOrEmpty(corsExtraGlobal))
+{
+    yarpProxy.WithEnvironment("CORS__ExtraOrigins", corsExtraGlobal);
+}
+
 var prometheus = builder.AddContainer("prometheus", "prom/prometheus", "latest")
     .WithBindMount("../infra/prometheus/prometheus.yml", "/etc/prometheus/prometheus.yml.tmpl")
     .WithEntrypoint("sh")
@@ -255,6 +261,12 @@ void ApplyTimeCafeReferences(
         .WithEnvironment("RabbitMQ__Username", rabbitUserParam)
         .WithEnvironment("RabbitMQ__Password", rabbitPassParam)
         .WithEnvironment("Elasticsearch__NodeUris", elastic.GetEndpoint("http"));
+
+    var corsExtra = builder.Configuration["CORS_EXTRA_ORIGINS"] ?? builder.Configuration["CORS:ExtraOrigins"];
+    if (!string.IsNullOrEmpty(corsExtra))
+    {
+        projectBuilder.WithEnvironment("CORS__ExtraOrigins", corsExtra);
+    }
 
     if (authApiRef != null)
     {

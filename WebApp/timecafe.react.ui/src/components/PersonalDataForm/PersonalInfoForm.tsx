@@ -25,6 +25,7 @@ import {setPhoneNumber, setPhoneNumberConfirmed} from "@store/authSlice";
 import {useClearPhoneNumberMutation} from "@store/api/authApi";
 import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {normalizeDate} from "@utility/normalizeDate";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 interface PersonalInfoFormProps {
     profile: Profile;
@@ -59,6 +60,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
     const authPhoneConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
     const dispatch = useAppDispatch();
     const [clearPhoneMutation] = useClearPhoneNumberMutation();
+    const {sizes} = useComponentSize();
     const maxBirthDate = useMemo(() => new Date(), []);
     const [email, setEmail] = useState(profile.email);
     const [phone, setPhone] = useState(profile.phoneNumber || "");
@@ -131,6 +133,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         }}
                         disabled={readOnly || loading}
                         shouldValidate={false}
+                        size={sizes.input}
                         trailingElement={
                             <Tag
                                 appearance="outline"
@@ -151,6 +154,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                             required={false}
                             shouldValidate={false}
                             validateOnBlur
+                            size={sizes.input}
                             trailingElement={
                                 <Tag
                                     appearance="outline"
@@ -164,7 +168,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                             <div className="flex justify-end gap-2">
                                 <Button
                                     appearance="subtle"
-                                    size="small"
+                                    size={sizes.button}
                                     icon={<Delete20Regular/>}
                                     onClick={async () => {
                                         setShowClearDialog(true);
@@ -173,7 +177,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                                 />
                                 <Button
                                     appearance="subtle"
-                                    size="small"
+                                    size={sizes.button}
                                     icon={<Edit20Regular/>}
                                     onClick={() => setShowPhoneModal(true)}
                                     disabled={loading || !phone.trim()}
@@ -196,9 +200,10 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
                         disabled={readOnly || loading}
                         label="Дата рождения"
                         maxDate={maxBirthDate}
+                        size={sizes.input}
                     />
 
-                    <Field label="Пол">
+                    <Field label="Пол" size={sizes.field}>
                         <RadioGroup
                             value={genderId?.toString() || ""}
                             onChange={(_, data) => {
@@ -216,7 +221,7 @@ export const PersonalInfoForm: FC<PersonalInfoFormProps> = ({
             </div>
 
             <div className="flex gap-[12px] mt-[16px]">
-                <Button appearance="secondary" disabled={loading || readOnly} onClick={handleSave}>
+                <Button appearance="secondary" size={sizes.button} disabled={loading || readOnly} onClick={handleSave}>
                     Сохранить изменения
                 </Button>
             </div>

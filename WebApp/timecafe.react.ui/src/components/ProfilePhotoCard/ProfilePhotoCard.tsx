@@ -2,6 +2,7 @@ import {useCallback, useEffect, useId, useRef, useState} from "react";
 import {Avatar, Button, Card, Spinner, Text, Title2} from "@fluentui/react-components";
 import {Delete24Regular, ImageAdd24Regular} from "@fluentui/react-icons";
 import {ProfileApi} from "@api/profile/profileApi";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 interface ProfilePhotoCardProps {
     displayName: string;
@@ -35,6 +36,7 @@ export function ProfilePhotoCard({
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const fileInputId = useId();
     const fileLabelId = useId();
+    const {sizes} = useComponentSize();
 
     const objectUrlRef = useRef<string | null>(null);
     const onPhotoUrlChangeRef = useRef(onPhotoUrlChange);
@@ -132,7 +134,7 @@ export function ProfilePhotoCard({
                     />
                     {busy && (
                         <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                            <Spinner size="small" appearance="primary" />
+                            <Spinner size={sizes.spinner} appearance="primary" />
                         </div>
                     )}
                 </div>
@@ -162,6 +164,7 @@ export function ProfilePhotoCard({
                     />
                     <Button
                         appearance="secondary"
+                        size={sizes.button}
                         icon={<ImageAdd24Regular />}
                         disabled={disabled || busy}
                         onClick={() => fileInputRef.current?.click()}
@@ -173,6 +176,7 @@ export function ProfilePhotoCard({
                 <div className="flex flex-wrap gap-2">
                     <Button
                         appearance="primary"
+                        size={sizes.button}
                         icon={busy ? <Spinner size="tiny" /> : <ImageAdd24Regular />}
                         disabled={disabled || busy || !selectedFile || !onUpload}
                         onClick={async () => {
@@ -187,6 +191,7 @@ export function ProfilePhotoCard({
                     </Button>
                     <Button
                         appearance="secondary"
+                        size={sizes.button}
                         icon={busy ? <Spinner size="tiny" /> : <Delete24Regular />}
                         disabled={disabled || busy || !photoUrl || !onDelete}
                         onClick={async () => {

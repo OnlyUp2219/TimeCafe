@@ -1,6 +1,6 @@
 import { type FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Body1, Button, Caption1, Tooltip } from "@fluentui/react-components";
+import { Body1, Button, Caption1, Tooltip, CounterBadge } from "@fluentui/react-components";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { clearTokens } from "@store/authSlice";
 import { setSidebarCollapsed } from "@store/uiSlice";
@@ -16,6 +16,8 @@ import { NO_DATA } from "@shared/const/placeholders";
 import { usePermissions } from "@hooks/usePermissions";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { useGetUsersCompositeQuery } from "@store/api/adminApi";
+import { useGetPendingVisitsQuery } from "@store/api/venueApi";
 
 interface AdminSidebarProps {
     isOpen: boolean;
@@ -34,6 +36,21 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
 
     const { has } = usePermissions();
 
+    const hasAccountAdminRead = has(Permissions.AccountAdminRead);
+    const hasVenueVisitRead = has(Permissions.VenueVisitRead);
+
+    const { data: usersData } = useGetUsersCompositeQuery(
+        { page: 1, size: 1 },
+        { skip: !hasAccountAdminRead, pollingInterval: 5000 }
+    );
+    const { data: pendingVisitsData } = useGetPendingVisitsQuery(
+        { page: 1, pageSize: 1 },
+        { skip: !hasVenueVisitRead, pollingInterval: 5000 }
+    );
+
+    const totalUsersCount = usersData?.metadata?.totalCount ?? 0;
+    const pendingVisitsCount = pendingVisitsData?.metadata?.totalCount ?? 0;
+
     const sections: NavSectionType[] = useMemo(() => {
         const allSections: NavSectionType[] = [
             {
@@ -51,9 +68,27 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                             { id: "kibana", label: "Kibana", path: "/admin/monitoring/kibana", icon: <Board20Regular />, permission: Permissions.AccountAdminRead }
                         ]
                     },
-                    { id: "users", label: "Пользователи", path: "/admin/users", icon: <People20Regular />, permission: Permissions.AccountAdminRead },
+                    {
+                        id: "users",
+                        label: "Пользователи",
+                        path: "/admin/users",
+                        icon: <People20Regular />,
+                        permission: Permissions.AccountAdminRead,
+                        badge: totalUsersCount > 0 ? (
+                            <CounterBadge count={totalUsersCount} color="informative" size="small" />
+                        ) : undefined
+                    },
                     { id: "roles", label: "Роли", path: "/admin/roles", icon: <ShieldSettings20Regular />, permission: Permissions.RbacRoleRead },
-                    { id: "visits", label: "Визиты", path: "/admin/visits", icon: <Clock20Regular />, permission: Permissions.VenueVisitRead },
+                    {
+                        id: "visits",
+                        label: "Визиты",
+                        path: "/admin/visits",
+                        icon: <Clock20Regular />,
+                        permission: Permissions.VenueVisitRead,
+                        badge: pendingVisitsCount > 0 ? (
+                            <CounterBadge count={pendingVisitsCount} color="danger" size="small" />
+                        ) : undefined
+                    },
                     { id: "resources", label: "Карта столов", path: "/admin/resources", icon: <Grid20Regular />, permission: Permissions.VenueVisitRead },
                 ],
             },
@@ -98,7 +133,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                     })
             }))
             .filter(section => section.items.length > 0);
-    }, [has]);
+    }, [has, totalUsersCount, pendingVisitsCount]);
 
     const bottomNav: NavItemType[] = useMemo(() => sections.flatMap((section) => section.items).slice(0, 4), [sections]);
 

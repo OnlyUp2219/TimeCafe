@@ -2,6 +2,7 @@ import type {FC} from "react";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
+import {useComponentSize} from "@hooks/useComponentSize";
 import {
     Button,
     Card,
@@ -35,6 +36,7 @@ import {ProfileGateForm} from "./ProfileGateForm";
 export const ProfileCompletionGate: FC = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const {sizes} = useComponentSize();
     const [getCurrentUser] = useLazyGetCurrentUserQuery();
 
     const handleLogout = () => {
@@ -234,17 +236,18 @@ export const ProfileCompletionGate: FC = () => {
                     </DrawerHeader>
 
                     <DrawerBody className="profile-gate-body">
-                        <Card size="large" >
+                        <Card size={sizes.card} >
                             {renderGateContent()}
                         </Card>
                     </DrawerBody>
 
                     <DrawerFooter className="profile-gate-footer" >
-                        <Button appearance="secondary" onClick={handleLogout}>
+                        <Button appearance="secondary" size={sizes.button} onClick={handleLogout}>
                             Выйти
                         </Button>
                         <Button
                             appearance="primary"
+                            size={sizes.button}
                             data-testid="profile-gate-save"
                             disabled={!canSave}
                             onClick={async () => {

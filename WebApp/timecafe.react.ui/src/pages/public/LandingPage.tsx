@@ -14,6 +14,7 @@ import {
     Subtitle2Stronger,
     Title2,
     Title3,
+    motionTokens,
 } from "@fluentui/react-components";
 import type { FC } from "react";
 import { useMemo } from "react";
@@ -28,6 +29,7 @@ import {
     ArrowRight20Regular,
 } from "@fluentui/react-icons";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 type FaqItem = {
     question: string;
@@ -36,20 +38,21 @@ type FaqItem = {
 
 export const LandingPage: FC = () => {
     const navigate = useNavigate();
+    const { sizes } = useComponentSize();
 
     const steps = useMemo(
         () => [
             {
-                title: "1. Регистрация",
-                description: "Создайте аккаунт и подтвердите контакты за пару минут.",
+                title: "1. Мгновенная авторизация",
+                description: "Войдите за 10 секунд через Google или Microsoft без заполнения длинных регистрационных форм.",
             },
             {
-                title: "2. Выбор тарифа",
-                description: "Выберите поминутный или почасовой тариф перед визитом.",
+                title: "2. Выбор тарифа и зоны",
+                description: "Выберите поминутную оплату или почасовые стоп-чеки в зависимости от формата вашего отдыха или работы.",
             },
             {
-                title: "3. Контроль",
-                description: "Следите за таймером и стоимостью прямо со смартфона.",
+                title: "3. Прозрачный контроль",
+                description: "Отслеживайте время сессии и стоимость в реальном времени прямо со смартфона без очередей у ресепшена.",
             },
         ],
         []
@@ -58,29 +61,29 @@ export const LandingPage: FC = () => {
     const clientFeatures = useMemo(
         () => [
             {
-                title: "Прозрачный расчёт",
-                description: "Вы всегда знаете, за что платите. Таймер работает в реальном времени.",
-                tag: "Визиты",
+                title: "Точность до секунды",
+                description: "Никаких округлений на глаз. Наш биллинговый движок рассчитывает стоимость визита строго по времени пребывания.",
+                tag: "Биллинг",
                 icon: <Clock20Regular />,
                 colSpan: "sm:col-span-2",
             },
             {
-                title: "Удобный баланс",
-                description: "Пополнение в один клик и полная история операций.",
+                title: "Бесконтактная оплата",
+                description: "Пополняйте баланс банковской картой прямо в личном кабинете. Расчет в один клик без ожидания администратора.",
                 tag: "Финансы",
                 icon: <Money20Regular />,
                 colSpan: "sm:col-span-1",
             },
             {
-                title: "Система статусов",
-                description: "Понятный путь от Черновика до Активного гостя.",
+                title: "Единый профиль гостя",
+                description: "Один аккаунт для всех заведений сети. Вход в один клик, сохранение персональных скидок и истории транзакций.",
                 tag: "Профиль",
                 icon: <PersonAdd20Regular />,
                 colSpan: "sm:col-span-1",
             },
             {
-                title: "Надёжность",
-                description: "Привязка телефона защищает ваш аккаунт от потери доступа.",
+                title: "Безопасность и аудит",
+                description: "Все списания защищены транзакционной моделью, а действия персонала подлежат строгому логированию.",
                 tag: "Безопасность",
                 icon: <MailCheckmark20Regular />,
                 colSpan: "sm:col-span-2",
@@ -93,13 +96,13 @@ export const LandingPage: FC = () => {
         () => [
             {
                 title: "Поминутно",
-                description: "Идеально для коротких визитов и спонтанных встреч. Платите строго за проведенное время.",
+                description: "Идеально для коротких встреч и спонтанных визитов. Оплата производится за каждую секунду проведенного времени.",
                 highlight: "Гибко",
                 price: `3 ${CURRENCY_SYMBOL} / мин`,
             },
             {
                 title: "Почасово",
-                description: "Выгоднее для длительной работы или долгих посиделок с друзьями.",
+                description: "Выгоднее для длительной работы в коворкинге или долгих игровых сессий с друзьями.",
                 highlight: "Популярно",
                 price: `150 ${CURRENCY_SYMBOL} / час`,
             },
@@ -110,16 +113,16 @@ export const LandingPage: FC = () => {
     const faq = useMemo<FaqItem[]>(
         () => [
             {
-                question: "За что я плачу?",
-                answer: "Вы платите за время, проведённое в заведении. Система показывает длительность визита и ориентировочную стоимость.",
+                question: "За что именно я плачу?",
+                answer: "Вы оплачиваете только время нахождения в тайм-кафе или коворкинге. Чай, зерновой кофе, сладости, настольные игры, консоли и быстрый Wi-Fi всегда входят в стоимость.",
             },
             {
-                question: "Можно ли завершить визит раньше?",
-                answer: "Да. Стоимость рассчитывается по выбранному тарифу и времени визита.",
+                question: "Как рассчитывается стоимость визита?",
+                answer: "Биллинг TimeCafe автоматически применяет правила тарифа. Если в тарифе настроен стоп-чек (максимальная стоимость дня), система никогда не спишет больше этой суммы.",
             },
             {
-                question: "Что если баланс станет недостаточным?",
-                answer: "Вы сможете пополнить баланс. При нехватке средств визит может быть приостановлен администратором.",
+                question: "Что произойдет, если баланс станет отрицательным?",
+                answer: "При нехватке средств вы получите уведомление в кабинете. Пополнить баланс можно мгновенно банковской картой через Stripe прямо с вашего телефона.",
             },
         ],
         []
@@ -139,14 +142,14 @@ export const LandingPage: FC = () => {
                 {/* Hero Section */}
                 <section className="flex flex-col md:flex-row items-center gap-12 pt-8">
                     <div className="flex-1 flex flex-col gap-6 items-start">
-                        <Tag appearance="brand" size="medium" className="rounded-full shadow-lg">Новый уровень комфорта</Tag>
+                        <Tag appearance="brand" size="medium" className="rounded-full shadow-lg">Экосистема автоматизации</Tag>
 
                         <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-transparent bg-clip-text tc-gradient-text pb-2">
-                            Плати только за время.
+                            Умный контроль времени.
                         </h1>
 
                         <Body1 className="text-lg md:text-xl max-w-lg opacity-90 leading-relaxed" style={{ color: 'var(--colorNeutralForeground2)' }}>
-                            Никаких скрытых платежей. Прозрачный таймер, удобное пополнение баланса и полная статистика визитов в один клик.
+                            Исключите ошибки ручного учета, повысьте прозрачность расчетов и автоматизируйте запуск сессий гостей и бронирование ресурсов.
                         </Body1>
 
                         <div className="flex flex-wrap gap-4 mt-4">
@@ -154,7 +157,7 @@ export const LandingPage: FC = () => {
                                 Начать визит
                             </Button>
                             <Button appearance="subtle" size="large" onClick={() => navigate("/login")}>
-                                Войти в аккаунт
+                                Панель управления
                             </Button>
                         </div>
                     </div>
@@ -168,8 +171,8 @@ export const LandingPage: FC = () => {
                                         <Clock20Regular style={{ color: 'var(--colorBrandForeground2)' }} />
                                     </div>
                                     <div>
-                                        <Subtitle2Stronger block>Активный визит</Subtitle2Stronger>
-                                        <Caption1 style={{ color: 'var(--colorNeutralForeground3)' }}>Стол №4</Caption1>
+                                        <Subtitle2Stronger block>Активный визит (Гость)</Subtitle2Stronger>
+                                        <Caption1 style={{ color: 'var(--colorNeutralForeground3)' }}>Ресурс: VIP-зона (Стол №4)</Caption1>
                                     </div>
                                 </div>
                                 <Badge appearance="filled" color="success">В процессе</Badge>
@@ -177,18 +180,18 @@ export const LandingPage: FC = () => {
 
                             <div className="flex justify-between items-end mb-4">
                                 <div>
-                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">Прошло времени</Caption1>
+                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">Время визита</Caption1>
                                     <div className="text-4xl font-light tabular-nums" style={{ color: 'var(--colorNeutralForeground1)' }}>1:42:05</div>
                                 </div>
                                 <div className="text-right">
-                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">К оплате</Caption1>
+                                    <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">Текущий счет</Caption1>
                                     <Title3 style={{ color: 'var(--colorBrandForeground1)' }}>155 {CURRENCY_SYMBOL}</Title3>
                                 </div>
                             </div>
 
                             <Divider className="my-4" />
                             <div className="flex justify-between items-center">
-                                <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>Тариф: Поминутно</Body2>
+                                <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>Тариф: Поминутный биллинг</Body2>
                                 <Button appearance="transparent" size="small">Детали</Button>
                             </div>
                         </div>
@@ -199,7 +202,7 @@ export const LandingPage: FC = () => {
                 <section className="flex flex-col gap-10">
                     <div className="text-center max-w-2xl mx-auto flex flex-col gap-3">
                         <Title2>Как это работает</Title2>
-                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Всё просто. Вы управляете временем, мы заботимся об остальном.</Body1>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Современный подход к учету времени гостей и управлению заведением.</Body1>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -218,8 +221,8 @@ export const LandingPage: FC = () => {
                 {/* Bento Grid Features */}
                 <section className="flex flex-col gap-10">
                     <div className="flex flex-col gap-3">
-                        <Title2>Всё под контролем</Title2>
-                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Возможности, созданные для вашего удобства.</Body1>
+                        <Title2>Эффективное управление</Title2>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Технологические решения для гостей, администраторов и владельцев.</Body1>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 auto-rows-[200px]">
@@ -245,15 +248,15 @@ export const LandingPage: FC = () => {
                 {/* Tariffs Section */}
                 <section className="flex flex-col gap-10">
                     <div className="text-center max-w-2xl mx-auto flex flex-col gap-3">
-                        <Title2>Честные тарифы</Title2>
-                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Никакой переплаты. Выбирайте формат, который подходит именно вам.</Body1>
+                        <Title2>Гибкая тарификация</Title2>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>Система поддерживает любые схемы: от посекундной оплаты до почасовых стоп-чеков.</Body1>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto w-full">
                         {tariffCards.map((t) => (
                             <div key={t.title} className="tc-glass-panel p-8 border flex flex-col gap-6 relative overflow-hidden group">
                                 {t.highlight === "Популярно" && (
-                                    <Tag 
+                                    <Tag
                                         appearance="brand"
                                         size="medium"
                                         className="absolute top-0 right-0 px-3 py-1 font-semibold rounded-bl-xl shadow-md z-20"
@@ -285,9 +288,11 @@ export const LandingPage: FC = () => {
                             <Accordion collapsible>
                                 {faq.map((item, idx) => (
                                     <AccordionItem key={item.question} value={idx}>
-                                        <AccordionHeader>{item.question}</AccordionHeader>
-                                        <AccordionPanel>
-                                            <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>{item.answer}</Body2>
+                                        <AccordionHeader as="h3" size={sizes.accordionHeader}>{item.question}</AccordionHeader>
+                                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                                            <div>
+                                                <Body2 style={{ color: 'var(--colorNeutralForeground2)' }}>{item.answer}</Body2>
+                                            </div>
                                         </AccordionPanel>
                                     </AccordionItem>
                                 ))}
@@ -298,12 +303,12 @@ export const LandingPage: FC = () => {
                     <div className="tc-glass-panel p-10 border shadow-2xl relative overflow-hidden flex flex-col justify-center items-center text-center h-full min-h-[300px]">
                         <div className="absolute inset-0 opacity-10 tc-ambient-bg" style={{ background: 'linear-gradient(135deg, var(--colorBrandBackground), var(--colorNeutralBackground1))' }}></div>
                         <div className="relative z-10 flex flex-col items-center gap-6">
-                            <Title2>Готовы начать?</Title2>
+                            <Title2>Готовы автоматизировать ваше заведение?</Title2>
                             <Body1 style={{ color: 'var(--colorNeutralForeground2)' }} className="max-w-sm">
-                                Присоединяйтесь к TimeCafe и наслаждайтесь комфортом нового уровня.
+                                Создайте гостевой аккаунт для тестирования платформы или свяжитесь с нами для интеграции TimeCafe.
                             </Body1>
                             <Button appearance="primary" size="large" onClick={() => navigate("/register")} className="px-10 py-6 text-lg rounded-xl shadow-lg hover:scale-105 transition-transform">
-                                Создать аккаунт
+                                Начать тест-драйв
                             </Button>
                         </div>
                     </div>

@@ -40,6 +40,7 @@ export interface NavItemType {
     icon: React.ReactElement;
     permission?: Permission;
     subItems?: Omit<NavItemType, "subItems">[];
+    badge?: React.ReactNode;
 }
 
 export interface NavSectionType {
@@ -180,12 +181,18 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                 return (
                                     <NavCategory key={item.id} value={item.id}>
                                         <NavCategoryItem icon={item.icon} className="admin-sidebar__navItem">
-                                            {item.label}
+                                            <div className="flex items-center justify-between w-full gap-2">
+                                                <span>{item.label}</span>
+                                                {item.badge}
+                                            </div>
                                         </NavCategoryItem>
                                         <NavSubItemGroup>
                                             {item.subItems.map((subItem) => (
                                                 <NavSubItem key={subItem.id} value={subItem.id} className="admin-sidebar__navItem">
-                                                    {subItem.label}
+                                                    <div className="flex items-center justify-between w-full gap-2">
+                                                        <span>{subItem.label}</span>
+                                                        {subItem.badge}
+                                                    </div>
                                                 </NavSubItem>
                                             ))}
                                         </NavSubItemGroup>
@@ -194,7 +201,10 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                             }
                             return (
                                 <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
-                                    {item.label}
+                                    <div className="flex items-center justify-between w-full gap-2">
+                                        <span>{item.label}</span>
+                                        {item.badge}
+                                    </div>
                                 </NavItem>
                             );
                         })}
@@ -250,12 +260,18 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                         return (
                                             <NavCategory key={item.id} value={item.id}>
                                                 <NavCategoryItem icon={item.icon} className="admin-sidebar__navItem">
-                                                    {item.label}
+                                                    <div className="flex items-center justify-between w-full gap-2">
+                                                        <span>{item.label}</span>
+                                                        {item.badge}
+                                                    </div>
                                                 </NavCategoryItem>
                                                 <NavSubItemGroup>
                                                     {item.subItems.map((subItem) => (
                                                         <NavSubItem key={subItem.id} value={subItem.id} className="admin-sidebar__navItem">
-                                                            {subItem.label}
+                                                            <div className="flex items-center justify-between w-full gap-2">
+                                                                <span>{subItem.label}</span>
+                                                                {subItem.badge}
+                                                            </div>
                                                         </NavSubItem>
                                                     ))}
                                                 </NavSubItemGroup>
@@ -264,7 +280,10 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                     }
                                     return (
                                         <NavItem key={item.id} value={item.id} icon={item.icon} className="admin-sidebar__navItem">
-                                            {item.label}
+                                            <div className="flex items-center justify-between w-full gap-2">
+                                                <span>{item.label}</span>
+                                                {item.badge}
+                                            </div>
                                         </NavItem>
                                     );
                                 })}
@@ -326,12 +345,19 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                             <Menu key={item.id} positioning="after-top">
                                                 <MenuTrigger disableButtonEnhancement>
                                                     <Tooltip content={item.label} relationship="label" positioning="after">
-                                                        <Button
-                                                            appearance={isActive ? "primary" : "subtle"}
-                                                            size="large"
-                                                            icon={item.icon}
-                                                            className="admin-sidebar__icon-btn"
-                                                        />
+                                                        <div className="relative">
+                                                            <Button
+                                                                appearance={isActive ? "primary" : "subtle"}
+                                                                size="large"
+                                                                icon={item.icon}
+                                                                className="admin-sidebar__icon-btn"
+                                                            />
+                                                            {item.badge && (
+                                                                <div className="absolute top-1 right-1 pointer-events-none transform translate-x-1 -translate-y-1">
+                                                                    {item.badge}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </Tooltip>
                                                 </MenuTrigger>
                                                 <MenuPopover>
@@ -343,7 +369,10 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
                                                                 onClick={() => handleNavigate(subItem.path)}
                                                                 className={`admin-sidebar__navItem ${selectedValue === subItem.id ? "admin-sidebar__navItem--selected" : ""}`}
                                                             >
-                                                                {subItem.label}
+                                                                <div className="flex items-center justify-between w-full gap-2">
+                                                                    <span>{subItem.label}</span>
+                                                                    {subItem.badge}
+                                                                </div>
                                                             </MenuItem>
                                                         ))}
                                                     </MenuList>
@@ -354,13 +383,20 @@ export const BaseSidebar: FC<BaseSidebarProps> = ({
 
                                     return (
                                         <Tooltip key={item.id} content={item.label} relationship="label" positioning="after">
-                                            <Button
-                                                appearance={selectedValue === item.id ? "primary" : "subtle"}
-                                                size="large"
-                                                icon={item.icon}
-                                                onClick={() => handleNavigate(item.path)}
-                                                className="admin-sidebar__icon-btn"
-                                            />
+                                            <div className="relative">
+                                                <Button
+                                                    appearance={selectedValue === item.id ? "primary" : "subtle"}
+                                                    size="large"
+                                                    icon={item.icon}
+                                                    onClick={() => handleNavigate(item.path)}
+                                                    className="admin-sidebar__icon-btn"
+                                                />
+                                                {item.badge && (
+                                                    <div className="absolute top-1 right-1 pointer-events-none transform translate-x-1 -translate-y-1">
+                                                        {item.badge}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </Tooltip>
                                     );
                                 })}

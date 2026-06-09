@@ -10,6 +10,13 @@ public static class CorsExtensions
         var origins = configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
             ?? throw new InvalidOperationException("CORS:AllowedOrigins is not configured.");
 
+        var extraOriginsStr = configuration["CORS:ExtraOrigins"] ?? configuration["CORS_EXTRA_ORIGINS"];
+        if (!string.IsNullOrWhiteSpace(extraOriginsStr))
+        {
+            var extraOrigins = extraOriginsStr.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            origins = origins.Concat(extraOrigins).Distinct().ToArray();
+        }
+
         services.AddCors(options => options.AddPolicy(policyName, p =>
             p.AllowAnyHeader()
              .AllowAnyMethod()

@@ -1,5 +1,6 @@
 import type {FC} from "react";
 import {Body1, Button, Caption1, Spinner} from "@fluentui/react-components";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 interface GateStatusContentProps {
     effectiveUserId: string;
@@ -20,12 +21,14 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
     onLogout,
     onRetry,
 }) => {
+    const {sizes} = useComponentSize();
+
     if (!effectiveUserId) {
         return (
             <div className="flex flex-col gap-3">
                 <Body1>Не удалось определить пользователя из сессии.</Body1>
                 <Caption1>Попробуйте перезайти в систему.</Caption1>
-                <Button appearance="primary" onClick={onLogout}>
+                <Button appearance="primary" size={sizes.button} onClick={onLogout}>
                     На страницу входа
                 </Button>
             </div>
@@ -37,7 +40,7 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
             <div className="flex flex-col gap-3">
                 <Body1>Загрузка профиля заняла слишком много времени.</Body1>
                 <Caption1>Проверьте доступность API и повторите попытку.</Caption1>
-                <Button appearance="primary" onClick={onRetry}>
+                <Button appearance="primary" size={sizes.button} onClick={onRetry}>
                     Повторить
                 </Button>
             </div>
@@ -47,7 +50,7 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
     if (profileLoading) {
         return (
             <div className="flex items-center gap-3">
-                <Spinner size="small"/>
+                <Spinner size={sizes.spinner}/>
                 <Body1>Загружаем профиль…</Body1>
             </div>
         );
@@ -58,7 +61,7 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
             <div className="flex flex-col gap-3">
                 <Body1>Не удалось загрузить профиль. Повторите попытку позже.</Body1>
                 <Caption1>{profileError}</Caption1>
-                <Button appearance="primary" onClick={onRetry}>
+                <Button appearance="primary" size={sizes.button} onClick={onRetry}>
                     Повторить
                 </Button>
             </div>
@@ -68,7 +71,7 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
     if (!hasProfile) {
         return (
             <div className="flex items-center gap-3">
-                <Spinner size="small"/>
+                <Spinner size={sizes.spinner}/>
                 <Body1>Подготавливаем профиль…</Body1>
             </div>
         );
@@ -76,3 +79,4 @@ export const GateStatusContent: FC<GateStatusContentProps> = ({
 
     return null;
 };
+

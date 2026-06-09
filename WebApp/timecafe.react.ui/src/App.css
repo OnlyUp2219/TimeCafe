@@ -378,7 +378,7 @@
 .profile-gate-shell {
   min-width: 100vw;
   min-height: 100dvh;
-  background: linear-gradient(135deg, #f7fafc 0%, #eef4ff 45%, #eafbf7 100%);
+  background: linear-gradient(135deg, var(--colorNeutralBackground3) 0%, var(--colorNeutralBackground2) 45%, var(--colorBrandBackground2) 100%);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -405,7 +405,7 @@
   width: 220px;
   height: 220px;
   border-radius: 9999px;
-  background: #5b8def;
+  background: var(--colorBrandBackground);
   top: -80px;
   right: -40px;
 }
@@ -414,7 +414,7 @@
   width: 140px;
   height: 140px;
   border-radius: 28px;
-  background: #00b4a0;
+  background: var(--colorPaletteTealBorderActive);
   bottom: 18%;
   left: -50px;
   transform: rotate(22deg);
@@ -425,7 +425,7 @@
   height: 0;
   border-left: 110px solid transparent;
   border-right: 110px solid transparent;
-  border-bottom: 190px solid #f28d5e;
+  border-bottom: 190px solid var(--colorPaletteRedBorderActive);
   bottom: -30px;
   right: 18%;
   opacity: 0.14;
