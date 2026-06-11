@@ -2,7 +2,7 @@ using Audit.TimeCafe.Application.CQRS.AuditLogs.Queries;
 
 namespace Audit.TimeCafe.API.Endpoints.AuditLogs;
 
-public sealed record GetAuditLogsPageRequest(int Page, int PageSize, string? EventType, string? UserName);
+public sealed record GetAuditLogsPageRequest(int Page, int PageSize, string? EventType, string? UserName, Guid? UserId = null);
 
 public class GetAuditLogsPageEndpoint : ICarterModule
 {
@@ -12,7 +12,7 @@ public class GetAuditLogsPageEndpoint : ICarterModule
                 [AsParameters] GetAuditLogsPageRequest request,
                 [FromServices] ISender sender) =>
             {
-                var query = new GetAuditLogsPageQuery(request.Page, request.PageSize, request.EventType, request.UserName);
+                var query = new GetAuditLogsPageQuery(request.Page, request.PageSize, request.EventType, request.UserName, request.UserId);
                 var result = await sender.Send(query);
 
                 return result.ToHttpResult(data => Results.Ok(data));

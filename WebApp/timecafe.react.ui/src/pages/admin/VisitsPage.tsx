@@ -1,5 +1,5 @@
 import { NO_DATA } from "@shared/const/placeholders";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Body1,
@@ -37,6 +37,7 @@ import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { PageLoader } from "@components/PageLoader/PageLoader";
 import { getUserFullName } from "@utility/userUtils";
 import { formatDateTime } from "@utility/dateUtils";
+import { formatDurationMinutes } from "@utility/formatDurationMinutes";
 
 const formatCost = (cost: number | null, status: VisitStatus) => {
     if (status === VisitStatus.Cancelled || status === VisitStatus.Rejected) {
@@ -44,6 +45,12 @@ const formatCost = (cost: number | null, status: VisitStatus) => {
     }
     if (cost == null) return NO_DATA;
     return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
+};
+
+const getVisitDurationMs = (visit: VisitWithTariff, now: Date) => {
+    const start = new Date(visit.entryTime).getTime();
+    const end = visit.exitTime ? new Date(visit.exitTime).getTime() : now.getTime();
+    return Math.max(0, end - start);
 };
 
 
@@ -71,6 +78,15 @@ export const VisitsPage = () => {
     const { sizes } = useComponentSize();
     const { has } = usePermissions();
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminVisits");
+
+    const [currentTime, setCurrentTime] = useState(() => new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 30000);
+        return () => clearInterval(timer);
+    }, []);
 
     const [selectedVisit, setSelectedVisit] = useState<VisitWithTariff | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -125,6 +141,7 @@ export const VisitsPage = () => {
         status: { minWidth: 80, defaultWidth: 120 },
         entryTime: { minWidth: 130, defaultWidth: 170 },
         exitTime: { minWidth: 130, defaultWidth: 170 },
+        duration: { minWidth: 100, defaultWidth: 150 },
         cost: { minWidth: 80, defaultWidth: 120 },
         userId: { minWidth: 100, defaultWidth: 180 },
         warnings: { minWidth: 150, defaultWidth: 250 },
@@ -176,6 +193,20 @@ export const VisitsPage = () => {
                         {visit.status === VisitStatus.Completed ? formatDateTime(visit.exitTime) : NO_DATA}
                     </TableCellLayout>
                 ),
+            }),
+            createTableColumn<VisitWithTariff>({
+                columnId: "duration",
+                compare: (a, b) => {
+                    const durationA = getVisitDurationMs(a, currentTime);
+                    const durationB = getVisitDurationMs(b, currentTime);
+                    return durationA - durationB;
+                },
+                renderHeaderCell: () => "Время проведения",
+                renderCell: (visit) => {
+                    const ms = getVisitDurationMs(visit, currentTime);
+                    const minutes = Math.floor(ms / 60000);
+                    return <TableCellLayout truncate>{formatDurationMinutes(minutes)}</TableCellLayout>;
+                },
             }),
             createTableColumn<VisitWithTariff>({
                 columnId: "cost",
@@ -244,7 +275,7 @@ export const VisitsPage = () => {
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as Permission));
-    }, [navigate, has, balances]);
+    }, [navigate, has, balances, currentTime]);
 
     if (isLoading) {
         return <PageLoader label="Загрузка визитов..." />;

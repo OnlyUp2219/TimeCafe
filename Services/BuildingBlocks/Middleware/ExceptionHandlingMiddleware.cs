@@ -122,7 +122,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
         try
         {
-            var auditEvent = new AuditEvent
+            var auditEvent = new Audit.Core.AuditEvent
             {
                 EventType = "Exception",
                 StartDate = DateTime.UtcNow,
@@ -135,6 +135,13 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                     Exception = exception.ToString()
                 }
             };
+
+            var userId = context.User?.TryGetUserId();
+            if (userId.HasValue)
+            {
+                auditEvent.CustomFields ??= new Dictionary<string, object>();
+                auditEvent.CustomFields["UserId"] = userId.Value;
+            }
 
             await publishEndpoint.Publish<SaveAuditMessage>(new
             {

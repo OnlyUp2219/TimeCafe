@@ -314,63 +314,65 @@ export const ActiveVisitPage = () => {
                     <div className="lg:col-span-12 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
                         <Clock20Regular className="text-2xl" />
                         <div>
-                            <Subtitle2Stronger className="block text-sm">Запрос на выход отправлен администратору</Subtitle2Stronger>
-                            <Body2>Пожалуйста, подойдите к кассе для фиксации точного времени и оплаты. Ваше время продолжает течь до момента подтверждения администратором.</Body2>
+                            <Subtitle2Stronger className="block text-sm">Запрос на завершение визита отправлен</Subtitle2Stronger>
+                            <Body2>Мы зафиксируем точное время окончания сессии, как только вы подойдете к стойке ресепшена. В целях безопасности ваш таймер активен до подтверждения администратором на кассе.</Body2>
                         </div>
                     </div>
                 )}
 
-                <HoverTiltCard className="order-2 lg:order-1 lg:col-span-8" size={sizes.card}>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <div className="flex items-center gap-2">
-                                <Clock20Regular />
-                                <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
-                            </div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <Tag appearance="outline" icon={<Sticker20Regular />}>
-                                    {activeVisit?.tariffName ?? "Тариф"}
-                                </Tag>
-                                <Tag appearance="outline" data-testid="visit-active-estimate"
-                                    icon={<Money20Regular />} >{formatMoneyByN(estimate.total)}</Tag>
-                                {estimate.isDiscounted && (
-                                    <Tag appearance="brand" color="success">
-                                        -{estimate.appliedDiscountPercent}%
+                <HoverTiltCard className="order-2 lg:order-1 lg:col-span-8 h-full flex flex-col" size={sizes.card}>
+                    <div className="flex flex-col gap-4 h-full flex-1 justify-between">
+                        <div className="flex flex-col gap-4 flex-1">
+                            <div className="flex items-center justify-between gap-3 flex-wrap">
+                                <div className="flex items-center gap-2">
+                                    <Clock20Regular />
+                                    <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
+                                </div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <Tag appearance="outline" icon={<Sticker20Regular />}>
+                                        {activeVisit?.tariffName ?? "Тариф"}
                                     </Tag>
-                                )}
-                            </div>
-                        </div>
-                        <Divider />
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div className="flex flex-col gap-2">
-                                <div className="flex">
-                                    <Body1>Прошедшее время</Body1>
-                                </div>
-                                <div className="flex">
-                                    <LargeTitle>{formatDuration(elapsedSeconds)}</LargeTitle>
-                                </div>
-                                <div className="flex">
-                                    <Body1>Обновление: каждую секунду</Body1>
+                                    <Tag appearance="outline" data-testid="visit-active-estimate"
+                                        icon={<Money20Regular />} >{formatMoneyByN(estimate.total)}</Tag>
+                                    {estimate.isDiscounted && (
+                                        <Tag appearance="brand" color="success">
+                                            -{estimate.appliedDiscountPercent}%
+                                        </Tag>
+                                    )}
                                 </div>
                             </div>
+                            <Divider />
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex">
+                                        <Body1>Прошедшее время</Body1>
+                                    </div>
+                                    <div className="flex">
+                                        <LargeTitle>{formatDuration(elapsedSeconds)}</LargeTitle>
+                                    </div>
+                                    <div className="flex">
+                                        <Body1>Обновление: каждую секунду</Body1>
+                                    </div>
+                                </div>
 
-                            <div className="flex flex-col gap-2 sm:items-end sm:text-right">
-                                <div className="flex justify-end">
-                                    <Body1>Ориентировочная стоимость</Body1>
-                                </div>
-                                <div className="flex justify-end">
-                                    <Title1>{formatMoneyByN(estimate.total)}</Title1>
-                                </div>
-                                <div className="flex justify-end">
-                                    <Body1>{estimate.breakdown}</Body1>
+                                <div className="flex flex-col gap-2 sm:items-end sm:text-right">
+                                    <div className="flex justify-end">
+                                        <Body1>Ориентировочная стоимость</Body1>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Title1>{formatMoneyByN(estimate.total)}</Title1>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <Body1>{estimate.breakdown}</Body1>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </HoverTiltCard>
 
-                <HoverTiltCard className="order-1 lg:order-2 lg:col-span-4" size={sizes.card}>
-                    <div className="flex flex-col gap-4">
+                <HoverTiltCard className="order-1 lg:order-2 lg:col-span-4 h-full flex flex-col" size={sizes.card}>
+                    <div className="flex flex-col gap-4 h-full flex-1 justify-between">
                         <div className="flex items-center gap-2">
                             <DoorArrowRight20Regular />
                             <Subtitle2Stronger>Действия</Subtitle2Stronger>
@@ -387,7 +389,7 @@ export const ActiveVisitPage = () => {
                                         {Math.floor(graceSecondsLeft / 60)}:{(graceSecondsLeft % 60).toString().padStart(2, '0')}
                                     </Title1>
                                 </div>
-                                <Body1>Вы можете пополнить баланс онлайн или оплатить на кассе. Если время выйдет, таймер будет продолжен.</Body1>
+                                <Body1>Для завершения визита без задержек пополните баланс картой через Stripe или оплатите визит наличными у администратора. Если льготное время истечет, таймер биллинга возобновит работу.</Body1>
                                 <div className="flex flex-col gap-2">
                                     <Button
                                         appearance="primary"
@@ -529,14 +531,14 @@ export const ActiveVisitPage = () => {
 
                             <div className={`grid grid-cols-1 ${userId ? 'md:grid-cols-2' : ''} gap-4`}>
                                 {userId && (
-                                    <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
+                                    <Card size={sizes.card} className="flex flex-col gap-3 justify-between">
                                         <div>
                                             <Subtitle2Stronger className="block mb-1">С внутреннего баланса</Subtitle2Stronger>
                                             <Body2 className="block mb-2">Быстрая оплата в одно нажатие.</Body2>
                                             <div className="text-sm bg-(--colorNeutralBackground2) p-2 rounded-lg flex justify-between">
                                                 <span>Ваш баланс:</span>
                                                 <span className={canPayWithBalance ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
-                                                    {formatMoneyByN(balanceAmount)}
+                                                     {formatMoneyByN(balanceAmount)}
                                                 </span>
                                             </div>
                                         </div>
@@ -551,7 +553,7 @@ export const ActiveVisitPage = () => {
                                     </Card>
                                 )}
 
-                                <Card className="p-4 flex flex-col gap-3 justify-between border border-(--colorNeutralStroke1)">
+                                <Card size={sizes.card} className="flex flex-col gap-3 justify-between">
                                     <div>
                                         <Subtitle2Stronger className="block mb-1">Банковской картой (Stripe)</Subtitle2Stronger>
                                         <Body2 className="block mb-2">Безопасная онлайн-оплата через Stripe Checkout.</Body2>

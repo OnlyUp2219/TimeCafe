@@ -3,10 +3,11 @@ import {
     Button,
     Card,
     Divider,
-
     Title2,
-    Tooltip
+    Tooltip,
+    Subtitle2Stronger
 } from "@fluentui/react-components";
+import { Info20Regular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useNavigate } from "react-router-dom";
@@ -17,40 +18,39 @@ import { BillingType as BillingTypeEnum, type BillingType, type Tariff } from "@
 import { clamp } from "@utility/clamp";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import { useComponentSize } from "@hooks/useComponentSize";
-
+import { calcVisitEstimate } from "@utility/visitEstimate";
 
 import "./visits.css";
 import { type CalcResult, TariffForecastCard } from "@components/Tariff/TariffForecastCard";
 import { TariffCarouselSection } from "@components/Tariff/TariffCarouselSection";
 import { VisitParamsCard } from "@components/Tariff/VisitParamsCard";
-import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";
+import { TariffDetailsDialog } from "@components/Tariff/TariffDetailsDialog";
 import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-const calculate = (minutes: number, pricePerMinute: number, billingType: BillingType): CalcResult => {
+const calculate = (
+    minutes: number,
+    pricePerMinute: number,
+    billingType: BillingType,
+    minSessionMinutes: number | null = null,
+    roundingRule: string | null = null
+): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
-    const priceMinute = Math.max(0, pricePerMinute);
-    const priceHour = priceMinute * 60;
-
-    if (billingType === BillingTypeEnum.PerMinute) {
-        return {
-            total: safeMinutes * priceMinute,
-            chargedMinutes: safeMinutes,
-            chargedHours: 0,
-            pricePerMinute: priceMinute,
-            pricePerHour: priceHour,
-        };
-    }
-
-    const hours = Math.max(1, Math.ceil(safeMinutes / 60));
+    const estimate = calcVisitEstimate(
+        safeMinutes,
+        billingType,
+        pricePerMinute,
+        minSessionMinutes,
+        roundingRule
+    );
 
     return {
-        total: hours * priceHour,
-        chargedMinutes: safeMinutes,
-        chargedHours: hours,
-        pricePerMinute: priceMinute,
-        pricePerHour: priceHour,
+        total: estimate.total,
+        chargedMinutes: estimate.chargedMinutes ?? safeMinutes,
+        chargedHours: estimate.chargedHours ?? Math.max(1, Math.ceil(safeMinutes / 60)),
+        pricePerMinute: pricePerMinute,
+        pricePerHour: pricePerMinute * 60,
     };
 };
 
@@ -93,6 +93,8 @@ export const TariffSelectionPage = () => {
             colors: t.themeColors ?? null,
             maxGuests: t.maxGuests,
             minSessionMinutes: t.minSessionMinutes,
+            roundingRule: t.roundingRule,
+            audienceTags: t.audienceTags,
         }));
     }, [tariffsData]);
 
@@ -129,7 +131,13 @@ export const TariffSelectionPage = () => {
 
     const calc = useMemo(() => {
         if (!selectedTariff) return null;
-        return calculate(durationMinutes, selectedTariff.pricePerMinute, selectedTariff.billingType);
+        return calculate(
+            durationMinutes,
+            selectedTariff.pricePerMinute,
+            selectedTariff.billingType,
+            selectedTariff.minSessionMinutes,
+            selectedTariff.roundingRule
+        );
     }, [durationMinutes, selectedTariff]);
 
     const setActiveTariff = useCallback(
@@ -263,6 +271,18 @@ export const TariffSelectionPage = () => {
 
                 <Divider />
 
+                {/* TODO: Make for skills */}
+                <div className="bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-2xl p-4 flex items-start gap-3">
+                    <Info20Regular className="text-xl shrink-0 mt-0.5" />
+                    <div className="flex flex-col gap-1">
+                        <Subtitle2Stronger className="block text-sm">Правила тарификации и округления</Subtitle2Stronger>
+                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>
+                            При выборе поминутного тарифа списание происходит строго посекундно. Почасовые тарифы округляются до полного часа в большую сторону.
+                            Если в тарифе установлен стоп-чек, итоговая стоимость визита не превысит этот лимит, сколько бы времени вы ни провели в заведении.
+                        </Body1>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                     <VisitParamsCard
                         selectedTariff={selectedTariff}
@@ -295,7 +315,7 @@ export const TariffSelectionPage = () => {
                 </div>
             </div>
 
-            <TariffDetailsDrawer
+            <TariffDetailsDialog
                 open={detailsOpen}
                 onOpenChange={setDetailsOpen}
                 tariffId={selectedTariffIdForDetails} />

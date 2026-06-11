@@ -14,6 +14,7 @@ interface ComponentSizeMap {
     radiogroup: FluentSize;
     avatar: 16 | 20 | 24 | 28 | 32 | 36 | 40 | 48 | 56 | 64 | 72 | 96 | 120 | 128;
     spinner: "tiny" | "extra-small" | "small" | "medium" | "large" | "extra-large" | "huge";
+    accordionHeader: "small" | "medium" | "large" | "extra-large";
 }
 
 const SIZE_PRESETS: Record<FluentSize, ComponentSizeMap> = {
@@ -29,6 +30,7 @@ const SIZE_PRESETS: Record<FluentSize, ComponentSizeMap> = {
         radiogroup: "large",
         avatar: 48,
         spinner: "large",
+        accordionHeader: "extra-large",
     },
     medium: {
         input: "medium",
@@ -42,6 +44,7 @@ const SIZE_PRESETS: Record<FluentSize, ComponentSizeMap> = {
         radiogroup: "medium",
         avatar: 36,
         spinner: "medium",
+        accordionHeader: "large",
     },
     small: {
         input: "small",
@@ -55,6 +58,7 @@ const SIZE_PRESETS: Record<FluentSize, ComponentSizeMap> = {
         radiogroup: "small",
         avatar: 28,
         spinner: "small",
+        accordionHeader: "medium",
     },
 };
 

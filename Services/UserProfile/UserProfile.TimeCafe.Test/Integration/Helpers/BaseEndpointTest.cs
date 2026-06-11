@@ -15,6 +15,25 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             throw new InvalidOperationException(IntegrationApiFactory.InfrastructureUnavailableReason);
         }
 
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            context.Profiles.RemoveRange(context.Profiles);
+            context.AdditionalInfos.RemoveRange(context.AdditionalInfos);
+            await context.SaveChangesAsync();
+
+            var connectionMultiplexer = scope.ServiceProvider.GetService<StackExchange.Redis.IConnectionMultiplexer>();
+            if (connectionMultiplexer != null)
+            {
+                var endpoints = connectionMultiplexer.GetEndPoints();
+                foreach (var endpoint in endpoints)
+                {
+                    var server = connectionMultiplexer.GetServer(endpoint);
+                    await server.FlushDatabaseAsync();
+                }
+            }
+        }
+
         foreach (var (id, firstName, lastName, gender) in TestData.GetAllExistingUsers())
         {
             await SeedProfileAsync(id, firstName, lastName, gender);

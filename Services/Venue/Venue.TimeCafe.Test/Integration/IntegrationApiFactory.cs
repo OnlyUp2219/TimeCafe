@@ -170,7 +170,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 _redisContainer.StartAsync().GetAwaiter().GetResult();
                 _rabbitContainer.StartAsync().GetAwaiter().GetResult();
 
-                _redisConnectionString = $"{_redisContainer.Hostname}:{_redisContainer.GetMappedPublicPort(6379)}";
+                _redisConnectionString = $"{_redisContainer.Hostname}:{_redisContainer.GetMappedPublicPort(6379)},allowAdmin=true";
                 _rabbitHost = _rabbitContainer.Hostname;
                 _rabbitPort = _rabbitContainer.GetMappedPublicPort(5672);
                 InfrastructureUnavailableReason = null;

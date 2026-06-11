@@ -25,11 +25,13 @@ import {
     TableCellLayout,
     Title2,
     Title3,
+    Divider,
 } from "@fluentui/react-components";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
 import { TextareaWithCounter } from "@components/FormFields";
-import { useGetUserByIdQuery } from "@store/api/adminApi";
+import { AuditLogDetails } from "@components/Admin/AuditLogDetails";
+import { useGetUserByIdQuery, useGetAuditLogsQuery, type AuditLogDto } from "@store/api/adminApi";
 import { useGetBalanceQuery, useGetTransactionHistoryQuery } from "@store/api/billingApi";
 import { useGetVisitHistoryQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 import {
@@ -54,7 +56,7 @@ import { DismissableError } from "@components/DismissableError/DismissableError"
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
 import { NO_DATA } from "@shared/const/placeholders";
 import { formatDateTime } from "@utility/dateUtils";
-import { formatMoney } from "@utility/formatUtils";
+import { formatMoney, safeParseJson, formatDurationMs } from "@utility/formatUtils";
 import { txTypeColor, txSourceLabel, txTypeLabel } from "@utility/billingUtils";
 import { visitStatusLabel, visitStatusColor } from "@utility/visitUtils";
 import { genderLabel, profileStatusLabel, profileStatusColor } from "@utility/userUtils";
@@ -68,6 +70,7 @@ export const UserDetailPage = () => {
 
     const { page: txPage, size: txPageSize, setPage: setTxPage } = usePagination("adminUserDetailTx", 1, 10);
     const { page: notesPage, size: NOTES_PAGE_SIZE, setPage: setNotesPage } = usePagination("adminUserDetailNotes", 1, 3);
+    const { page: auditPage, size: auditPageSize, setPage: setAuditPage } = usePagination("adminUserDetailAudit", 1, 5);
 
     const { data: userData, isLoading: userLoading, error: userError } = useGetUserByIdQuery(id!, { skip: !id, refetchOnMountOrArgChange: true });
     const user = userData?.user;
@@ -77,7 +80,20 @@ export const UserDetailPage = () => {
         { userId: id!, page: txPage, pageSize: txPageSize },
         { skip: !id }
     );
-    const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery({ userId: id! }, { skip: !id });
+    const [visitPage, setVisitPage] = useState(1);
+    const visitPageSize = 10;
+    const { data: visits = [], isLoading: visitsLoading } = useGetVisitHistoryQuery(
+        { userId: id!, pageSize: 1000 },
+        { skip: !id }
+    );
+    const paginatedVisits = useMemo(() => {
+        const startIndex = (visitPage - 1) * visitPageSize;
+        return visits.slice(startIndex, startIndex + visitPageSize);
+    }, [visits, visitPage, visitPageSize]);
+    const visitTotalPages = useMemo(() => {
+        return Math.max(1, Math.ceil(visits.length / visitPageSize));
+    }, [visits, visitPageSize]);
+
     const { data: loyalty, } = useGetUserLoyaltyQuery(id!, { skip: !id });
     const { data: profile } = useGetProfileByUserIdReadOnlyQuery(id!, { skip: !id });
     const { data: notesData, isLoading: notesLoading } = useGetAdditionalInfosByUserIdQuery(
@@ -112,6 +128,23 @@ export const UserDetailPage = () => {
             await deleteNote({ infoId, userId: id }).unwrap();
         } catch { /* error handled by RTK */ }
     }, [id, deleteNote]);
+
+    const { data: auditData, isLoading: auditLoading, error: auditError } = useGetAuditLogsQuery(
+        { userId: id!, page: auditPage, pageSize: auditPageSize },
+        { skip: !id }
+    );
+    const auditLogs = auditData?.items ?? [];
+    const auditTotalPages = auditData?.metadata?.totalPages ?? 1;
+    const auditTotalCount = auditData?.metadata?.totalCount ?? 0;
+    const auditErrorMessage = auditError ? getRtkErrorMessage(auditError as FetchBaseQueryError) : null;
+
+    const [selectedAuditLog, setSelectedAuditLog] = useState<AuditLogDto | null>(null);
+    const [auditDetailsOpen, setAuditDetailsOpen] = useState(false);
+
+    const handleOpenDetails = useCallback((log: AuditLogDto) => {
+        setSelectedAuditLog(log);
+        setAuditDetailsOpen(true);
+    }, []);
 
     const transactions = txData?.items ?? [];
     const txTotalPages = txData?.metadata.totalPages ?? 1;
@@ -198,6 +231,7 @@ export const UserDetailPage = () => {
         status: { minWidth: 80, defaultWidth: 120 },
         entry: { minWidth: 130, defaultWidth: 160 },
         exit: { minWidth: 130, defaultWidth: 160 },
+        duration: { minWidth: 120, defaultWidth: 145 },
         cost: { minWidth: 80, defaultWidth: 110 },
     }), []);
 
@@ -231,6 +265,20 @@ export const UserDetailPage = () => {
             renderCell: (v) => <TableCellLayout truncate>{formatDateTime(v.exitTime)}</TableCellLayout>,
         }),
         createTableColumn<VisitWithTariff>({
+            columnId: "duration",
+            compare: (a, b) => {
+                const durA = a.exitTime ? new Date(a.exitTime).getTime() - new Date(a.entryTime).getTime() : 0;
+                const durB = b.exitTime ? new Date(b.exitTime).getTime() - new Date(b.entryTime).getTime() : 0;
+                return durA - durB;
+            },
+            renderHeaderCell: () => "Время проведения",
+            renderCell: (v) => (
+                <TableCellLayout truncate>
+                    {v.exitTime ? formatDurationMs(new Date(v.exitTime).getTime() - new Date(v.entryTime).getTime()) : "В процессе"}
+                </TableCellLayout>
+            ),
+        }),
+        createTableColumn<VisitWithTariff>({
             columnId: "cost",
             compare: (a, b) => (a.calculatedCost ?? 0) - (b.calculatedCost ?? 0),
             renderHeaderCell: () => "Стоимость",
@@ -243,7 +291,7 @@ export const UserDetailPage = () => {
     }
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2 flex-wrap">
                 <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/users")}>
                     Назад к списку
@@ -316,7 +364,9 @@ export const UserDetailPage = () => {
                         <HasPermission can={Permissions.BillingBalanceRead}>
                             <Card size={sizes.card} className="flex-1 min-w-[200px]">
                                 <Body2>Потрачено</Body2>
-                                <Title3>{balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}</Title3>
+                                <Title3 className="text-(--colorPaletteRedForeground1)">
+                                    {balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}
+                                </Title3>
                             </Card>
                         </HasPermission>
                         <HasPermission can={Permissions.VenueLoyaltyRead}>
@@ -334,43 +384,45 @@ export const UserDetailPage = () => {
                         <HasPermission can={Permissions.UserProfileProfileRead}>
                             <Card className="flex-[1.3] flex-grow basis-[400px]" size={sizes.card}>
                                 <Title3 >Профиль</Title3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <Body2>Имя</Body2>
-                                        <Body1>{profile?.firstName || NO_DATA}</Body1>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Имя</Body1>
+                                        <Body1Strong>{profile?.firstName || NO_DATA}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Фамилия</Body2>
-                                        <Body1>{profile?.lastName || NO_DATA}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Фамилия</Body1>
+                                        <Body1Strong>{profile?.lastName || NO_DATA}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Отчество</Body2>
-                                        <Body1>{profile?.middleName || NO_DATA}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Отчество</Body1>
+                                        <Body1Strong>{profile?.middleName || NO_DATA}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Пол</Body2>
-                                        <Body1>{genderLabel(profile?.gender)}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Пол</Body1>
+                                        <Body1Strong>{genderLabel(profile?.gender)}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Дата рождения</Body2>
-                                        <Body1>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Дата рождения</Body1>
+                                        <Body1Strong>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Email</Body2>
-                                        <Body1>{profile?.email || user.email}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Email</Body1>
+                                        <Body1Strong>{profile?.email || user.email}</Body1Strong>
                                     </div>
-                                    <div>
-                                        <Body2>Телефон</Body2>
-                                        <Body1>{profile?.phoneNumber || NO_DATA}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Телефон</Body1>
+                                        <Body1Strong>{profile?.phoneNumber || NO_DATA}</Body1Strong>
                                     </div>
-                                    <div className="sm:col-span-2">
-                                        <Body2>Статус профиля</Body2>
-                                        <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Статус профиля</Body1>
+                                        <div>
+                                            <Badge appearance="tint" color={profileStatusColor(profile?.profileStatus)}>{profileStatusLabel(profile?.profileStatus)}</Badge>
+                                        </div>
                                     </div>
                                     {profile?.banReason && (
-                                        <div className="sm:col-span-2">
-                                            <Body2>Причина блокировки</Body2>
-                                            <Body1 block className="text-(--colorPaletteRedForeground1)">{profile.banReason}</Body1>
+                                        <div className="flex flex-col gap-0.5 sm:col-span-2">
+                                            <Body1 className="text-(--colorNeutralForeground3)">Причина блокировки</Body1>
+                                            <Body1Strong className="text-(--colorPaletteRedForeground1)">{profile.banReason}</Body1Strong>
                                         </div>
                                     )}
                                 </div>
@@ -504,13 +556,13 @@ export const UserDetailPage = () => {
                     </div>
 
                     <HasPermission can={Permissions.BillingTransactionRead}>
-                        <div>
+                        <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between flex-wrap gap-2">
                                 <Title3>Транзакции</Title3>
                                 <Body2>{txTotalCount} записей</Body2>
                             </div>
                             <DismissableError error={txErrorMessage} />
-                            <Card className="overflow-x-auto" size={sizes.card}>
+                            <Card className="overflow-x-auto min-h-[320px]" size={sizes.card}>
                                 <DataTable
                                     items={transactions}
                                     columns={txColumns}
@@ -527,24 +579,117 @@ export const UserDetailPage = () => {
                     </HasPermission>
 
                     <HasPermission can={Permissions.VenueVisitRead}>
-                        <div>
+                        <div className="flex flex-col gap-4">
                             <div className="flex items-center justify-between flex-wrap gap-2">
                                 <Title3>История визитов</Title3>
                                 <Body2>{visits.length} визитов</Body2>
                             </div>
-                            <Card className="overflow-x-auto" size={sizes.card}>
+                            <Card className="overflow-x-auto min-h-[320px]" size={sizes.card}>
                                 <DataTable
-                                    items={visits}
+                                    items={paginatedVisits}
                                     columns={visitColumns}
                                     getRowId={(v) => v.visitId}
                                     loading={visitsLoading}
                                     columnSizingOptions={visitColumnSizingOptions}
                                 />
                             </Card>
+                            {visits.length > 0 && (
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <Body1>Показано {paginatedVisits.length} из {visits.length}</Body1>
+                                    <Pagination currentPage={visitPage} totalPages={visitTotalPages} onPageChange={setVisitPage} />
+                                </div>
+                            )}
+                        </div>
+                    </HasPermission>
+
+                    <HasPermission can={Permissions.AuditLogAdminRead}>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                                <Title3>История действий (Аудит)</Title3>
+                                <Body2>{auditTotalCount} записей</Body2>
+                            </div>
+                            <DismissableError error={auditErrorMessage} />
+                            <Card size={sizes.card} className="relative min-h-[320px]">
+                                {auditLoading && <Spinner size={sizes.spinner} />}
+                                {!auditLoading && auditLogs.length === 0 && (
+                                    <EmptyState
+                                        title={NO_DATA}
+                                        description="Нет записей аудита для этого пользователя"
+                                    />
+                                )}
+                                {!auditLoading && auditLogs.length > 0 && (
+                                    <div className="flex flex-col gap-6">
+                                        {auditLogs.map((log, index) => (
+                                            <div key={log.id} className="flex gap-4">
+                                                <div className="flex flex-col items-center shrink-0">
+                                                    <div className="w-3 h-3 rounded-full bg-(--colorCompoundBrandStroke) border-2 border-(--colorNeutralBackground1)" />
+                                                    {index < auditLogs.length - 1 && (
+                                                        <div className="w-0.5 grow bg-(--colorNeutralStroke1)" />
+                                                    )}
+                                                </div>
+
+                                                <div className="flex flex-col gap-2 grow">
+                                                    <div className="flex justify-between items-start gap-4 flex-wrap">
+                                                        <div className="flex flex-col">
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <Body1Strong>{log.action}</Body1Strong>
+                                                                <Badge size={sizes.badge} appearance="tint" color={log.eventType === "Exception" ? "danger" : "brand"}>
+                                                                    {log.eventType}
+                                                                </Badge>
+                                                            </div>
+                                                            <Caption1 className="text-(--colorNeutralForeground3)">
+                                                                {formatDateTime(log.createdAt)} {log.duration > 0 && `· ${formatDurationMs(log.duration)}`}
+                                                            </Caption1>
+                                                        </div>
+                                                        <Button
+                                                            appearance="subtle"
+                                                            size={sizes.button}
+                                                            icon={<Eye20Regular />}
+                                                            onClick={() => handleOpenDetails(log)}
+                                                        >
+                                                            Детали
+                                                        </Button>
+                                                    </div>
+
+                                                    <div className="flex gap-4 text-xs text-(--colorNeutralForeground4) flex-wrap">
+                                                        {log.machineName && <span>Хост: {log.machineName}</span>}
+                                                        {log.domainName && <span>Домен: {log.domainName}</span>}
+                                                        {log.correlationId && <span>Correlation: {log.correlationId.slice(0, 8)}...</span>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </Card>
+                            {auditTotalCount > 0 && (
+                                <div className="flex items-center justify-between flex-wrap gap-2">
+                                    <Body1>Показано {auditLogs.length} из {auditTotalCount}</Body1>
+                                    <Pagination currentPage={auditPage} totalPages={auditTotalPages} onPageChange={setAuditPage} />
+                                </div>
+                            )}
                         </div>
                     </HasPermission>
                 </>
             )}
+
+            <Dialog open={auditDetailsOpen} onOpenChange={(_, data) => setAuditDetailsOpen(data.open)}>
+                <DialogSurface className="max-w-[800px] w-full">
+                    <DialogBody>
+                        <DialogTitle>Детали записи аудита</DialogTitle>
+                        <DialogContent>
+                            {selectedAuditLog && (
+                                <AuditLogDetails log={selectedAuditLog} />
+                            )}
+                        </DialogContent>
+                        <DialogActions>
+                            <Button size={sizes.button} appearance="secondary" onClick={() => setAuditDetailsOpen(false)}>
+                                Закрыть
+                            </Button>
+                        </DialogActions>
+                    </DialogBody>
+                </DialogSurface>
+            </Dialog>
         </div>
     );
 };

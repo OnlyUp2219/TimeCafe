@@ -49,6 +49,7 @@ import { getBalanceColor } from "@utility/billingUtils";
 import { getUserFullName } from "@utility/userUtils";
 import { calcVisitEstimate } from "@utility/visitEstimate";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 export const ApproveVisitDialog = ({
     open,
@@ -61,6 +62,7 @@ export const ApproveVisitDialog = ({
 }: ApproveVisitDialogProps) => {
     const [reason, setReason] = useState("");
     const [mode, setMode] = useState<"approve" | "reject">("approve");
+    const { sizes } = useComponentSize();
 
     const { data: profile } = useGetProfileByUserIdQuery(visit?.userId ?? "", { skip: !visit?.userId });
     const { data: balanceObj } = useGetBalanceQuery(visit?.userId ?? "", { skip: !visit?.userId });
@@ -96,6 +98,7 @@ export const ApproveVisitDialog = ({
             return (
                 <Button
                     appearance="secondary"
+                    size={sizes.button}
                     onClick={() => handleOpenChange(false)}
                 >
                     Закрыть
@@ -108,6 +111,7 @@ export const ApproveVisitDialog = ({
                 <>
                     <Button
                         appearance="primary"
+                        size={sizes.button}
                         onClick={handleApprove}
                         disabled={approving}
                     >
@@ -115,12 +119,14 @@ export const ApproveVisitDialog = ({
                     </Button>
                     <Button
                         appearance="secondary"
+                        size={sizes.button}
                         onClick={() => setMode("reject")}
                     >
                         Отклонить
                     </Button>
                     <Button
                         appearance="subtle"
+                        size={sizes.button}
                         onClick={() => handleOpenChange(false)}
                     >
                         Отмена
@@ -133,6 +139,7 @@ export const ApproveVisitDialog = ({
             <>
                 <Button
                     appearance="primary"
+                    size={sizes.button}
                     onClick={handleReject}
                     disabled={rejecting || !reason.trim()}
                 >
@@ -140,12 +147,14 @@ export const ApproveVisitDialog = ({
                 </Button>
                 <Button
                     appearance="secondary"
+                    size={sizes.button}
                     onClick={() => setMode("approve")}
                 >
                     Назад
                 </Button>
                 <Button
                     appearance="subtle"
+                    size={sizes.button}
                     onClick={() => handleOpenChange(false)}
                 >
                     Отмена
@@ -391,8 +400,9 @@ export const ApproveVisitDialog = ({
 
                                 {mode === "reject" && (
                                     <div className="mt-2">
-                                        <Field label="Причина отклонения" required>
+                                        <Field label="Причина отклонения" required size={sizes.field}>
                                             <Input
+                                                size={sizes.input}
                                                 value={reason}
                                                 onChange={(_, data) => setReason(data.value)}
                                                 placeholder="Укажите причину"

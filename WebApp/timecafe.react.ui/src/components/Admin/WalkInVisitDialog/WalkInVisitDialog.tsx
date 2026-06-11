@@ -19,6 +19,7 @@ import { useGetActiveTariffsQuery, useWalkInVisitMutation, useGetResourcesQuery,
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 interface WalkInVisitDialogProps {
     open: boolean;
@@ -32,6 +33,7 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
     const [walkInVisit, { isLoading: submitting }] = useWalkInVisitMutation();
     const { data: resources, isLoading: loadingResources } = useGetResourcesQuery();
     const { data: activeVisits } = useGetActiveVisitsQuery();
+    const { sizes } = useComponentSize();
 
     const [tariffId, setTariffId] = useState("");
     const [guestsCount, setGuestsCount] = useState(1);
@@ -126,8 +128,9 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                                 </MessageBar>
                             )}
 
-                            <Field label="Тариф" required>
+                            <Field label="Тариф" required size={sizes.field}>
                                 <Dropdown
+                                    size={sizes.dropdown}
                                     value={selectedTariff ? `${selectedTariff.name} (${selectedTariff.pricePerMinute.toFixed(2)} ${CURRENCY_SYMBOL}/мин)` : (loadingTariffs ? "Загрузка тарифов..." : "Выберите тариф")}
                                     selectedOptions={tariffId ? [tariffId] : []}
                                     onOptionSelect={(_, data) => setTariffId(data.optionValue || "")}
@@ -145,8 +148,9 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                                 </Dropdown>
                             </Field>
 
-                            <Field label="Количество гостей" hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`} required>
+                            <Field label="Количество гостей" hint={`Введите количество гостей (от 1 до ${maxGuestsLimit})`} required size={sizes.field}>
                                 <Input
+                                    size={sizes.input}
                                     type="number"
                                     min={1}
                                     max={maxGuestsLimit}
@@ -156,8 +160,9 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                                 />
                             </Field>
 
-                            <Field label="Столик / Ресурс (опционально)">
+                            <Field label="Столик / Ресурс (опционально)" size={sizes.field}>
                                 <Dropdown
+                                    size={sizes.dropdown}
                                     placeholder="Не выбран (Любой свободный)"
                                     value={
                                         resourceId
@@ -183,8 +188,9 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                                 </Dropdown>
                             </Field>
 
-                            <Field label="ID Пользователя (опционально, для зарегистрированных гостей)">
+                            <Field label="ID Пользователя (опционально, для зарегистрированных гостей)" size={sizes.field}>
                                 <Input
+                                    size={sizes.input}
                                     value={userId}
                                     onChange={(_, data) => setUserId(data.value)}
                                     placeholder="Введите UUID пользователя при наличии"
@@ -196,6 +202,7 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                     <DialogActions>
                         <Button
                             appearance="primary"
+                            size={sizes.button}
                             onClick={handleSubmit}
                             disabled={submitting || loadingTariffs || !tariffId}
                         >
@@ -203,6 +210,7 @@ export const WalkInVisitDialog = ({ open, onOpenChange, onSuccess, initialResour
                         </Button>
                         <Button
                             appearance="secondary"
+                            size={sizes.button}
                             onClick={() => handleOpenChange(false)}
                             disabled={submitting}
                         >

@@ -44,7 +44,7 @@ public sealed class AuditLogRepository(ApplicationDbContext context, HybridCache
     }
 
     public async Task<(List<AuditLog> Items, int TotalCount)> GetPageAsync(
-        int page, int pageSize, string? eventType, string? userName, CancellationToken cancellationToken = default)
+        int page, int pageSize, string? eventType, string? userName, Guid? userId = null, CancellationToken cancellationToken = default)
     {
         var query = _context.AuditLogs.AsNoTracking();
 
@@ -53,6 +53,9 @@ public sealed class AuditLogRepository(ApplicationDbContext context, HybridCache
 
         if (!string.IsNullOrWhiteSpace(userName))
             query = query.Where(a => a.UserName.Contains(userName));
+
+        if (userId.HasValue)
+            query = query.Where(a => a.UserId == userId.Value);
 
         var totalCount = await query.CountAsync(cancellationToken);
 

@@ -58,11 +58,14 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         
         builder.Property(x => x.CorrelationId)
             .HasMaxLength(36);
+
+        builder.Property(x => x.UserId);
         
         builder.HasIndex(x => x.EventType);
         builder.HasIndex(x => x.UserName);
         builder.HasIndex(x => x.CreatedAt).IsDescending();
         builder.HasIndex(x => x.CorrelationId);
+        builder.HasIndex(x => x.UserId);
         
         builder.ToTable("audit_logs");
     }

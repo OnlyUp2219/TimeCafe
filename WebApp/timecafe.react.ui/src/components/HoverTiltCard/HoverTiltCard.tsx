@@ -1,6 +1,7 @@
 import {Card, tokens} from "@fluentui/react-components";
 import type {FC, PropsWithChildren} from "react";
 import {useEffect, useMemo, useRef, useState} from "react";
+import {useComponentSize} from "@hooks/useComponentSize";
 
 type HoverTiltCardProps = PropsWithChildren<{
     className?: string;
@@ -18,6 +19,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
     perspectivePx = 900,
     size,
 }) => {
+    const {sizes} = useComponentSize();
     const elementRef = useRef<HTMLDivElement | null>(null);
     const rafRef = useRef<number | null>(null);
     const hoverRef = useRef(false);
@@ -108,7 +110,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
                 setIsHover(false);
                 reset();
             }}
-            size={size}
+            size={size || sizes.card}
         >
             {children}
         </Card>

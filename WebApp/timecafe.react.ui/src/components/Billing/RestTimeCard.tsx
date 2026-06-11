@@ -42,7 +42,7 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                     <div className="flex flex-col gap-1">
                         <Label size="small">Выберите тариф для расчёта</Label>
                         <Dropdown
-                            size="small"
+                            size={sizes.dropdown}
                             value={selectedTariff?.name || "Неизвестно"}
                             selectedOptions={selectedTariff ? [selectedTariff.tariffId] : []}
                             onOptionSelect={(_, data) => setSelectedId(data.optionValue)}
@@ -62,7 +62,7 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                     <div className="flex flex-col gap-1">
                         <Label size="small">Если пополнить на (₽)</Label>
                         <Input
-                            size="small"
+                            size={sizes.input}
                             type="number"
                             min={0}
                             placeholder="0"

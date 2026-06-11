@@ -50,6 +50,20 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
         await hybridCache.RemoveAsync(CacheKeys.Promotion_Active);
         await hybridCache.RemoveAsync(CacheKeys.Resource_All);
         await hybridCache.RemoveAsync(CacheKeys.ResourceGroup_All);
+        await hybridCache.RemoveAsync(CacheKeys.Visit_Pending(1, 20));
+        await hybridCache.RemoveAsync(CacheKeys.Visit_Pending(1, 2));
+        await hybridCache.RemoveAsync(CacheKeys.Visit_Pending(100, 20));
+
+        var connectionMultiplexer = scope.ServiceProvider.GetService<StackExchange.Redis.IConnectionMultiplexer>();
+        if (connectionMultiplexer != null)
+        {
+            var endpoints = connectionMultiplexer.GetEndPoints();
+            foreach (var endpoint in endpoints)
+            {
+                var server = connectionMultiplexer.GetServer(endpoint);
+                await server.FlushDatabaseAsync();
+            }
+        }
     }
 
     protected async Task<Tariff> SeedTariffAsync(string name = "Test Tariff", decimal price = 100m, BillingType billingType = BillingType.PerMinute, bool isActive = true)

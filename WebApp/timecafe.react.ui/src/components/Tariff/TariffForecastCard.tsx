@@ -17,19 +17,22 @@ export const TariffForecastCard = ({selectedTariff, calc}: TariffForecastCardPro
     const { sizes } = useComponentSize();
 
     return (
-        <Card className="lg:col-span-5" size={sizes.card}>
-            <div className="flex flex-col gap-4">
-                <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <Title3>Калькулятор</Title3>
+        <Card className="lg:col-span-5 h-full flex flex-col" size={sizes.card}>
+            <div className="flex flex-col gap-4 h-full flex-1">
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                        <Title3>Калькулятор</Title3>
+                    </div>
+                    <Divider/>
                 </div>
 
-                <Divider/>
-
                 {!selectedTariff || !calc ? (
-                    <Body2 block>Выберите тариф и задайте параметры.</Body2>
+                    <div className="flex-1 flex items-center justify-center min-h-[150px]">
+                        <Body2 block>Выберите тариф и задайте параметры.</Body2>
+                    </div>
                 ) : (
-                    <div className="flex flex-col gap-3">
-                        <div className="rounded-2xl p-4 bg-(--colorNeutralBackground2) border border-(--colorNeutralStroke1)">
+                    <div className="flex-1 flex flex-col justify-end gap-3 mt-4">
+                        <div className="rounded-2xl p-4 bg-(--colorNeutralBackground2) border border-(--colorNeutralStroke1) flex flex-col justify-center">
                             <div className="flex items-end justify-between gap-3 flex-wrap mb-4">
                                 <div className="min-w-0">
                                     <Caption1>Ориентировочная сумма</Caption1>

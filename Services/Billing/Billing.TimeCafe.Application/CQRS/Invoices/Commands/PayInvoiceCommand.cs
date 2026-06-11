@@ -50,6 +50,11 @@ public class PayInvoiceCommandHandler(
 
         await _uow.SaveChangesAsync(cancellationToken);
 
+        if (request.Method == PaymentMethod.Online && invoice.UserId.HasValue)
+        {
+            await _publisher.Publish(new BalanceChangedEvent(invoice.UserId.Value), cancellationToken);
+        }
+
         return Result.Ok();
     }
 }

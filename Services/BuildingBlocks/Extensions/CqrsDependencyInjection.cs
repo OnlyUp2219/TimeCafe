@@ -6,6 +6,7 @@ public static class CqrsDependencyInjection
 {
     public static IServiceCollection AddCqrs(this IServiceCollection services, Assembly assembly)
     {
+        services.AddHttpContextAccessor();
         services.AddMediatR(assembly);
         services.AddValidatorsFromAssembly(assembly);
 
@@ -18,3 +19,4 @@ public static class CqrsDependencyInjection
         return services;
     }
 }
+

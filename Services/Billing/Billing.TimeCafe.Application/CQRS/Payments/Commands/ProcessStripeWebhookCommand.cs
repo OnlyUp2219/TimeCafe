@@ -106,6 +106,11 @@ public sealed class ProcessStripeWebhookCommandHandler(
         {
             await _uow.SaveChangesAsync(cancellationToken);
             await _publisher.Publish(new PaymentChangedEvent(payment.PaymentId, payment.UserId, payment.TransactionId), cancellationToken);
+
+            if (payment.UserId.HasValue)
+            {
+                await _publisher.Publish(new BalanceChangedEvent(payment.UserId.Value), cancellationToken);
+            }
         }
 
         return result;

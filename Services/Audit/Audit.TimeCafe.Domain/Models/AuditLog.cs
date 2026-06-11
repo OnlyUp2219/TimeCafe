@@ -22,6 +22,7 @@ public class AuditLog
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public string? CorrelationId { get; set; }
+    public Guid? UserId { get; set; }
 
     public AuditLog(Guid eventId, DateTime createdAt, AuditEvent auditEvent)
     {
@@ -39,6 +40,14 @@ public class AuditLog
             ? commandName?.ToString() ?? "Unknown"
             : auditEvent.Environment?.CallingMethodName ?? "Unknown";
 
+        if (auditEvent.CustomFields?.TryGetValue("UserId", out var userIdObj) == true && userIdObj != null)
+        {
+            if (Guid.TryParse(userIdObj.ToString(), out var parsedUserId))
+            {
+                UserId = parsedUserId;
+            }
+        }
+
         StartDate = auditEvent.StartDate;
         EndDate = auditEvent.EndDate;
 
@@ -51,3 +60,4 @@ public class AuditLog
 
     public AuditLog() { }
 }
+

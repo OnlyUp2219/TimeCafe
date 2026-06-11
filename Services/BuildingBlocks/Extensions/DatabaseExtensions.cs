@@ -41,7 +41,13 @@ public static class DatabaseExtensions
         {
             var commandName = AuditCommandContext.CurrentCommandName ?? "UnknownCommand";
             auditEvent.SetCustomField("CommandName", commandName);
+
+            if (AuditCommandContext.CurrentUserId.HasValue)
+            {
+                auditEvent.SetCustomField("UserId", AuditCommandContext.CurrentUserId.Value);
+            }
         });
+
 
         Audit.Core.Configuration.CreationPolicy = EventCreationPolicy.InsertOnEnd;
 

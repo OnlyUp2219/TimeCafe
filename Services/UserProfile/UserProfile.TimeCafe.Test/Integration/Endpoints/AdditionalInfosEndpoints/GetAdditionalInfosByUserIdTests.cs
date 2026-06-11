@@ -25,11 +25,12 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = json.EnumerateArray().ToList();
-            items.Should().HaveCount(2);
-            items[0].TryGetProperty("infoText", out var text1).Should().BeTrue();
-            items[1].TryGetProperty("infoText", out var text2).Should().BeTrue();
+            var items = json.GetProperty("items");
+            items.ValueKind.Should().Be(JsonValueKind.Array);
+            var itemsList = items.EnumerateArray().ToList();
+            itemsList.Should().HaveCount(2);
+            itemsList[0].TryGetProperty("infoText", out var text1).Should().BeTrue();
+            itemsList[1].TryGetProperty("infoText", out var text2).Should().BeTrue();
         }
         catch (Exception)
         {
@@ -54,9 +55,10 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = json.EnumerateArray().ToList();
-            items.Should().BeEmpty();
+            var items = json.GetProperty("items");
+            items.ValueKind.Should().Be(JsonValueKind.Array);
+            var itemsList = items.EnumerateArray().ToList();
+            itemsList.Should().BeEmpty();
         }
         catch (Exception)
         {
@@ -78,8 +80,9 @@ public class GetAdditionalInfosByUserIdTests(IntegrationApiFactory factory) : Ba
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = JsonDocument.Parse(jsonString).RootElement;
-        json.ValueKind.Should().Be(JsonValueKind.Array);
-        var items = json.EnumerateArray().ToList();
-        items.Should().BeEmpty();
+        var items = json.GetProperty("items");
+        items.ValueKind.Should().Be(JsonValueKind.Array);
+        var itemsList = items.EnumerateArray().ToList();
+        itemsList.Should().BeEmpty();
     }
 }

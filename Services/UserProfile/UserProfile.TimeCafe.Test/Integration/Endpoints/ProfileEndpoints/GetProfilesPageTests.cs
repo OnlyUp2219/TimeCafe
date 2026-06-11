@@ -14,7 +14,7 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
         await SeedProfileAsync(userId3, TestData.ExistingUsers.User3FirstName, TestData.ExistingUsers.User3LastName);
 
         // Act
-        var response = await Client.GetAsync($"/userprofile/profiles/page?pageNumber={TestData.PaginationData.FirstPage}&pageSize={TestData.PaginationData.DefaultPageSize}");
+        var response = await Client.GetAsync($"/userprofile/profiles/page?page={TestData.PaginationData.FirstPage}&pageSize={TestData.PaginationData.DefaultPageSize}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -22,9 +22,10 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
-            var items = json.EnumerateArray().ToList();
-            items.Should().HaveCount(TestData.PaginationData.DefaultPageSize);
+            var items = json.GetProperty("items");
+            items.ValueKind.Should().Be(JsonValueKind.Array);
+            var itemsList = items.EnumerateArray().ToList();
+            itemsList.Should().HaveCount(TestData.PaginationData.DefaultPageSize);
         }
         catch (Exception)
         {
@@ -37,7 +38,7 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
     public async Task Endpoint_GetProfilesPage_Should_Return200_WhenInvalidPageNumber()
     {
         // Act
-        var response = await Client.GetAsync($"/userprofile/profiles/page?pageNumber={TestData.PaginationData.InvalidPage}&pageSize={TestData.PaginationData.LargePageSize}");
+        var response = await Client.GetAsync($"/userprofile/profiles/page?page={TestData.PaginationData.InvalidPage}&pageSize={TestData.PaginationData.LargePageSize}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -45,7 +46,8 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = json.GetProperty("items");
+            items.ValueKind.Should().Be(JsonValueKind.Array);
         }
         catch (Exception)
         {
@@ -64,7 +66,7 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
         }
 
         // Act
-        var response = await Client.GetAsync($"/userprofile/profiles/page?pageNumber={TestData.PaginationData.SecondPage}&pageSize={TestData.PaginationData.DefaultPageSize}");
+        var response = await Client.GetAsync($"/userprofile/profiles/page?page={TestData.PaginationData.SecondPage}&pageSize={TestData.PaginationData.DefaultPageSize}");
         var jsonString = await response.Content.ReadAsStringAsync();
 
         // Assert
@@ -72,7 +74,8 @@ public class GetProfilesPageTests(IntegrationApiFactory factory) : BaseEndpointT
         {
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             var json = JsonDocument.Parse(jsonString).RootElement;
-            json.ValueKind.Should().Be(JsonValueKind.Array);
+            var items = json.GetProperty("items");
+            items.ValueKind.Should().Be(JsonValueKind.Array);
         }
         catch (Exception)
         {

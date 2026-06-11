@@ -20,3 +20,21 @@ export const formatMoney = (v: number | null | undefined, currencySymbol: string
     if (v == null) return NO_DATA;
     return `${v.toFixed(2)} ${currencySymbol}`;
 };
+
+export const safeParseJson = (str?: string | null): any => {
+    if (!str) return null;
+    try {
+        return JSON.parse(str);
+    } catch {
+        return str;
+    }
+};
+
+export const formatDurationMs = (ms: number): string => {
+    if (ms < 1000) return `${ms} мс`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(2)} с`;
+    const minutes = Math.floor(ms / 60000);
+    const seconds = ((ms % 60000) / 1000).toFixed(0);
+    return `${minutes} мин ${seconds} с`;
+};
+

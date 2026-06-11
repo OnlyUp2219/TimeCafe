@@ -1,6 +1,8 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { useCallback, useMemo, useState } from "react";import { useNavigate } from "react-router-dom";import {
-Avatar,
+import { NO_DATA } from "@shared/const/placeholders";
+import { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+    Avatar,
     Badge,
     Body1,
     Body2,
@@ -16,15 +18,32 @@ Avatar,
     MessageBarBody,
     MessageBarTitle,
 } from "@fluentui/react-components";
-import { DismissableError } from "@components/DismissableError/DismissableError";import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";import {
-useGetTariffsPageQuery,
+import { DismissableError } from "@components/DismissableError/DismissableError";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular, Info20Regular, Eye20Regular } from "@fluentui/react-icons";
+import {
+    useGetTariffsPageQuery,
     useDeleteTariffMutation,
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllPromotionsQuery,
     type Promotion,
 } from "@store/api/venueApi";
-import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import type { TariffWithTheme } from "@app-types/tariffWithTheme";import { BillingType } from "@app-types/tariff";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { useComponentSize } from "@hooks/useComponentSize";import { usePermissions } from "@hooks/usePermissions";import { HasPermission } from "@components/Guard/HasPermission";import { Permissions, type Permission } from "@shared/auth/permissions";import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { TariffDetailsDrawer } from "@components/Tariff/TariffDetailsDrawer";import { PageLoader } from "@components/PageLoader/PageLoader";import { usePagination } from "@hooks/usePagination";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import type { TariffWithTheme } from "@app-types/tariffWithTheme";
+import { BillingType } from "@app-types/tariff";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePermissions } from "@hooks/usePermissions";
+import { HasPermission } from "@components/Guard/HasPermission";
+import { Permissions, type Permission } from "@shared/auth/permissions";
+import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { TariffDetailsDialog } from "@components/Tariff/TariffDetailsDialog";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { usePagination } from "@hooks/usePagination";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
@@ -292,7 +311,7 @@ export const TariffsPage = () => {
                     />
                 </div>
 
-                <TariffDetailsDrawer
+                <TariffDetailsDialog
                     open={detailsOpen}
                     onOpenChange={setDetailsOpen}
                     tariffId={detailsTariff?.tariffId ?? null}

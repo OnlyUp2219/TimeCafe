@@ -10,20 +10,20 @@ import {
     Body1,
     Body1Strong,
     Body2,
-    Link,
     Button,
     Divider,
     MessageBar,
-    MessageBarBody,
-    MessageBarTitle
+    motionTokens
 } from "@fluentui/react-components";
-import { BookOpen20Regular, Code20Regular, Person20Regular, Settings20Regular, QuestionCircle20Regular, LockClosed20Regular, Money20Regular, Clock20Regular, Receipt20Regular, Key20Regular, DataUsage20Regular } from "@fluentui/react-icons";
+import { BookOpen20Regular, Code20Regular, Person20Regular, Settings20Regular, Money20Regular, Clock20Regular, Receipt20Regular, Key20Regular, DataUsage20Regular } from "@fluentui/react-icons";
 import { usePermissions } from "@hooks/usePermissions";
 import { AdminPanelPermission } from "@shared/auth/permissions";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 export const HelpPage = () => {
     const { has } = usePermissions();
     const isAdmin = has(AdminPanelPermission);
+    const { sizes } = useComponentSize();
 
     return (
         <div className="page-content flex flex-col gap-8 max-w-5xl mx-auto w-full pb-12">
@@ -35,16 +35,8 @@ export const HelpPage = () => {
                 </Body2>
             </div>
 
-            <MessageBar intent="info" layout="multiline">
-                <MessageBarTitle>Важная информация</MessageBarTitle>
-                <MessageBarBody>
-                    Интерфейс данной справки динамически адаптируется под ваши права доступа. Если вы являетесь администратором,
-                    вы увидите дополнительные скрытые разделы, недоступные обычным посетителям.
-                </MessageBarBody>
-            </MessageBar>
-
             {/* Секция 1: Общие сведения и Глоссарий */}
-            <Card className="flex flex-col gap-6 p-8 shadow-md">
+            <Card size={sizes.card} className="flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                     <BookOpen20Regular className="text-(--colorBrandForeground1) text-3xl" />
                     <Title2>1. Общая архитектура и концепция системы</Title2>
@@ -91,7 +83,7 @@ export const HelpPage = () => {
             </Card>
 
             {/* Секция 2: Руководство посетителя */}
-            <Card className="flex flex-col gap-6 p-8 shadow-md">
+            <Card size={sizes.card} className="flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                     <Person20Regular className="text-(--colorBrandForeground1) text-3xl" />
                     <Title2>2. Полное руководство посетителя (Гостя)</Title2>
@@ -105,9 +97,10 @@ export const HelpPage = () => {
                 <Accordion collapsible multiple className="flex flex-col gap-2">
 
                     {/* Аутентификация */}
-                    <AccordionItem value="auth" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                        <AccordionHeader size="large" icon={<Key20Regular />}>2.1 Регистрация и Безопасность</AccordionHeader>
-                        <AccordionPanel className="pb-4">
+                    {/* Аутентификация */}
+                    <AccordionItem value="auth">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Key20Regular />}>2.1 Регистрация и Безопасность</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                             <div className="flex flex-col gap-4">
                                 <Body1>
                                     Безопасность ваших данных — наш приоритет. Процесс создания аккаунта защищен современными стандартами шифрования и
@@ -131,9 +124,9 @@ export const HelpPage = () => {
                     </AccordionItem>
 
                     {/* Баланс */}
-                    <AccordionItem value="billing" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                        <AccordionHeader size="large" icon={<Money20Regular />}>2.2 Управление Финансами и Балансом</AccordionHeader>
-                        <AccordionPanel className="pb-4">
+                    <AccordionItem value="billing">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Money20Regular />}>2.2 Управление Финансами и Балансом</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                             <div className="flex flex-col gap-4">
                                 <Body1>
                                     TimeCafe работает по принципу единого лицевого счета. Вы пополняете баланс любым удобным способом,
@@ -166,9 +159,9 @@ export const HelpPage = () => {
                     </AccordionItem>
 
                     {/* Визиты */}
-                    <AccordionItem value="visits" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                        <AccordionHeader size="large" icon={<Clock20Regular />}>2.3 Жизненный цикл Визита</AccordionHeader>
-                        <AccordionPanel className="pb-4">
+                    <AccordionItem value="visits">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Clock20Regular />}>2.3 Жизненный цикл Визита</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                             <div className="flex flex-col gap-4">
                                 <Body1>
                                     Открытие и закрытие визита — это ключевые операции в системе. Они могут инициироваться как вами через мобильное приложение, так и кассиром за стойкой.
@@ -178,20 +171,76 @@ export const HelpPage = () => {
                                 <ul className="list-disc ml-6 flex flex-col gap-2">
                                     <li>Перейдите в раздел <strong>Начать визит</strong>.</li>
                                     <li>Выберите <strong>Зону/Ресурс</strong>: У нас есть общие залы, VIP-комнаты, зоны PS5. Каждая зона имеет свою сетку тарифов.</li>
-                                    <li>Выберите <strong>Тариф</strong>: Ознакомьтесь с условиями. Некоторые тарифы включают бесплатные напитки или требуют минимального времени пребывания (стоп-чек).</li>
+                                    <li>Выберите <strong>Тариф</strong>: Ознакомьтесь с условиями. Некоторые тарифы включают бесплатные напитки или требуют минимального времени пребывания.</li>
                                     <li>Укажите количество гостей, если вы пришли с друзьями и оплачиваете за всех.</li>
-                                    <li>Нажмите кнопку <strong>Начать визит</strong>.</li>
+                                    <li>Нажмите кнопку <strong>Начать визит</strong>. После этого ваша заявка отправляется администратору на подтверждение. Как только статус сменится на "Подтвержден", ваше время начнется.</li>
+                                </ul>
+                            </div>
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    {/* Округления и Стоп-чеки */}
+                    <AccordionItem value="billing-rules">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<DataUsage20Regular />}>2.4 Правила округления и Стоп-чеки</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                            <div className="flex flex-col gap-4">
+                                <Body1>
+                                    Каждый тариф имеет собственные правила ценообразования, которые защищают вас от переплат и делают расчеты честными.
+                                </Body1>
+
+                                <ul className="list-disc ml-6 flex flex-col gap-2">
+                                    <li><Body1Strong>Поминутные тарифы:</Body1Strong> Расчет происходит посекундно на основе точного времени пребывания в заведении.</li>
+                                    <li><Body1Strong>Почасовые тарифы:</Body1Strong> Округляются до следующего полного часа в большую сторону (например, при сессии в 65 минут оплата будет списана за 2 часа).</li>
+                                    <li><Body1Strong>Минимальное время визита:</Body1Strong> Гарантирует минимальное списание (например, 15 или 30 минут), даже если вы завершили визит сразу после входа.</li>
+                                    <li><Body1Strong>Стоп-чек (Максимальный лимит):</Body1Strong> Ограничивает предельную стоимость визита за день. Например, если стоп-чек равен 600 руб., то сколько бы часов вы ни провели в заведении в рамках суток, итоговая стоимость не превысит 600 руб.</li>
+                                </ul>
+                            </div>
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    {/* Скидки и Лояльность */}
+                    <AccordionItem value="loyalty-rules">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Person20Regular />}>2.5 Программа лояльности и скидки</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                            <div className="flex flex-col gap-4">
+                                <Body1>
+                                    Система TimeCafe поощряет постоянных гостей автоматическим расчетом скидок.
+                                </Body1>
+
+                                <Title3>Правила применения скидок:</Title3>
+                                <ul className="list-disc ml-6 flex flex-col gap-2">
+                                    <li><Body1Strong>Глобальные акции:</Body1Strong> Действуют на все посещения в определенные часы или дни (например, утренняя скидка 20%).</li>
+                                    <li><Body1Strong>Тарифные скидки:</Body1Strong> Распространяются на конкретные зоны или тарифы (например, скидка на VIP-комнату в будни).</li>
+                                    <li><Body1Strong>Накопительная скидка гостя:</Body1Strong> Растет в зависимости от общей суммы, потраченной вами в сети заведений.</li>
                                 </ul>
 
-                                <Title3>Как работает расчет стоимости?</Title3>
-                                <Body1>Расчет (Billing Engine) происходит строго в момент <strong>закрытия визита</strong>.</Body1>
-                                <div className="bg-(--colorNeutralBackground3) p-4 rounded-md font-mono text-sm">
-                                    Формула: ( Базовая стоимость * Время (с учетом округления) ) - Скидки + Доп. услуги
-                                </div>
+                                <MessageBar intent="info">
+                                    Скидки в системе <strong>не суммируются</strong>. Биллинг-движок автоматически рассчитывает все доступные варианты и применяет одну, наиболее выгодную для гостя скидку.
+                                </MessageBar>
+                            </div>
+                        </AccordionPanel>
+                    </AccordionItem>
+
+                    {/* Grace Period */}
+                    <AccordionItem value="grace-rules">
+                        <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Clock20Regular />}>2.6 Завершение визита и льготный период (Grace Period)</AccordionHeader>
+                        <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                            <div className="flex flex-col gap-4">
                                 <Body1>
-                                    <strong>Пример округления:</strong> Если тариф предполагает округление до 15 минут, а вы пробыли 16 минут,
-                                    система посчитает ваше время как 30 минут. Всегда уточняйте правила округления в описании тарифа!
+                                    При завершении визита крайне важно зафиксировать точное время выхода, чтобы избежать лишних списаний.
                                 </Body1>
+
+                                <Title3>Как устроен выход:</Title3>
+                                <ol className="list-decimal ml-6 flex flex-col gap-2">
+                                    <li>Вы нажимаете кнопку <strong>Выход из заведения</strong> в личном кабинете.</li>
+                                    <li>В этот момент создается фиксация времени и запускается <strong>3-минутный льготный период (Grace Period)</strong>.</li>
+                                    <li>В течение льготного периода вы можете пополнить баланс картой онлайн через Stripe (без необходимости стоять в очереди).</li>
+                                    <li>Как только оплата завершена или администратор на кассе подтвердил ваш расчет, визит закрывается по зафиксированному времени.</li>
+                                </ol>
+
+                                <MessageBar intent="warning">
+                                    Если за 3 минуты оплата не была произведена, а администратор не подтвердил расчет на кассе, система считает, что вы продолжили визит. Льготный период аннулируется, таймер сессии возобновляет работу, и тарификация продолжается.
+                                </MessageBar>
                             </div>
                         </AccordionPanel>
                     </AccordionItem>
@@ -200,26 +249,18 @@ export const HelpPage = () => {
 
             {/* Секция 3: Руководство администратора */}
             {isAdmin && (
-                <Card className="flex flex-col gap-6 p-8 shadow-md border-2 border-(--colorPaletteRedBorder2)">
+                <Card size={sizes.card} className="flex flex-col gap-6">
                     <div className="flex items-center gap-3">
                         <Settings20Regular className="text-(--colorPaletteRedForeground1) text-3xl" />
                         <Title2>3. Панель Администратора (Секретный раздел)</Title2>
                     </div>
 
-                    <MessageBar intent="error" layout="multiline">
-                        <MessageBarTitle>Конфиденциально</MessageBarTitle>
-                        <MessageBarBody>
-                            Этот раздел доступен только сотрудникам с правами <strong>AdminPanelPermission</strong>.
-                            Все ваши действия логируются микросервисом Audit. Будьте осторожны при редактировании тарифов и балансов пользователей.
-                        </MessageBarBody>
-                    </MessageBar>
-
                     <Accordion collapsible multiple className="flex flex-col gap-2">
 
                         {/* Тарифы */}
-                        <AccordionItem value="admin-tariffs" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                            <AccordionHeader size="large" icon={<Receipt20Regular />}>3.1 Управление Тарифами и Акциями</AccordionHeader>
-                            <AccordionPanel className="pb-4">
+                        <AccordionItem value="admin-tariffs">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Receipt20Regular />}>3.1 Управление Тарифами и Акциями</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                                 <div className="flex flex-col gap-4">
                                     <Body1>
                                         Система тарификации (Venue Service) поддерживает сложную бизнес-логику ценообразования.
@@ -243,9 +284,9 @@ export const HelpPage = () => {
                         </AccordionItem>
 
                         {/* Пользователи и RBAC */}
-                        <AccordionItem value="admin-rbac" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                            <AccordionHeader size="large" icon={<Person20Regular />}>3.2 Роли, Доступы и Пользователи (DRBAC)</AccordionHeader>
-                            <AccordionPanel className="pb-4">
+                        <AccordionItem value="admin-rbac">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Person20Regular />}>3.2 Роли, Доступы и Пользователи (DRBAC)</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                                 <div className="flex flex-col gap-4">
                                     <Body1>
                                         Сервис авторизации реализует Dynamic Role-Based Access Control. Это означает, что права не «зашиты» в код,
@@ -266,7 +307,7 @@ export const HelpPage = () => {
 
                                     <Title3>Ручная корректировка баланса</Title3>
                                     <Body1>
-                                        Если гость оплатил наличными в кассу, вы обязаны зачислить эту сумму на его виртуальный счет в TimeCafe. 
+                                        Если гость оплатил наличными в кассу, вы обязаны зачислить эту сумму на его виртуальный счет в TimeCafe.
                                         Зайдите в карточку пользователя &rarr; Баланс &rarr; <strong>Корректировка</strong>. Обязательно укажите причину в поле Reason (например, "Оплата наличными, чек №123").
                                         Эта операция создаст транзакцию типа <em>Adjustment</em>.
                                     </Body1>
@@ -274,31 +315,88 @@ export const HelpPage = () => {
                             </AccordionPanel>
                         </AccordionItem>
 
-                        {/* Аудит */}
-                        <AccordionItem value="admin-audit" className="bg-(--colorNeutralBackground1Hover) rounded-lg px-2">
-                            <AccordionHeader size="large" icon={<DataUsage20Regular />}>3.3 Аудит и Мониторинг (Kibana & Grafana)</AccordionHeader>
-                            <AccordionPanel className="pb-4">
+                        {/* Ресурсы */}
+                        <AccordionItem value="admin-resources">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Settings20Regular />}>3.3 Управление ресурсами и зонами</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
                                 <div className="flex flex-col gap-4">
                                     <Body1>
-                                        Платформа TimeCafe построена с фокусом на наблюдаемость (Observability). Администраторам доступны инструменты уровня Enterprise.
+                                        Ресурсы — это материальные объекты заведения, время использования которых подлежит учету и тарификации.
                                     </Body1>
 
-                                    <Title3>Внутренний журнал аудита (Audit Service)</Title3>
+                                    <Title3>Виды ресурсов:</Title3>
+                                    <ul className="list-disc ml-6 flex flex-col gap-2">
+                                        <li><Body1Strong>Рабочие места и столы:</Body1Strong> Стандартные посадочные места в общем зале или коворкинге.</li>
+                                        <li><Body1Strong>Игровые зоны:</Body1Strong> Приставки PlayStation 5, VR-шлемы, требующие привязки к отдельным телевизорам/экранам.</li>
+                                        <li><Body1Strong>Комнаты и залы:</Body1Strong> VIP-комнаты, переговорные, лектории, бронируемые под мероприятия.</li>
+                                    </ul>
+
+                                    <Title3>Контроль занятости:</Title3>
                                     <Body1>
-                                        В разделе <strong>Журнал аудита</strong> хранится история всех изменений критичных сущностей.
-                                        Система сохраняет старое состояние (OldData) и новое состояние (NewData) в формате JSON. Вы можете легко восстановить хронологию событий, если возник конфликт с гостем.
+                                        В панели администратора отображается интерактивная карта или список ресурсов. Активация визита гостя автоматически переводит привязанный ресурс в статус «Занят».
+                                        Один ресурс не может быть занят двумя активными визитами одновременно (система выдаст ошибку валидации при попытке запуска).
+                                    </Body1>
+                                </div>
+                            </AccordionPanel>
+                        </AccordionItem>
+
+                        {/* Walk-in */}
+                        <AccordionItem value="admin-walkin">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Key20Regular />}>3.4 Регистрация анонимных гостей (Walk-in)</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                                <div className="flex flex-col gap-4">
+                                    <Body1>
+                                        Часто посетители заведения не имеют гостевого аккаунта в системе или пришли впервые без смартфона. Для них предусмотрен Walk-in сценарий.
                                     </Body1>
 
-                                    <Title3>Grafana (Метрики и производительность)</Title3>
+                                    <Title3>Шаги регистрации Walk-in гостя:</Title3>
+                                    <ol className="list-decimal ml-6 flex flex-col gap-2">
+                                        <li>Нажмите кнопку <strong>Быстрый визит (Walk-in)</strong> на панели администратора.</li>
+                                        <li>Выберите свободный ресурс (номер стола или выданную пластиковую карту-номер).</li>
+                                        <li>Выберите тариф.</li>
+                                        <li>Система создаст временный анонимный визит без привязки к Email гостя. Расчет и оплата такого визита производятся администратором вручную при выходе гостя.</li>
+                                    </ol>
+                                </div>
+                            </AccordionPanel>
+                        </AccordionItem>
+
+                        {/* Ведение смен */}
+                        <AccordionItem value="admin-shifts">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<Receipt20Regular />}>3.5 Контроль кассы и закрытие визитов</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                                <div className="flex flex-col gap-4">
                                     <Body1>
-                                        На вкладке Grafana отображаются системные метрики: использование CPU/RAM контейнерами Docker, задержки (latency) API запросов,
-                                        размер очередей в RabbitMQ. Это позволяет системному администратору вовремя заметить перегрузку сервера.
+                                        Администратор отвечает за проведение расчетов с гостями и сверку кассы в конце рабочего дня.
                                     </Body1>
 
-                                    <Title3>Kibana (Глубокий анализ логов)</Title3>
+                                    <Title3>Процедура расчета гостя:</Title3>
+                                    <ol className="list-decimal ml-6 flex flex-col gap-2">
+                                        <li>При обращении гостя найдите его активный визит в списке (или по номеру стола/карты).</li>
+                                        <li>Нажмите <strong>Зафиксировать выход</strong>. Время остановится, и биллинг сформирует финальный счет с учетом скидок и доп. услуг.</li>
+                                        <li>Примите оплату (наличные, банковский терминал или спишите средства с баланса, если у гостя достаточно денег).</li>
+                                        <li>Отметьте счет как оплаченный. Визит перейдет в статус «Завершен», а ресурс освободится для новых гостей.</li>
+                                    </ol>
+                                </div>
+                            </AccordionPanel>
+                        </AccordionItem>
+
+                        {/* Аудит */}
+                        <AccordionItem value="admin-audit">
+                            <AccordionHeader as="h3" size={sizes.accordionHeader} icon={<DataUsage20Regular />}>3.6 Журналы аудита и системные метрики</AccordionHeader>
+                            <AccordionPanel collapseMotion={{ duration: 250, easing: motionTokens.curveDecelerateMid } as any}>
+                                <div className="flex flex-col gap-4">
                                     <Body1>
-                                        Elasticsearch собирает текстовые логи со всех микросервисов. Через Kibana вы можете искать ошибки (Exception) по CorrelationId.
-                                        Если пользователь сообщает о проблеме в 14:05, вы можете отфильтровать логи именно за эту минуту и найти причину.
+                                        Вся деятельность сотрудников фиксируется микросервисом Audit для предотвращения кассовых нарушений.
+                                    </Body1>
+
+                                    <Title3>Внутренний журнал аудита:</Title3>
+                                    <Body1>
+                                        В разделе <strong>Журнал аудита</strong> сохраняется история изменения тарифов, ролей и ручных корректировок баланса. Изменения сохраняются с детализацией до полей (старое/новое значение) и привязываются к учетной записи сотрудника.
+                                    </Body1>
+
+                                    <Title3>Grafana и Kibana:</Title3>
+                                    <Body1>
+                                        Системным инженерам доступны дашборды Grafana (нагрузка контейнеров, очереди RabbitMQ, время отклика API) и поисковый интерфейс Kibana для мониторинга ошибок по CorrelationId.
                                     </Body1>
                                 </div>
                             </AccordionPanel>
@@ -309,7 +407,7 @@ export const HelpPage = () => {
             )}
 
             {/* Секция 4: Документация API для разработчиков */}
-            <Card className="flex flex-col gap-6 p-8 shadow-md bg-(--colorNeutralBackground3)">
+            <Card size={sizes.card} className="flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                     <Code20Regular className="text-(--colorBrandForeground1) text-3xl" />
                     <Title2>4. API для Разработчиков (OpenAPI / Scalar)</Title2>
@@ -351,7 +449,7 @@ export const HelpPage = () => {
             </Card>
 
             {/* Секция 5: Поддержка */}
-            <Card className="flex flex-col gap-4 p-8 shadow-md border-t-4 border-(--colorBrandStroke1)">
+            <Card size={sizes.card} className="flex flex-col gap-4">
                 <Title2>Не нашли ответ на свой вопрос?</Title2>
                 <Body1>
                     Если вы столкнулись с системной ошибкой, багом при оплате или вам требуется консультация по сложной настройке тарифов,

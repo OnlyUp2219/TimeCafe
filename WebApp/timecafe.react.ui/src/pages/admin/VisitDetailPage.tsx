@@ -3,6 +3,7 @@ import {
     Avatar,
     Badge,
     Body1,
+    Body1Strong,
     Body2,
     Button,
     Card,
@@ -356,31 +357,31 @@ export const VisitDetailPage = () => {
                             <div className="flex flex-col gap-2">
                                 <Subtitle2Stronger>Детали тарифа</Subtitle2Stronger>
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-2">
-                                    <div className="flex flex-col">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Название</Caption1>
-                                        <Body1 className="font-semibold">{visit?.tariffName || NO_DATA}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Название</Body1>
+                                        <Body1Strong>{visit?.tariffName || NO_DATA}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Тип биллинга</Caption1>
-                                        <Body1>{visit?.tariffBillingType === 1 ? "Почасовой" : "Поминутный"}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Тип биллинга</Body1>
+                                        <Body1Strong>{visit?.tariffBillingType === 1 ? "Почасовой" : "Поминутный"}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Ставка (за мин)</Caption1>
-                                        <Body1>{formatMoney(visit?.tariffPricePerMinute ?? 0)}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Ставка (за мин)</Body1>
+                                        <Body1Strong>{formatMoney(visit?.tariffPricePerMinute ?? 0)}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Мин. время (мин)</Caption1>
-                                        <Body1>{visit?.tariffMinSessionMinutes ?? "Нет"}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Мин. время (мин)</Body1>
+                                        <Body1Strong>{visit?.tariffMinSessionMinutes ?? "Нет"}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Округление</Caption1>
-                                        <Body1>{visit?.tariffRoundingRule ?? "Нет"}</Body1>
+                                    <div className="flex flex-col gap-0.5">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Округление</Body1>
+                                        <Body1Strong>{visit?.tariffRoundingRule ?? "Нет"}</Body1Strong>
                                     </div>
                                 </div>
                                 {visit?.tariffDescription && (
-                                    <div className="flex flex-col mt-3 border-t border-(--colorNeutralStroke1) pt-3">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Описание тарифа</Caption1>
-                                        <Body2 className="text-(--colorNeutralForeground2)">{visit.tariffDescription}</Body2>
+                                    <div className="flex flex-col gap-0.5 mt-3 border-t border-(--colorNeutralStroke1) pt-3">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Описание тарифа</Body1>
+                                        <Body1Strong>{visit.tariffDescription}</Body1Strong>
                                     </div>
                                 )}
                             </div>
@@ -390,30 +391,30 @@ export const VisitDetailPage = () => {
                             <div className="flex flex-col gap-2">
                                 <Subtitle2Stronger>Детализация визита и стоимости</Subtitle2Stronger>
                                 <div className="flex flex-row flex-wrap gap-6 mt-2">
-                                    <div className="flex flex-col min-w-[120px]">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Вход</Caption1>
-                                        <Body1>{formatDateTime(visit?.entryTime ?? null)}</Body1>
+                                    <div className="flex flex-col gap-0.5 min-w-[120px]">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Вход</Body1>
+                                        <Body1Strong>{formatDateTime(visit?.entryTime ?? null)}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col min-w-[120px]">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Выход</Caption1>
-                                        <Body1>
+                                    <div className="flex flex-col gap-0.5 min-w-[120px]">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Выход</Body1>
+                                        <Body1Strong>
                                             {visit?.exitTime
                                                 ? formatDateTime(visit.exitTime)
                                                 : visit?.status === VisitStatus.Active
                                                     ? "Активен"
                                                     : NO_DATA}
-                                        </Body1>
+                                        </Body1Strong>
                                     </div>
-                                    <div className="flex flex-col min-w-[120px]">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Длительность</Caption1>
-                                        <Body1>{elapsedMinutes} мин.</Body1>
+                                    <div className="flex flex-col gap-0.5 min-w-[120px]">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Длительность</Body1>
+                                        <Body1Strong>{elapsedMinutes} мин.</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col min-w-[120px]">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Запланировано</Caption1>
-                                        <Body1>{visit?.plannedMinutes ? `${visit.plannedMinutes} мин.` : "Без ограничений"}</Body1>
+                                    <div className="flex flex-col gap-0.5 min-w-[120px]">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Запланировано</Body1>
+                                        <Body1Strong>{visit?.plannedMinutes ? `${visit.plannedMinutes} мин.` : "Без ограничений"}</Body1Strong>
                                     </div>
-                                    <div className="flex flex-col min-w-[150px]">
-                                        <Caption1 className="text-(--colorNeutralForeground3)">Текущая стоимость</Caption1>
+                                    <div className="flex flex-col gap-0.5 min-w-[150px]">
+                                        <Body1 className="text-(--colorNeutralForeground3)">Текущая стоимость</Body1>
                                         {estimate ? (
                                             <div className="flex flex-col">
                                                 <div className="flex items-end gap-2">
@@ -464,18 +465,18 @@ export const VisitDetailPage = () => {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <Card size={sizes.card} className="col-span-1">
-                            <div className="flex flex-col">
-                                <Body2>ID визита</Body2>
-                                <Caption1 className="font-mono ">{visit?.visitId || NO_DATA}</Caption1>
+                            <div className="flex flex-col gap-0.5">
+                                <Body1 className="text-(--colorNeutralForeground3)">ID визита</Body1>
+                                <Body1Strong className="font-mono">{visit?.visitId || NO_DATA}</Body1Strong>
                             </div>
                         </Card>
 
                         {visit?.approvedByUserId && (
                             <Card size={sizes.card} className="col-span-1">
-                                <div className="flex flex-col">
-                                    <Body2>Подтверждён пользователем</Body2>
-                                    <Caption1 className="font-mono ">{visit.approvedByUserId}</Caption1>
-                                    <Caption1 className="text-(--colorNeutralForeground3)">{visit.approvedAt ? formatDateTime(visit.approvedAt) : NO_DATA}</Caption1>
+                                <div className="flex flex-col gap-0.5">
+                                    <Body1 className="text-(--colorNeutralForeground3)">Подтверждён пользователем</Body1>
+                                    <Body1Strong className="font-mono">{visit.approvedByUserId}</Body1Strong>
+                                    <Body1 className="text-(--colorNeutralForeground3)">{visit.approvedAt ? formatDateTime(visit.approvedAt) : NO_DATA}</Body1>
                                 </div>
                             </Card>
                         )}

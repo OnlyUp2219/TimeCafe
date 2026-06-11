@@ -1,6 +1,7 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { useMemo, useState } from "react";import {
-Body1,
+import { NO_DATA } from "@shared/const/placeholders";
+import { useMemo, useState } from "react";
+import {
+    Body1,
     Body2,
     Button,
     Card,
@@ -16,19 +17,26 @@ Body1,
     DialogContent,
     DialogActions,
 } from "@fluentui/react-components";
-import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";import { Eye20Regular } from "@fluentui/react-icons";import { DataTable } from "@components/DataTable/DataTable";import { Pagination } from "@components/Pagination/Pagination";import { RequirePermission } from "@components/RequirePermission/RequirePermission";import { Permissions } from "@shared/auth/permissions";import { useGetAuditLogsQuery } from "@store/api/adminApi";import type { AuditLogDto } from "@store/api/adminApi";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { useComponentSize } from "@hooks/useComponentSize";import { usePagination } from "@hooks/usePagination";import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { formatDateTime } from "@utility/dateUtils";import { DismissableError } from "@components/DismissableError/DismissableError";import { getUserFullName } from "@utility/userUtils";
+import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
+import { Eye20Regular } from "@fluentui/react-icons";
+import { DataTable } from "@components/DataTable/DataTable";
+import { Pagination } from "@components/Pagination/Pagination";
+import { RequirePermission } from "@components/RequirePermission/RequirePermission";
+import { Permissions } from "@shared/auth/permissions";
+import { useGetAuditLogsQuery } from "@store/api/adminApi";
+import type { AuditLogDto } from "@store/api/adminApi";
+import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { usePagination } from "@hooks/usePagination";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { formatDateTime } from "@utility/dateUtils";
+import { DismissableError } from "@components/DismissableError/DismissableError";
+import { getUserFullName } from "@utility/userUtils";
+import { AuditLogDetails } from "@components/Admin/AuditLogDetails";
 
 const isUuid = (str: string) =>
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
-
-const safeParseJson = (str?: string | null) => {
-    if (!str) return null;
-    try {
-        return JSON.parse(str);
-    } catch {
-        return str;
-    }
-};
 
 const AuditUserCell = ({ userName }: { userName: string }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userName, {
@@ -46,7 +54,6 @@ const AuditUserCell = ({ userName }: { userName: string }) => {
     const displayName = getUserFullName(profile, userName);
     return <span>{displayName}</span>;
 };
-
 
 const formatDuration = (ms: number) => {
     if (ms < 1000) return `${ms} мс`;
@@ -219,45 +226,7 @@ export const AuditLogsPage = () => {
                         <DialogTitle>Детали записи аудита</DialogTitle>
                         <DialogContent>
                             {selectedLog && (
-                                <div className="flex flex-col gap-4 py-2">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                                        <div><strong>ID:</strong> {selectedLog.id}</div>
-                                        <div><strong>Дата:</strong> {formatDateTime(selectedLog.createdAt)}</div>
-                                        <div><strong>Тип события:</strong> {selectedLog.eventType}</div>
-                                        <div><strong>Действие:</strong> {selectedLog.action}</div>
-                                        <div><strong>Пользователь:</strong> <AuditUserCell userName={selectedLog.userName} /></div>
-                                        <div><strong>Машина/Домен:</strong> {selectedLog.machineName} ({selectedLog.domainName})</div>
-                                        <div><strong>Длительность:</strong> {formatDuration(selectedLog.duration)}</div>
-                                        <div><strong>Correlation ID:</strong> {selectedLog.correlationId || NO_DATA}</div>
-                                    </div>
-                                    <hr style={{ border: "0", borderTop: "1px solid var(--colorNeutralStroke1)" }} />
-                                    <div className="flex flex-col gap-2">
-                                        <strong>Полные JSON данные лога:</strong>
-                                        <pre style={{
-                                            backgroundColor: "var(--colorNeutralBackground2)",
-                                            padding: "12px",
-                                            borderRadius: "4px",
-                                            overflowX: "auto",
-                                            fontSize: "12px",
-                                            maxHeight: "400px",
-                                            fontFamily: "monospace",
-                                            whiteSpace: "pre-wrap"
-                                        }}>
-                                            {JSON.stringify(
-                                                {
-                                                    ...selectedLog,
-                                                    oldData: safeParseJson(selectedLog.oldData),
-                                                    newData: safeParseJson(selectedLog.newData),
-                                                    environmentJson: safeParseJson(selectedLog.environmentJson),
-                                                    customFieldsJson: safeParseJson(selectedLog.customFieldsJson),
-                                                    comments: safeParseJson(selectedLog.comments),
-                                                },
-                                                null,
-                                                2
-                                            )}
-                                        </pre>
-                                    </div>
-                                </div>
+                                <AuditLogDetails log={selectedLog} userDisplayName={<AuditUserCell userName={selectedLog.userName} />} />
                             )}
                         </DialogContent>
                         <DialogActions>
@@ -271,5 +240,3 @@ export const AuditLogsPage = () => {
         </RequirePermission>
     );
 };
-
-

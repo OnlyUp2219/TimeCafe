@@ -69,14 +69,14 @@ export const UserRolesPage = () => {
     return (
         <RequirePermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
             <div className="flex flex-col gap-2">
-                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate(`/admin/users/${id}`)} className="mb-4">
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate(`/admin/users/${id}`)} className="w-fit">
                     Назад к пользователю
                 </Button>
 
                 <div>
                     <Title2>Роли пользователя</Title2>
                     {user && (
-                        <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center gap-3 ">
                             <Avatar name={user.name || user.email} size={32} />
                             <Body1>{user.name || user.email}</Body1>
                         </div>

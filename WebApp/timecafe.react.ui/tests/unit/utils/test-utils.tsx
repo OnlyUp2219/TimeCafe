@@ -6,8 +6,8 @@ import { configureStore } from "@reduxjs/toolkit";
 
 const createMockStore = () => configureStore({
     reducer: {
-        auth: (state = { userId: "user-123", token: null }, action) => state,
-        permissions: (state = { permissions: [], isLoaded: true }, action) => state
+        auth: (state = { userId: "user-123", token: null }) => state,
+        permissions: (state = { permissions: [], isLoaded: true }) => state
     }
 });
 

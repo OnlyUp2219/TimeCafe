@@ -29,6 +29,7 @@ export interface GetAuditLogsArgs {
     pageSize: number;
     eventType?: string;
     userName?: string;
+    userId?: string;
 }
 
 export interface RoleDto {
@@ -197,9 +198,9 @@ export const adminApi = createApi({
         }),
 
         getAuditLogs: builder.query<PagedResponse<AuditLogDto>, GetAuditLogsArgs>({
-            query: ({page, pageSize, eventType, userName}) => ({
+            query: ({page, pageSize, eventType, userName, userId}) => ({
                 url: "/audit/logs",
-                params: {page, pageSize, eventType, userName},
+                params: {page, pageSize, eventType, userName, userId},
             }),
             providesTags: ["AuditLogs"],
         }),

@@ -317,4 +317,35 @@ public class LoginTests : BaseEndpointTest
             throw;
         }
     }
+
+    [Fact]
+    public async Task Endpoint_Login_Should_LockoutUser_AfterMaxFailedAttempts()
+    {
+        var email = $"lockout_user_{Guid.NewGuid():N}@example.com";
+        await SeedUserAsync(email, "password123", true);
+
+        var badDto = new { Email = email, Password = "wrongpassword" };
+
+        for (int i = 0; i < 5; i++)
+        {
+            var badResp = await Client.PostAsJsonAsync("/auth/login-jwt", badDto);
+            badResp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        var response = await Client.PostAsJsonAsync("/auth/login-jwt", badDto);
+        var jsonString = await response.Content.ReadAsStringAsync();
+
+        try
+        {
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            var json = JsonDocument.Parse(jsonString).RootElement;
+            json.TryGetProperty("code", out var code).Should().BeTrue();
+            code.GetString()!.Should().Be("LockedOut");
+        }
+        catch (Exception)
+        {
+            Console.WriteLine($"[Endpoint_Login_Should_LockoutUser_AfterMaxFailedAttempts] Response: {jsonString}");
+            throw;
+        }
+    }
 }

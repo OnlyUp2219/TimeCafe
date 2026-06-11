@@ -1,6 +1,6 @@
 namespace Audit.TimeCafe.Application.CQRS.AuditLogs.Queries;
 
-public sealed record GetAuditLogsPageQuery(int Page, int PageSize, string? EventType, string? UserName)
+public sealed record GetAuditLogsPageQuery(int Page, int PageSize, string? EventType, string? UserName, Guid? UserId = null)
     : IQuery<PagedResponse<AuditLogDto>>;
 
 
@@ -13,7 +13,7 @@ public sealed class GetAuditLogsPageQueryHandler(IUnitOfWork uow)
         try
         {
             var (items, totalCount) = await uow.AuditLogs.GetPageAsync(
-                request.Page, request.PageSize, request.EventType, request.UserName, cancellationToken);
+                request.Page, request.PageSize, request.EventType, request.UserName, request.UserId, cancellationToken);
 
             var dtos = items.ConvertAll(a => new AuditLogDto(
                 a.Id,
@@ -27,6 +27,7 @@ public sealed class GetAuditLogsPageQueryHandler(IUnitOfWork uow)
                 a.StartDate,
                 a.EndDate,
                 a.CorrelationId,
+                a.UserId,
                 a.OldData,
                 a.NewData,
                 a.EnvironmentJson,

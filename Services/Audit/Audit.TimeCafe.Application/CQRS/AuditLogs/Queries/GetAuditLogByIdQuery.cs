@@ -24,6 +24,7 @@ public sealed class GetAuditLogByIdQueryHandler(IUnitOfWork uow)
             auditLog.StartDate,
             auditLog.EndDate,
             auditLog.CorrelationId,
+            auditLog.UserId,
             auditLog.OldData,
             auditLog.NewData,
             auditLog.EnvironmentJson,
