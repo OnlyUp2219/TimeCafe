@@ -329,6 +329,14 @@ export const venueApi = createApi({
             invalidatesTags: [{ type: "ActiveVisit" }, "VisitsPage", "VisitHistory", "PendingVisits"],
         }),
 
+        selfFixateVisitTime: builder.mutation<FixateVisitTimeResponse, string>({
+            query: (visitId) => ({
+                url: `/venue/visits/${visitId}/self-fixate-time`,
+                method: "POST",
+            }),
+            invalidatesTags: [{ type: "ActiveVisit" }, "VisitsPage", "VisitHistory", "PendingVisits"],
+        }),
+
         walkInVisit: builder.mutation<WalkInVisitResponse, WalkInVisitRequest>({
             query: (body) => ({
                 url: "/venue/visits/walk-in",
@@ -572,6 +580,7 @@ export const {
     useRequestEndVisitMutation,
     useForceEndVisitMutation,
     useFixateVisitTimeMutation,
+    useSelfFixateVisitTimeMutation,
     useWalkInVisitMutation,
     useApproveVisitMutation,
     useRejectVisitMutation,

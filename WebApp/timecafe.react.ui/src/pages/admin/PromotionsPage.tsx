@@ -186,13 +186,13 @@ export const PromotionsPage = () => {
     }, [activatePromotion, deactivatePromotion]);
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        name: { minWidth: 150, defaultWidth: 250 },
+        name: { minWidth: 150, defaultWidth: 350 },
         discount: { minWidth: 80, defaultWidth: 120 },
         type: { minWidth: 100, defaultWidth: 150 },
         period: { minWidth: 150, defaultWidth: 220 },
         condition: { minWidth: 120, defaultWidth: 160 },
         status: { minWidth: 100, defaultWidth: 150 },
-        actions: { minWidth: 90, defaultWidth: 100 },
+        actions: { minWidth: 190, defaultWidth: 200 },
     }), []);
 
     const columns: TableColumnDefinition<Promotion>[] = useMemo(() => {
@@ -283,7 +283,7 @@ export const PromotionsPage = () => {
                         <Switch
                             checked={promo.isActive}
                             onChange={() => handleToggleActive(promo)}
-                            label={promo.isActive ? "Активна" : "Неактивна"}
+
                         />
                     </HasPermission>
                 ),

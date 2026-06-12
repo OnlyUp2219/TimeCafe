@@ -255,6 +255,52 @@ public class VisitScenariosTests(IntegrationApiFactory factory) : BaseEndpointTe
     }
 
     [Fact]
+    public async Task Endpoint_FullCycleScenario_ClientSelfFixateFlow()
+    {
+        await ClearDatabaseAndCacheAsync();
+
+        var tariff = await SeedTariffAsync("Hourly Plan", 120m, BillingType.Hourly);
+        var group = await SeedResourceGroupAsync("Main Zone", 15);
+        var resource = await SeedResourceAsync(group.ResourceGroupId, "Table 2", 4);
+
+        var clientUserId = Guid.Parse(TestAuthHandler.TestUserId);
+
+        var visit = await SeedVisitAsync(userId: clientUserId, tariffId: tariff.TariffId, isActive: true, status: VisitStatus.Active, resourceId: resource.ResourceId);
+
+        var visitId = visit.VisitId;
+
+        using var endRequest = new HttpRequestMessage(HttpMethod.Post, $"/venue/visits/{visitId}/request-end");
+        endRequest.Headers.Add("X-Test-UserId", clientUserId.ToString());
+        endRequest.Headers.Add("X-Test-UserRole", "client");
+
+        var endResponse = await Client.SendAsync(endRequest);
+        endResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        using (var scope = Factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var visitInDb = await db.Visits.FindAsync(visitId);
+            visitInDb.Should().NotBeNull();
+            visitInDb!.IsFinishRequested.Should().BeTrue();
+            visitInDb.FinishRequestedAt.Should().NotBeNull();
+        }
+
+        // Simulate client self-fixate
+        using var fixateRequest = new HttpRequestMessage(HttpMethod.Post, $"/venue/visits/{visitId}/self-fixate-time");
+        fixateRequest.Headers.Add("X-Test-UserId", clientUserId.ToString());
+        fixateRequest.Headers.Add("X-Test-UserRole", "client");
+
+        var fixateResponse = await Client.SendAsync(fixateRequest);
+        fixateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var fixateJson = await fixateResponse.Content.ReadAsStringAsync();
+        var fixateResult = JsonSerializer.Deserialize<FixateVisitTimeResponse>(fixateJson, JsonOptions);
+        fixateResult.Should().NotBeNull();
+        fixateResult!.Visit.Status.Should().Be(VisitStatus.WaitingForPayment);
+        fixateResult.CalculatedCost.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public async Task Endpoint_FullCycleScenario_AdminForceEndFlow()
     {
         await ClearDatabaseAndCacheAsync();

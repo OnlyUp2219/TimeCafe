@@ -10,6 +10,10 @@ import {
     Body1,
     Body2,
     Card,
+    MessageBar,
+    MessageBarBody,
+    MessageBarTitle,
+    tokens,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -311,12 +315,13 @@ export const ActiveVisitPage = () => {
         <>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                 {activeVisit?.isFinishRequested && (
-                    <div className="lg:col-span-12 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
-                        <Clock20Regular className="text-2xl" />
-                        <div>
-                            <Subtitle2Stronger className="block text-sm">Запрос на завершение визита отправлен</Subtitle2Stronger>
-                            <Body2>Мы зафиксируем точное время окончания сессии, как только вы подойдете к стойке ресепшена. В целях безопасности ваш таймер активен до подтверждения администратором на кассе.</Body2>
-                        </div>
+                    <div className="lg:col-span-12">
+                        <MessageBar intent="warning">
+                            <MessageBarBody>
+                                <MessageBarTitle>Запрос на завершение визита отправлен</MessageBarTitle>
+                                Мы зафиксируем точное время окончания сессии, как только вы подойдете к стойке ресепшена. В целях безопасности ваш таймер активен до подтверждения администратором на кассе.
+                            </MessageBarBody>
+                        </MessageBar>
                     </div>
                 )}
 
@@ -379,13 +384,13 @@ export const ActiveVisitPage = () => {
                         </div>
                         <Divider />
                         {activeVisit?.isFinishRequested && gracePeriodEnd !== null ? (
-                            <div className="flex flex-col gap-4 p-4 bg-(--colorStatusWarningBackground1) rounded-xl border border-(--colorStatusWarningBorder1)">
+                            <Card size={sizes.card} style={{ backgroundColor: tokens.colorStatusWarningBackground1, borderColor: tokens.colorStatusWarningBorder1 }}>
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 text-(--colorStatusWarningForeground1)">
+                                    <div className="flex items-center gap-2" style={{ color: tokens.colorStatusWarningForeground1 }}>
                                         <Clock20Regular />
                                         <Subtitle2Stronger>Ожидаем оплату</Subtitle2Stronger>
                                     </div>
-                                    <Title1 className="text-(--colorStatusWarningForeground1)">
+                                    <Title1 style={{ color: tokens.colorStatusWarningForeground1 }}>
                                         {Math.floor(graceSecondsLeft / 60)}:{(graceSecondsLeft % 60).toString().padStart(2, '0')}
                                     </Title1>
                                 </div>
@@ -408,7 +413,7 @@ export const ActiveVisitPage = () => {
                                             : "У меня хватает баланса"}
                                     </Button>
                                 </div>
-                            </div>
+                            </Card>
                         ) : (
                             <Button
                                 appearance="primary"
@@ -511,7 +516,7 @@ export const ActiveVisitPage = () => {
                         <Divider />
 
                         <div className="flex flex-col gap-3">
-                            <div className="flex justify-between items-center bg-(--colorNeutralBackground2) p-4 rounded-xl">
+                            <div className="flex justify-between items-center bg-(--colorNeutralBackground1) p-2">
                                 <Body1>Итого к оплате:</Body1>
                                 <LargeTitle className="text-(--colorBrandForeground1)">{formatMoneyByN(invoice.totalAmount)}</LargeTitle>
                             </div>
@@ -582,9 +587,11 @@ export const ActiveVisitPage = () => {
                         <Body2 className="block text-justify leading-relaxed">
                             Вы также можете подойти к стойке администратора и произвести оплату наличными средствами или через банковский терминал.
                         </Body2>
-                        <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-xl p-3 text-xs leading-relaxed">
-                            После фиксации администратором оплаты на кассе, ваш визит автоматически перейдет в статус завершенного, а столик освободится.
-                        </div>
+                        <MessageBar intent="warning">
+                            <MessageBarBody>
+                                После фиксации администратором оплаты на кассе, ваш визит автоматически перейдет в статус завершенного, а столик освободится.
+                            </MessageBarBody>
+                        </MessageBar>
                     </div>
                 </HoverTiltCard>
             </div>
@@ -618,7 +625,7 @@ export const ActiveVisitPage = () => {
         <div className="relative min-h-full">
             {ToasterElement}
             <div className="page-content">
-                <div className="rounded-3xl p-5 sm:p-8" data-testid="visit-active-page">
+                <Card size={sizes.card} data-testid="visit-active-page">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">
                             <div className="flex">
@@ -636,7 +643,7 @@ export const ActiveVisitPage = () => {
                         <Divider />
                         {renderContent()}
                     </div>
-                </div>
+                </Card>
             </div>
             <VisitEndDialog
                 open={confirmOpen}

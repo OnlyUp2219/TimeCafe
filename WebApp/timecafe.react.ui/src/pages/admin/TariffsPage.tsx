@@ -107,8 +107,8 @@ export const TariffsPage = () => {
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         name: { minWidth: 150, defaultWidth: 250, idealWidth: 300 },
-        price: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
-        billingType: { minWidth: 100, defaultWidth: 140, idealWidth: 160 },
+        price: { minWidth: 150, defaultWidth: 180, idealWidth: 200 },
+        billingType: { minWidth: 120, defaultWidth: 140, idealWidth: 160 },
         theme: { minWidth: 80, defaultWidth: 140, idealWidth: 160 },
         status: { minWidth: 150, defaultWidth: 250, idealWidth: 280 },
         actions: { minWidth: 160, defaultWidth: 180, idealWidth: 160 },

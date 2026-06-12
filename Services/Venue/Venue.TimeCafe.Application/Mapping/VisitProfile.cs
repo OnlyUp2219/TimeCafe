@@ -22,7 +22,8 @@ public class VisitProfile : Profile
             .ForMember(dest => dest.EntryTime, opt => opt.MapFrom(src => src.EntryTime))
             .ForMember(dest => dest.ExitTime, opt => opt.MapFrom(src => src.ExitTime))
             .ForMember(dest => dest.CalculatedCost, opt => opt.MapFrom(src => src.CalculatedCost))
-            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status));
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+            .ForMember(dest => dest.FinishRequestedAt, opt => opt.Ignore());
     }
 }
 

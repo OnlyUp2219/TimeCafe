@@ -1,16 +1,22 @@
 export const Permissions = {
+    // === Профиль пользователя ===
     UserProfileProfileCreate: "userprofile.profile.create",
     UserProfileProfileRead: "userprofile.profile.read",
     UserProfileProfileUpdate: "userprofile.profile.update",
     UserProfileProfileDelete: "userprofile.profile.delete",
+
+    // Дополнительная информация пользователя
     UserProfileAdditionalInfoCreate: "userprofile.additionalinfo.create",
     UserProfileAdditionalInfoRead: "userprofile.additionalinfo.read",
     UserProfileAdditionalInfoUpdate: "userprofile.additionalinfo.update",
     UserProfileAdditionalInfoDelete: "userprofile.additionalinfo.delete",
+
+    // Фото и аватары
     UserProfilePhotoCreate: "userprofile.photo.create",
     UserProfilePhotoRead: "userprofile.photo.read",
     UserProfilePhotoDelete: "userprofile.photo.delete",
 
+    // === Биллинг и Финансы ===
     BillingBalanceRead: "billing.balance.read",
     BillingDebtRead: "billing.debt.read",
     BillingTransactionCreate: "billing.transaction.create",
@@ -18,6 +24,8 @@ export const Permissions = {
     BillingPaymentInitialize: "billing.payment.initialize",
     BillingPaymentHistoryRead: "billing.payment.read",
     BillingAdminWrite: "billing.admin.write",
+
+    // Счета
     BillingInvoiceRead: "billing.invoice.read",
     BillingInvoicePay: "billing.invoice.pay",
     BillingInvoiceAdminRead: "billing.invoice.admin.read",
@@ -44,6 +52,7 @@ export const Permissions = {
     VenueVisitUpdate: "venue.visit.update",
     VenueVisitDelete: "venue.visit.delete",
     VenueVisitEnd: "venue.visit.end",
+    VenueVisitSelfFixate: "venue.visit.selffixate",
     VenueVisitForceEnd: "venue.visit.force-end",
     VenueVisitApprove: "visit.approve",
     VenueVisitReject: "visit.reject",

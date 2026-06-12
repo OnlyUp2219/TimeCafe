@@ -6,11 +6,14 @@ export interface PaginationState {
     filters?: Record<string, any>;
 }
 
+export type ThemeMode = "light" | "dark";
+
 interface uiState {
     isSideBarOpen: boolean;
     isSidebarCollapsed: boolean;
     selectedNav: string;
     pagination: Record<string, PaginationState>;
+    theme: ThemeMode;
 }
 
 const initialState: uiState = {
@@ -18,6 +21,7 @@ const initialState: uiState = {
     isSidebarCollapsed: false,
     selectedNav: "1",
     pagination: {},
+    theme: "light",
 }
 
 const uiSlice = createSlice({
@@ -53,9 +57,15 @@ const uiSlice = createSlice({
             } else {
                 state.pagination[key] = { page: 1, size: 20, filters };
             }
+        },
+        toggleTheme: (state) => {
+            state.theme = state.theme === "light" ? "dark" : "light";
+        },
+        setTheme: (state, action: PayloadAction<ThemeMode>) => {
+            state.theme = action.payload;
         }
     },
 });
 
-export const { toggleSidebar, setSidebarOpen, setSidebarCollapsed, setSelectedNav, setPagination, setFilters } = uiSlice.actions;
+export const { toggleSidebar, setSidebarOpen, setSidebarCollapsed, setSelectedNav, setPagination, setFilters, toggleTheme, setTheme } = uiSlice.actions;
 export default uiSlice.reducer;

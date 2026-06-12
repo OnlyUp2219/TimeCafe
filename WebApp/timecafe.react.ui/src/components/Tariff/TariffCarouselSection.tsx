@@ -24,6 +24,7 @@ export const TariffCarouselSection = ({
                                           selectedTariffId,
                                           onSelectTariff,
                                           onOpenDetails,
+                                          discountsMap,
                                       }: TariffCarouselSectionProps) => {
     const { sizes } = useComponentSize();
     return (
@@ -64,6 +65,7 @@ export const TariffCarouselSection = ({
                                         selected={tariff.tariffId === selectedTariffId}
                                         onSelect={onSelectTariff}
                                         onOpenDetails={onOpenDetails}
+                                        discountPercent={discountsMap?.get(tariff.tariffId) ?? 0}
                                     />
                                 </div>
                             </CarouselCard>

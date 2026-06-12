@@ -138,7 +138,7 @@ export const VisitsPage = () => {
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         tariff: { minWidth: 120, defaultWidth: 200 },
-        status: { minWidth: 80, defaultWidth: 120 },
+        status: { minWidth: 140, defaultWidth: 200 },
         entryTime: { minWidth: 130, defaultWidth: 170 },
         exitTime: { minWidth: 130, defaultWidth: 170 },
         duration: { minWidth: 100, defaultWidth: 150 },

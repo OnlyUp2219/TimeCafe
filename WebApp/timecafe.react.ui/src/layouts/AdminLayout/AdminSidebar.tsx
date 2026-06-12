@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Body1, Button, Caption1, Tooltip, CounterBadge } from "@fluentui/react-components";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { clearTokens } from "@store/authSlice";
-import { setSidebarCollapsed } from "@store/uiSlice";
+import { setSidebarCollapsed, toggleTheme } from "@store/uiSlice";
 import {
     Board20Regular, People20Regular, Clock20Regular, Money20Regular,
     Gift20Regular, Color20Regular, ArrowTrending20Regular, Payment20Regular,
     SignOut20Regular, Eye20Regular, Bug24Regular, ShieldSettings20Regular,
-    DocumentText20Regular, Grid20Regular
+    DocumentText20Regular, Grid20Regular, WeatherMoon20Regular, WeatherSunny20Regular
 } from "@fluentui/react-icons";
 import { BaseSidebar, type NavSectionType, type NavItemType } from "@components/Sidebar/BaseSidebar";
 import { Permissions } from "@shared/auth/permissions";
@@ -30,6 +30,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
     const email = useAppSelector((state) => state.auth.email);
     const displayName = useAppSelector((state) => state.auth.displayName);
     const userId = useAppSelector((state) => state.auth.userId);
+    const theme = useAppSelector((state) => state.ui.theme);
     const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
     const profileDisplayName = profile ? `${profile.firstName?.trim() ?? ""} ${profile.lastName?.trim() ?? ""}`.trim() : null;
     const avatarName = profileDisplayName || displayName || email?.trim() || "Admin";
@@ -147,6 +148,9 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
             {compact ? (
                 <div className="admin-sidebar__bottom-compact">
                     <SecureAvatar name={avatarName} photoUrl={profile?.photoUrl} size={28} />
+                    <Tooltip content="Сменить тему" relationship="label" positioning="after">
+                        <Button appearance="subtle" size="small" icon={theme === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />} onClick={() => dispatch(toggleTheme())} />
+                    </Tooltip>
                     <Tooltip content="Вид клиента" relationship="label" positioning="after">
                         <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")} />
                     </Tooltip>
@@ -158,14 +162,17 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
                 <>
                     <div className="admin-sidebar__bottom-user">
                         <SecureAvatar name={avatarName} photoUrl={profile?.photoUrl} size={32} />
-                        <div className="min-w-0">
-                            <Body1 truncate wrap={false} block title={avatarName}>{avatarName || "Админ"}</Body1>
-                            <Caption1 truncate wrap={false} block title={email ?? undefined}>
+                        <div className="min-w-0 flex flex-col">
+                            <Body1 truncate wrap={false} title={avatarName}>{avatarName || "Админ"}</Body1>
+                            <Caption1 truncate wrap={false} title={email ?? undefined}>
                                 {email && email.length > 20 ? `${email.substring(0, 20)}...` : email || NO_DATA}
                             </Caption1>
                         </div>
                     </div>
                     <div className="admin-sidebar__bottom-actions">
+                        <Tooltip content="Сменить тему" relationship="label" positioning="above">
+                            <Button appearance="subtle" size="small" icon={theme === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />} onClick={() => dispatch(toggleTheme())} />
+                        </Tooltip>
                         <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => navigate("/home")}>Вид клиента</Button>
                         <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
                     </div>
@@ -177,6 +184,7 @@ export const AdminSidebar: FC<AdminSidebarProps> = ({ isOpen, onOpenChange }) =>
     const renderMobileFooter = () => (
         <>
             <SecureAvatar name={avatarName} photoUrl={profile?.photoUrl} size={28} />
+            <Button appearance="subtle" size="small" icon={theme === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />} onClick={() => dispatch(toggleTheme())} aria-label="Сменить тему" />
             <Button appearance="subtle" size="small" icon={<Eye20Regular />} onClick={() => { onOpenChange(false); navigate("/home"); }}>Вид клиента</Button>
             <Button appearance="subtle" size="small" icon={<SignOut20Regular />} onClick={handleLogout}>Выйти</Button>
         </>

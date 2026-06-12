@@ -1,7 +1,7 @@
 import { NO_DATA } from "@shared/const/placeholders";
 import { useMemo } from "react";
 import {
-Avatar,
+    Avatar,
     Badge,
     Body1,
     Body2,
@@ -67,7 +67,7 @@ export const PaymentsPage = () => {
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
 
     const columnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
-        userId: { minWidth: 100, defaultWidth: 160, idealWidth: 200 },
+        userId: { minWidth: 100, defaultWidth: 160, idealWidth: 300 },
         amount: { minWidth: 80, defaultWidth: 120, idealWidth: 140 },
         method: { minWidth: 80, defaultWidth: 110, idealWidth: 130 },
         status: { minWidth: 100, defaultWidth: 130, idealWidth: 150 },

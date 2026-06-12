@@ -26,9 +26,10 @@ type Props = {
     selected?: boolean;
     onSelect?: (tariffId: string) => void;
     onOpenDetails?: (tariff: Tariff) => void;
+    discountPercent?: number;
 };
 
-export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOpenDetails }) => {
+export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOpenDetails, discountPercent = 0 }) => {
     const { sizes } = useComponentSize();
     const config = useMemo(() => parseThemeConfig(tariff.themeColors || tariff.colors), [tariff]);
     const themeStyles = useMemo(() => getThemeStyles(config), [config]);
@@ -39,6 +40,7 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOp
 
     return (
         <Card
+            appearance="subtle"
             className="sm:w-[360px] sm:max-w-[82vw] transition-all duration-300"
             style={{
                 ...themeStyles,
@@ -98,10 +100,24 @@ export const TariffCard: FC<Props> = ({ tariff, selected = false, onSelect, onOp
                     paddingRight: tokens.spacingHorizontalM,
                 }}
             >
-                <Caption1 style={{ color: themeStyles.color, opacity: 0.7 }}>{rateLabel}</Caption1>
-                <Title3 style={{ color: themeStyles.color }}>
-                    {formatMoneyByN(rateValue)} {unitLabel}
-                </Title3>
+                <div className="flex justify-between items-start">
+                    <Caption1 style={{ color: themeStyles.color, opacity: 0.7 }}>{rateLabel}</Caption1>
+                    {discountPercent > 0 && (
+                        <Badge appearance="tint" color="success" size="small">
+                            -{discountPercent}%
+                        </Badge>
+                    )}
+                </div>
+                <div className="flex items-baseline gap-2">
+                    <Title3 style={{ color: themeStyles.color }}>
+                        {formatMoneyByN(rateValue * (1 - discountPercent / 100))} {unitLabel}
+                    </Title3>
+                    {discountPercent > 0 && (
+                        <Body1 style={{ color: themeStyles.color, opacity: 0.6, textDecoration: 'line-through' }}>
+                            {formatMoneyByN(rateValue)}
+                        </Body1>
+                    )}
+                </div>
             </div>
 
             <div

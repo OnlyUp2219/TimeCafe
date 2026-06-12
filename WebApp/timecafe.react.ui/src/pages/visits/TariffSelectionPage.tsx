@@ -5,16 +5,14 @@ import {
     Divider,
     Title2,
     Tooltip,
-    Subtitle2Stronger
 } from "@fluentui/react-components";
-import { Info20Regular } from "@fluentui/react-icons";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useNavigate } from "react-router-dom";
 import {
     setSelectedTariffId,
 } from "@store/visitSlice";
-import { BillingType as BillingTypeEnum, type BillingType, type Tariff } from "@app-types/tariff";
+import { type BillingType, type Tariff } from "@app-types/tariff";
 import { clamp } from "@utility/clamp";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import { useComponentSize } from "@hooks/useComponentSize";
@@ -25,7 +23,7 @@ import { type CalcResult, TariffForecastCard } from "@components/Tariff/TariffFo
 import { TariffCarouselSection } from "@components/Tariff/TariffCarouselSection";
 import { VisitParamsCard } from "@components/Tariff/VisitParamsCard";
 import { TariffDetailsDialog } from "@components/Tariff/TariffDetailsDialog";
-import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
+import { useGetActiveTariffsQuery, useHasActiveVisitQuery, useCreateVisitMutation, useGetResourcesQuery, useGetActiveVisitsQuery, useGetUserLoyaltyQuery, useGetAllPromotionsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
@@ -34,7 +32,10 @@ const calculate = (
     pricePerMinute: number,
     billingType: BillingType,
     minSessionMinutes: number | null = null,
-    roundingRule: string | null = null
+    roundingRule: string | null = null,
+    globalDiscount: number = 0,
+    tariffDiscount: number = 0,
+    personalDiscount: number = 0
 ): CalcResult => {
     const safeMinutes = clamp(Math.floor(minutes), 1, 12 * 60);
     const estimate = calcVisitEstimate(
@@ -42,11 +43,16 @@ const calculate = (
         billingType,
         pricePerMinute,
         minSessionMinutes,
-        roundingRule
+        roundingRule,
+        globalDiscount,
+        tariffDiscount,
+        personalDiscount
     );
 
     return {
         total: estimate.total,
+        baseTotal: estimate.baseTotal,
+        isDiscounted: estimate.isDiscounted,
         chargedMinutes: estimate.chargedMinutes ?? safeMinutes,
         chargedHours: estimate.chargedHours ?? Math.max(1, Math.ceil(safeMinutes / 60)),
         pricePerMinute: pricePerMinute,
@@ -68,6 +74,8 @@ export const TariffSelectionPage = () => {
     const [createVisit, { isLoading: startingVisit }] = useCreateVisitMutation();
     const { data: resourcesData } = useGetResourcesQuery();
     const { data: activeVisitsData } = useGetActiveVisitsQuery();
+    const { data: loyalty } = useGetUserLoyaltyQuery(userId ?? "", { skip: !userId });
+    const { data: promotions } = useGetAllPromotionsQuery();
 
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [selectedTariffIdForDetails, setSelectedTariffIdForDetails] = useState<string | null>(null);
@@ -117,6 +125,32 @@ export const TariffSelectionPage = () => {
     const [durationMinutes, setDurationMinutes] = useState<number>(90);
     const [guestsCount, setGuestsCount] = useState<number>(1);
 
+    const discountsMap = useMemo(() => {
+        const map = new Map<string, number>();
+        let globalD = 0;
+        if (promotions) {
+            const now = Date.now();
+            const activePromos = promotions.filter(p =>
+                p.isActive &&
+                (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
+                (!p.validTo || new Date(p.validTo).getTime() >= now)
+            );
+            const g = activePromos.find(p => !p.tariffId);
+            if (g?.discountPercent) globalD = g.discountPercent;
+
+            for (const t of visibleTariffs) {
+                let tariffD = 0;
+                const tp = activePromos.find(p => p.tariffId === t.tariffId);
+                if (tp?.discountPercent) tariffD = tp.discountPercent;
+                const personalD = loyalty?.personalDiscountPercent ?? 0;
+                const bestPromotion = Math.max(globalD, tariffD);
+                const applied = Math.min(bestPromotion + personalD, 50); // max discount 50%
+                map.set(t.tariffId, applied);
+            }
+        }
+        return map;
+    }, [promotions, loyalty, visibleTariffs]);
+
     const freeResources = useMemo(() => {
         if (!resourcesData) return [];
         const activeResourceIds = new Set(
@@ -131,14 +165,37 @@ export const TariffSelectionPage = () => {
 
     const calc = useMemo(() => {
         if (!selectedTariff) return null;
+
+        let globalD = 0;
+        let tariffD = 0;
+        if (promotions) {
+            const now = Date.now();
+            const activePromos = promotions.filter(p =>
+                p.isActive &&
+                (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
+                (!p.validTo || new Date(p.validTo).getTime() >= now)
+            );
+
+            const g = activePromos.find(p => !p.tariffId);
+            if (g?.discountPercent) globalD = g.discountPercent;
+
+            const t = activePromos.find(p => p.tariffId === selectedTariff.tariffId);
+            if (t?.discountPercent) tariffD = t.discountPercent;
+        }
+
+        const personalD = loyalty?.personalDiscountPercent ?? 0;
+
         return calculate(
             durationMinutes,
             selectedTariff.pricePerMinute,
             selectedTariff.billingType,
             selectedTariff.minSessionMinutes,
-            selectedTariff.roundingRule
+            selectedTariff.roundingRule,
+            globalD,
+            tariffD,
+            personalD
         );
-    }, [durationMinutes, selectedTariff]);
+    }, [durationMinutes, selectedTariff, promotions, loyalty]);
 
     const setActiveTariff = useCallback(
         (index: number) => {
@@ -243,6 +300,7 @@ export const TariffSelectionPage = () => {
                 selectedTariffId={selectedTariffId}
                 onSelectTariff={onSelectTariff}
                 onOpenDetails={handleOpenDetails}
+                discountsMap={discountsMap}
             />
         );
     }
@@ -270,18 +328,6 @@ export const TariffSelectionPage = () => {
                 {tariffContent}
 
                 <Divider />
-
-                {/* TODO: Make for skills */}
-                <div className="bg-blue-500/10 border border-blue-500/20 text-blue-500 rounded-2xl p-4 flex items-start gap-3">
-                    <Info20Regular className="text-xl shrink-0 mt-0.5" />
-                    <div className="flex flex-col gap-1">
-                        <Subtitle2Stronger className="block text-sm">Правила тарификации и округления</Subtitle2Stronger>
-                        <Body1 style={{ color: 'var(--colorNeutralForeground2)' }}>
-                            При выборе поминутного тарифа списание происходит строго посекундно. Почасовые тарифы округляются до полного часа в большую сторону.
-                            Если в тарифе установлен стоп-чек, итоговая стоимость визита не превысит этот лимит, сколько бы времени вы ни провели в заведении.
-                        </Body1>
-                    </div>
-                </div>
 
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
                     <VisitParamsCard

@@ -56,7 +56,8 @@ public static class SeedRolesAndPermissionsExtensions
             Permissions.VenueThemeRead,
             Permissions.VenueVisitCreate,
             Permissions.VenueVisitRead,
-            Permissions.VenueVisitEnd
+            Permissions.VenueVisitEnd,
+            Permissions.VenueVisitSelfFixate
         };
 
         await EnsureRoleClaimsAsync(roleManager, Roles.Client, clientPermissions);

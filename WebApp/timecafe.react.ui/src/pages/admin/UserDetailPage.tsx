@@ -25,7 +25,6 @@ import {
     TableCellLayout,
     Title2,
     Title3,
-    Divider,
 } from "@fluentui/react-components";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
@@ -56,7 +55,7 @@ import { DismissableError } from "@components/DismissableError/DismissableError"
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
 import { NO_DATA } from "@shared/const/placeholders";
 import { formatDateTime } from "@utility/dateUtils";
-import { formatMoney, safeParseJson, formatDurationMs } from "@utility/formatUtils";
+import { formatMoney, formatDurationMs } from "@utility/formatUtils";
 import { txTypeColor, txSourceLabel, txTypeLabel } from "@utility/billingUtils";
 import { visitStatusLabel, visitStatusColor } from "@utility/visitUtils";
 import { genderLabel, profileStatusLabel, profileStatusColor } from "@utility/userUtils";
@@ -364,7 +363,7 @@ export const UserDetailPage = () => {
                         <HasPermission can={Permissions.BillingBalanceRead}>
                             <Card size={sizes.card} className="flex-1 min-w-[200px]">
                                 <Body2>Потрачено</Body2>
-                                <Title3 className="text-(--colorPaletteRedForeground1)">
+                                <Title3>
                                     {balanceLoading ? NO_DATA : formatMoney(balance?.totalSpent ?? 0)}
                                 </Title3>
                             </Card>

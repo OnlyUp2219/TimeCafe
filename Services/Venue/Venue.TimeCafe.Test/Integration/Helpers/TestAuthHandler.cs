@@ -57,6 +57,7 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
         {
             claims.Add(new Claim(CustomClaimTypes.Permissions, Permissions.VenueVisitCreate));
             claims.Add(new Claim(CustomClaimTypes.Permissions, Permissions.VenueVisitEnd));
+            claims.Add(new Claim(CustomClaimTypes.Permissions, Permissions.VenueVisitSelfFixate));
             claims.Add(new Claim(CustomClaimTypes.Permissions, Permissions.VenueVisitRead));
         }
 

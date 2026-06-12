@@ -8,4 +8,5 @@ export type TariffCarouselSectionProps = {
     selectedTariffId: string | null;
     onSelectTariff: (tariffId: string) => void;
     onOpenDetails?: (tariff: Tariff) => void;
+    discountsMap?: Map<string, number>;
 };

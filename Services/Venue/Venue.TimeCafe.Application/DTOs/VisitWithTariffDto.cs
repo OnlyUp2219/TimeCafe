@@ -24,5 +24,6 @@ public class VisitWithTariffDto
     public int? PlannedMinutes { get; set; }
     public int GuestsCount { get; set; }
     public bool IsFinishRequested { get; set; }
+    public DateTimeOffset? FinishRequestedAt { get; set; }
 }
 

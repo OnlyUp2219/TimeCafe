@@ -3,9 +3,10 @@ import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {useEffect, useMemo, useState, type FC} from "react";
 import {useLocation, useNavigate} from "react-router-dom";
 import {clearTokens} from "@store/authSlice";
+import {toggleTheme} from "@store/uiSlice";
 import {formatDurationSeconds} from "@utility/formatDurationSeconds";
 import {VisitStatus} from "@app-types/visit";
-import {Clock20Regular} from "@fluentui/react-icons";
+import {Clock20Regular, WeatherMoon20Regular, WeatherSunny20Regular} from "@fluentui/react-icons";
 import {ProfileApi} from "@api/profile/profileApi";
 import {useProgressToast} from "@components/ToastProgress/ToastProgress";
 import {useGetProfileByUserIdQuery} from "@store/api/profileApi";
@@ -26,6 +27,7 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
     const userId = useAppSelector((state) => state.auth.userId);
     const authEmail = useAppSelector((state) => state.auth.email);
     const authDisplayName = useAppSelector((state) => state.auth.displayName);
+    const theme = useAppSelector((state) => state.ui.theme);
 
     const {data: profile} = useGetProfileByUserIdQuery(userId!, {skip: !userId});
     const {data: hasActive} = useHasActiveVisitQuery(userId!, {skip: !userId});
@@ -143,24 +145,32 @@ export const Header: FC<HeaderProps> = ({onMenuToggle, isSidebarOpen, variant = 
                     )}
                 </div>
 
-                {isPublic ? (
-                    <div className="flex items-center gap-2">
-                        <Button appearance="secondary" onClick={() => navigate("/login")}>Войти</Button>
-                        <Button appearance="primary" onClick={() => navigate("/register")}>Регистрация</Button>
-                    </div>
-                ) : (
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            className="rounded-full transition-transform duration-150 hover:scale-105 hover:brightness-95 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
-                            onClick={() => navigate("/personal-data")}
-                            aria-label="Перейти в профиль"
-                        >
-                            <Avatar name={displayName} image={avatarPhotoUrl ? {src: avatarPhotoUrl} : undefined} color="colorful" />
-                        </button>
-                        <Button appearance="primary" onClick={handleServerLogout}>Выйти</Button>
-                    </div>
-                )}
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <Button
+                        appearance="transparent"
+                        icon={theme === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}
+                        onClick={() => dispatch(toggleTheme())}
+                        aria-label="Сменить тему"
+                    />
+                    {isPublic ? (
+                        <>
+                            <Button appearance="secondary" onClick={() => navigate("/login")}>Войти</Button>
+                            <Button appearance="primary" onClick={() => navigate("/register")}>Регистрация</Button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                className="rounded-full transition-transform duration-150 hover:scale-105 hover:brightness-95 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2"
+                                onClick={() => navigate("/personal-data")}
+                                aria-label="Перейти в профиль"
+                            >
+                                <Avatar name={displayName} image={avatarPhotoUrl ? {src: avatarPhotoUrl} : undefined} color="colorful" />
+                            </button>
+                            <Button appearance="primary" onClick={handleServerLogout}>Выйти</Button>
+                        </>
+                    )}
+                </div>
             </div>
         </header>
     );

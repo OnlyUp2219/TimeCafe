@@ -18,6 +18,9 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
             .IsRequired()
             .HasDefaultValue(false);
 
+        builder.Property(v => v.FinishRequestedAt)
+            .IsRequired(false);
+
         builder.Property(v => v.EntryTime)
             .IsRequired();
 

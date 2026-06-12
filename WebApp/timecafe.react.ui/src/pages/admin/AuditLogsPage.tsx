@@ -221,7 +221,7 @@ export const AuditLogsPage = () => {
             </div>
 
             <Dialog open={detailsOpen} onOpenChange={(_, data) => setDetailsOpen(data.open)}>
-                <DialogSurface style={{ maxWidth: "800px", width: "100%" }}>
+                <DialogSurface >
                     <DialogBody>
                         <DialogTitle>Детали записи аудита</DialogTitle>
                         <DialogContent>

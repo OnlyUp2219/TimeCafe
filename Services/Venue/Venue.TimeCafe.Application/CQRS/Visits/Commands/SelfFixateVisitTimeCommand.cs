@@ -1,23 +1,22 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record FixateVisitTimeCommand(Guid VisitId) : ICommand<FixateVisitTimeResponse>;
+public record SelfFixateVisitTimeCommand(Guid VisitId, Guid UserId) : ICommand<FixateVisitTimeResponse>;
 
-public record FixateVisitTimeResponse(Visit Visit, decimal CalculatedCost, CostBreakdownDto Breakdown);
-
-public class FixateVisitTimeCommandValidator : AbstractValidator<FixateVisitTimeCommand>
+public class SelfFixateVisitTimeCommandValidator : AbstractValidator<SelfFixateVisitTimeCommand>
 {
-    public FixateVisitTimeCommandValidator()
+    public SelfFixateVisitTimeCommandValidator()
     {
         RuleFor(x => x.VisitId).ValidGuidEntityId("Посещение не найдено");
+        RuleFor(x => x.UserId).NotEmpty().WithMessage("Идентификатор пользователя обязателен");
     }
 }
 
-public class FixateVisitTimeCommandHandler(
+public class SelfFixateVisitTimeCommandHandler(
     IUnitOfWork uow,
     IMapper mapper,
     IPublishEndpoint publishEndpoint,
     IPublisher publisher,
-    IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<FixateVisitTimeCommand, FixateVisitTimeResponse>
+    IOptionsSnapshot<VenuePricingOptions> options) : ICommandHandler<SelfFixateVisitTimeCommand, FixateVisitTimeResponse>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IMapper _mapper = mapper;
@@ -25,7 +24,7 @@ public class FixateVisitTimeCommandHandler(
     private readonly IPublisher _publisher = publisher;
     private readonly VenuePricingOptions _options = options.Value;
 
-    public async Task<Result<FixateVisitTimeResponse>> Handle(FixateVisitTimeCommand request, CancellationToken cancellationToken = default)
+    public async Task<Result<FixateVisitTimeResponse>> Handle(SelfFixateVisitTimeCommand request, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -33,8 +32,11 @@ public class FixateVisitTimeCommandHandler(
             if (existing == null)
                 return Result.Fail(new VisitNotFoundError());
 
+            if (existing.UserId != request.UserId)
+                return Result.Fail(new VisitAccessDeniedError());
+
             var exitTime = DateTimeOffset.UtcNow;
-            if (existing.IsFinishRequested && existing.FinishRequestedAt.HasValue &&
+            if (existing.FinishRequestedAt.HasValue &&
                 (DateTimeOffset.UtcNow - existing.FinishRequestedAt.Value).TotalMinutes <= _options.GracePeriodMinutes)
             {
                 exitTime = existing.FinishRequestedAt.Value;
@@ -102,4 +104,3 @@ public class FixateVisitTimeCommandHandler(
         }
     }
 }
-

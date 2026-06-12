@@ -69,7 +69,7 @@ export const UserRolesPage = () => {
     return (
         <RequirePermission anyOf={[Permissions.RbacUserRoleAssign, Permissions.RbacUserRoleRemove]}>
             <div className="flex flex-col gap-2">
-                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate(`/admin/users/${id}`)} className="w-fit">
+                <Button appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate(`/admin/users/${id}`)} className="self-start">
                     Назад к пользователю
                 </Button>
 

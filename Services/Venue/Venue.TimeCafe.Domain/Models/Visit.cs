@@ -26,6 +26,7 @@ public class Visit
     public int? PlannedMinutes { get; set; }
     public int GuestsCount { get; set; } = 1;
     public bool IsFinishRequested { get; set; } = false;
+    public DateTimeOffset? FinishRequestedAt { get; set; }
 
     public static Visit Create(Guid? visitId, Guid? userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, Guid? resourceId = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, int? plannedMinutes = null, int guestsCount = 1)
     {
@@ -72,6 +73,7 @@ public class Visit
         Status = VisitStatus.Active;
         ApprovedByUserId = approvedByUserId;
         ApprovedAt = DateTimeOffset.UtcNow;
+        EntryTime = DateTimeOffset.UtcNow;
         return FluentResults.Result.Ok();
     }
 
@@ -100,6 +102,7 @@ public class Visit
             return FluentResults.Result.Fail(new Errors.VisitNotActiveError());
 
         IsFinishRequested = true;
+        FinishRequestedAt = DateTimeOffset.UtcNow;
         return FluentResults.Result.Ok();
     }
 
