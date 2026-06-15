@@ -1,5 +1,5 @@
 import { NO_DATA } from "@shared/const/placeholders";
-import type {FC} from "react";import {Body1, Divider, Subtitle2Stronger, tokens} from "@fluentui/react-components";import {Info20Regular} from "@fluentui/react-icons";import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";import {useComponentSize} from "@hooks/useComponentSize";import {formatMoneyByN} from "@utility/formatMoney";
+import type {FC} from "react";import {Body1, Divider, Subtitle2Stronger} from "@fluentui/react-components";import {Info20Regular} from "@fluentui/react-icons";import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";import {BillingType as BillingTypeEnum, type BillingType} from "@app-types/tariff";import {useComponentSize} from "@hooks/useComponentSize";import {formatMoneyByN} from "@utility/formatMoney";
 
 interface VisitAtmosphereCardProps {
     billingType: BillingType;

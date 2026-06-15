@@ -44,6 +44,8 @@ import { VisitCancelDialog } from "./VisitCancelDialog";
 import { VisitDetailsCard } from "./VisitDetailsCard";
 import { VisitAtmosphereCard } from "./VisitAtmosphereCard";
 import { VisitStatusBadge } from "@components/VisitStatusBadge";
+import { VirtualReceiptDialog } from "@components/VirtualReceipt/VirtualReceiptDialog";
+import { Receipt20Regular } from "@fluentui/react-icons";
 
 const pad2 = (value: number) => value.toString().padStart(2, "0");
 
@@ -129,17 +131,21 @@ export const ActiveVisitPage = () => {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
     const [exitComplete, setExitComplete] = useState(false);
+    const [receiptOpen, setReceiptOpen] = useState(false);
 
     const [gracePeriodEnd, setGracePeriodEnd] = useState<number | null>(null);
     const [graceSecondsLeft, setGraceSecondsLeft] = useState(0);
 
+    const [graceAcknowledged, setGraceAcknowledged] = useState(false);
+
     useEffect(() => {
-        if (activeVisit?.isFinishRequested && !gracePeriodEnd) {
+        if (activeVisit?.isFinishRequested && !gracePeriodEnd && !graceAcknowledged) {
             setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
         } else if (!activeVisit?.isFinishRequested && gracePeriodEnd) {
             setGracePeriodEnd(null);
+            setGraceAcknowledged(false);
         }
-    }, [activeVisit?.isFinishRequested, gracePeriodEnd]);
+    }, [activeVisit?.isFinishRequested, gracePeriodEnd, graceAcknowledged]);
 
     useEffect(() => {
         if (!gracePeriodEnd) return;
@@ -383,7 +389,7 @@ export const ActiveVisitPage = () => {
                             <Subtitle2Stronger>Действия</Subtitle2Stronger>
                         </div>
                         <Divider />
-                        {activeVisit?.isFinishRequested && gracePeriodEnd !== null ? (
+                        {activeVisit?.isFinishRequested && gracePeriodEnd !== null && !graceAcknowledged ? (
                             <Card size={sizes.card} style={{ backgroundColor: tokens.colorStatusWarningBackground1, borderColor: tokens.colorStatusWarningBorder1 }}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2" style={{ color: tokens.colorStatusWarningForeground1 }}>
@@ -404,7 +410,10 @@ export const ActiveVisitPage = () => {
                                         Пополнить через Stripe
                                     </Button>
                                     <Button
-                                        onClick={() => setGracePeriodEnd(null)}
+                                        onClick={() => {
+                                            setGracePeriodEnd(null);
+                                            setGraceAcknowledged(true);
+                                        }}
                                         icon={<Money20Regular />}
                                         disabled={userBalance?.currentBalance !== undefined && userBalance.currentBalance < estimate.total}
                                     >
@@ -495,9 +504,16 @@ export const ActiveVisitPage = () => {
                     <Clock20Regular className="text-6xl text-(--colorPaletteGreenForeground1)" />
                     <Title2>Визит успешно оплачен!</Title2>
                     <Body2>Благодарим вас за визит! Ваш столик освобожден. Будем рады видеть вас снова!</Body2>
-                    <Button appearance="primary" size={sizes.button} onClick={() => navigate("/visit/start")}>
-                        К выбору тарифа
-                    </Button>
+                    <div className="flex gap-2 flex-wrap justify-center">
+                        <Button appearance="primary" size={sizes.button} onClick={() => navigate("/visit/start")}>
+                            К выбору тарифа
+                        </Button>
+                        {invoice.fiscalReceiptNumber && (
+                            <Button size={sizes.button} appearance="outline" icon={<Receipt20Regular />} onClick={() => setReceiptOpen(true)}>
+                                Показать чек
+                            </Button>
+                        )}
+                    </div>
                 </Card>
             );
         }
@@ -669,6 +685,14 @@ export const ActiveVisitPage = () => {
                 visit={activeVisit ?? null}
                 cancelling={cancellingVisit}
             />
+            {invoice && invoice.status === 2 && invoice.fiscalReceiptNumber && (
+                <VirtualReceiptDialog
+                    open={receiptOpen}
+                    onOpenChange={setReceiptOpen}
+                    invoice={invoice}
+                    tariffName={activeVisit?.tariffName ?? "Тариф"}
+                />
+            )}
         </div>
     );
 };

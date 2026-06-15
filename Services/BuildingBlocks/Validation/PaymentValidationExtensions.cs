@@ -7,7 +7,8 @@ public static class PaymentValidationExtensions
     {
         return ruleBuilder
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
-            .GreaterThanOrEqualTo(minAmount).WithMessage($"Минимальная сумма платежа {minAmount} ₽");
+            .GreaterThanOrEqualTo(minAmount).WithMessage($"Минимальная сумма платежа {minAmount} ₽")
+            .LessThanOrEqualTo(1000000m).WithMessage("Максимальная сумма платежа 1 000 000 ₽");
     }
 
     public static IRuleBuilderOptions<T, string?> ValidUrlWithPlaceholder<T>(

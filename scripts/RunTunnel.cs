@@ -66,32 +66,37 @@ for (int i = 0; i < 30; i++)
 {
     Thread.Sleep(1000);
     
-    if (backendUrl == null && File.Exists(backendLog))
+    string ReadLogContent(string path)
     {
         try
         {
-            string content = File.ReadAllText(backendLog);
-            var match = rx.Match(content);
-            if (match.Success)
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs))
             {
-                backendUrl = match.Value;
+                return sr.ReadToEnd();
             }
         }
-        catch {}
+        catch { return ""; }
+    }
+
+    if (backendUrl == null && File.Exists(backendLog))
+    {
+        string content = ReadLogContent(backendLog);
+        var match = rx.Match(content);
+        if (match.Success)
+        {
+            backendUrl = match.Value;
+        }
     }
     
     if (frontendUrl == null && File.Exists(frontendLog))
     {
-        try
+        string content = ReadLogContent(frontendLog);
+        var match = rx.Match(content);
+        if (match.Success)
         {
-            string content = File.ReadAllText(frontendLog);
-            var match = rx.Match(content);
-            if (match.Success)
-            {
-                frontendUrl = match.Value;
-            }
+            frontendUrl = match.Value;
         }
-        catch {}
     }
     
     if (backendUrl != null && frontendUrl != null)

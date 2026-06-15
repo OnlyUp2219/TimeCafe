@@ -1,4 +1,5 @@
 namespace Billing.TimeCafe.Application.CQRS.Invoices.Commands;
+using Billing.TimeCafe.Application.Services;
 
 public record PayInvoiceCommand(Guid InvoiceId, PaymentMethod Method) : ICommand;
 
@@ -15,12 +16,14 @@ public class PayInvoiceCommandHandler(
     IUnitOfWork uow,
     IPublishEndpoint publishEndpoint,
     IPublisher publisher,
-    IEnumerable<IInvoicePaymentStrategy> strategies) : ICommandHandler<PayInvoiceCommand>
+    IEnumerable<IInvoicePaymentStrategy> strategies,
+    IFiscalService fiscalService) : ICommandHandler<PayInvoiceCommand>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     private readonly IPublisher _publisher = publisher;
     private readonly IEnumerable<IInvoicePaymentStrategy> _strategies = strategies;
+    private readonly IFiscalService _fiscalService = fiscalService;
 
     public async Task<Result> Handle(PayInvoiceCommand request, CancellationToken cancellationToken = default)
     {
@@ -35,6 +38,12 @@ public class PayInvoiceCommandHandler(
         var payResult = await strategy.PayAsync(invoice, cancellationToken);
         if (payResult.IsFailed)
             return payResult;
+
+        var fiscalResult = await _fiscalService.RegisterReceiptAsync(invoice, cancellationToken);
+        if (fiscalResult.IsSuccess)
+        {
+            invoice.UpdateFiscalData(fiscalResult.Value.ReceiptNumber, fiscalResult.Value.Url);
+        }
 
         await _uow.Invoices.UpdateAsync(invoice, cancellationToken);
         await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);

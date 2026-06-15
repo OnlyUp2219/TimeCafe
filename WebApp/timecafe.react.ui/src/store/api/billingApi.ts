@@ -13,6 +13,8 @@ export interface Invoice {
     stripeSessionId: string | null;
     createdAt: string;
     paidAt: string | null;
+    fiscalReceiptNumber?: string | null;
+    fiscalReceiptUrl?: string | null;
 }
 
 export interface GetInvoicesPageArgs {

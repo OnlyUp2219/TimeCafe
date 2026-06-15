@@ -26,6 +26,8 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { Permissions } from "@shared/auth/permissions";
 import { VisitStatusBadge } from "@components/VisitStatusBadge";
+import { VirtualReceiptDialog } from "@components/VirtualReceipt/VirtualReceiptDialog";
+import { Receipt20Regular } from "@fluentui/react-icons";
 import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
 import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
 import { useGetBalanceQuery, useGetInvoiceByVisitIdQuery, usePayInvoiceMutation } from "@store/api/billingApi";
@@ -45,6 +47,7 @@ export const VisitDetailPage = () => {
     const { sizes } = useComponentSize();
     const [endError, setEndError] = useState<string | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [receiptOpen, setReceiptOpen] = useState(false);
 
     const { data: visitData, isLoading, error, refetch } = useGetVisitByIdQuery(id!, { skip: !id });
     const [fixateVisitTime, { isLoading: ending }] = useFixateVisitTimeMutation();
@@ -324,7 +327,14 @@ export const VisitDetailPage = () => {
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
                                         <Caption1 className="text-(--colorNeutralForeground3)">{invoice.status === 2 ? "Оплачено" : "К оплате"}</Caption1>
-                                        <Title3 style={{ color: invoice.status === 2 ? "var(--colorPaletteGreenForeground1)" : "var(--colorBrandForeground1)" }}>{formatMoney(invoice.totalAmount)}</Title3>
+                                        <div className="flex items-center gap-4">
+                                            <Title3 style={{ color: invoice.status === 2 ? "var(--colorPaletteGreenForeground1)" : "var(--colorBrandForeground1)" }}>{formatMoney(invoice.totalAmount)}</Title3>
+                                            {invoice.fiscalReceiptNumber && (
+                                                <Button size={sizes.button} appearance="outline" icon={<Receipt20Regular />} onClick={() => setReceiptOpen(true)}>
+                                                    Показать чек
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -493,6 +503,14 @@ export const VisitDetailPage = () => {
                     </div>
                 </div>
             </div>
+            {invoice && invoice.status === 2 && invoice.fiscalReceiptNumber && (
+                <VirtualReceiptDialog
+                    open={receiptOpen}
+                    onOpenChange={setReceiptOpen}
+                    invoice={invoice}
+                    tariffName={visit?.tariffName ?? "Тариф"}
+                />
+            )}
         </RequirePermission>
     );
 };

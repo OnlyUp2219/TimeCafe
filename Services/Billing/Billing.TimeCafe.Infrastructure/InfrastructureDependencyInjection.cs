@@ -11,6 +11,10 @@ public static class InfrastructureDependencyInjection
         services.AddScoped<IBillingTransactionExecutor, BillingTransactionExecutor>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+        services.Configure<Billing.TimeCafe.Application.Options.FiscalOptions>(
+            configuration.GetSection(Billing.TimeCafe.Application.Options.FiscalOptions.SectionName));
+        services.AddScoped<Billing.TimeCafe.Application.Services.IFiscalService, Billing.TimeCafe.Infrastructure.Services.MockFiscalService>();
+
         services.AddValidatedOptions<StripeOptions>(
             configuration,
             "Stripe",

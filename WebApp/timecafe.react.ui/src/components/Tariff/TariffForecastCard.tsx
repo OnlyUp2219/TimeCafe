@@ -1,4 +1,4 @@
-import { Body2, Caption1, Card, Divider, Title2, Title3, Badge, Subtitle2Stronger, Body1, Body1Strong, tokens, MessageBar, MessageBarBody, MessageBarTitle } from "@fluentui/react-components";
+import { Body2, Caption1, Card, Divider, Title2, Title3, Badge, Body1, Body1Strong, tokens, MessageBar, MessageBarBody, MessageBarTitle } from "@fluentui/react-components";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { formatRoundingRule } from "@utility/formatUtils";
 import type { TariffForecastCardProps } from "@components/Tariff/TariffForecastCardProps";

@@ -1,5 +1,4 @@
-import { NO_DATA } from "@shared/const/placeholders";
-import { useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
     Body1,
     Body2,

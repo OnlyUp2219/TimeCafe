@@ -21,6 +21,7 @@ while (true)
     Console.WriteLine("3. Очистка локальных БД (Truncate)");
     Console.WriteLine("4. Очистка БД в Docker контейнере");
     Console.WriteLine("5. Проверка здоровья Prometheus и Grafana");
+    Console.WriteLine("6. Восстановить локальный .env и запустить AppHost");
     Console.WriteLine("0. Выход");
     Console.ForegroundColor = ConsoleColor.Cyan;
     Console.WriteLine("========================================");
@@ -37,6 +38,7 @@ while (true)
         "3" => "DbTruncateLocal.cs",
         "4" => "DbTruncateDocker.cs",
         "5" => "TestPrometheusGrafana.cs",
+        "6" => "RestoreLocalEnv.cs",
         _ => null
     };
 
@@ -69,7 +71,7 @@ while (true)
         var startInfo = new ProcessStartInfo
         {
             FileName = "dotnet",
-            Arguments = $"run \"{scriptPath}\"",
+            Arguments = $"run --file \"{scriptPath}\"",
             UseShellExecute = false
         };
         using var proc = Process.Start(startInfo);

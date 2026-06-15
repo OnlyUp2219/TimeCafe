@@ -21,6 +21,9 @@ public class Invoice
     public string? StripeSessionId { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? PaidAt { get; set; }
+    
+    public string? FiscalReceiptNumber { get; set; }
+    public string? FiscalReceiptUrl { get; set; }
 
     public static Result<Invoice> Create(Guid? userId, Guid visitId, decimal totalAmount)
     {
@@ -62,6 +65,13 @@ public class Invoice
             return Result.Fail(new InvalidInvoiceStatusError($"Невозможно отменить инвойс в статусе {Status}"));
 
         Status = InvoiceStatus.Cancelled;
+        return Result.Ok();
+    }
+
+    public Result UpdateFiscalData(string receiptNumber, string? url)
+    {
+        FiscalReceiptNumber = receiptNumber;
+        FiscalReceiptUrl = url;
         return Result.Ok();
     }
 }

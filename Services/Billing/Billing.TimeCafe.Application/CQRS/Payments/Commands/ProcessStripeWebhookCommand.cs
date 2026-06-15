@@ -1,4 +1,5 @@
 namespace Billing.TimeCafe.Application.CQRS.Payments.Commands;
+using Billing.TimeCafe.Application.Services;
 
 public sealed record ProcessStripeWebhookCommand(
     StripeWebhookPayload Payload,
@@ -24,6 +25,7 @@ public sealed class ProcessStripeWebhookCommandHandler(
     IPublisher publisher,
     IPublishEndpoint publishEndpoint,
     IOptionsSnapshot<StripeOptions> options,
+    IFiscalService fiscalService,
     ILogger<ProcessStripeWebhookCommandHandler> logger) : ICommandHandler<ProcessStripeWebhookCommand>
 {
     private readonly IUnitOfWork _uow = uow;
@@ -31,6 +33,7 @@ public sealed class ProcessStripeWebhookCommandHandler(
     private readonly IPublisher _publisher = publisher;
     private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
     private readonly IOptionsSnapshot<StripeOptions> _options = options;
+    private readonly IFiscalService _fiscalService = fiscalService;
     private readonly ILogger _logger = logger;
 
     public async Task<Result> Handle(ProcessStripeWebhookCommand request, CancellationToken cancellationToken = default)
@@ -190,6 +193,12 @@ public sealed class ProcessStripeWebhookCommandHandler(
         var payResult = invoice.Pay(PaymentMethod.Online, session.Created > 0 ? DateTimeOffset.FromUnixTimeSeconds(session.Created) : null);
         if (payResult.IsFailed)
             return payResult;
+
+        var fiscalResult = await _fiscalService.RegisterReceiptAsync(invoice, cancellationToken);
+        if (fiscalResult.IsSuccess)
+        {
+            invoice.UpdateFiscalData(fiscalResult.Value.ReceiptNumber, fiscalResult.Value.Url);
+        }
 
         payment.MarkAsSucceeded(
             Guid.Empty,

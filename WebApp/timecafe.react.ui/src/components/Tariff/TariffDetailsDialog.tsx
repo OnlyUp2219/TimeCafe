@@ -11,8 +11,8 @@ import {
     DialogTitle,
     DialogContent,
     Subtitle2,
-    Card,
     Caption1,
+    Badge,
 } from "@fluentui/react-components";
 import { Dismiss20Regular } from "@fluentui/react-icons";
 import { BillingType as BillingTypeEnum } from "@app-types/tariff";
