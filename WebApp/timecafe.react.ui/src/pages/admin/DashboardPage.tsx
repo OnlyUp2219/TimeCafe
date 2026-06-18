@@ -13,7 +13,7 @@ import {
 } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
 import { useGetUsersQuery, useGetSystemStatusQuery } from "@store/api/adminApi";
-import { useGetVisitsPageQuery, useGetPendingVisitsQuery } from "@store/api/venueApi";
+import { useGetVisitsPageQuery, useGetPendingVisitsQuery, useGetActiveVisitsQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { useComponentSize } from "@hooks/useComponentSize";
@@ -27,15 +27,18 @@ export const DashboardPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();
 
-    const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 });
-    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 1 });
-    const { data: pendingData, isLoading: pendingLoading } = useGetPendingVisitsQuery({ page: 1, pageSize: 1 });
+    const { data: usersData, isLoading: usersLoading, error: usersError } = useGetUsersQuery({ page: 1, size: 1 }, { pollingInterval: 5000 });
+    const { data: visitsData, isLoading: visitsLoading } = useGetVisitsPageQuery({ page: 1, pageSize: 1 }, { pollingInterval: 5000 });
+    const { data: pendingData, isLoading: pendingLoading } = useGetPendingVisitsQuery({ page: 1, pageSize: 1 }, { pollingInterval: 5000 });
+    const { data: activeVisitsData, isLoading: activeVisitsLoading } = useGetActiveVisitsQuery(undefined, { pollingInterval: 5000 });
     const { data: systemStatus, isLoading: systemStatusLoading } = useGetSystemStatusQuery(undefined, { pollingInterval: 10000 });
     const errorMessage = usersError ? getRtkErrorMessage(usersError as FetchBaseQueryError) : null;
 
     const usersValue = usersLoading ? NO_DATA : (usersData?.metadata?.totalCount ?? NO_DATA);
     const visitsValue = visitsLoading ? NO_DATA : (visitsData?.metadata?.totalCount ?? NO_DATA);
     const pendingValue = pendingLoading ? NO_DATA : (pendingData?.metadata?.totalCount ?? NO_DATA);
+    const finishRequestedCount = activeVisitsData?.filter(v => v.isFinishRequested).length ?? 0;
+    const finishRequestedValue = activeVisitsLoading ? NO_DATA : finishRequestedCount;
 
     const isAuthOnline = systemStatus?.Auth === "Online";
     const isVenueOnline = systemStatus?.Venue === "Online";
@@ -74,6 +77,14 @@ export const DashboardPage = () => {
                         value={pendingValue}
                         icon={<Gift20Regular />}
                         onClick={() => navigate("/admin/visits/pending")}
+                    />
+                </HasPermission>
+                <HasPermission can={Permissions.VenueVisitRead}>
+                    <KpiCard
+                        title="Запросы на выход"
+                        value={finishRequestedValue}
+                        icon={<Clock20Regular />}
+                        onClick={() => navigate("/admin/visits")}
                     />
                 </HasPermission>
                 <HasPermission can={Permissions.BillingPaymentHistoryRead}>

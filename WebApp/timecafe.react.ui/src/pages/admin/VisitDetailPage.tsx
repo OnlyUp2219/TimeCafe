@@ -14,6 +14,7 @@ import {
     Subtitle2Stronger,
     Tooltip,
     Divider,
+    Body1Stronger,
 } from "@fluentui/react-components";
 import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, Clock20Regular, Warning20Regular, Money20Regular, Payment20Regular, Wallet20Regular } from "@fluentui/react-icons";
 import { useGetVisitByIdQuery, useFixateVisitTimeMutation, useApproveVisitMutation, useRejectVisitMutation, useForceEndVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
@@ -40,6 +41,7 @@ import { formatMoney } from "@utility/formatUtils";
 import { formatMoneyByN } from "@utility/formatMoney";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { calcVisitEstimate } from "@utility/visitEstimate";
+import { useVisitDiscounts } from "@hooks/useVisitDiscounts";
 
 export const VisitDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -67,11 +69,11 @@ export const VisitDetailPage = () => {
     const { data: promotions } = useGetAllPromotionsQuery();
     const { data: loyalty } = useGetUserLoyaltyQuery(visit?.userId ?? "", { skip: !visit?.userId });
 
-    const nowStr = new Date().toISOString();
-    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
-    const globalDiscount = activePromotions.filter(p => p.type === 0).reduce((max, p) => Math.max(max, p.discountPercent ?? 0), 0);
-    const tariffDiscount = activePromotions.filter(p => p.type === 1 && p.tariffId === visit?.tariffId).reduce((max, p) => Math.max(max, p.discountPercent ?? 0), 0);
-    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
+    const { globalDiscount, tariffDiscount, personalDiscount } = useVisitDiscounts(
+        promotions,
+        loyalty,
+        visit?.tariffId
+    );
 
     const estimate = useMemo(() => {
         if (!visit || visit.status !== VisitStatus.Active) return null;
@@ -199,7 +201,7 @@ export const VisitDetailPage = () => {
     const notFoundError = !visit && !isLoading && !errorMessage ? "Визит не найден" : null;
 
     return (
-        <RequirePermission can={Permissions.VenueVisitRead}>
+        <RequirePermission can={Permissions.VenueVisitRead} >
             <div className="flex flex-col gap-2">
                 <Button size={sizes.button} appearance="subtle" icon={<ArrowLeft20Regular />} onClick={() => navigate("/admin/visits")} className="w-fit">
                     Назад к визитам
@@ -441,21 +443,21 @@ export const VisitDetailPage = () => {
                                                 {estimate.isDiscounted && (
                                                     <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1 w-full text-left">
                                                         {personalDiscount > 0 && (
-                                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
-                                                                <span>Скидка лояльности:</span>
-                                                                <span className="font-semibold">-{personalDiscount}%</span>
+                                                            <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
+                                                                <Body1>Скидка лояльности:</Body1>
+                                                                <Body1Stronger>-{personalDiscount}%</Body1Stronger>
                                                             </div>
                                                         )}
                                                         {Math.max(globalDiscount, tariffDiscount) > 0 && (
-                                                            <div className="flex justify-between text-(--colorNeutralForeground2)">
-                                                                <span>Акционная скидка:</span>
-                                                                <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                                            <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
+                                                                <Body1>Акционная скидка:</Body1>
+                                                                <Body1Stronger>-{Math.max(globalDiscount, tariffDiscount)}%</Body1Stronger>
                                                             </div>
                                                         )}
                                                         <Divider className="my-1" />
-                                                        <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
-                                                            <span>Итоговая скидка:</span>
-                                                            <span>-{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})</span>
+                                                        <div className="flex justify-between items-center text-(--colorBrandForeground1)">
+                                                            <Body1>Итоговая скидка:</Body1>
+                                                            <Body1Stronger>-{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})</Body1Stronger>
                                                         </div>
                                                     </div>
                                                 )}

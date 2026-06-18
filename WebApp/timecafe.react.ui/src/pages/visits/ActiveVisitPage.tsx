@@ -1,71 +1,41 @@
 import {
-    Button,
     Divider,
-    Tag,
     Title2,
-    Title3,
-    LargeTitle,
-    Title1,
-    Subtitle2Stronger,
     Body1,
     Body2,
+    Button,
     Card,
-    MessageBar,
-    MessageBarBody,
-    MessageBarTitle,
-    tokens,
 } from "@fluentui/react-components";
-import {
-    Clock20Regular,
-    DoorArrowRight20Regular,
-    Money20Regular,
-    Sticker20Regular,
-    Dismiss20Regular,
-    ArrowLeft20Regular,
-    Payment20Regular,
-} from "@fluentui/react-icons";
-import { useEffect, useMemo, useState } from "react";
-import { useAppSelector } from "@store/hooks";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
 import { useNavigate } from "react-router-dom";
 import { BillingType as BillingTypeEnum } from "@app-types/tariff";
-import { formatMoneyByN } from "@utility/formatMoney";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { calcVisitEstimate } from "@utility/visitEstimate";
-import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
 import "./visits.css";
 import { getRtkErrorMessage } from "@api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { useGetActiveVisitByUserQuery, useRequestEndVisitMutation, useCancelVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
-import { useGetInvoiceByVisitIdQuery, usePayInvoiceMutation, useInitializeStripeInvoicePaymentMutation, useInitializeStripeCheckoutMutation, useGetBalanceQuery } from "@store/api/billingApi";
+import { venueApi, useGetActiveVisitByUserQuery, useRequestEndVisitMutation, useCancelVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
+import { billingApi, useGetInvoiceByVisitIdQuery, usePayInvoiceMutation, useInitializeStripeInvoicePaymentMutation, useInitializeStripeCheckoutMutation, useGetBalanceQuery } from "@store/api/billingApi";
 import { VisitStatus } from "@app-types/visit";
 import { VisitEndDialog } from "./VisitEndDialog";
 import { VisitCancelDialog } from "./VisitCancelDialog";
-import { VisitDetailsCard } from "./VisitDetailsCard";
-import { VisitAtmosphereCard } from "./VisitAtmosphereCard";
 import { VisitStatusBadge } from "@components/VisitStatusBadge";
 import { VirtualReceiptDialog } from "@components/VirtualReceipt/VirtualReceiptDialog";
-import { Receipt20Regular } from "@fluentui/react-icons";
+import { profileApi, useGetProfileByUserIdQuery } from "@store/api/profileApi";
 
-const pad2 = (value: number) => value.toString().padStart(2, "0");
-
-const formatTimeHHmm = (hhmm: string, fallback: Date) => {
-    if (/^\d{2}:\d{2}$/.test(hhmm)) return hhmm;
-    return `${pad2(fallback.getHours())}:${pad2(fallback.getMinutes())}`;
-};
-
-const formatDuration = (totalSeconds: number) => {
-    const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-    const hours = Math.floor(safeSeconds / 3600);
-    const minutes = Math.floor((safeSeconds % 3600) / 60);
-    const seconds = safeSeconds % 60;
-
-    if (hours <= 0) return `${minutes}м ${pad2(seconds)}с`;
-    return `${hours}ч ${pad2(minutes)}м ${pad2(seconds)}с`;
-};
+import { PendingVisitState } from "./states/PendingVisitState";
+import { RejectedVisitState } from "./states/RejectedVisitState";
+import { ApprovedVisitState } from "./states/ApprovedVisitState";
+import { ActiveVisitState } from "./states/ActiveVisitState";
+import { WaitingForPaymentState } from "./states/WaitingForPaymentState";
+import { formatDurationSeconds } from "@utility/formatDurationSeconds";
+import { useVisitDiscounts } from "@hooks/useVisitDiscounts";
 
 export const ActiveVisitPage = () => {
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const { showToast, ToasterElement } = useProgressToast();
     const { sizes } = useComponentSize();
     const userId = useAppSelector((state) => state.auth.userId);
@@ -91,6 +61,7 @@ export const ActiveVisitPage = () => {
 
     const { data: userBalance } = useGetBalanceQuery(userId ?? "", { skip: !userId });
     const { data: loyalty } = useGetUserLoyaltyQuery(userId ?? "", { skip: !userId });
+    const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
     const { data: promotions } = useGetAllPromotionsQuery();
 
     const handlePayFromBalance = async () => {
@@ -137,15 +108,32 @@ export const ActiveVisitPage = () => {
     const [graceSecondsLeft, setGraceSecondsLeft] = useState(0);
 
     const [graceAcknowledged, setGraceAcknowledged] = useState(false);
+    const autoPayAttemptedRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (activeVisit?.visitId) {
+            const val = localStorage.getItem(`grace_acknowledged_${activeVisit.visitId}`);
+            setGraceAcknowledged(val === "true");
+        } else {
+            setGraceAcknowledged(false);
+        }
+    }, [activeVisit?.visitId]);
+
+    const handleSetGraceAcknowledged = (val: boolean) => {
+        setGraceAcknowledged(val);
+        if (activeVisit?.visitId) {
+            localStorage.setItem(`grace_acknowledged_${activeVisit.visitId}`, val ? "true" : "false");
+        }
+    };
 
     useEffect(() => {
         if (activeVisit?.isFinishRequested && !gracePeriodEnd && !graceAcknowledged) {
             setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
         } else if (!activeVisit?.isFinishRequested && gracePeriodEnd) {
             setGracePeriodEnd(null);
-            setGraceAcknowledged(false);
+            handleSetGraceAcknowledged(false);
         }
-    }, [activeVisit?.isFinishRequested, gracePeriodEnd, graceAcknowledged]);
+    }, [activeVisit?.isFinishRequested, gracePeriodEnd, graceAcknowledged, activeVisit?.visitId]);
 
     useEffect(() => {
         if (!gracePeriodEnd) return;
@@ -160,11 +148,22 @@ export const ActiveVisitPage = () => {
 
     useEffect(() => {
         if (loadingActiveVisit) return;
-        const hasNoVisit = !activeVisit || (visitError && (visitError as any).status === 404);
+        let hasNoVisit = !activeVisit;
+        if (visitError) {
+            const is404 = (visitError as any).status === 404;
+            if (is404) {
+                hasNoVisit = true;
+            }
+        }
         if (hasNoVisit) {
+            if (userId) {
+                dispatch(venueApi.util.invalidateTags(["UserLoyalty", { type: "ActiveVisit", id: userId }]));
+                dispatch(profileApi.util.invalidateTags([{ type: "Profile", id: userId }]));
+                dispatch(billingApi.util.invalidateTags([{ type: "Balance", id: userId }, { type: "Debt", id: userId }]));
+            }
             navigate("/visit/start", { replace: true });
         }
-    }, [activeVisit, loadingActiveVisit, navigate, visitError]);
+    }, [activeVisit, loadingActiveVisit, navigate, visitError, userId, dispatch]);
 
     useEffect(() => {
         if (!isActive) return;
@@ -181,41 +180,57 @@ export const ActiveVisitPage = () => {
         }
     }, [activeVisit?.status, refetch]);
 
+    useEffect(() => {
+        if (activeVisit?.status === VisitStatus.WaitingForPayment && invoice && graceAcknowledged && userBalance) {
+            const balanceAmount = userBalance.currentBalance ?? 0;
+            const canPayWithBalance = balanceAmount >= invoice.totalAmount;
+            if (canPayWithBalance && !payingInvoice && invoice.status === 1) {
+                if (autoPayAttemptedRef.current !== invoice.invoiceId) {
+                    autoPayAttemptedRef.current = invoice.invoiceId;
+                    void handlePayFromBalance();
+                }
+            }
+        }
+    }, [activeVisit?.status, invoice, graceAcknowledged, userBalance, payingInvoice]);
+
     const elapsedSeconds = useMemo(() => {
+        if (!startedAtMs) return 0;
+        if (activeVisit?.status === VisitStatus.WaitingForPayment && activeVisit?.exitTime) {
+            const delta = Date.parse(activeVisit.exitTime) - startedAtMs;
+            return Math.max(0, Math.floor(delta / 1000));
+        }
         if (!isActive) return 0;
         const ms = startedAtMs || now;
         const delta = now - ms;
         return Math.max(0, Math.floor(delta / 1000));
-    }, [startedAtMs, now, isActive]);
+    }, [startedAtMs, now, isActive, activeVisit?.status, activeVisit?.exitTime]);
 
     const elapsedMinutes = useMemo(() => Math.max(1, Math.ceil(elapsedSeconds / 60)), [elapsedSeconds]);
 
-    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
-    const nowStr = new Date().toISOString();
-    const activePromotions = promotions?.filter((p: any) => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
-    const globalDiscount = activePromotions.length > 0
-        ? Math.max(0, ...activePromotions.filter((p: any) => p.type === 0).map((p: any) => p.discountPercent ?? 0))
-        : 0;
-    const tariffDiscount = (activeVisit && activePromotions.length > 0)
-        ? Math.max(0, ...activePromotions.filter((p: any) => p.type === 1 && p.tariffId === activeVisit.tariffId).map((p: any) => p.discountPercent ?? 0))
-        : 0;
+    const { globalDiscount, tariffDiscount, personalDiscount } = useVisitDiscounts(
+        promotions,
+        loyalty,
+        activeVisit?.tariffId
+    );
 
     const estimate = useMemo(() => {
-        if (!isActive) return { total: 0, breakdown: "", baseTotal: 0, discountTotal: 0, appliedDiscountPercent: 0, isDiscounted: false };
+        const status = activeVisit?.status;
+        const isCalculatable = status === VisitStatus.Active || status === VisitStatus.WaitingForPayment;
+        if (!isCalculatable) return { total: 0, breakdown: "", baseTotal: 0, discountTotal: 0, appliedDiscountPercent: 0, isDiscounted: false };
         const billingType = activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute;
         const pricePerMinute = activeVisit?.tariffPricePerMinute ?? 0;
         const minSessionMinutes = activeVisit?.tariffMinSessionMinutes ?? null;
         const roundingRule = activeVisit?.tariffRoundingRule ?? null;
         return calcVisitEstimate(elapsedMinutes, billingType, pricePerMinute, minSessionMinutes, roundingRule, globalDiscount, tariffDiscount, personalDiscount);
-    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, activeVisit?.tariffMinSessionMinutes, activeVisit?.tariffRoundingRule, elapsedMinutes, isActive, globalDiscount, tariffDiscount, personalDiscount]);
+    }, [activeVisit?.tariffBillingType, activeVisit?.tariffPricePerMinute, activeVisit?.tariffMinSessionMinutes, activeVisit?.tariffRoundingRule, elapsedMinutes, activeVisit?.status, globalDiscount, tariffDiscount, personalDiscount]);
 
+    const [payFromBalance, setPayFromBalance] = useState(false);
 
-
-    const onFinishVisit = async () => {
+    const onFinishVisit = async (payFromBalanceFlag: boolean) => {
         if (!activeVisit?.visitId) return;
         setExitComplete(true);
         try {
-            await requestEndVisit(activeVisit.visitId).unwrap();
+            await requestEndVisit({ visitId: activeVisit.visitId, payFromBalance: payFromBalanceFlag }).unwrap();
             setConfirmOpen(false);
             setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
             showToast("Запрос на выход успешно отправлен", "success", "Готово");
@@ -267,406 +282,169 @@ export const ActiveVisitPage = () => {
         }
     };
 
+    const handleGoToStart = () => {
+        if (userId) {
+            dispatch(venueApi.util.invalidateTags([{ type: "ActiveVisit", id: userId }]));
+        }
+        navigate("/visit/start", { replace: true });
+    };
+
     if (loadingActiveVisit && !activeVisit) {
         return (
             <div className="relative min-h-full">
                 {ToasterElement}
                 <div className="page-content">
-                    <div className="rounded-3xl p-5 sm:p-8" data-testid="visit-active-loading">
+                    <Card size={sizes.card} data-testid="visit-active-loading">
                         <div className="flex">
                             <Body1>Загружаем визит...</Body1>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         );
     }
 
-    const renderPendingState = () => (
-        <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-            <Clock20Regular className="text-6xl opacity-50" />
-            <Title2>Ожидаем подтверждения</Title2>
-            <Body2>Менеджер скоро рассмотрит вашу заявку на визит.</Body2>
-            <div className="flex gap-2 flex-wrap justify-center">
-                <Button appearance="primary" size={sizes.button} onClick={() => setCancelConfirmOpen(true)} disabled={cancellingVisit} icon={<Dismiss20Regular />}>
-                    Отменить заявку
-                </Button>
-            </div>
-        </Card>
-    );
+    const renderContent = () => {
+        if (!activeVisit) return null;
 
-    const renderRejectedState = () => (
-        <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-            <Dismiss20Regular className="text-6xl opacity-50 text-(--colorPaletteRedForeground1)" />
-            <Title2>Заявка отклонена</Title2>
-            {activeVisit?.rejectionReason && (
-                <Body2>Причина: {activeVisit.rejectionReason}</Body2>
-            )}
-            <Button appearance="primary" size={sizes.button} onClick={() => navigate("/visit/start")} icon={<ArrowLeft20Regular />}>
-                К выбору тарифа
-            </Button>
-        </Card>
-    );
+        if (activeVisit.status === VisitStatus.Pending) {
+            return (
+                <PendingVisitState
+                    sizes={sizes}
+                    cancellingVisit={cancellingVisit}
+                    onCancelClick={() => setCancelConfirmOpen(true)}
+                />
+            );
+        }
 
-    const renderApprovedState = () => (
-        <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-            <Clock20Regular className="text-6xl opacity-50 text-(--colorPaletteGreenForeground1)" />
-            <Title2>Визит подтверждён</Title2>
-            <Body2>Можете входить в заведение!</Body2>
-            <VisitStatusBadge status={VisitStatus.Approved} size="large" />
-        </Card>
-    );
+        if (activeVisit.status === VisitStatus.Approved) {
+            return (
+                <ApprovedVisitState
+                    sizes={sizes}
+                />
+            );
+        }
 
-    const renderActiveState = () => (
-        <>
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                {activeVisit?.isFinishRequested && (
-                    <div className="lg:col-span-12">
-                        <MessageBar intent="warning">
-                            <MessageBarBody>
-                                <MessageBarTitle>Запрос на завершение визита отправлен</MessageBarTitle>
-                                Мы зафиксируем точное время окончания сессии, как только вы подойдете к стойке ресепшена. В целях безопасности ваш таймер активен до подтверждения администратором на кассе.
-                            </MessageBarBody>
-                        </MessageBar>
-                    </div>
-                )}
+        if (activeVisit.status === VisitStatus.Rejected) {
+            return (
+                <RejectedVisitState
+                    sizes={sizes}
+                    rejectionReason={activeVisit.rejectionReason ?? undefined}
+                    onGoToStart={handleGoToStart}
+                />
+            );
+        }
 
-                <HoverTiltCard className="order-2 lg:order-1 lg:col-span-8 h-full flex flex-col" size={sizes.card}>
-                    <div className="flex flex-col gap-4 h-full flex-1 justify-between">
-                        <div className="flex flex-col gap-4 flex-1">
-                            <div className="flex items-center justify-between gap-3 flex-wrap">
-                                <div className="flex items-center gap-2">
-                                    <Clock20Regular />
-                                    <Subtitle2Stronger>Активный визит</Subtitle2Stronger>
-                                </div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <Tag appearance="outline" icon={<Sticker20Regular />}>
-                                        {activeVisit?.tariffName ?? "Тариф"}
-                                    </Tag>
-                                    <Tag appearance="outline" data-testid="visit-active-estimate"
-                                        icon={<Money20Regular />} >{formatMoneyByN(estimate.total)}</Tag>
-                                    {estimate.isDiscounted && (
-                                        <Tag appearance="brand" color="success">
-                                            -{estimate.appliedDiscountPercent}%
-                                        </Tag>
-                                    )}
-                                </div>
-                            </div>
-                            <Divider />
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="flex flex-col gap-2">
-                                    <div className="flex">
-                                        <Body1>Прошедшее время</Body1>
-                                    </div>
-                                    <div className="flex">
-                                        <LargeTitle>{formatDuration(elapsedSeconds)}</LargeTitle>
-                                    </div>
-                                    <div className="flex">
-                                        <Body1>Обновление: каждую секунду</Body1>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-2 sm:items-end sm:text-right">
-                                    <div className="flex justify-end">
-                                        <Body1>Ориентировочная стоимость</Body1>
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Title1>{formatMoneyByN(estimate.total)}</Title1>
-                                    </div>
-                                    <div className="flex justify-end">
-                                        <Body1>{estimate.breakdown}</Body1>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </HoverTiltCard>
-
-                <HoverTiltCard className="order-1 lg:order-2 lg:col-span-4 h-full flex flex-col" size={sizes.card}>
-                    <div className="flex flex-col gap-4 h-full flex-1 justify-between">
-                        <div className="flex items-center gap-2">
-                            <DoorArrowRight20Regular />
-                            <Subtitle2Stronger>Действия</Subtitle2Stronger>
-                        </div>
-                        <Divider />
-                        {activeVisit?.isFinishRequested && gracePeriodEnd !== null && !graceAcknowledged ? (
-                            <Card size={sizes.card} style={{ backgroundColor: tokens.colorStatusWarningBackground1, borderColor: tokens.colorStatusWarningBorder1 }}>
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2" style={{ color: tokens.colorStatusWarningForeground1 }}>
-                                        <Clock20Regular />
-                                        <Subtitle2Stronger>Ожидаем оплату</Subtitle2Stronger>
-                                    </div>
-                                    <Title1 style={{ color: tokens.colorStatusWarningForeground1 }}>
-                                        {Math.floor(graceSecondsLeft / 60)}:{(graceSecondsLeft % 60).toString().padStart(2, '0')}
-                                    </Title1>
-                                </div>
-                                <Body1>Для завершения визита без задержек пополните баланс картой через Stripe или оплатите визит наличными у администратора. Если льготное время истечет, таймер биллинга возобновит работу.</Body1>
-                                <div className="flex flex-col gap-2">
-                                    <Button
-                                        appearance="primary"
-                                        onClick={handleGraceStripeCheckout}
-                                        icon={<Payment20Regular />}
-                                    >
-                                        Пополнить через Stripe
-                                    </Button>
-                                    <Button
-                                        onClick={() => {
-                                            setGracePeriodEnd(null);
-                                            setGraceAcknowledged(true);
-                                        }}
-                                        icon={<Money20Regular />}
-                                        disabled={userBalance?.currentBalance !== undefined && userBalance.currentBalance < estimate.total}
-                                    >
-                                        {userBalance?.currentBalance !== undefined && userBalance.currentBalance < estimate.total
-                                            ? "Недостаточно средств на балансе"
-                                            : "У меня хватает баланса"}
-                                    </Button>
-                                </div>
-                            </Card>
-                        ) : (
-                            <Button
-                                appearance="primary"
-                                icon={<DoorArrowRight20Regular />}
-                                data-testid="visit-active-exit"
-                                onClick={() => setConfirmOpen(true)}
-                                disabled={exitComplete || endingVisit || activeVisit?.isFinishRequested}
-                                size={sizes.button}
-                            >
-                                {activeVisit?.isFinishRequested ? "Ожидание фиксации времени" : "Выход из заведения"}
-                            </Button>
-                        )}
-
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between gap-3">
-                                <Body1>Время входа</Body1>
-                                <Title3>
-                                    {formatTimeHHmm("", new Date(startedAtMs ?? now))}
-                                </Title3>
-                            </div>
-                            <div className="flex items-center justify-between gap-3">
-                                <Body1>Тип</Body1>
-                                <Body1>
-                                    {activeVisit?.tariffBillingType === BillingTypeEnum.Hourly ? "Почасовой" : "Поминутный"}
-                                </Body1>
-                            </div>
-                        </div>
-                    </div>
-                </HoverTiltCard>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                <VisitDetailsCard
-                    tariffName={activeVisit?.tariffName ?? "Тариф"}
-                    billingType={activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute}
+        if (activeVisit.status === VisitStatus.Active) {
+            return (
+                <ActiveVisitState
+                    activeVisit={activeVisit}
+                    visitCount={profile?.visitCount ?? 0}
+                    sizes={sizes}
                     estimate={estimate}
+                    elapsedSeconds={elapsedSeconds}
+                    now={now}
+                    userBalance={userBalance}
                     personalDiscount={personalDiscount}
                     globalDiscount={globalDiscount}
                     tariffDiscount={tariffDiscount}
+                    gracePeriodEnd={gracePeriodEnd}
+                    graceSecondsLeft={graceSecondsLeft}
+                    graceAcknowledged={graceAcknowledged}
+                    exitComplete={exitComplete}
+                    endingVisit={endingVisit}
+                    onExitClick={() => setConfirmOpen(true)}
+                    onGraceStripeCheckout={handleGraceStripeCheckout}
+                    onAcknowledgeGrace={() => {
+                        setGracePeriodEnd(null);
+                        handleSetGraceAcknowledged(true);
+                    }}
+                    onChangePaymentMethod={() => handleSetGraceAcknowledged(false)}
                 />
+            );
+        }
 
-                <VisitAtmosphereCard
-                    billingType={activeVisit?.tariffBillingType ?? BillingTypeEnum.PerMinute}
-                    tariffPricePerMinute={activeVisit?.tariffPricePerMinute ?? 0}
-                    minSessionMinutes={activeVisit?.tariffMinSessionMinutes ?? null}
-                    roundingRule={activeVisit?.tariffRoundingRule ?? null}
-                    guestsCount={activeVisit?.guestsCount ?? 1}
+        if (activeVisit.status === VisitStatus.WaitingForPayment) {
+            return (
+                <WaitingForPaymentState
+                    invoice={invoice}
+                    loadingInvoice={loadingInvoice}
+                    userBalance={userBalance}
+                    sizes={sizes}
+                    userId={userId}
+                    payingInvoice={payingInvoice}
+                    initializingStripe={initializingStripe}
+                    personalDiscount={personalDiscount}
+                    globalDiscount={globalDiscount}
+                    tariffDiscount={tariffDiscount}
+                    estimate={estimate}
+                    onRetryInvoice={() => void refetchInvoice()}
+                    onPayFromBalance={() => void handlePayFromBalance()}
+                    onPayViaStripe={() => void handlePayViaStripe()}
+                    onGoToStart={handleGoToStart}
+                    onShowReceipt={() => setReceiptOpen(true)}
                 />
-            </div>
-        </>
-    );
-
-    const renderWaitingForPaymentState = () => {
-        if (loadingInvoice) {
-            return (
-                <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-                    <Clock20Regular className="text-6xl opacity-50 animate-spin" />
-                    <Title2>Загрузка счёта...</Title2>
-                    <Body2>Пожалуйста, подождите, мы получаем информацию об инвойсе.</Body2>
-                </Card>
             );
         }
-
-        if (!invoice) {
-            return (
-                <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-                    <Dismiss20Regular className="text-6xl opacity-50 text-(--colorPaletteRedForeground1)" />
-                    <Title2>Счёт не найден</Title2>
-                    <Body2>Не удалось загрузить информацию о счёте для оплаты визита.</Body2>
-                    <Button onClick={() => void refetchInvoice()}>Попробовать снова</Button>
-                </Card>
-            );
-        }
-
-        const isPaid = invoice.status === 2; // Paid
-        if (isPaid) {
-            return (
-                <Card size={sizes.card} className="flex flex-col gap-4 items-center text-center py-12">
-                    <Clock20Regular className="text-6xl text-(--colorPaletteGreenForeground1)" />
-                    <Title2>Визит успешно оплачен!</Title2>
-                    <Body2>Благодарим вас за визит! Ваш столик освобожден. Будем рады видеть вас снова!</Body2>
-                    <div className="flex gap-2 flex-wrap justify-center">
-                        <Button appearance="primary" size={sizes.button} onClick={() => navigate("/visit/start")}>
-                            К выбору тарифа
-                        </Button>
-                        {invoice.fiscalReceiptNumber && (
-                            <Button size={sizes.button} appearance="outline" icon={<Receipt20Regular />} onClick={() => setReceiptOpen(true)}>
-                                Показать чек
-                            </Button>
-                        )}
-                    </div>
-                </Card>
-            );
-        }
-
-        const balanceAmount = userBalance?.currentBalance ?? 0;
-        const canPayWithBalance = balanceAmount >= invoice.totalAmount;
 
         return (
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-                <HoverTiltCard className="lg:col-span-8" size={sizes.card}>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2">
-                            <Money20Regular className="text-2xl" />
-                            <Subtitle2Stronger>Счёт на оплату визита</Subtitle2Stronger>
-                        </div>
-                        <Divider />
-
-                        <div className="flex flex-col gap-3">
-                            <div className="flex justify-between items-center bg-(--colorNeutralBackground1) p-2">
-                                <Body1>Итого к оплате:</Body1>
-                                <LargeTitle className="text-(--colorBrandForeground1)">{formatMoneyByN(invoice.totalAmount)}</LargeTitle>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-2 text-sm p-2">
-                                <span className="opacity-75">ID счёта:</span>
-                                <span className="text-right font-mono text-xs">{invoice.invoiceId}</span>
-
-                                <span className="opacity-75">Время создания:</span>
-                                <span className="text-right">{new Date(invoice.createdAt).toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <Divider />
-                        <div className="flex flex-col gap-3">
-                            <Subtitle2Stronger>Способы оплаты</Subtitle2Stronger>
-
-                            <div className={`grid grid-cols-1 ${userId ? 'md:grid-cols-2' : ''} gap-4`}>
-                                {userId && (
-                                    <Card size={sizes.card} className="flex flex-col gap-3 justify-between">
-                                        <div>
-                                            <Subtitle2Stronger className="block mb-1">С внутреннего баланса</Subtitle2Stronger>
-                                            <Body2 className="block mb-2">Быстрая оплата в одно нажатие.</Body2>
-                                            <div className="text-sm bg-(--colorNeutralBackground2) p-2 rounded-lg flex justify-between">
-                                                <span>Ваш баланс:</span>
-                                                <span className={canPayWithBalance ? "text-green-500 font-bold" : "text-red-500 font-bold"}>
-                                                     {formatMoneyByN(balanceAmount)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <Button
-                                            appearance="primary"
-                                            onClick={() => void handlePayFromBalance()}
-                                            disabled={!canPayWithBalance || payingInvoice}
-                                            icon={<Money20Regular />}
-                                        >
-                                            Оплатить с баланса
-                                        </Button>
-                                    </Card>
-                                )}
-
-                                <Card size={sizes.card} className="flex flex-col gap-3 justify-between">
-                                    <div>
-                                        <Subtitle2Stronger className="block mb-1">Банковской картой (Stripe)</Subtitle2Stronger>
-                                        <Body2 className="block mb-2">Безопасная онлайн-оплата через Stripe Checkout.</Body2>
-                                    </div>
-                                    <Button
-                                        appearance="primary"
-                                        onClick={() => void handlePayViaStripe()}
-                                        disabled={initializingStripe}
-                                        icon={<DoorArrowRight20Regular />}
-                                    >
-                                        Оплатить картой онлайн
-                                    </Button>
-                                </Card>
-                            </div>
-                        </div>
-                    </div>
-                </HoverTiltCard>
-
-                <HoverTiltCard className="lg:col-span-4" size={sizes.card}>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex items-center gap-2">
-                            <Clock20Regular />
-                            <Subtitle2Stronger>Оплата на кассе</Subtitle2Stronger>
-                        </div>
-                        <Divider />
-                        <Body2 className="block text-justify leading-relaxed">
-                            Вы также можете подойти к стойке администратора и произвести оплату наличными средствами или через банковский терминал.
-                        </Body2>
-                        <MessageBar intent="warning">
-                            <MessageBarBody>
-                                После фиксации администратором оплаты на кассе, ваш визит автоматически перейдет в статус завершенного, а столик освободится.
-                            </MessageBarBody>
-                        </MessageBar>
-                    </div>
-                </HoverTiltCard>
+            <div className="flex flex-col gap-4 items-center text-center py-12">
+                <Body2>Неизвестный статус визита</Body2>
+                <Button onClick={handleGoToStart}>Назад</Button>
             </div>
         );
     };
 
-    const renderContent = () => {
-        if (!activeVisit) return null;
-        switch (activeVisit.status) {
-            case VisitStatus.Pending:
-                return renderPendingState();
-            case VisitStatus.Approved:
-                return renderApprovedState();
-            case VisitStatus.Rejected:
-                return renderRejectedState();
-            case VisitStatus.Active:
-                return renderActiveState();
-            case VisitStatus.WaitingForPayment:
-                return renderWaitingForPaymentState();
-            default:
-                return (
-                    <div className="flex flex-col gap-4 items-center text-center py-12">
-                        <Body2>Неизвестный статус визита</Body2>
-                        <Button onClick={() => navigate("/visit/start")}>Назад</Button>
-                    </div>
-                );
+    let statusBadgeAndTag = null;
+    let activeTariffName = "Тариф";
+
+    if (activeVisit) {
+        if (activeVisit.tariffName) {
+            activeTariffName = activeVisit.tariffName;
         }
-    };
+
+        statusBadgeAndTag = (
+            <div className="flex items-center gap-2 flex-wrap">
+                <VisitStatusBadge status={activeVisit.status} size="large" />
+            </div>
+        );
+    }
+
+    let receiptDialog = null;
+    if (invoice && invoice.status === 2 && invoice.fiscalReceiptNumber) {
+        receiptDialog = (
+            <VirtualReceiptDialog
+                open={receiptOpen}
+                onOpenChange={setReceiptOpen}
+                invoice={invoice}
+                tariffName={activeTariffName}
+            />
+        );
+    }
 
     return (
         <div className="relative min-h-full">
             {ToasterElement}
             <div className="page-content">
-                <Card size={sizes.card} data-testid="visit-active-page">
+                <div data-testid="visit-active-page">
                     <div className="flex flex-col gap-4">
                         <div className="flex flex-col gap-3">
                             <div className="flex">
                                 <Title2>Мой визит</Title2>
                             </div>
-                            {activeVisit && (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <VisitStatusBadge status={activeVisit.status} size="large" />
-                                    <Tag appearance="outline" icon={<Sticker20Regular />}>
-                                        {activeVisit.tariffName ?? "Тариф"}
-                                    </Tag>
-                                </div>
-                            )}
+                            {statusBadgeAndTag}
                         </div>
                         <Divider />
                         {renderContent()}
                     </div>
-                </Card>
+                </div>
             </div>
             <VisitEndDialog
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
-                onConfirm={() => void onFinishVisit()}
-                tariffName={activeVisit?.tariffName ?? "Тариф"}
-                duration={formatDuration(elapsedSeconds)}
+                onConfirm={(payFromBalance) => void onFinishVisit(payFromBalance)}
+                tariffName={activeTariffName}
+                duration={formatDurationSeconds(elapsedSeconds)}
                 estimateBaseTotal={estimate.baseTotal}
                 estimateDiscountTotal={estimate.discountTotal}
                 estimateAppliedDiscountPercent={estimate.appliedDiscountPercent}
@@ -677,6 +455,9 @@ export const ActiveVisitPage = () => {
                 globalDiscount={globalDiscount}
                 tariffDiscount={tariffDiscount}
                 confirming={endingVisit}
+                userBalance={userBalance?.currentBalance ?? 0}
+                payFromBalance={payFromBalance}
+                onPayFromBalanceChange={setPayFromBalance}
             />
             <VisitCancelDialog
                 open={cancelConfirmOpen}
@@ -685,14 +466,7 @@ export const ActiveVisitPage = () => {
                 visit={activeVisit ?? null}
                 cancelling={cancellingVisit}
             />
-            {invoice && invoice.status === 2 && invoice.fiscalReceiptNumber && (
-                <VirtualReceiptDialog
-                    open={receiptOpen}
-                    onOpenChange={setReceiptOpen}
-                    invoice={invoice}
-                    tariffName={activeVisit?.tariffName ?? "Тариф"}
-                />
-            )}
+            {receiptDialog}
         </div>
     );
 };

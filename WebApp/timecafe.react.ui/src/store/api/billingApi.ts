@@ -138,6 +138,7 @@ export const billingApi = createApi({
                 paymentId: string;
                 externalPaymentId: string;
                 amount: number;
+                invoiceId?: string;
             }
         >({
             query: (body) => ({

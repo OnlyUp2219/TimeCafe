@@ -50,7 +50,7 @@ export const PendingVisitsPage = () => {
     const { page: currentPage, size: pageSize, setPage: setCurrentPage, setSize: setPageSize } = usePagination("adminPendingVisits");
     const { data, isLoading, error } = useGetPendingVisitsQuery(
         { page: currentPage, pageSize },
-        { refetchOnMountOrArgChange: true }
+        { refetchOnMountOrArgChange: true, pollingInterval: 5000 }
     );
     const visits = data?.items ?? [];
     const totalCount = data?.metadata?.totalCount ?? 0;

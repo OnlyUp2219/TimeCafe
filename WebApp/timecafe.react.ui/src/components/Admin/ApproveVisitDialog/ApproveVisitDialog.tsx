@@ -15,6 +15,7 @@ import {
     Avatar,
     Body1,
     Body2,
+    Body1Stronger,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -50,6 +51,7 @@ import { getUserFullName } from "@utility/userUtils";
 import { calcVisitEstimate } from "@utility/visitEstimate";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { useVisitDiscounts } from "@hooks/useVisitDiscounts";
 
 export const ApproveVisitDialog = ({
     open,
@@ -176,15 +178,11 @@ export const ApproveVisitDialog = ({
         warnings.push(`Отрицательный баланс (${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
     }
 
-    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
-    const nowStr = new Date().toISOString();
-    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
-    const globalDiscount = activePromotions.length > 0
-        ? Math.max(0, ...activePromotions.filter(p => p.type === 0).map(p => p.discountPercent ?? 0))
-        : 0;
-    const tariffDiscount = (visit && activePromotions.length > 0)
-        ? Math.max(0, ...activePromotions.filter(p => p.type === 1 && p.tariffId === visit.tariffId).map(p => p.discountPercent ?? 0))
-        : 0;
+    const { globalDiscount, tariffDiscount, personalDiscount } = useVisitDiscounts(
+        promotions,
+        loyalty,
+        visit?.tariffId
+    );
 
     const plannedMinutes = visit?.plannedMinutes ?? (visit?.tariffMinSessionMinutes ?? 60);
     const estimate = visit ? calcVisitEstimate(plannedMinutes, visit.tariffBillingType as any, visit.tariffPricePerMinute, visit.tariffMinSessionMinutes ?? null, visit.tariffRoundingRule ?? null, globalDiscount, tariffDiscount, personalDiscount) : null;
@@ -357,21 +355,21 @@ export const ApproveVisitDialog = ({
                                         {estimate.isDiscounted && (
                                             <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1">
                                                 {personalDiscount > 0 && (
-                                                    <div className="flex justify-between text-(--colorNeutralForeground2)">
-                                                        <span>Скидка лояльности:</span>
-                                                        <span className="font-semibold">-{personalDiscount}%</span>
+                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
+                                                        <Body1>Скидка лояльности:</Body1>
+                                                        <Body1Stronger>-{personalDiscount}%</Body1Stronger>
                                                     </div>
                                                 )}
                                                 {Math.max(globalDiscount, tariffDiscount) > 0 && (
-                                                    <div className="flex justify-between text-(--colorNeutralForeground2)">
-                                                        <span>Акционная скидка:</span>
-                                                        <span className="font-semibold">-{Math.max(globalDiscount, tariffDiscount)}%</span>
+                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
+                                                        <Body1>Акционная скидка:</Body1>
+                                                        <Body1Stronger>-{Math.max(globalDiscount, tariffDiscount)}%</Body1Stronger>
                                                     </div>
                                                 )}
                                                 <Divider className="my-1" />
-                                                <div className="flex justify-between text-(--colorBrandForeground1) font-semibold">
-                                                    <span>Итоговая скидка:</span>
-                                                    <span>-{estimate.appliedDiscountPercent}% (-{estimate.discountTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL})</span>
+                                                <div className="flex justify-between items-center text-(--colorBrandForeground1)">
+                                                    <Body1>Итоговая скидка:</Body1>
+                                                    <Body1Stronger>-{estimate.appliedDiscountPercent}% (-{estimate.discountTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL})</Body1Stronger>
                                                 </div>
                                             </div>
                                         )}

@@ -305,10 +305,11 @@ export const venueApi = createApi({
             ],
         }),
 
-        requestEndVisit: builder.mutation<RequestEndVisitResponse, string>({
-            query: (visitId) => ({
+        requestEndVisit: builder.mutation<RequestEndVisitResponse, { visitId: string; payFromBalance?: boolean }>({
+            query: ({ visitId, payFromBalance }) => ({
                 url: `/venue/visits/${visitId}/request-end`,
                 method: "POST",
+                body: { payFromBalance },
             }),
             invalidatesTags: [{ type: "ActiveVisit" }, "VisitHistory"],
         }),

@@ -55,6 +55,7 @@ export const DevDebugPage: React.FC = () => {
     const [stripePaymentId, setStripePaymentId] = useState<string>(() => crypto.randomUUID());
     const [stripeExtId, setStripeExtId] = useState(() => `pi_test_${Math.random().toString(36).substring(2, 10)}`);
     const [stripeAmount, setStripeAmount] = useState(1000);
+    const [stripeInvoiceId, setStripeInvoiceId] = useState("");
     const [simulateWebhook, { isLoading: isSimulating }] = useSimulateStripeWebhookMutation();
     const [checkoutAmount, setCheckoutAmount] = useState(100);
     const [checkoutDescription, setCheckoutDescription] = useState("Тестовое пополнение через DevDebugPage");
@@ -87,6 +88,7 @@ export const DevDebugPage: React.FC = () => {
                 paymentId: stripePaymentId,
                 externalPaymentId: stripeExtId,
                 amount: stripeAmount,
+                invoiceId: stripeInvoiceId || undefined,
             }).unwrap();
 
             setLastResponse(result);
@@ -111,7 +113,7 @@ export const DevDebugPage: React.FC = () => {
             }
             setCurrentIntent("error");
         }
-    }, [stripeUserId, stripePaymentId, stripeExtId, stripeAmount, simulateWebhook, showToast]);
+    }, [stripeUserId, stripePaymentId, stripeExtId, stripeAmount, stripeInvoiceId, simulateWebhook, showToast]);
 
     const handleCreateCheckoutLink = useCallback(async () => {
         setLocalError(null);
@@ -442,6 +444,14 @@ export const DevDebugPage: React.FC = () => {
                             value={String(stripeAmount)}
                             onChange={(_, data) => setStripeAmount(Number(data.value) || 0)}
                             placeholder="1000"
+                        />
+                    </Field>
+
+                    <Field label="Идентификатор счёта (InvoiceId GUID, опционально)">
+                        <Input
+                            value={stripeInvoiceId}
+                            onChange={(_, data) => setStripeInvoiceId(data.value)}
+                            placeholder="00000000-0000-0000-0000-000000000000"
                         />
                     </Field>
                 </div>

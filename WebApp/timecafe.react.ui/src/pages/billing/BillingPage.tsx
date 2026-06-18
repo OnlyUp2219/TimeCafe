@@ -34,6 +34,7 @@ import { useGetActiveTariffsQuery, useGetActiveVisitByUserQuery, useHasActiveVis
 
 import { usePagination } from "@hooks/usePagination";
 import { useComponentSize } from "@hooks/useComponentSize";
+import { useVisitDiscounts, getVisitDiscounts } from "@hooks/useVisitDiscounts";
 
 export const BillingPage = () => {
     const { sizes } = useComponentSize();
@@ -60,19 +61,16 @@ export const BillingPage = () => {
     const pagination = txData?.metadata ?? { page: 1, pageSize, totalCount: 0, totalPages: 0 };
     const checkoutError = checkoutRtkError ? getRtkErrorMessage(checkoutRtkError) || "Не удалось инициализировать пополнение" : null;
 
-    const personalDiscount = loyalty?.personalDiscountPercent ?? 0;
-    const nowStr = new Date().toISOString();
-    const activePromotions = promotions?.filter(p => p.isActive && p.validFrom <= nowStr && p.validTo >= nowStr) ?? [];
-    const globalDiscount = activePromotions.length > 0
-        ? Math.max(0, ...activePromotions.filter(p => p.type === 0).map(p => p.discountPercent ?? 0))
-        : 0;
+    const { globalDiscount, personalDiscount } = useVisitDiscounts(
+        promotions,
+        loyalty,
+        null
+    );
 
     const tariffs: (Tariff & { discountedPricePerMinute?: number })[] = useMemo(() => {
         if (!tariffsData) return [];
         return tariffsData.map((t) => {
-            const tariffDiscount = activePromotions.length > 0
-                ? Math.max(0, ...activePromotions.filter(p => p.type === 1 && p.tariffId === t.tariffId).map(p => p.discountPercent ?? 0))
-                : 0;
+            const { tariffDiscount } = getVisitDiscounts(promotions, null, t.tariffId);
             const bestPromotion = Math.max(globalDiscount, tariffDiscount);
             const appliedDiscountPercent = Math.min(bestPromotion + personalDiscount, 50);
 
@@ -88,7 +86,7 @@ export const BillingPage = () => {
                 themeEmoji: t.themeEmoji ?? null,
             };
         });
-    }, [tariffsData, activePromotions, globalDiscount, personalDiscount]);
+    }, [tariffsData, promotions, globalDiscount, personalDiscount]);
 
     const [draftAmountText, setDraftAmountText] = useState("");
 

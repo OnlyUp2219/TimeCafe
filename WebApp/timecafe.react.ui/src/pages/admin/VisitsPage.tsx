@@ -11,6 +11,8 @@ import {
     TableCellLayout,
     Badge,
     Tooltip,
+    Tab,
+    TabList,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Eye20Regular, Clock20Regular, Warning20Regular } from "@fluentui/react-icons";
@@ -92,13 +94,14 @@ export const VisitsPage = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [walkInOpen, setWalkInOpen] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [selectedTab, setSelectedTab] = useState<"all" | "pending" | "finishRequested" | "active">("all");
 
     const [approveVisit, { isLoading: approving }] = useApproveVisitMutation();
     const [rejectVisit, { isLoading: rejecting }] = useRejectVisitMutation();
 
     const { data, isLoading, error, refetch } = useGetVisitsPageQuery(
         { page: currentPage, pageSize },
-        { refetchOnMountOrArgChange: true }
+        { refetchOnMountOrArgChange: true, pollingInterval: 5000 }
     );
 
     const handleApprove = async (visitId: string) => {
@@ -129,6 +132,13 @@ export const VisitsPage = () => {
         setDialogOpen(true);
     };
     const visits = data?.items ?? [];
+    const filteredVisits = useMemo(() => {
+        if (selectedTab === "all") return visits;
+        if (selectedTab === "pending") return visits.filter(v => v.status === VisitStatus.Pending);
+        if (selectedTab === "finishRequested") return visits.filter(v => v.status === VisitStatus.Active && v.isFinishRequested);
+        if (selectedTab === "active") return visits.filter(v => v.status === VisitStatus.Active);
+        return visits;
+    }, [visits, selectedTab]);
     const totalCount = data?.metadata?.totalCount ?? 0;
     const totalPages = data?.metadata?.totalPages ?? 1;
     const queryError = error ? getRtkErrorMessage(error as FetchBaseQueryError) : null;
@@ -315,18 +325,26 @@ export const VisitsPage = () => {
                 <DismissableError error={queryError} />
                 <DismissableError error={actionError} />
 
+                <TabList selectedValue={selectedTab} onTabSelect={(_, data) => setSelectedTab(data.value as any)}>
+                    <Tab value="all">Все</Tab>
+                    <Tab value="pending">Ожидают входа</Tab>
+                    <Tab value="active">Активные</Tab>
+                    <Tab value="finishRequested">Запрос на выход</Tab>
+                </TabList>
+
                 <Card className="overflow-x-auto" size={sizes.card}>
                     <DataTable
-                        items={visits}
+                        items={filteredVisits}
                         columns={columns}
                         getRowId={(v) => v.visitId}
                         loading={isLoading}
                         columnSizingOptions={columnSizingOptions}
+                        getRowClassName={(visit) => visit.isFinishRequested ? "bg-(--colorStatusWarningBackground1)" : ""}
                     />
                 </Card>
 
                 <div className="flex items-center justify-between flex-wrap gap-2">
-                    <Body1>Показано {visits.length} из {totalCount}</Body1>
+                    <Body1>Показано {filteredVisits.length} из {totalCount}</Body1>
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}

@@ -22,3 +22,10 @@ export const getRelativeTime = (iso: string | null | undefined): string => {
     if (diffHours < 24) return `${diffHours} ч. назад`;
     return "";
 };
+
+const pad2 = (value: number) => value.toString().padStart(2, "0");
+
+export const formatTimeHHmm = (hhmm: string | null | undefined, fallback: Date): string => {
+    if (hhmm && /^\d{2}:\d{2}$/.test(hhmm)) return hhmm;
+    return `${pad2(fallback.getHours())}:${pad2(fallback.getMinutes())}`;
+};

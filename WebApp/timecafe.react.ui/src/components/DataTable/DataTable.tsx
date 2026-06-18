@@ -34,6 +34,7 @@ export type DataTableProps<TItem> = {
     onSelectionChange?: DataGridProps["onSelectionChange"];
     selectedItems?: Set<TableRowId>;
     size?: "small" | "medium" | "extra-small";
+    getRowClassName?: (item: TItem) => string;
 };
 
 export function DataTable<TItem>({
@@ -51,6 +52,7 @@ export function DataTable<TItem>({
     onSelectionChange,
     selectedItems,
     size = "medium",
+    getRowClassName,
 }: DataTableProps<TItem>) {
     const isEmpty = !loading && items.length === 0;
     const refMap = useRef<Record<string, HTMLElement | null>>({});
@@ -143,6 +145,7 @@ export function DataTable<TItem>({
                     {({item, rowId}) => (
                         <DataGridRow<TItem>
                             key={rowId}
+                            className={getRowClassName ? getRowClassName(item) : undefined}
                             selectionCell={selectionMode ? {checkboxIndicator: {"aria-label": "Выбрать строку"}} : undefined}
                         >
                             {({renderCell}) => <DataGridCell>{renderCell(item)}</DataGridCell>}

@@ -9,6 +9,7 @@ type HoverTiltCardProps = PropsWithChildren<{
     hoverScale?: number;
     perspectivePx?: number;
     size?: "small" | "medium" | "large";
+    style?: React.CSSProperties;
 }>;
 
 export const HoverTiltCard: FC<HoverTiltCardProps> = ({
@@ -18,6 +19,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
     hoverScale = 1.04,
     perspectivePx = 900,
     size,
+    style,
 }) => {
     const {sizes} = useComponentSize();
     const elementRef = useRef<HTMLDivElement | null>(null);
@@ -88,6 +90,7 @@ export const HoverTiltCard: FC<HoverTiltCardProps> = ({
                 boxShadow: isHover ? tokens.shadow16 : tokens.shadow4,
                 backgroundColor: isHover ? tokens.colorNeutralBackground1Hover : tokens.colorNeutralBackground1,
                 borderColor: isHover ? tokens.colorBrandStroke1 : tokens.colorNeutralStroke1,
+                ...style
             }}
             onPointerEnter={(e) => {
                 if (e.pointerType !== "mouse") return;
