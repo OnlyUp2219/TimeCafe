@@ -43,6 +43,19 @@ public static class MassTransitExtensions
                 cfg.Message<VisitTimerStoppedEvent>(e => e.SetEntityName("visit-timer-stopped"));
                 cfg.Publish<VisitTimerStoppedEvent>(p => p.ExchangeType = "fanout");
 
+                cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
+                cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
+
+                cfg.Message<UserDiscountUpdatedEvent>(e => e.SetEntityName("user-discount-updated"));
+
+                cfg.Message<InvoicePaidEvent>(e => e.SetEntityName("invoice-paid"));
+
+                cfg.Message<VisitApprovedEvent>(e => e.SetEntityName("visit-approved"));
+                cfg.Publish<VisitApprovedEvent>(p => p.ExchangeType = "fanout");
+
+                cfg.Message<VisitRejectedEvent>(e => e.SetEntityName("visit-rejected"));
+                cfg.Publish<VisitRejectedEvent>(p => p.ExchangeType = "fanout");
+
                 cfg.ReceiveEndpoint("venue-user-discount-updated", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>(context));
                 cfg.ReceiveEndpoint("venue-invoice-paid", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.InvoicePaidEventConsumer>(context));
 

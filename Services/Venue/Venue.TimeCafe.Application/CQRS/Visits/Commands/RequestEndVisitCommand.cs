@@ -1,6 +1,6 @@
 namespace Venue.TimeCafe.Application.CQRS.Visits.Commands;
 
-public record RequestEndVisitCommand(Guid VisitId, Guid UserId) : ICommand<RequestEndVisitResponse>;
+public record RequestEndVisitCommand(Guid VisitId, Guid UserId, bool PayFromBalance = false) : ICommand<RequestEndVisitResponse>;
 
 public class RequestEndVisitCommandValidator : AbstractValidator<RequestEndVisitCommand>
 {
@@ -31,7 +31,7 @@ public class RequestEndVisitCommandHandler(
             if (existing.UserId != request.UserId)
                 return Result.Fail(new VisitAccessDeniedError());
 
-            var result = existing.RequestFinish();
+            var result = existing.RequestFinish(request.PayFromBalance);
             if (result.IsFailed)
                 return Result.Fail(result.Errors);
 

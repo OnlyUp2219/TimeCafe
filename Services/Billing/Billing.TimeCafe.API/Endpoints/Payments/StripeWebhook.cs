@@ -10,7 +10,9 @@ public record DebugStripeWebhookRequest(
     /// <example>pi_test_123456</example>
     string ExternalPaymentId,
     /// <example>150.00</example>
-    decimal Amount);
+    decimal Amount,
+    /// <example>550e8400-e29b-41d4-a716-446655440002</example>
+    Guid? InvoiceId = null);
 
 public class StripeWebhook : ICarterModule
 {
@@ -75,7 +77,8 @@ public class StripeWebhook : ICarterModule
                         Metadata = new Dictionary<string, string>
                         {
                             ["paymentId"] = request.PaymentId.ToString(),
-                            ["userId"] = request.UserId.ToString()
+                            ["userId"] = request.UserId.ToString(),
+                            ["invoiceId"] = request.InvoiceId?.ToString() ?? string.Empty
                         }
                     }
                 }

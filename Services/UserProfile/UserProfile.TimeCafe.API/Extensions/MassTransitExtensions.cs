@@ -62,6 +62,12 @@ public static class MassTransitExtensions
                 cfg.Message<VisitCompletedEvent>(e => e.SetEntityName("visit-completed"));
                 cfg.Publish<VisitCompletedEvent>(p => p.ExchangeType = "fanout");
 
+                cfg.Message<UserDiscountUpdatedEvent>(e => e.SetEntityName("user-discount-updated"));
+                cfg.Publish<UserDiscountUpdatedEvent>(p => p.ExchangeType = "fanout");
+
+                cfg.Message<VisitApprovedEvent>(e => e.SetEntityName("visit-approved"));
+                cfg.Message<VisitRejectedEvent>(e => e.SetEntityName("visit-rejected"));
+
                 cfg.ReceiveEndpoint("user-profile.user-registered", e =>
                 {
                     e.Durable = true;

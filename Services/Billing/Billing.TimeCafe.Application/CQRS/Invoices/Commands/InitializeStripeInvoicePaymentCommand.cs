@@ -32,6 +32,15 @@ public class InitializeStripeInvoicePaymentCommandHandler(
         if (invoice.Status == InvoiceStatus.Paid)
             return Result.Fail<InitializeStripeInvoicePaymentResponse>(new InvoiceAlreadyPaidError());
 
+        if (!string.IsNullOrWhiteSpace(invoice.StripeSessionId))
+        {
+            var existingPayment = await _uow.Payments.GetByExternalPaymentIdAsync(invoice.StripeSessionId, cancellationToken);
+            if (existingPayment != null && existingPayment.Status == PaymentStatus.Pending && !string.IsNullOrWhiteSpace(existingPayment.ExternalData))
+            {
+                return Result.Ok(new InitializeStripeInvoicePaymentResponse(existingPayment.ExternalPaymentId!, existingPayment.ExternalData));
+            }
+        }
+
         var paymentResult = Payment.Create(
             invoice.UserId ?? Guid.Empty,
             invoice.TotalAmount,
@@ -61,6 +70,7 @@ public class InitializeStripeInvoicePaymentCommandHandler(
         }
 
         payment.ExternalPaymentId = stripeSession.SessionId;
+        payment.UpdateExternalData(stripeSession.CheckoutUrl);
         invoice.StripeSessionId = stripeSession.SessionId;
 
         await _uow.Payments.CreateAsync(payment, cancellationToken);

@@ -6,4 +6,5 @@ public record VisitTimerStoppedEvent
     public Guid? UserId { get; init; }
     public decimal Amount { get; init; }
     public DateTimeOffset StoppedAt { get; init; }
+    public bool PayFromBalance { get; init; } = false;
 }

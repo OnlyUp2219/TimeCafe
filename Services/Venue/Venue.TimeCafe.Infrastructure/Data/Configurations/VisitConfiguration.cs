@@ -21,6 +21,10 @@ public class VisitConfiguration : IEntityTypeConfiguration<Visit>
         builder.Property(v => v.FinishRequestedAt)
             .IsRequired(false);
 
+        builder.Property(v => v.PayFromBalance)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.Property(v => v.EntryTime)
             .IsRequired();
 

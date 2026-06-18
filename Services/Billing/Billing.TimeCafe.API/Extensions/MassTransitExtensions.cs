@@ -53,6 +53,12 @@ public static class MassTransitExtensions
                 cfg.Message<UserRegisteredEvent>(e => e.SetEntityName("user-registered"));
                 cfg.Message<VisitTimerStoppedEvent>(e => e.SetEntityName("visit-timer-stopped"));
 
+                cfg.Message<InvoicePaidEvent>(e => e.SetEntityName("invoice-paid"));
+                cfg.Publish<InvoicePaidEvent>(p => p.ExchangeType = "fanout");
+
+                cfg.Message<VisitApprovedEvent>(e => e.SetEntityName("visit-approved"));
+                cfg.Message<VisitRejectedEvent>(e => e.SetEntityName("visit-rejected"));
+
                 cfg.ConfigureEndpoints(context);
             });
         });

@@ -27,6 +27,7 @@ public class Visit
     public int GuestsCount { get; set; } = 1;
     public bool IsFinishRequested { get; set; } = false;
     public DateTimeOffset? FinishRequestedAt { get; set; }
+    public bool PayFromBalance { get; set; } = false;
 
     public static Visit Create(Guid? visitId, Guid? userId, Guid tariffId, DateTimeOffset entryTime, VisitStatus status, Guid? resourceId = null, DateTimeOffset? exitTime = null, decimal? calculatedCost = null, int? plannedMinutes = null, int guestsCount = 1)
     {
@@ -96,13 +97,14 @@ public class Visit
         return FluentResults.Result.Ok();
     }
 
-    public FluentResults.Result RequestFinish()
+    public FluentResults.Result RequestFinish(bool payFromBalance = false)
     {
         if (Status != VisitStatus.Active)
             return FluentResults.Result.Fail(new Errors.VisitNotActiveError());
 
         IsFinishRequested = true;
         FinishRequestedAt = DateTimeOffset.UtcNow;
+        PayFromBalance = payFromBalance;
         return FluentResults.Result.Ok();
     }
 

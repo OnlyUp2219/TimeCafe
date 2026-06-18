@@ -1,5 +1,7 @@
 namespace Venue.TimeCafe.API.Endpoints.Visits.Commands;
 
+public record RequestEndVisitDto(bool PayFromBalance = false);
+
 public class RequestEndVisit : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -7,10 +9,12 @@ public class RequestEndVisit : ICarterModule
         app.MapPost("/visits/{visitId:guid}/request-end", async (
             [FromServices] ISender sender,
             Guid visitId,
+            [FromBody(EmptyBodyBehavior = Microsoft.AspNetCore.Mvc.ModelBinding.EmptyBodyBehavior.Allow)] RequestEndVisitDto? request,
             ClaimsPrincipal principal) =>
         {
             var userId = principal.GetUserId();
-            var command = new RequestEndVisitCommand(visitId, userId);
+            var pay = request?.PayFromBalance ?? false;
+            var command = new RequestEndVisitCommand(visitId, userId, pay);
             var result = await sender.Send(command);
             return result.ToHttpResult(r => TypedResults.Ok(r));
         })

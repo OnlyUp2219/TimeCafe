@@ -1,13 +1,27 @@
+using Billing.TimeCafe.Application.CQRS.Invoices.Commands;
+using MediatR;
+using DomainPaymentMethod = Billing.TimeCafe.Domain.Enums.PaymentMethod;
+
 namespace Billing.TimeCafe.Infrastructure.Consumers;
 
-public sealed class VisitTimerStoppedEventConsumer(
-    IUnitOfWork uow,
-    IPublisher publisher,
-    ILogger<VisitTimerStoppedEventConsumer> logger) : IConsumer<VisitTimerStoppedEvent>
+public sealed class VisitTimerStoppedEventConsumer : IConsumer<VisitTimerStoppedEvent>
 {
-    private readonly IUnitOfWork _uow = uow;
-    private readonly IPublisher _publisher = publisher;
-    private readonly ILogger<VisitTimerStoppedEventConsumer> _logger = logger;
+    private readonly IUnitOfWork _uow;
+    private readonly IPublisher _publisher;
+    private readonly ILogger<VisitTimerStoppedEventConsumer> _logger;
+    private readonly ISender _sender;
+
+    public VisitTimerStoppedEventConsumer(
+        IUnitOfWork uow,
+        IPublisher publisher,
+        ILogger<VisitTimerStoppedEventConsumer> logger,
+        ISender sender)
+    {
+        _uow = uow;
+        _publisher = publisher;
+        _logger = logger;
+        _sender = sender;
+    }
 
     public async Task Consume(ConsumeContext<VisitTimerStoppedEvent> context)
     {
@@ -39,6 +53,28 @@ public sealed class VisitTimerStoppedEventConsumer(
             await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);
 
             _logger.LogInformation("Успешно создан инвойс {InvoiceId} для визита {VisitId} на сумму {Amount}₽", invoice.InvoiceId, evt.VisitId, evt.Amount);
+
+            if (evt.PayFromBalance && evt.UserId.HasValue)
+            {
+                var balance = await _uow.Balances.GetByIdAsync(evt.UserId.Value, cancellationToken);
+                if (balance != null && balance.CurrentBalance >= evt.Amount)
+                {
+                    var payCommand = new PayInvoiceCommand(invoice.InvoiceId, DomainPaymentMethod.Online);
+                    var payResult = await _sender.Send(payCommand, cancellationToken);
+                    if (payResult.IsFailed)
+                    {
+                        _logger.LogWarning("Не удалось автоматически оплатить инвойс {InvoiceId} с баланса: {Error}", invoice.InvoiceId, payResult.Errors[0].Message);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Инвойс {InvoiceId} автоматически оплачен с баланса", invoice.InvoiceId);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Недостаточно средств на балансе для автоматической оплаты инвойса {InvoiceId}", invoice.InvoiceId);
+                }
+            }
         }
         catch (Exception ex)
         {

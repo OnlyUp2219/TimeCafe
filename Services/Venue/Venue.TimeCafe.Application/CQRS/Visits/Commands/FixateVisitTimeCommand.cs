@@ -79,7 +79,8 @@ public class FixateVisitTimeCommandHandler(
                 VisitId = updated.VisitId,
                 UserId = updated.UserId,
                 Amount = updated.CalculatedCost ?? 0,
-                StoppedAt = exitTime
+                StoppedAt = exitTime,
+                PayFromBalance = updated.PayFromBalance
             }, cancellationToken);
 
             await _uow.SaveChangesAsync(cancellationToken);
