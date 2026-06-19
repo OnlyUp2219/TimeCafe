@@ -1,6 +1,7 @@
 import {Input, Field} from "@fluentui/react-components";
-import {useEffect, useMemo, useRef} from "react";
+import {useMemo} from "react";
 import {validateEmail as defaultValidateEmail} from "@utility/validate";
+import {useValidationCallback} from "@hooks/useValidationCallback";
 import type {ReactNode} from "react";
 
 interface EmailInputProps {
@@ -32,14 +33,7 @@ export const EmailInput = ({
 }: EmailInputProps) => {
     const errorMsg = useMemo(() => validate(value), [validate, value]);
 
-    const onValidationChangeRef = useRef(onValidationChange);
-    useEffect(() => {
-        onValidationChangeRef.current = onValidationChange;
-    }, [onValidationChange]);
-
-    useEffect(() => {
-        onValidationChangeRef.current?.(errorMsg);
-    }, [errorMsg]);
+    useValidationCallback(onValidationChange, errorMsg);
 
     const displayError = externalError || errorMsg;
 

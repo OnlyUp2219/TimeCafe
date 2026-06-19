@@ -33,9 +33,8 @@ import { formatDateTime } from "@utility/dateUtils";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { getUserFullName } from "@utility/userUtils";
 import { AuditLogDetails } from "@components/Admin/AuditLogDetails";
-
-const isUuid = (str: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+import { isUuid } from "@utility/validate";
+import { formatDurationMs } from "@utility/formatUtils";
 
 const AuditUserCell = ({ userName }: { userName: string }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userName, {
@@ -54,13 +53,6 @@ const AuditUserCell = ({ userName }: { userName: string }) => {
     return <span>{displayName}</span>;
 };
 
-const formatDuration = (ms: number) => {
-    if (ms < 1000) return `${ms} мс`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(2)} с`;
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes} мин ${seconds} с`;
-};
 
 export const AuditLogsPage = () => {
     const { sizes } = useComponentSize();
@@ -131,7 +123,7 @@ export const AuditLogsPage = () => {
             columnId: "duration",
             compare: (a, b) => a.duration - b.duration,
             renderHeaderCell: () => "Длительность",
-            renderCell: (log) => <TableCellLayout truncate>{formatDuration(log.duration)}</TableCellLayout>,
+            renderCell: (log) => <TableCellLayout truncate>{formatDurationMs(log.duration)}</TableCellLayout>,
         }),
         createTableColumn<AuditLogDto>({
             columnId: "createdAt",

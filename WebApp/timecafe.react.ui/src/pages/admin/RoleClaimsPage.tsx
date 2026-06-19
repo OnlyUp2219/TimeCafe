@@ -16,6 +16,8 @@ import {
     useHeadlessFlatTree_unstable,
 } from "@fluentui/react-components";
 import { DismissableError } from "@components/DismissableError/DismissableError";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { EmptyState } from "@components/EmptyState/EmptyState";
 
 import type {
     TreeCheckedChangeData,
@@ -253,7 +255,7 @@ export const RoleClaimsPage = () => {
     const claimsError2 = claimsError ? getRtkErrorMessage(claimsError as FetchBaseQueryError) : null;
 
     if (claimsLoading || permsLoading) {
-        return <div className="flex justify-center p-20"><Spinner label="Загрузка прав..." /></div>;
+        return <PageLoader label="Загрузка прав..." />;
     }
 
     if (!normalizedRoleName) {
@@ -309,7 +311,7 @@ export const RoleClaimsPage = () => {
             )}
 
             {allPermissions.length === 0 ? (
-                <Body2>Нет доступных прав</Body2>
+                <EmptyState title="Нет доступных прав" />
             ) : (
                 <FlatTree {...flatTree.getTreeProps()} aria-label="Права">
                     {Array.from(flatTree.items(), (item) => {

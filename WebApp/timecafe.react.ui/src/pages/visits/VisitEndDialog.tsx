@@ -12,10 +12,10 @@ import {
     Divider,
     Title3,
     Switch,
-    Body1Stronger,
 } from "@fluentui/react-components";
 import { Shield20Regular, Wallet20Regular } from "@fluentui/react-icons";
 import { formatMoneyByN } from "@utility/formatMoney";
+import { VisitDiscountBreakdown } from "@components/Billing/VisitDiscountBreakdown";
 
 interface VisitEndDialogProps {
     open: boolean;
@@ -103,25 +103,19 @@ export const VisitEndDialog: FC<VisitEndDialogProps> = ({
                                     <div className="flex flex-col gap-1 items-end w-full">
                                         <Body1 className="text-right">{estimateBreakdown}</Body1>
                                         {estimateIsDiscounted && (
-                                            <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-2 w-full text-left">
-                                                {personalDiscount > 0 && (
-                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                        <Body1>Скидка лояльности:</Body1>
-                                                        <Body1Stronger>-{personalDiscount}%</Body1Stronger>
-                                                    </div>
-                                                )}
-                                                {Math.max(globalDiscount, tariffDiscount) > 0 && (
-                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                        <Body1>Акционная скидка:</Body1>
-                                                        <Body1Stronger>-{Math.max(globalDiscount, tariffDiscount)}%</Body1Stronger>
-                                                    </div>
-                                                )}
-                                                <Divider className="my-1" />
-                                                <div className="flex justify-between items-center text-(--colorBrandForeground1)">
-                                                    <Body1Stronger>Итоговая скидка:</Body1Stronger>
-                                                    <Body1Stronger>-{estimateAppliedDiscountPercent}% (-{formatMoneyByN(estimateDiscountTotal)})</Body1Stronger>
-                                                </div>
-                                            </div>
+                                            <VisitDiscountBreakdown
+                                                estimate={{
+                                                    total: estimateTotal,
+                                                    baseTotal: estimateBaseTotal,
+                                                    isDiscounted: estimateIsDiscounted,
+                                                    appliedDiscountPercent: estimateAppliedDiscountPercent,
+                                                    discountTotal: estimateDiscountTotal,
+                                                }}
+                                                personalDiscount={personalDiscount}
+                                                globalDiscount={globalDiscount}
+                                                tariffDiscount={tariffDiscount}
+                                                variant="simple"
+                                            />
                                         )}
                                     </div>
 

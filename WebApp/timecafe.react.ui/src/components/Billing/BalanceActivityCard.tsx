@@ -13,7 +13,8 @@ import {
 import {ResponsiveContainer, VerticalBarChart, type VerticalBarChartDataPoint} from "@fluentui/react-charts";
 
 import type {BillingActivityPoint} from "@app-types/billing";
-import {formatRub} from "@utility/formatRub";
+import {formatRub} from "@utility/formatMoney";
+import {formatDateShort} from "@utility/dateUtils";
 import {useComponentSize} from "@hooks/useComponentSize";
 
 type BalanceActivityCardProps = {
@@ -31,11 +32,7 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
         normalized.setHours(hourOffset, 0, 0, 0);
         return normalized;
     };
-    const formatTick = (date: Date) =>
-        date.toLocaleDateString("ru-RU", {
-            day: "2-digit",
-            month: "2-digit",
-        });
+    const formatTick = (date: Date) => formatDateShort(date);
 
     const chartPoints: VerticalBarChartDataPoint[] = activity.flatMap((p) => {
         const deposits: VerticalBarChartDataPoint = {
@@ -102,7 +99,7 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
 
                                 const isWithdrawal = props.legend === "Списание";
                                 const date = props.x instanceof Date ? props.x : new Date(String(props.x));
-                                const dateLabel = date.toLocaleDateString("ru-RU", {day: "2-digit", month: "2-digit"});
+                                const dateLabel = formatDateShort(date);
 
                                 return (
                                     <div className="flex items-center gap-3">

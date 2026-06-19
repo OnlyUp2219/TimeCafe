@@ -1,7 +1,7 @@
 import {useAppDispatch} from "@store/hooks";
 import {useNavigate} from "react-router-dom";
 import {clearTokens, setAccessToken, setEmail, setEmailConfirmed, setRole, setUserId} from "@store/authSlice";
-import {Spinner} from "@fluentui/react-components";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import React, {useEffect} from "react";
 import {getJwtInfo} from "@shared/auth/jwt";
 
@@ -36,5 +36,5 @@ export const ExternalCallback = () => {
         }
     }, [dispatch, navigate]);
 
-    return <Spinner size="huge"/>;
+    return <PageLoader />;
 };

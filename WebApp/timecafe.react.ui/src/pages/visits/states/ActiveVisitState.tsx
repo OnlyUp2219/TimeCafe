@@ -30,6 +30,7 @@ import { BillingType as BillingTypeEnum } from "@app-types/tariff";
 import { formatTimeHHmm } from "@utility/dateUtils";
 import { formatDurationSeconds } from "@utility/formatDurationSeconds";
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
+import { VisitDiscountBreakdown } from "@components/Billing/VisitDiscountBreakdown";
 
 const Body2Stronger = (props: React.ComponentProps<typeof Body2>) => (
     <Body2 {...props} style={{ fontWeight: tokens.fontWeightSemibold, ...props.style }} />
@@ -95,7 +96,6 @@ export const ActiveVisitState: FC<ActiveVisitStateProps> = ({
     const elapsedMinutes = Math.max(0, Math.floor(elapsedSeconds / 60));
     const isUnderMinTime = minSessionMinutes !== null && elapsedMinutes < minSessionMinutes;
 
-    const bestPromotion = Math.max(globalDiscount, tariffDiscount);
     const balanceAmount = userBalance?.currentBalance ?? 0;
     const isBalanceInsufficient = balanceAmount < estimate.total;
 
@@ -148,31 +148,13 @@ export const ActiveVisitState: FC<ActiveVisitStateProps> = ({
                 )}
             </div>
 
-            <Card size="small" style={{ backgroundColor: tokens.colorNeutralBackground3, borderColor: tokens.colorNeutralStroke3 }}>
-                <div className="flex justify-between">
-                    <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Базовая стоимость:</Body2Stronger>
-                    <Body2>{formatMoneyByN(estimate.baseTotal)}</Body2>
-                </div>
-                <div className="flex justify-between">
-                    <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Скидка лояльности:</Body2Stronger>
-                    <Body2>-{personalDiscount}%</Body2>
-                </div>
-                <div className="flex justify-between">
-                    <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Акционная скидка:</Body2Stronger>
-                    <Body2>-{bestPromotion}%</Body2>
-                </div>
-                {estimate.isDiscounted && (
-                    <>
-                        <Divider />
-                        <div className="flex justify-between">
-                            <Body2Stronger style={{ color: tokens.colorBrandForeground1 }}>Итоговая скидка:</Body2Stronger>
-                            <Body2 style={{ color: tokens.colorBrandForeground1 }}>
-                                -{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})
-                            </Body2>
-                        </div>
-                    </>
-                )}
-            </Card>
+            <VisitDiscountBreakdown
+                estimate={estimate}
+                personalDiscount={personalDiscount}
+                globalDiscount={globalDiscount}
+                tariffDiscount={tariffDiscount}
+                variant="compact"
+            />
         </div>
     );
 

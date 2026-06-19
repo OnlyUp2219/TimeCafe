@@ -13,10 +13,8 @@ import {
     Title3,
     Subtitle2Stronger,
     Tooltip,
-    Divider,
-    Body1Stronger,
 } from "@fluentui/react-components";
-import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, Clock20Regular, Warning20Regular, Money20Regular, Payment20Regular, Wallet20Regular } from "@fluentui/react-icons";
+import { ArrowLeft20Regular, Checkmark20Regular, CheckmarkCircle20Regular, Clock20Regular, Money20Regular, Payment20Regular, Wallet20Regular } from "@fluentui/react-icons";
 import { useGetVisitByIdQuery, useFixateVisitTimeMutation, useApproveVisitMutation, useRejectVisitMutation, useForceEndVisitMutation, useGetAllPromotionsQuery, useGetUserLoyaltyQuery } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -37,11 +35,11 @@ import { PageLoader } from "@components/PageLoader/PageLoader";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 import { getUserFullName } from "@utility/userUtils";
 import { formatDateTime } from "@utility/dateUtils";
-import { formatMoney } from "@utility/formatUtils";
-import { formatMoneyByN } from "@utility/formatMoney";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
+import { formatMoney, formatMoneyByN } from "@utility/formatUtils";
 import { calcVisitEstimate } from "@utility/visitEstimate";
 import { useVisitDiscounts } from "@hooks/useVisitDiscounts";
+import { VisitDiscountBreakdown } from "@components/Billing/VisitDiscountBreakdown";
+import { WarningsCard } from "@components/Admin/WarningsCard/WarningsCard";
 
 export const VisitDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -105,7 +103,7 @@ export const VisitDetailPage = () => {
     }
     if (visit?.userId && balanceObj) {
         if (balance < 0 || (visit.status === VisitStatus.Active && balance < (visit.calculatedCost ?? 0))) {
-            warnings.push(`У пользователя недостаточно средств (Текущий баланс: ${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
+            warnings.push(`У пользователя недостаточно средств (Текущий баланс: ${formatMoney(balance)})`);
         }
     }
 
@@ -292,7 +290,7 @@ export const VisitDetailPage = () => {
                                         color={balance < 0 ? "danger" : balance === 0 ? "warning" : "success"}
                                         appearance="filled"
                                     >
-                                        {balance.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                        {formatMoney(balance)}
                                     </Badge>
                                 </div>
                             )}
@@ -300,21 +298,7 @@ export const VisitDetailPage = () => {
                         </div>
                     </Card>
 
-                    {warnings.length > 0 && (
-                        <Card size={sizes.card} className="border-(--colorStatusWarningBorderActive) bg-(--colorStatusWarningBackground1)">
-                            <div className="flex flex-col gap-2">
-                                <Body2 className="font-semibold flex items-center gap-2">
-                                    <Warning20Regular className="text-(--colorStatusWarningForeground1)" />
-                                    <span>Предупреждения</span>
-                                </Body2>
-                                <div className="flex flex-col gap-1">
-                                    {warnings.map((w, i) => (
-                                        <Body1 key={i} className="text-(--colorStatusWarningForeground1)">• {w}</Body1>
-                                    ))}
-                                </div>
-                            </div>
-                        </Card>
-                    )}
+                    <WarningsCard warnings={warnings} />
 
                     {(visit?.status === VisitStatus.WaitingForPayment || visit?.status === VisitStatus.Completed) && invoice && (
                         <Card size={sizes.card} className="border-(--colorBrandStroke1) border-2 bg-(--colorNeutralBackground2)">
@@ -441,25 +425,13 @@ export const VisitDetailPage = () => {
                                                 </div>
                                                 <Body2 className="text-(--colorNeutralForeground3) mt-1">{estimate.breakdown}</Body2>
                                                 {estimate.isDiscounted && (
-                                                    <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1 w-full text-left">
-                                                        {personalDiscount > 0 && (
-                                                            <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                                <Body1>Скидка лояльности:</Body1>
-                                                                <Body1Stronger>-{personalDiscount}%</Body1Stronger>
-                                                            </div>
-                                                        )}
-                                                        {Math.max(globalDiscount, tariffDiscount) > 0 && (
-                                                            <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                                <Body1>Акционная скидка:</Body1>
-                                                                <Body1Stronger>-{Math.max(globalDiscount, tariffDiscount)}%</Body1Stronger>
-                                                            </div>
-                                                        )}
-                                                        <Divider className="my-1" />
-                                                        <div className="flex justify-between items-center text-(--colorBrandForeground1)">
-                                                            <Body1>Итоговая скидка:</Body1>
-                                                            <Body1Stronger>-{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})</Body1Stronger>
-                                                        </div>
-                                                    </div>
+                                                    <VisitDiscountBreakdown
+                                                        variant="simple"
+                                                        estimate={estimate}
+                                                        personalDiscount={personalDiscount}
+                                                        globalDiscount={globalDiscount}
+                                                        tariffDiscount={tariffDiscount}
+                                                    />
                                                 )}
                                             </div>
                                         ) : visit?.status === VisitStatus.WaitingForPayment || visit?.status === VisitStatus.Completed ? (

@@ -27,7 +27,6 @@ import {
     useActivateTariffMutation,
     useDeactivateTariffMutation,
     useGetAllPromotionsQuery,
-    type Promotion,
 } from "@store/api/venueApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
@@ -40,10 +39,11 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { TariffDetailsDialog } from "@components/Tariff/TariffDetailsDialog";
 import { PageLoader } from "@components/PageLoader/PageLoader";
 import { usePagination } from "@hooks/usePagination";
+import { formatMoney } from "@utility/formatUtils";
+import { getVisitDiscounts } from "@hooks/useVisitDiscounts";
 
 const billingTypeLabel = (bt: number) => bt === BillingType.Hourly ? "Почасовой" : "Поминутный";
 
@@ -142,11 +142,8 @@ export const TariffsPage = () => {
                 compare: (a, b) => a.pricePerMinute - b.pricePerMinute,
                 renderHeaderCell: () => "Цена",
                 renderCell: (tariff) => {
-                    const activePromos = promotions.filter((p: Promotion) => p.isActive && new Date(p.validFrom) <= new Date() && new Date(p.validTo) >= new Date());
-                    const globalPromo = activePromos.filter((p: Promotion) => p.type === 1).sort((a: Promotion, b: Promotion) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
-                    const tariffPromo = activePromos.filter((p: Promotion) => p.type === 2 && p.tariffId === tariff.tariffId).sort((a: Promotion, b: Promotion) => (b.discountPercent ?? 0) - (a.discountPercent ?? 0))[0];
-                    const bestPromo = Math.max(globalPromo?.discountPercent ?? 0, tariffPromo?.discountPercent ?? 0);
-
+                    const { globalDiscount, tariffDiscount } = getVisitDiscounts(promotions, undefined, tariff.tariffId);
+                    const bestPromo = Math.max(globalDiscount, tariffDiscount);
 
                     const appliedDiscount = maxCap !== undefined ? Math.min(bestPromo, maxCap) : bestPromo;
                     const hasDiscount = appliedDiscount > 0;
@@ -158,15 +155,15 @@ export const TariffsPage = () => {
                                 <Body1>
                                     {hasDiscount ? (
                                         <span className="flex items-center gap-2">
-                                            <span className="line-through text-(--colorNeutralForeground4) text-xs">{tariff.pricePerMinute} {CURRENCY_SYMBOL}</span>
-                                            <span className="text-(--colorPaletteRedForeground1) font-semibold">{discountedPrice.toFixed(2)} {CURRENCY_SYMBOL}/мин</span>
+                                            <span className="line-through text-(--colorNeutralForeground4) text-xs">{formatMoney(tariff.pricePerMinute)}</span>
+                                            <span className="text-(--colorPaletteRedForeground1) font-semibold">{formatMoney(discountedPrice)}/мин</span>
                                         </span>
                                     ) : (
-                                        <span>{tariff.pricePerMinute} {CURRENCY_SYMBOL}/мин</span>
+                                        <span>{formatMoney(tariff.pricePerMinute)}/мин</span>
                                     )}
                                 </Body1>
                                 <Caption1 style={{ color: "var(--colorNeutralForeground3)" }}>
-                                    {(discountedPrice * 60).toFixed(2)} {CURRENCY_SYMBOL}/час
+                                    {formatMoney(discountedPrice * 60)}/час
                                     {hasDiscount && (
                                         <Tooltip content={maxCap !== undefined && bestPromo > maxCap ? `Акция ${bestPromo}% ограничена системным лимитом ${maxCap}%` : "Применена лучшая акция"} relationship="label">
                                             <span className="ml-1 text-(--colorPaletteRedForeground1) cursor-help">

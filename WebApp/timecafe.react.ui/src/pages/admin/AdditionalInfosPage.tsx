@@ -10,7 +10,6 @@ import {
     Input,
     MessageBar,
     MessageBarBody,
-    Spinner,
     Title2,
     Title3,
 } from "@fluentui/react-components";
@@ -22,9 +21,9 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import { Pagination } from "@components/Pagination/Pagination";
 
 import { DismissableError } from "@components/DismissableError/DismissableError";
-
-const formatDate = (iso: string) =>
-    new Date(iso).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { EmptyState } from "@components/EmptyState/EmptyState";
+import { formatDateTime } from "@utility/dateUtils";
 
 import { usePagination } from "@hooks/usePagination";
 
@@ -88,7 +87,7 @@ export const AdditionalInfosPage = () => {
 
             <DismissableError error={queryError} />
 
-            {isLoading && <Spinner label="Загрузка..." />}
+            {isLoading && <PageLoader label="Загрузка..." />}
 
             {!searchUserId && (
                 <MessageBar intent="info">
@@ -97,9 +96,10 @@ export const AdditionalInfosPage = () => {
             )}
 
             {searchUserId && !isLoading && infos.length === 0 && !queryError && (
-                <MessageBar intent="warning">
-                    <MessageBarBody>Нет доп. информации для этого пользователя</MessageBarBody>
-                </MessageBar>
+                <EmptyState
+                    title="Заметки отсутствуют"
+                    description="Для указанного пользователя еще не добавлено никакой дополнительной информации."
+                />
             )}
 
             {infos.length > 0 && (
@@ -113,7 +113,7 @@ export const AdditionalInfosPage = () => {
                                     Автор: {info.createdBy}
                                 </Caption1>
                                 <Caption1 style={{ color: "var(--colorNeutralForeground3)" }}>
-                                    {formatDate(info.createdAt)}
+                                    {formatDateTime(info.createdAt)}
                                 </Caption1>
                             </div>
                         </Card>

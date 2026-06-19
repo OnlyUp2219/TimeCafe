@@ -1,5 +1,5 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { useState } from "react";import { useNavigate } from "react-router-dom";import {
+import { NO_DATA } from "@shared/const/placeholders";
+import { useState } from "react";import { useNavigate } from "react-router-dom";import {
 Button,
     Card,
     Title2,
@@ -18,7 +18,7 @@ Button,
     Field,
     Input,
 } from "@fluentui/react-components";
-import { DismissableError } from "@components/DismissableError/DismissableError";import { HasPermission } from "@components/Guard/HasPermission";import { Permissions } from "@shared/auth/permissions";import {
+import { DismissableError } from "@components/DismissableError/DismissableError";import { HasPermission } from "@components/Guard/HasPermission";import { Permissions } from "@shared/auth/permissions";import {
 Grid20Regular,
     Person20Regular,
     Clock20Regular,
@@ -41,7 +41,8 @@ useGetActiveVisitsQuery,
     type Resource,
     type ResourceGroup,
 } from "@store/api/venueApi";
-import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { CURRENCY_SYMBOL } from "@shared/const/currency";import { useComponentSize } from "@hooks/useComponentSize";import { PageLoader } from "@components/PageLoader/PageLoader";import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { useGetProfileByUserIdQuery } from "@store/api/profileApi";import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";import { useComponentSize } from "@hooks/useComponentSize";import { PageLoader } from "@components/PageLoader/PageLoader";import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
+import { formatMoney } from "@utility/formatUtils";
 
 const ActiveUserLabel = ({ userId }: { userId: string | null }) => {
     const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
@@ -338,7 +339,7 @@ export const ResourcesPage = () => {
                                                                 <Body2 className="text-(--colorNeutralForeground2)">
                                                                     Тариф: {activeVisit.tariffName} (
                                                                     {activeVisit.calculatedCost != null
-                                                                        ? `${activeVisit.calculatedCost.toFixed(2)} ${CURRENCY_SYMBOL}`
+                                                                        ? formatMoney(activeVisit.calculatedCost)
                                                                         : NO_DATA}
                                                                     )
                                                                 </Body2>
@@ -492,5 +493,3 @@ export const ResourcesPage = () => {
         </RequirePermission>
     );
 };
-
-

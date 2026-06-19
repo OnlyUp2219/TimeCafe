@@ -1,5 +1,6 @@
 import { NO_DATA } from "@shared/const/placeholders";
 
+
 export const getGuestsWord = (count: number): string => {
     const mod10 = count % 10;
     const mod100 = count % 100;
@@ -16,10 +17,8 @@ export const formatRoundingRule = (rule: string | null | undefined): string => {
     return rule;
 };
 
-export const formatMoney = (v: number | null | undefined, currencySymbol: string = "₽"): string => {
-    if (v == null) return NO_DATA;
-    return `${v.toFixed(2)} ${currencySymbol}`;
-};
+export { formatMoney, formatMoneyByN, formatRub } from "./formatMoney";
+
 
 export const safeParseJson = (str?: string | null): any => {
     if (!str) return null;

@@ -3,7 +3,7 @@ import { Button, Caption1, Divider, Subtitle2Stronger, Title3 } from "@fluentui/
 import { Money20Regular, Warning20Regular } from "@fluentui/react-icons";
 import { Badge } from "@fluentui/react-components";
 import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
-import { formatRub } from "@utility/formatRub";
+import { formatRub } from "@utility/formatMoney";
 import { useComponentSize } from "@hooks/useComponentSize";
 
 interface BalanceCardProps {

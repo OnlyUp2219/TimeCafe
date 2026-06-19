@@ -2,7 +2,7 @@
 
 import {Navigate} from "react-router-dom";
 import {type JSX, useEffect, useState} from "react";
-import {Spinner} from "@fluentui/react-components";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import {useAppDispatch, useAppSelector} from "@store/hooks";
 import {tryRefreshAccessToken} from "@shared/auth/refreshToken";
 import {
@@ -79,7 +79,7 @@ export const AdminRoute = ({children}: AdminRouteProps) => {
         void checkAuth();
     }, [dispatch, accessToken]);
 
-    if (loading) return <Spinner size={"huge"}/>;
+    if (loading) return <PageLoader />;
 
     return allowed ? children : <Navigate to="/login" replace/>;
 };

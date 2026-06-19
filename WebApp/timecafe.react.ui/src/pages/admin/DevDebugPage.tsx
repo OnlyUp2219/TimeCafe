@@ -38,7 +38,7 @@ import {
     useLazyGetInfoQuery,
     useLazyGetLegacyResultQuery
 } from "@store/api/debugApi";
-import { extractRtkError, getRtkErrorMessage, getRtkErrorTitle, normalizeUnknownError } from "@shared/api/errors/extractRtkError";
+import { extractRtkError, getRtkErrorMessage, getRtkErrorTitle, normalizeRawErrorData } from "@shared/api/errors/extractRtkError";
 import { useAppSelector } from "@store/hooks";
 import { useSimulateStripeWebhookMutation, useInitializeStripeCheckoutMutation } from "@store/api/billingApi";
 
@@ -204,7 +204,7 @@ export const DevDebugPage: React.FC = () => {
                 }
             } else {
                 const data = result.data;
-                const extracted = normalizeUnknownError(data);
+                const extracted = normalizeRawErrorData(data);
 
                 setLastResponse(data);
                 setExtractedInfo(extracted);

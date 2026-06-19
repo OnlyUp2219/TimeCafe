@@ -7,6 +7,7 @@ interface EmptyStateProps {
     title?: string;
     description?: string;
     icon?: React.ReactElement;
+    children?: React.ReactNode;
 }
 
 
@@ -14,6 +15,7 @@ export const EmptyState: FC<EmptyStateProps> = ({
     title = NO_DATA,
     description,
     icon = <DatabaseSearchRegular style={{ fontSize: 56, opacity: 0.35 }} />,
+    children,
 }) => (
     <div
         style={{ minHeight: 260 }}
@@ -24,5 +26,6 @@ export const EmptyState: FC<EmptyStateProps> = ({
         {description && (
             <Caption1 style={{ color: "var(--colorNeutralForeground4)" }}>{description}</Caption1>
         )}
+        {children && <div className="mt-2">{children}</div>}
     </div>
 );

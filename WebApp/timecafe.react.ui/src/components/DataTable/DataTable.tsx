@@ -10,13 +10,13 @@ import {
     MenuPopover,
     MenuTrigger,
     MenuItem,
-    Spinner,
     TableCellLayout,
 } from "@fluentui/react-components";
 import type {TableColumnDefinition, TableRowId, DataGridProps, TableColumnSizingOptions} from "@fluentui/react-components";
 import {useRef, useMemo, useCallback} from "react";
 import type {ReactNode} from "react";
 import {EmptyState} from "@components/EmptyState/EmptyState";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import { NO_DATA } from "@shared/const/placeholders";
 
 export type DataTableProps<TItem> = {
@@ -102,7 +102,7 @@ export function DataTable<TItem>({
     if (loading) {
         return (
             <div className={className}>
-                <Spinner label="Загрузка..." />
+                <PageLoader label="Загрузка..." />
             </div>
         );
     }

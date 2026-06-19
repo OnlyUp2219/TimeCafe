@@ -1,4 +1,4 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
+import { NO_DATA } from "@shared/const/placeholders";
 import { useMemo } from "react";import {
 Avatar,
     Badge,
@@ -38,6 +38,7 @@ const genderLabel = (g: number) => {
 };
 
 import { usePagination } from "@hooks/usePagination";
+import { formatDate } from "@utility/dateUtils";
 
 export const ProfilesPage = () => {
     const { sizes } = useComponentSize();
@@ -90,7 +91,7 @@ export const ProfilesPage = () => {
                 columnId: "birthDate",
                 compare: (a, b) => (a.birthDate ?? "").localeCompare(b.birthDate ?? ""),
                 renderHeaderCell: () => "Дата рождения",
-                renderCell: (p) => <TableCellLayout truncate>{p.birthDate ? new Date(p.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</TableCellLayout>,
+                renderCell: (p) => <TableCellLayout truncate>{formatDate(p.birthDate)}</TableCellLayout>,
             }),
             createTableColumn<Profile>({
                 columnId: "status",

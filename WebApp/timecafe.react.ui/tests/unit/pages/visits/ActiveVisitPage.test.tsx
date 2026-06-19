@@ -4,6 +4,12 @@ import { ActiveVisitPage } from "@pages/visits/ActiveVisitPage";
 import { renderWithProviders } from "../../utils/test-utils";
 import { VisitStatus } from "@app-types/visit";
 
+global.ResizeObserver = class {
+    observe = vi.fn();
+    unobserve = vi.fn();
+    disconnect = vi.fn();
+};
+
 // Mock hooks
 vi.mock("@store/api/venueApi", () => ({
     useGetActiveVisitByUserQuery: () => ({
@@ -27,6 +33,10 @@ vi.mock("@store/api/venueApi", () => ({
     useCancelVisitMutation: vi.fn(() => [vi.fn(), { isLoading: false }]),
     useGetAllPromotionsQuery: vi.fn(() => ({ data: [] })),
     useGetUserLoyaltyQuery: vi.fn(() => ({ data: null }))
+}));
+
+vi.mock("@store/api/profileApi", () => ({
+    useGetProfileByUserIdQuery: vi.fn(() => ({ data: null }))
 }));
 
 vi.mock("@store/api/billingApi", () => {
@@ -63,10 +73,10 @@ describe("ActiveVisitPage", () => {
         const waitingText = await screen.findByText(/Ожидаем оплату/i);
         expect(waitingText).toBeDefined();
 
-        const stripeBtn = screen.getByRole("button", { name: /Пополнить через Stripe/i });
+        const stripeBtn = screen.getByRole("button", { name: /Пополнить баланс картой/i });
         expect(stripeBtn).toBeDefined();
 
-        const balanceBtn = screen.getByRole("button", { name: /У меня хватает баланса/i });
+        const balanceBtn = screen.getByRole("button", { name: /Оплатить с баланса/i });
         expect(balanceBtn).toBeDefined();
     });
 });

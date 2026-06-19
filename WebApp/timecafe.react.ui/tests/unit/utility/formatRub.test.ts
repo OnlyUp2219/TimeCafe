@@ -1,10 +1,14 @@
 import {describe, expect, it, vi, afterEach} from "vitest";
 
-vi.mock("@utility/formatMoney", () => ({
-    formatMoneyByN: vi.fn((value: number, digits = 0) => `${value.toFixed(digits)} ₽`),
-}));
+vi.mock("@utility/formatMoney", () => {
+    const mockFormatMoneyByN = vi.fn((value: number, digits = 0) => `${value.toFixed(digits)} ₽`);
+    return {
+        formatMoneyByN: mockFormatMoneyByN,
+        formatRub: vi.fn((value: number, digits = 0) => mockFormatMoneyByN(value, digits)),
+    };
+});
 
-import {formatRub} from "@utility/formatRub";
+import {formatRub} from "@utility/formatMoney";
 
 describe("formatRub", () => {
     afterEach(() => {

@@ -51,12 +51,8 @@ import { Permissions, type Permission } from "@shared/auth/permissions";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 import { usePagination } from "@app/hooks/usePagination";
 import { PageLoader } from "@components/PageLoader/PageLoader";
+import { formatDate } from "@utility/dateUtils";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
-
-const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric" });
-};
 
 const toInputDate = (iso: string) => iso ? iso.substring(0, 10) : "";
 

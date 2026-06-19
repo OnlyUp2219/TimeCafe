@@ -15,7 +15,9 @@ import {
 } from "@fluentui/react-components";
 import { Clock20Regular, Clock24Regular, Dismiss24Regular, Money20Regular, Money24Regular, Receipt20Regular, DoorArrowRight20Regular } from "@fluentui/react-icons";
 import { HoverTiltCard } from "@components/HoverTiltCard/HoverTiltCard";
-import { formatMoneyByN } from "@utility/formatMoney";
+import { formatMoneyByN } from "@utility/formatUtils";
+import { formatDateTime } from "@utility/dateUtils";
+import { VisitDiscountBreakdown } from "@components/Billing/VisitDiscountBreakdown";
 
 const Body2Stronger = (props: React.ComponentProps<typeof Body2>) => (
     <Body2 {...props} style={{ fontWeight: tokens.fontWeightSemibold, ...props.style }} />
@@ -179,37 +181,19 @@ export const WaitingForPaymentState: FC<WaitingForPaymentStateProps> = ({
                                 <Body2 style={{ color: tokens.colorNeutralForeground3 }}>ID счёта:</Body2>
                                 <Body2 style={{ fontFamily: "monospace" }}>{invoice.invoiceId}</Body2>
                             </div>
-                            <div className="flex justify-between items-center">
+                             <div className="flex justify-between items-center">
                                 <Body2 style={{ color: tokens.colorNeutralForeground3 }}>Время создания:</Body2>
-                                <Body2>{new Date(invoice.createdAt).toLocaleString()}</Body2>
+                                <Body2>{formatDateTime(invoice.createdAt)}</Body2>
                             </div>
                         </Card>
 
-                        <Card size="small" style={{ backgroundColor: tokens.colorNeutralBackground3, borderColor: tokens.colorNeutralStroke3 }}>
-                            <div className="flex justify-between">
-                                <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Базовая стоимость:</Body2Stronger>
-                                <Body2>{formatMoneyByN(estimate.baseTotal)}</Body2>
-                            </div>
-                            <div className="flex justify-between">
-                                <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Скидка лояльности:</Body2Stronger>
-                                <Body2>-{personalDiscount}%</Body2>
-                            </div>
-                            <div className="flex justify-between">
-                                <Body2Stronger style={{ color: tokens.colorNeutralForeground2 }}>Акционная скидка:</Body2Stronger>
-                                <Body2>-{Math.max(globalDiscount, tariffDiscount)}%</Body2>
-                            </div>
-                            {estimate.isDiscounted && (
-                                <>
-                                    <Divider />
-                                    <div className="flex justify-between">
-                                        <Body2Stronger style={{ color: tokens.colorBrandForeground1 }}>Итоговая скидка:</Body2Stronger>
-                                        <Body2 style={{ color: tokens.colorBrandForeground1 }}>
-                                            -{estimate.appliedDiscountPercent}% (-{formatMoneyByN(estimate.discountTotal)})
-                                        </Body2>
-                                    </div>
-                                </>
-                            )}
-                        </Card>
+                        <VisitDiscountBreakdown
+                            variant="compact"
+                            estimate={estimate}
+                            personalDiscount={personalDiscount}
+                            globalDiscount={globalDiscount}
+                            tariffDiscount={tariffDiscount}
+                        />
                     </div>
 
                     <Divider />

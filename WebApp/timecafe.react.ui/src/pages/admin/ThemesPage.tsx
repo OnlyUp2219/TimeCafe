@@ -9,12 +9,12 @@ import {
     CardHeader,
     Subtitle2,
     Divider,
-    Subtitle1,
     Title2
 } from "@fluentui/react-components";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 
 import { PageLoader } from "@components/PageLoader/PageLoader";
+import { EmptyState } from "@components/EmptyState/EmptyState";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import {
     useGetThemesPageQuery,
@@ -83,10 +83,14 @@ export const ThemesPage = () => {
 
                 {themes.length === 0 && (
                     <Card appearance="filled-alternative" size="large" className="items-center justify-center !min-h-[250px] ">
-                        <Subtitle1 className="text-(--colorNeutralForeground4) ">Тем пока нет. Создайте первую!</Subtitle1>
-                        <CardFooter className="flex ">
-                            <Button size="large" appearance="outline" onClick={() => navigate("/admin/themes/create")}>Добавить оформление</Button>
-                        </CardFooter>
+                        <EmptyState
+                            title="Тем пока нет"
+                            description="Создайте первую визуальную тему для оформления тарифов."
+                        >
+                            <Button size="large" appearance="outline" onClick={() => navigate("/admin/themes/create")}>
+                                Добавить оформление
+                            </Button>
+                        </EmptyState>
                     </Card>
                 )}
 

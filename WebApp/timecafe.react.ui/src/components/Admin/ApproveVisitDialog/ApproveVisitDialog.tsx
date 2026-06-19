@@ -13,9 +13,7 @@ import {
     Badge,
     Caption1,
     Avatar,
-    Body1,
     Body2,
-    Body1Stronger,
 } from "@fluentui/react-components";
 import {
     Clock20Regular,
@@ -24,8 +22,6 @@ import {
     Document20Regular,
     People20Regular,
     Wallet20Regular,
-    Warning20Regular,
-    Calculator20Regular,
 } from "@fluentui/react-icons";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
 
@@ -45,13 +41,15 @@ interface ApproveVisitDialogProps {
 }
 
 import { formatDateTime, getRelativeTime } from "@utility/dateUtils";
-import { getGuestsWord, formatRoundingRule } from "@utility/formatUtils";
+import { getGuestsWord, formatRoundingRule, formatMoney } from "@utility/formatUtils";
 import { getBalanceColor } from "@utility/billingUtils";
 import { getUserFullName } from "@utility/userUtils";
 import { calcVisitEstimate } from "@utility/visitEstimate";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { useVisitDiscounts } from "@hooks/useVisitDiscounts";
+import { VisitDiscountBreakdown } from "@components/Billing/VisitDiscountBreakdown";
+import { WarningsCard } from "@components/Admin/WarningsCard/WarningsCard";
 
 export const ApproveVisitDialog = ({
     open,
@@ -175,7 +173,7 @@ export const ApproveVisitDialog = ({
         warnings.push(`Превышена вместимость (макс: ${resource.capacity} чел., гостей: ${visit.guestsCount || 1})`);
     }
     if (visit?.userId && balanceObj && balance < 0) {
-        warnings.push(`Отрицательный баланс (${balance.toLocaleString("ru-RU")} ${CURRENCY_SYMBOL})`);
+        warnings.push(`Отрицательный баланс (${formatMoney(balance)})`);
     }
 
     const { globalDiscount, tariffDiscount, personalDiscount } = useVisitDiscounts(
@@ -269,7 +267,7 @@ export const ApproveVisitDialog = ({
                                                 color={balanceColor}
                                                 appearance="filled"
                                             >
-                                                {balance.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
+                                                {formatMoney(balance)}
                                             </Badge>
                                         </div>
                                     </div>
@@ -333,68 +331,16 @@ export const ApproveVisitDialog = ({
                                 </div>
 
                                 {estimate && (
-                                    <div className="bg-(--colorNeutralBackground2) p-3 rounded-lg flex flex-col gap-2 border border-(--colorBrandStroke1)">
-                                        <Body2 className="flex items-center gap-2 font-semibold">
-                                            <Calculator20Regular className="text-(--colorBrandForeground1)" />
-                                            Ожидаемая стоимость
-                                        </Body2>
-                                        <Divider className="my-1" />
-                                        <div className="flex items-center justify-between text-sm">
-                                            <Caption1 className="text-(--colorNeutralForeground3)">{estimate.breakdown}</Caption1>
-                                            <div className="flex items-center gap-1.5">
-                                                {estimate.isDiscounted && (
-                                                    <span className="line-through text-(--colorNeutralForeground3) text-xs">
-                                                        {estimate.baseTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
-                                                    </span>
-                                                )}
-                                                <Body1 className="font-semibold text-(--colorBrandForeground1)">
-                                                    {estimate.total.toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
-                                                </Body1>
-                                            </div>
-                                        </div>
-                                        {estimate.isDiscounted && (
-                                            <div className="flex flex-col gap-1 text-xs bg-(--colorNeutralBackground3) p-2 rounded border border-(--colorNeutralStroke3) mt-1">
-                                                {personalDiscount > 0 && (
-                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                        <Body1>Скидка лояльности:</Body1>
-                                                        <Body1Stronger>-{personalDiscount}%</Body1Stronger>
-                                                    </div>
-                                                )}
-                                                {Math.max(globalDiscount, tariffDiscount) > 0 && (
-                                                    <div className="flex justify-between items-center text-(--colorNeutralForeground2)">
-                                                        <Body1>Акционная скидка:</Body1>
-                                                        <Body1Stronger>-{Math.max(globalDiscount, tariffDiscount)}%</Body1Stronger>
-                                                    </div>
-                                                )}
-                                                <Divider className="my-1" />
-                                                <div className="flex justify-between items-center text-(--colorBrandForeground1)">
-                                                    <Body1>Итоговая скидка:</Body1>
-                                                    <Body1Stronger>-{estimate.appliedDiscountPercent}% (-{estimate.discountTotal.toLocaleString("ru-RU")} {CURRENCY_SYMBOL})</Body1Stronger>
-                                                </div>
-                                            </div>
-                                        )}
-                                        {visit.userId && balanceObj && (
-                                            <div className="flex items-center justify-between text-sm mt-1">
-                                                <Caption1 className="text-(--colorNeutralForeground3)">Баланс после списания:</Caption1>
-                                                <Body1 className={`font-semibold ${balance - estimate.total < 0 ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}`}>
-                                                    {(balance - estimate.total).toLocaleString("ru-RU")} {CURRENCY_SYMBOL}
-                                                </Body1>
-                                            </div>
-                                        )}
-                                    </div>
+                                    <VisitDiscountBreakdown
+                                        estimate={estimate}
+                                        personalDiscount={personalDiscount}
+                                        globalDiscount={globalDiscount}
+                                        tariffDiscount={tariffDiscount}
+                                        balance={visit.userId && balanceObj ? balance : undefined}
+                                    />
                                 )}
 
-                                {warnings.length > 0 && (
-                                    <div className="border border-(--colorStatusWarningBorderActive) bg-(--colorStatusWarningBackground1) p-3 rounded-lg flex flex-col gap-2">
-                                        <Body2 className="flex items-center gap-2">
-                                            <Warning20Regular className="text-(--colorStatusWarningForeground1)" />
-                                            Предупреждения
-                                        </Body2>
-                                        {warnings.map((w, i) => (
-                                            <Body1 key={i} className="text-(--colorStatusWarningForeground1)">• {w}</Body1>
-                                        ))}
-                                    </div>
-                                )}
+                                <WarningsCard warnings={warnings} asCard={false} />
 
                                 {mode === "reject" && (
                                     <div className="mt-2">

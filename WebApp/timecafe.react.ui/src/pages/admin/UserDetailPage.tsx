@@ -27,6 +27,7 @@ import {
     Title3,
 } from "@fluentui/react-components";
 import { SecureAvatar } from "@components/SecureAvatar/SecureAvatar";
+import { PageLoader } from "@components/PageLoader/PageLoader";
 import { ArrowLeft20Regular, Delete20Regular, PeopleSettings20Regular, Eye20Regular } from "@fluentui/react-icons";
 import { TextareaWithCounter } from "@components/FormFields";
 import { AuditLogDetails } from "@components/Admin/AuditLogDetails";
@@ -54,10 +55,10 @@ import { HasPermission } from "@components/Guard/HasPermission";
 import { DismissableError } from "@components/DismissableError/DismissableError";
 import { LoyaltyProgress } from "@components/Loyalty/LoyaltyProgress";
 import { NO_DATA } from "@shared/const/placeholders";
-import { formatDateTime } from "@utility/dateUtils";
+import { formatDateTime, formatDate } from "@utility/dateUtils";
 import { formatMoney, formatDurationMs } from "@utility/formatUtils";
 import { txTypeColor, txSourceLabel, txTypeLabel } from "@utility/billingUtils";
-import { visitStatusLabel, visitStatusColor } from "@utility/visitUtils";
+import { VisitStatusBadge } from "@components/VisitStatusBadge";
 import { genderLabel, profileStatusLabel, profileStatusColor } from "@utility/userUtils";
 
 import { usePagination } from "@hooks/usePagination";
@@ -247,7 +248,7 @@ export const UserDetailPage = () => {
             renderHeaderCell: () => "Статус",
             renderCell: (v) => (
                 <TableCellLayout truncate>
-                    <Badge appearance="filled" color={visitStatusColor(v.status)}>{visitStatusLabel(v.status)}</Badge>
+                    <VisitStatusBadge status={v.status} />
                 </TableCellLayout>
             ),
         }),
@@ -286,7 +287,7 @@ export const UserDetailPage = () => {
     ], []);
 
     if (userLoading) {
-        return <div ><Spinner /></div>;
+        return <PageLoader label="Загрузка пользователя..." />;
     }
 
     return (
@@ -402,7 +403,7 @@ export const UserDetailPage = () => {
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Дата рождения</Body1>
-                                        <Body1Strong>{profile?.birthDate ? new Date(profile.birthDate).toLocaleDateString("ru-RU") : NO_DATA}</Body1Strong>
+                                         <Body1Strong>{formatDate(profile?.birthDate)}</Body1Strong>
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Email</Body1>

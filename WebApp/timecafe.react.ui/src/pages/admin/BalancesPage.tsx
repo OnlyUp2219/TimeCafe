@@ -1,11 +1,9 @@
 import { useMemo } from "react";
 import {
-    Avatar,
     Body1,
     Body2,
     Badge,
     Card,
-    Caption1,
     Title2,
     Title3,
     createTableColumn,
@@ -14,7 +12,6 @@ import {
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { useGetAdminBalancesQuery } from "@store/api/adminApi";
 import type { AdminBalanceDto } from "@store/api/adminApi";
-import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
@@ -28,21 +25,7 @@ import { DismissableError } from "@components/DismissableError/DismissableError"
 
 import { formatDateTime as formatDate } from "@utility/dateUtils";
 import { formatMoney } from "@utility/formatUtils";
-import { getUserFullName } from "@utility/userUtils";
-
-const AdminUserCell = ({ userId }: { userId: string }) => {
-    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
-    const displayName = getUserFullName(profile, userId);
-
-    return (
-        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
-            <div className="flex flex-col min-w-0">
-                <Body1 truncate>{displayName || userId}</Body1>
-                <Caption1 className="font-mono text-(--colorNeutralForeground4)" style={{ fontSize: '10px' }}>{userId}</Caption1>
-            </div>
-        </TableCellLayout>
-    );
-};
+import { UserCell } from "@components/DataTable/cells/UserCell";
 
 const getBalanceType = (balance: AdminBalanceDto) => {
     if (balance.debt > 0) return "Долг";
@@ -96,7 +79,7 @@ export const BalancesPage = () => {
                     columnId: "user",
                     compare: (a, b) => a.userId.localeCompare(b.userId),
                     renderHeaderCell: () => "Пользователь",
-                    renderCell: (b) => <AdminUserCell userId={b.userId} />,
+                    renderCell: (b) => <UserCell userId={b.userId} variant="detailed" showAvatar readOnly />,
                 }),
                 permission: Permissions.UserProfileProfileRead
             },

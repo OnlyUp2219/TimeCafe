@@ -7,6 +7,7 @@ import {DateInput} from "@components/FormFields";
 import {ProfilePhotoCard} from "@components/ProfilePhotoCard/ProfilePhotoCard";
 import {normalizeDate} from "@utility/normalizeDate";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {formatDate} from "@utility/dateUtils";
 
 export interface PersonalDataMainFormProps {
     profile: Profile;
@@ -66,7 +67,7 @@ export const PersonalDataMainForm: FC<PersonalDataMainFormProps> = ({
 
     const fullName = `${firstName} ${lastName}${middleName ? ` ${middleName}` : ""}`.trim();
     const genderText = genderId === 1 ? "Мужчина" : genderId === 2 ? "Женщина" : "Не указан";
-    const birthDateText = birthDate ? birthDate.toLocaleDateString() : NO_DATA;
+    const birthDateText = formatDate(birthDate);
 
     const handleSave = () => {
         onSave?.({

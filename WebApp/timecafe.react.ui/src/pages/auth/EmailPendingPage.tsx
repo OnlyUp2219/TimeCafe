@@ -2,7 +2,7 @@ import {useMemo} from "react";
 import {useNavigate, useLocation} from "react-router-dom";
 import {useAppSelector} from "@store/hooks";
 import {EmailPendingCard} from "@components/EmailPendingCard/EmailPendingCard";
-import {Body2, Title3} from "@fluentui/react-components";
+import { EmptyState } from "@components/EmptyState/EmptyState";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
 import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
 import {AuthHero} from "@components/AuthHero/AuthHero";
@@ -33,10 +33,10 @@ export const EmailPendingPage = () => {
 
                 <div id="Form" className={authFormContainerClassName}>
                     <div className="flex flex-col w-full max-w-md gap-[12px]">
-                        <div className="flex flex-col items-center">
-                            <Title3 block>Подтверждение email</Title3>
-                            <Body2 block>Нет данных о почте. Перейдите к регистрации или входу.</Body2>
-                        </div>
+                        <EmptyState
+                            title="Нет данных о почте"
+                            description="Перейдите к регистрации или входу."
+                        />
 
                         <div className="grid grid-cols-1 gap-[12px] sm:grid-cols-2">
                             <TooltipButton

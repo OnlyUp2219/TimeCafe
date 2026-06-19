@@ -4,14 +4,12 @@ import { formatDateTime } from "@utility/dateUtils";
 import { formatDurationMs, safeParseJson } from "@utility/formatUtils";
 import { NO_DATA } from "@shared/const/placeholders";
 import type { FC } from "react";
+import { isUuid } from "@utility/validate";
 
 interface AuditLogDetailsProps {
     log: AuditLogDto;
     userDisplayName?: React.ReactNode;
 }
-
-const isUuid = (str: string) =>
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
 
 export const AuditLogDetails: FC<AuditLogDetailsProps> = ({ log, userDisplayName }) => {
     const hasUserId = isUuid(log.userName);

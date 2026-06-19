@@ -1,6 +1,7 @@
 import {Input, Field} from "@fluentui/react-components";
-import {useEffect, useMemo, useRef} from "react";
+import {useMemo} from "react";
 import {validateConfirmPassword as defaultValidateConfirmPassword} from "@utility/validate";
+import {useValidationCallback} from "@hooks/useValidationCallback";
 
 interface ConfirmPasswordInputProps {
     value: string;
@@ -36,14 +37,7 @@ export const ConfirmPasswordInput = ({
         [passwordValue, shouldValidate, validate, value]
     );
 
-    const onValidationChangeRef = useRef(onValidationChange);
-    useEffect(() => {
-        onValidationChangeRef.current = onValidationChange;
-    }, [onValidationChange]);
-
-    useEffect(() => {
-        onValidationChangeRef.current?.(errorMsg);
-    }, [errorMsg]);
+    useValidationCallback(onValidationChange, errorMsg);
 
     const displayError = shouldValidate ? (externalError || errorMsg) : "";
 

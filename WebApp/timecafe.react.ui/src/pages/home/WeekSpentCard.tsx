@@ -2,7 +2,7 @@ import type {FC} from "react";
 import {Button, Caption1, Divider, Subtitle2Stronger, Title3} from "@fluentui/react-components";
 import {ArrowTrendingLines20Regular, Calendar20Regular} from "@fluentui/react-icons";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
-import {formatRub} from "@utility/formatRub";
+import {formatRub} from "@utility/formatMoney";
 import {useComponentSize} from "@hooks/useComponentSize";
 
 interface WeekSpentCardProps {

@@ -17,6 +17,8 @@ import { clamp } from "@utility/clamp";
 import { useProgressToast } from "@components/ToastProgress/ToastProgress";
 import { useComponentSize } from "@hooks/useComponentSize";
 import { calcVisitEstimate } from "@utility/visitEstimate";
+import { useVisitDiscounts, getVisitDiscounts } from "@hooks/useVisitDiscounts";
+import { EmptyState } from "@components/EmptyState/EmptyState";
 
 import "./visits.css";
 import { type CalcResult, TariffForecastCard } from "@components/Tariff/TariffForecastCard";
@@ -127,24 +129,11 @@ export const TariffSelectionPage = () => {
 
     const discountsMap = useMemo(() => {
         const map = new Map<string, number>();
-        let globalD = 0;
         if (promotions) {
-            const now = Date.now();
-            const activePromos = promotions.filter(p =>
-                p.isActive &&
-                (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
-                (!p.validTo || new Date(p.validTo).getTime() >= now)
-            );
-            const g = activePromos.find(p => !p.tariffId);
-            if (g?.discountPercent) globalD = g.discountPercent;
-
             for (const t of visibleTariffs) {
-                let tariffD = 0;
-                const tp = activePromos.find(p => p.tariffId === t.tariffId);
-                if (tp?.discountPercent) tariffD = tp.discountPercent;
-                const personalD = loyalty?.personalDiscountPercent ?? 0;
-                const bestPromotion = Math.max(globalD, tariffD);
-                const applied = Math.min(bestPromotion + personalD, 50); // max discount 50%
+                const { globalDiscount, tariffDiscount, personalDiscount } = getVisitDiscounts(promotions, loyalty, t.tariffId);
+                const bestPromotion = Math.max(globalDiscount, tariffDiscount);
+                const applied = Math.min(bestPromotion + personalDiscount, 50); // max discount 50%
                 map.set(t.tariffId, applied);
             }
         }
@@ -163,27 +152,10 @@ export const TariffSelectionPage = () => {
         );
     }, [resourcesData, activeVisitsData]);
 
+    const discounts = useVisitDiscounts(promotions, loyalty, selectedTariff?.tariffId);
+
     const calc = useMemo(() => {
         if (!selectedTariff) return null;
-
-        let globalD = 0;
-        let tariffD = 0;
-        if (promotions) {
-            const now = Date.now();
-            const activePromos = promotions.filter(p =>
-                p.isActive &&
-                (!p.validFrom || new Date(p.validFrom).getTime() <= now) &&
-                (!p.validTo || new Date(p.validTo).getTime() >= now)
-            );
-
-            const g = activePromos.find(p => !p.tariffId);
-            if (g?.discountPercent) globalD = g.discountPercent;
-
-            const t = activePromos.find(p => p.tariffId === selectedTariff.tariffId);
-            if (t?.discountPercent) tariffD = t.discountPercent;
-        }
-
-        const personalD = loyalty?.personalDiscountPercent ?? 0;
 
         return calculate(
             durationMinutes,
@@ -191,11 +163,11 @@ export const TariffSelectionPage = () => {
             selectedTariff.billingType,
             selectedTariff.minSessionMinutes,
             selectedTariff.roundingRule,
-            globalD,
-            tariffD,
-            personalD
+            discounts.globalDiscount,
+            discounts.tariffDiscount,
+            discounts.personalDiscount
         );
-    }, [durationMinutes, selectedTariff, promotions, loyalty]);
+    }, [durationMinutes, selectedTariff, discounts]);
 
     const setActiveTariff = useCallback(
         (index: number) => {
@@ -284,10 +256,14 @@ export const TariffSelectionPage = () => {
     } else if (showEmptyTariffs) {
         tariffContent = (
             <Card className="flex flex-col gap-3" data-testid="visit-start-empty">
-                <Body1 block>Сейчас нет доступных тарифов. Попробуйте обновить список.</Body1>
-                <Button appearance="primary" size={sizes.button} onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
-                    Обновить тарифы
-                </Button>
+                <EmptyState
+                    title="Сейчас нет доступных тарифов"
+                    description="Попробуйте обновить список."
+                >
+                    <Button appearance="primary" size={sizes.button} onClick={() => void onRetryLoad()} data-testid="visit-start-retry">
+                        Обновить тарифы
+                    </Button>
+                </EmptyState>
             </Card>
         );
     } else {

@@ -123,7 +123,7 @@ export const getRtkErrorTitle = (error: FetchBaseQueryError | SerializedError | 
     return apiError.code || defaultTitle;
 };
 
-export const normalizeUnknownError = (data: any): ApiError => {
+export const normalizeRawErrorData = (data: any): ApiError => {
     if (!data || typeof data !== "object") {
         return { statusCode: 0, message: "Неизвестная ошибка" };
     }
@@ -135,3 +135,4 @@ export const normalizeUnknownError = (data: any): ApiError => {
 
     return { statusCode, code, message, errors, raw: data };
 };
+

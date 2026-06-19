@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Caption1, Card, Title2, Dropdown, Option, Input, Label } from "@fluentui/react-components";
 import { formatDurationMinutes } from "@utility/formatDurationMinutes";
-import { formatRub } from "@utility/formatRub";
+import { formatRub } from "@utility/formatMoney";
 import type { Tariff } from "@app-types/tariff";
 import { useComponentSize } from "@hooks/useComponentSize";
 import "@pages/billing/billing.css";

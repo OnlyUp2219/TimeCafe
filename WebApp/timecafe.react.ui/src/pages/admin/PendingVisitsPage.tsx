@@ -25,22 +25,8 @@ import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/Approve
 import { usePagination } from "@hooks/usePagination";
 import { NO_DATA } from "@shared/const/placeholders";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
 import { formatDateTime } from "@utility/dateUtils";
-import { getUserFullName } from "@utility/userUtils";
-
-const UserCell = ({ userId }: { userId: string }) => {
-    const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
-    const userFullName = getUserFullName(profile, userId);
-
-    return (
-        <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
-            <Body2 className="text-xs">{profile ? userFullName : `${userId.slice(0, 8)}…`}</Body2>
-        </TableCellLayout>
-    );
-};
-
-
+import { UserCell } from "@components/DataTable/cells/UserCell";
 
 export const PendingVisitsPage = () => {
 

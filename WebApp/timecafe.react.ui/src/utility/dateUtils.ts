@@ -29,3 +29,24 @@ export const formatTimeHHmm = (hhmm: string | null | undefined, fallback: Date):
     if (hhmm && /^\d{2}:\d{2}$/.test(hhmm)) return hhmm;
     return `${pad2(fallback.getHours())}:${pad2(fallback.getMinutes())}`;
 };
+
+export const formatDate = (date: string | Date | null | undefined): string => {
+    if (!date) return NO_DATA;
+    const d = typeof date === "string" ? new Date(date) : date;
+    if (Number.isNaN(d.getTime())) return NO_DATA;
+    return d.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    });
+};
+
+export const formatDateShort = (date: Date | string | null | undefined): string => {
+    if (!date) return NO_DATA;
+    const d = date instanceof Date ? date : new Date(date);
+    if (Number.isNaN(d.getTime())) return NO_DATA;
+    return d.toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "2-digit"
+    });
+};

@@ -1,7 +1,7 @@
 import {Badge, Body1, Card, Title3} from "@fluentui/react-components";
 import {Warning20Filled} from "@fluentui/react-icons";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
-import {formatRub} from "@utility/formatRub";
+import {formatRub} from "@utility/formatMoney";
 import "@pages/billing/billing.css";
 import {useComponentSize} from "@hooks/useComponentSize";
 

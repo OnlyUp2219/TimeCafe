@@ -9,6 +9,8 @@ import {clearTokens, setAccessToken, setEmail, setRole, setUserId} from "@store/
 import {getApiBaseUrl} from "@api/apiBaseUrl";
 import {getJwtInfo} from "@shared/auth/jwt";
 
+import {tryRefreshAccessToken} from "@shared/auth/refreshToken";
+
 const rawBaseQuery = fetchBaseQuery({
     baseUrl: getApiBaseUrl(),
     credentials: "include",
@@ -31,32 +33,6 @@ const refreshBaseQuery = fetchBaseQuery({
     credentials: "include",
 });
 
-let refreshPromise: Promise<string | null> | null = null;
-
-const tryRefresh = async (): Promise<string | null> => {
-    refreshPromise ??= (async () => {
-        try {
-            const res = await fetch(`${getApiBaseUrl()}/auth/refresh-jwt`, {
-                method: "POST",
-                credentials: "include",
-                headers: {"Content-Type": "application/json"},
-                body: "{}",
-            });
-            if (!res.ok) return null;
-            const data = (await res.json()) as { accessToken?: string };
-            return data.accessToken ?? null;
-        } catch {
-            return null;
-        }
-    })();
-
-    try {
-        return await refreshPromise;
-    } finally {
-        refreshPromise = null;
-    }
-};
-
 export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (
     args,
     api,
@@ -65,7 +41,7 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
     let result = await rawBaseQuery(args, api, extraOptions);
 
     if (result.error?.status === 401) {
-        const newToken = await tryRefresh();
+        const newToken = await tryRefreshAccessToken();
 
         if (newToken) {
             api.dispatch(setAccessToken(newToken));

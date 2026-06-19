@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-    Badge,
     Body1,
     Body2,
     Button,
@@ -9,8 +8,6 @@ import {
     Input,
     Title2,
     Title3,
-    createTableColumn,
-    TableCellLayout,
 } from "@fluentui/react-components";
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { useGetAdminTransactionsQuery } from "@store/api/adminApi";
@@ -25,11 +22,19 @@ import { Permissions, type Permission } from "@shared/auth/permissions";
 import type { BillingTransaction } from "@app-types/billing";
 import { TransactionType, TransactionStatus } from "@app-types/billing";
 import { DismissableError } from "@components/DismissableError/DismissableError";
-import { NO_DATA } from "@shared/const/placeholders";
-import { formatDateTime } from "@utility/dateUtils";
 import { formatMoney } from "@utility/formatUtils";
-import { txTypeLabel, txTypeColor, txSourceLabel, txStatusLabel, txStatusColor } from "@utility/billingUtils";
 import { usePagination } from "@hooks/usePagination";
+import {
+    transactionDateColumn,
+    transactionTypeColumn,
+    transactionSourceColumn,
+    transactionStatusColumn,
+    transactionAmountColumn,
+    transactionBalanceColumn,
+    transactionCommentColumn,
+    withPermission,
+} from "@components/Billing/TransactionColumns";
+import { UserCell } from "@components/DataTable/cells/UserCell";
 import { PageLoader } from "@components/PageLoader/PageLoader";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 import { ArrowClockwise20Regular } from "@fluentui/react-icons";
@@ -67,93 +72,27 @@ export const TransactionsPage = () => {
         comment: { minWidth: 100, defaultWidth: 220, idealWidth: 280 },
     }), []);
 
+    const userColumn = useMemo<TableColumnDefinition<BillingTransaction>>(() => ({
+        columnId: "user",
+        compare: (a, b) => a.userId.localeCompare(b.userId),
+        renderHeaderCell: () => "Пользователь",
+        renderCell: (tx) => <UserCell userId={tx.userId} variant="compact" readOnly />,
+    }), []);
+
     const columns: TableColumnDefinition<BillingTransaction>[] = useMemo(() => {
         const allColumns: (TableColumnDefinition<BillingTransaction> & { permission?: string })[] = [
-            createTableColumn<BillingTransaction>({
-                columnId: "date",
-                compare: (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-                renderHeaderCell: () => "Дата",
-                renderCell: (tx) => <TableCellLayout truncate>{formatDateTime(tx.createdAt)}</TableCellLayout>,
-            }),
-            {
-                ...createTableColumn<BillingTransaction>({
-                    columnId: "user",
-                    compare: (a, b) => a.userId.localeCompare(b.userId),
-                    renderHeaderCell: () => "Пользователь",
-                    renderCell: (tx) => (
-                        <TableCellLayout truncate>
-                            <div className="min-w-0">
-                                <Body2 className="font-mono text-(--colorNeutralForeground4)">{tx.userId.slice(0, 12)}…</Body2>
-                            </div>
-                        </TableCellLayout>
-                    ),
-                }),
-                permission: Permissions.UserProfileProfileRead
-            },
-            createTableColumn<BillingTransaction>({
-                columnId: "type",
-                compare: (a, b) => a.type - b.type,
-                renderHeaderCell: () => "Тип",
-                renderCell: (tx) => (
-                    <TableCellLayout truncate>
-                        <Badge appearance="tint" color={txTypeColor(tx.type)}>{txTypeLabel(tx.type)}</Badge>
-                    </TableCellLayout>
-                ),
-            }),
-            createTableColumn<BillingTransaction>({
-                columnId: "source",
-                compare: (a, b) => a.source - b.source,
-                renderHeaderCell: () => "Источник",
-                renderCell: (tx) => <TableCellLayout truncate>{txSourceLabel(tx.source)}</TableCellLayout>,
-            }),
-            createTableColumn<BillingTransaction>({
-                columnId: "status",
-                compare: (a, b) => a.status - b.status,
-                renderHeaderCell: () => "Статус",
-                renderCell: (tx) => (
-                    <TableCellLayout truncate>
-                        <Badge appearance="tint" color={txStatusColor(tx.status)}>{txStatusLabel(tx.status)}</Badge>
-                    </TableCellLayout>
-                ),
-            }),
-            {
-                ...createTableColumn<BillingTransaction>({
-                    columnId: "amount",
-                    compare: (a, b) => a.amount - b.amount,
-                    renderHeaderCell: () => "Сумма",
-                    renderCell: (tx) => (
-                        <TableCellLayout truncate>
-                            <span className={tx.type === TransactionType.Withdrawal ? "text-(--colorPaletteRedForeground1)" : "text-(--colorPaletteGreenForeground1)"}>
-                                {tx.type === TransactionType.Withdrawal ? "−" : "+"}{formatMoney(Math.abs(tx.amount))}
-                            </span>
-                        </TableCellLayout>
-                    ),
-                }),
-                permission: Permissions.BillingTransactionRead
-            },
-            {
-                ...createTableColumn<BillingTransaction>({
-                    columnId: "balance",
-                    compare: (a, b) => a.balanceAfter - b.balanceAfter,
-                    renderHeaderCell: () => "Баланс после",
-                    renderCell: (tx) => (
-                        <TableCellLayout truncate>
-                            {formatMoney(tx.balanceAfter)}
-                        </TableCellLayout>
-                    ),
-                }),
-                permission: Permissions.BillingTransactionRead
-            },
-            createTableColumn<BillingTransaction>({
-                columnId: "comment",
-                compare: (a, b) => (a.comment ?? "").localeCompare(b.comment ?? ""),
-                renderHeaderCell: () => "Комментарий",
-                renderCell: (tx) => <TableCellLayout truncate>{tx.comment || NO_DATA}</TableCellLayout>,
-            }),
+            transactionDateColumn(),
+            withPermission(userColumn, Permissions.UserProfileProfileRead),
+            transactionTypeColumn(),
+            transactionSourceColumn(),
+            transactionStatusColumn(),
+            withPermission(transactionAmountColumn(), Permissions.BillingTransactionRead),
+            withPermission(transactionBalanceColumn(), Permissions.BillingTransactionRead),
+            transactionCommentColumn(),
         ];
 
         return allColumns.filter(col => !col.permission || has(col.permission as Permission));
-    }, [has]);
+    }, [has, userColumn]);
 
 
     if (isLoading) return <PageLoader label="Загрузка транзакций..." />;

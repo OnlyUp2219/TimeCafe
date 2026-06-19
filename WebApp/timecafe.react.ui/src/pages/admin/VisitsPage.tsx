@@ -29,24 +29,22 @@ import { usePermissions } from "@hooks/usePermissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { Permissions, type Permission } from "@shared/auth/permissions";
 import { ApproveVisitDialog } from "@components/Admin/ApproveVisitDialog/ApproveVisitDialog";
-import { useGetProfileByUserIdQuery } from "@store/api/profileApi";
+import { UserCell } from "@components/DataTable/cells/UserCell";
 import { useGetBalancesBulkQuery } from "@store/api/billingApi";
 import { VisitStatus } from "@app-types/visit";
 import { usePagination } from "@hooks/usePagination";
 import { WalkInVisitDialog } from "@components/Admin/WalkInVisitDialog/WalkInVisitDialog";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
-import { CURRENCY_SYMBOL } from "@shared/const/currency";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-import { getUserFullName } from "@utility/userUtils";
 import { formatDateTime } from "@utility/dateUtils";
 import { formatDurationMinutes } from "@utility/formatDurationMinutes";
+import { formatMoney } from "@utility/formatUtils";
 
 const formatCost = (cost: number | null, status: VisitStatus) => {
     if (status === VisitStatus.Cancelled || status === VisitStatus.Rejected) {
-        return `0.00 ${CURRENCY_SYMBOL}`;
+        return formatMoney(0);
     }
-    if (cost == null) return NO_DATA;
-    return `${cost.toFixed(2)} ${CURRENCY_SYMBOL}`;
+    return formatMoney(cost);
 };
 
 const getVisitDurationMs = (visit: VisitWithTariff, now: Date) => {
@@ -56,24 +54,6 @@ const getVisitDurationMs = (visit: VisitWithTariff, now: Date) => {
 };
 
 
-
-const UserCell = ({ userId }: { userId: string | null }) => {
-    const { data: profile } = useGetProfileByUserIdQuery(userId ?? "", { skip: !userId });
-    if (!userId) {
-        return (
-            <TableCellLayout truncate title="Анонимный гость (Walk-in)">
-                <Body2 className="text-xs text-(--colorNeutralForeground3)">Анонимный гость (Walk-in)</Body2>
-            </TableCellLayout>
-        );
-    }
-    const userFullName = getUserFullName(profile, userId);
-
-    return (
-        <TableCellLayout truncate title={`${userFullName} (ID: ${userId})`}>
-            <Body2 className="text-xs">{profile ? userFullName : `${userId.slice(0, 8)}…`}</Body2>
-        </TableCellLayout>
-    );
-};
 
 export const VisitsPage = () => {
     const navigate = useNavigate();
@@ -267,7 +247,7 @@ export const VisitsPage = () => {
                     if (visit.userId && balances && balances[visit.userId] != null) {
                         const balance = balances[visit.userId];
                         if (balance < 0 || (visit.status === VisitStatus.Active && balance < (visit.calculatedCost ?? 0))) {
-                            warnings.push(`Долг/Меньше цены (${balance} ${CURRENCY_SYMBOL})`);
+                            warnings.push(`Долг/Меньше цены (${formatMoney(balance)})`);
                         }
                     }
                     if (warnings.length === 0) return <TableCellLayout truncate>{NO_DATA}</TableCellLayout>;

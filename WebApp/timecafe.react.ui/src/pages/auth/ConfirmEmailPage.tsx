@@ -1,25 +1,26 @@
-import {useEffect, useMemo, useRef, useState} from "react";
-import {useNavigate, useSearchParams} from "react-router-dom";
-import {Spinner, Title2, Body1, Body2, Badge} from "@fluentui/react-components";
-import {useAppDispatch} from "@store/hooks";
-import {useConfirmEmailMutation, useConfirmEmailChangeMutation} from "@store/api/authApi";
-import {setEmail, setEmailConfirmed} from "@store/authSlice";
-import {authFormContainerClassName} from "@layouts/AuthLayout/authLayout.styles";
-import {TooltipButton} from "@components/TooltipButton/TooltipButton";
-import {AuthHero} from "@components/AuthHero/AuthHero";
-import {CheckmarkCircle24Regular, ErrorCircle24Regular} from "@fluentui/react-icons";
-import {useComponentSize} from "@hooks/useComponentSize";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Title2, Body1, Body2, Badge } from "@fluentui/react-components";
+import { PageLoader } from "@components/PageLoader/PageLoader";
+import { useAppDispatch } from "@store/hooks";
+import { useConfirmEmailMutation, useConfirmEmailChangeMutation } from "@store/api/authApi";
+import { setEmail, setEmailConfirmed } from "@store/authSlice";
+import { authFormContainerClassName } from "@layouts/AuthLayout/authLayout.styles";
+import { TooltipButton } from "@components/TooltipButton/TooltipButton";
+import { AuthHero } from "@components/AuthHero/AuthHero";
+import { CheckmarkCircle24Regular, ErrorCircle24Regular } from "@fluentui/react-icons";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 type ViewState =
-    | {status: "loading"}
-    | {status: "success"; message: string}
-    | {status: "error"; message: string};
+    | { status: "loading" }
+    | { status: "success"; message: string }
+    | { status: "error"; message: string };
 
 export const ConfirmEmailPage = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const {sizes} = useComponentSize();
+    const { sizes } = useComponentSize();
 
     const userId = useMemo(() => searchParams.get("userId") || "", [searchParams]);
     const token = useMemo(() => {
@@ -31,7 +32,7 @@ export const ConfirmEmailPage = () => {
     const [confirmEmailMutation] = useConfirmEmailMutation();
     const [confirmEmailChangeMutation] = useConfirmEmailChangeMutation();
 
-    const [state, setState] = useState<ViewState>({status: "loading"});
+    const [state, setState] = useState<ViewState>({ status: "loading" });
     const didConfirmRef = useRef(false);
 
     useEffect(() => {
@@ -40,26 +41,26 @@ export const ConfirmEmailPage = () => {
 
         const run = async () => {
             if (!userId || !token) {
-                setState({status: "error", message: "Некорректная ссылка подтверждения"});
+                setState({ status: "error", message: "Некорректная ссылка подтверждения" });
                 return;
             }
 
             try {
                 if (newEmail) {
-                    const r = await confirmEmailChangeMutation({userId, newEmail, token}).unwrap();
+                    const r = await confirmEmailChangeMutation({ userId, newEmail, token }).unwrap();
                     dispatch(setEmail(newEmail));
                     dispatch(setEmailConfirmed(true));
-                    setState({status: "success", message: r.message || "Почта успешно изменена и подтверждена"});
+                    setState({ status: "success", message: r.message || "Почта успешно изменена и подтверждена" });
                 } else {
-                    const r = await confirmEmailMutation({userId, token}).unwrap();
+                    const r = await confirmEmailMutation({ userId, token }).unwrap();
                     dispatch(setEmailConfirmed(true));
-                    setState({status: "success", message: r.message || "Почта успешно подтверждена"});
+                    setState({ status: "success", message: r.message || "Почта успешно подтверждена" });
                 }
             } catch (err: unknown) {
                 const message = (err && typeof err === "object" && "data" in err)
                     ? String((err as { data?: { error?: string } }).data?.error ?? "Ошибка при подтверждении почты")
                     : "Ошибка при подтверждении почты";
-                setState({status: "error", message});
+                setState({ status: "error", message });
             }
         };
 
@@ -79,7 +80,7 @@ export const ConfirmEmailPage = () => {
                 <div className="flex flex-col w-full max-w-md gap-6">
                     {state.status === "loading" && (
                         <div className="flex flex-col items-center text-center gap-4">
-                            <Spinner size="huge" label="Входим в ритм TimeCafe... ☕" labelPosition="below" />
+                            <PageLoader label="Входим в ритм TimeCafe... ☕" />
                             <Body2 className="text-(--colorNeutralForeground2) max-w-xs">
                                 Активируем ваш доступ. Пожалуйста, не закрывайте страницу, это займет всего мгновение.
                             </Body2>
@@ -99,7 +100,7 @@ export const ConfirmEmailPage = () => {
                             </div>
                             <TooltipButton
                                 appearance="primary"
-                                onClick={() => navigate("/login", {replace: true})}
+                                onClick={() => navigate("/login", { replace: true })}
                                 tooltip="Перейти к авторизации"
                                 label="Войти и начать"
                                 className="w-full"
@@ -122,7 +123,7 @@ export const ConfirmEmailPage = () => {
                             <div className="flex flex-col sm:flex-row gap-3 w-full">
                                 <TooltipButton
                                     appearance="primary"
-                                    onClick={() => navigate("/email-pending", {replace: true})}
+                                    onClick={() => navigate("/email-pending", { replace: true })}
                                     tooltip="Повторно отправить письмо подтверждения"
                                     label="Отправить ссылку еще раз"
                                     className="flex-1"
@@ -130,7 +131,7 @@ export const ConfirmEmailPage = () => {
                                 />
                                 <TooltipButton
                                     appearance="secondary"
-                                    onClick={() => navigate("/login", {replace: true})}
+                                    onClick={() => navigate("/login", { replace: true })}
                                     tooltip="Перейти на страницу входа"
                                     label="На страницу входа"
                                     className="flex-1"

@@ -1,5 +1,7 @@
 import type { FC } from "react";
 import { Body1, Subtitle1, Card, CardHeader, Divider, Text } from "@fluentui/react-components";
+import { formatDateTime } from "@utility/dateUtils";
+import { formatMoney } from "@utility/formatUtils";
 
 export interface VirtualReceiptProps {
     receiptNumber: string;
@@ -33,7 +35,7 @@ export const VirtualReceipt: FC<VirtualReceiptProps> = ({ receiptNumber, amount,
                 </div>
                 <div className="flex justify-between">
                     <Text>Дата/Время:</Text>
-                    <Text>{new Date(date).toLocaleString("ru-RU")}</Text>
+                    <Text>{formatDateTime(date)}</Text>
                 </div>
                 <div className="flex justify-between">
                     <Text>Визит ID:</Text>
@@ -50,7 +52,7 @@ export const VirtualReceipt: FC<VirtualReceiptProps> = ({ receiptNumber, amount,
                 </div>
                 <div className="flex justify-between">
                     <Text>{tariffName ? `Посещение: ${tariffName}` : "Оплата услуг тайм-кафе"}</Text>
-                    <Text>{amount.toFixed(2)} ₽</Text>
+                    <Text>{formatMoney(amount)}</Text>
                 </div>
             </div>
 
@@ -58,7 +60,7 @@ export const VirtualReceipt: FC<VirtualReceiptProps> = ({ receiptNumber, amount,
 
             <div className="flex justify-between items-center mt-2">
                 <Body1 className="font-bold text-lg">ИТОГО</Body1>
-                <Body1 className="font-bold text-lg">{amount.toFixed(2)} ₽</Body1>
+                <Body1 className="font-bold text-lg">{formatMoney(amount)}</Body1>
             </div>
 
             <div className="mt-8 text-center text-xs uppercase tracking-widest" style={{ color: 'var(--colorNeutralForeground4)' }}>

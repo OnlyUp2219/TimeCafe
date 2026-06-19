@@ -1,7 +1,8 @@
 import {Field, Input} from "@fluentui/react-components";
 import type {ReactNode} from "react";
-import {useEffect, useMemo, useRef, useState} from "react";
+import {useMemo, useState} from "react";
 import {validatePhoneNumber as defaultValidatePhoneNumber} from "@utility/validate";
+import {useValidationCallback} from "@hooks/useValidationCallback";
 
 interface PhoneInputProps {
     value: string;
@@ -44,14 +45,7 @@ export const PhoneInput = ({
         return validate(value);
     }, [required, validate, value]);
 
-    const onValidationChangeRef = useRef(onValidationChange);
-    useEffect(() => {
-        onValidationChangeRef.current = onValidationChange;
-    }, [onValidationChange]);
-
-    useEffect(() => {
-        onValidationChangeRef.current?.(errorMsg);
-    }, [errorMsg]);
+    useValidationCallback(onValidationChange, errorMsg);
 
     const allowErrorDisplay = shouldValidate && (!validateOnBlur || touched);
     const displayError = externalError || (allowErrorDisplay ? errorMsg : "");

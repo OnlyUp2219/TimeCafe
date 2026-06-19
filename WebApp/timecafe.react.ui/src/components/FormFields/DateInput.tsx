@@ -1,7 +1,8 @@
 import { Field } from "@fluentui/react-components";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { DatePicker, defaultDatePickerStrings } from "@fluentui/react-datepicker-compat";
 import type { CalendarStrings } from "@fluentui/react-datepicker-compat";
+import { useValidationCallback } from "@hooks/useValidationCallback";
 
 interface DateInputProps {
     value?: Date;
@@ -111,14 +112,8 @@ export const DateInput = ({
         return customError || maxDateError;
     }, [validate, value, maxDateError]);
 
-    const onValidationChangeRef = useRef(onValidationChange);
-    useEffect(() => {
-        onValidationChangeRef.current = onValidationChange;
-    }, [onValidationChange]);
+    useValidationCallback(onValidationChange, errorMsg);
 
-    useEffect(() => {
-        onValidationChangeRef.current?.(errorMsg);
-    }, [errorMsg]);
 
     return (
         <Field

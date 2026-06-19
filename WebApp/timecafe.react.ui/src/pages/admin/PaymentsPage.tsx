@@ -1,7 +1,6 @@
 import { NO_DATA } from "@shared/const/placeholders";
 import { useMemo } from "react";
 import {
-    Avatar,
     Badge,
     Body1,
     Body2,
@@ -16,7 +15,6 @@ import {
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { useGetAdminPaymentsQuery } from "@store/api/adminApi";
 import type { AdminPaymentDto } from "@store/api/adminApi";
-import { useGetProfileByUserIdReadOnlyQuery } from "@store/api/profileApi";
 import { getRtkErrorMessage } from "@shared/api/errors/extractRtkError";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DataTable } from "@components/DataTable/DataTable";
@@ -30,23 +28,7 @@ import { DismissableError } from "@components/DismissableError/DismissableError"
 import { paymentStatusLabel, paymentStatusColor, paymentMethodLabel } from "@utility/billingUtils";
 import { formatDateTime as formatDate } from "@utility/dateUtils";
 import { formatMoney } from "@utility/formatUtils";
-import { getUserFullName } from "@utility/userUtils";
-
-const AdminUserCell = ({ userId }: { userId: string }) => {
-    const { data: profile } = useGetProfileByUserIdReadOnlyQuery(userId);
-    const displayName = getUserFullName(profile, userId);
-
-    return (
-        <TableCellLayout truncate media={<Avatar name={displayName || userId} size={28} />}>
-            <div className="flex flex-col min-w-0">
-                <Body1 truncate>{displayName || userId}</Body1>
-                <Caption1 className="font-mono text-(--colorNeutralForeground4)" style={{ fontSize: '10px' }}>{userId}</Caption1>
-            </div>
-        </TableCellLayout>
-    );
-};
-
-
+import { UserCell } from "@components/DataTable/cells/UserCell";
 
 export const PaymentsPage = () => {
     const { sizes } = useComponentSize();
@@ -81,7 +63,7 @@ export const PaymentsPage = () => {
                 columnId: "userId",
                 compare: (a, b) => a.userId.localeCompare(b.userId),
                 renderHeaderCell: () => "Пользователь",
-                renderCell: (p) => <AdminUserCell userId={p.userId} />,
+                renderCell: (p) => <UserCell userId={p.userId} variant="detailed" showAvatar readOnly />,
             }),
             {
                 ...createTableColumn<AdminPaymentDto>({
