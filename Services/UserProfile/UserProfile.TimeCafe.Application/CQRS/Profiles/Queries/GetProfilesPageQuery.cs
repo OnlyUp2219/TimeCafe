@@ -23,7 +23,9 @@ public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetPro
     {
         try
         {
-            var profiles = await _uow.Profiles.GetPageAsync(request.Page, request.PageSize, cancellationToken);
+            var page = request.Page <= 0 ? 1 : request.Page;
+            var pageSize = request.PageSize <= 0 ? 10 : request.PageSize;
+            var profiles = await _uow.Profiles.GetPageAsync(page, pageSize, cancellationToken);
             var totalCount = await _uow.Profiles.GetTotalPageAsync(cancellationToken);
 
             var dtos = ProfilePhotoUrlMapper.WithApiUrl(profiles.Where(p => p != null)!)
@@ -40,11 +42,11 @@ public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetPro
                     p.VisitCount,
                     p.PersonalDiscountPercent));
 
-            var totalPages = (totalCount + request.PageSize - 1) / request.PageSize;
+            var totalPages = (totalCount + pageSize - 1) / pageSize;
 
             return Result.Ok(new PagedResponse<ProfileDto>(
                 dtos, 
-                new PageMetadata(request.Page, request.PageSize, totalCount, totalPages)));
+                new PageMetadata(page, pageSize, totalCount, totalPages)));
         }
         catch (Exception ex)
         {

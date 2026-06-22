@@ -58,8 +58,6 @@ public static class MassTransitExtensions
 
                 cfg.ReceiveEndpoint("venue-user-discount-updated", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.UserDiscountUpdatedEventConsumer>(context));
                 cfg.ReceiveEndpoint("venue-invoice-paid", e => e.ConfigureConsumer<Venue.TimeCafe.Infrastructure.Consumers.InvoicePaidEventConsumer>(context));
-
-                cfg.ConfigureEndpoints(context);
             });
         });
 

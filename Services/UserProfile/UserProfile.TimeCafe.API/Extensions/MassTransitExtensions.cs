@@ -81,8 +81,6 @@ public static class MassTransitExtensions
                     e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     e.ConfigureConsumer<UserProfile.TimeCafe.Infrastructure.Consumers.VisitCompletedEventConsumer>(context);
                 });
-
-                cfg.ConfigureEndpoints(context);
             });
         });
 

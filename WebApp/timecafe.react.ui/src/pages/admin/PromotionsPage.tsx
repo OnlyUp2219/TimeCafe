@@ -29,6 +29,7 @@ import {
 import type { TableColumnDefinition, TableColumnSizingOptions } from "@fluentui/react-components";
 import { Add20Regular, Delete20Regular, Edit20Regular, ArrowClockwise20Regular } from "@fluentui/react-icons";
 import { DismissableError } from "@components/DismissableError/DismissableError";
+import { DateInput } from "@components/FormFields";
 import {
     useGetAllPromotionsQuery,
     useGetPromotionsPageQuery,
@@ -51,7 +52,7 @@ import { Permissions, type Permission } from "@shared/auth/permissions";
 import { RequirePermission } from "@app/components/RequirePermission/RequirePermission";
 import { usePagination } from "@app/hooks/usePagination";
 import { PageLoader } from "@components/PageLoader/PageLoader";
-import { formatDate } from "@utility/dateUtils";
+import { formatDate, formatDateToYYYYMMDD } from "@utility/dateUtils";
 import { CURRENCY_SYMBOL } from "@shared/const/currency";
 
 const toInputDate = (iso: string) => iso ? iso.substring(0, 10) : "";
@@ -361,7 +362,7 @@ export const PromotionsPage = () => {
                             <Field label="Название" required>
                                 <Input value={form.name} onChange={(_, d) => setForm(f => ({ ...f, name: d.value }))} size={sizes.input} />
                             </Field>
-                            <Field label="Описание">
+                             <Field label="Описание" required>
                                 <Input value={form.description} onChange={(_, d) => setForm(f => ({ ...f, description: d.value }))} size={sizes.input} />
                             </Field>
                             <Field label="Скидка (%)">
@@ -388,7 +389,7 @@ export const PromotionsPage = () => {
                                         placeholder="Выберите тариф"
                                         value={tariffs.find(t => t.tariffId.toLowerCase() === form.tariffId.toLowerCase())?.name ?? ""}
                                         selectedOptions={form.tariffId ? [form.tariffId] : []}
-                                        onOptionSelect={(_, data) => setForm(f => ({ ...f, tariffId: data.optionValue ?? "" }))}
+                                         onOptionSelect={(_, data) => setForm(f => ({ ...f, tariffId: data.selectedOptions[0] ?? "" }))}
                                         size={sizes.dropdown}
                                     >
                                         {tariffs.map(t => (
@@ -399,12 +400,20 @@ export const PromotionsPage = () => {
                                     </Dropdown>
                                 </Field>
                             )}
-                            <Field label="Действует с" required>
-                                <Input type="date" value={form.validFrom} onChange={(_, d) => setForm(f => ({ ...f, validFrom: d.value }))} size={sizes.input} />
-                            </Field>
-                            <Field label="Действует до" required>
-                                <Input type="date" value={form.validTo} onChange={(_, d) => setForm(f => ({ ...f, validTo: d.value }))} size={sizes.input} />
-                            </Field>
+                             <DateInput
+                                label="Действует с"
+                                required
+                                value={form.validFrom ? new Date(form.validFrom) : undefined}
+                                onChange={(date) => setForm(f => ({ ...f, validFrom: formatDateToYYYYMMDD(date) }))}
+                                size={sizes.input as any}
+                            />
+                            <DateInput
+                                label="Действует до"
+                                required
+                                value={form.validTo ? new Date(form.validTo) : undefined}
+                                onChange={(date) => setForm(f => ({ ...f, validTo: formatDateToYYYYMMDD(date) }))}
+                                size={sizes.input as any}
+                            />
                             <Switch
                                 checked={form.isActive}
                                 onChange={(_, d) => setForm(f => ({ ...f, isActive: d.checked }))}
@@ -416,7 +425,7 @@ export const PromotionsPage = () => {
                             <DialogTrigger disableButtonEnhancement>
                                 <Button appearance="secondary" size={sizes.button}>Отмена</Button>
                             </DialogTrigger>
-                            <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.validFrom || !form.validTo || (form.type === 1 && form.isActive && hasActiveGlobal)} size={sizes.button}>
+                             <Button appearance="primary" onClick={handleSave} disabled={saving || !form.name || !form.description || !form.validFrom || !form.validTo || (form.type === 1 && form.isActive && hasActiveGlobal) || (form.type === 2 && !form.tariffId)} size={sizes.button}>
                                 {saving ? <Spinner size="tiny" /> : (editingPromotion ? "Сохранить" : "Создать")}
                             </Button>
                         </DialogActions>

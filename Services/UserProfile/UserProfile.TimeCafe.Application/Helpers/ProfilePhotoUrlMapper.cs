@@ -21,7 +21,9 @@ public static class ProfilePhotoUrlMapper
             CreatedAt = profile.CreatedAt,
             Gender = profile.Gender,
             ProfileStatus = profile.ProfileStatus,
-            BanReason = profile.BanReason
+            BanReason = profile.BanReason,
+            VisitCount = profile.VisitCount,
+            PersonalDiscountPercent = profile.PersonalDiscountPercent
         };
     }
 

@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Npgsql;
 using StackExchange.Redis;
+using Testcontainers.PostgreSql;
 using Testcontainers.RabbitMq;
 using Testcontainers.Redis;
+using Audit.EntityFramework;
 
 using UserProfile.TimeCafe.Domain.DTOs;
 
@@ -13,16 +16,18 @@ namespace UserProfile.TimeCafe.Test.Integration;
 
 public class IntegrationApiFactory : WebApplicationFactory<Program>
 {
-    private readonly string _dbName = $"UserProfileIntegrationDb_{Guid.NewGuid()}";
+    private readonly string _dbName = $"userprofile_test_{Guid.NewGuid():N}";
     private static readonly SemaphoreSlim InfraLock = new(1, 1);
     private static bool _infraInitialized;
     private static string _redisConnectionString = "127.0.0.1:6379";
     private static string _rabbitHost = "localhost";
     private static int _rabbitPort = 5672;
+    private static string _postgreSqlConnectionString = "";
     private const string RabbitUser = "guest";
     private const string RabbitPassword = "guest";
     private static RedisContainer? _redisContainer;
     private static RabbitMqContainer? _rabbitContainer;
+    private static PostgreSqlContainer? _postgresContainer;
 
     public static string? InfrastructureUnavailableReason { get; private set; }
 
@@ -32,8 +37,22 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
 
         builder.UseEnvironment("Testing");
 
-        // Отключить автоматические миграции в тестах
-        builder.UseSetting("SkipMigrations", "true");
+        builder.UseSetting("SkipMigrations", "false");
+
+        var connectionBuilder = new NpgsqlConnectionStringBuilder(_postgreSqlConnectionString)
+        {
+            Database = _dbName
+        };
+        var currentDbConnectionString = connectionBuilder.ConnectionString;
+
+        Environment.SetEnvironmentVariable("IntegrationTests__UseRealInfrastructure", "true");
+        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", currentDbConnectionString);
+        Environment.SetEnvironmentVariable("Redis__ConnectionString", _redisConnectionString);
+        Environment.SetEnvironmentVariable("RabbitMQ__Host", _rabbitHost);
+        Environment.SetEnvironmentVariable("RabbitMQ__Port", _rabbitPort.ToString());
+        Environment.SetEnvironmentVariable("RabbitMQ__Username", RabbitUser);
+        Environment.SetEnvironmentVariable("RabbitMQ__Password", RabbitPassword);
+        Environment.SetEnvironmentVariable("Services__AuthGrpc", "http://localhost:1111");
 
         builder.ConfigureAppConfiguration((_, cfg) =>
         {
@@ -41,7 +60,7 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
             {
                 ["Kestrel:Endpoints:Https:Certificate:Path"] = string.Empty,
                 ["Kestrel:Endpoints:Https:Certificate:Password"] = string.Empty,
-                ["ConnectionStrings:DefaultConnection"] = string.Empty,
+                ["ConnectionStrings:DefaultConnection"] = currentDbConnectionString,
                 ["CORS:PolicyName"] = "TestPolicy",
                 ["Jwt:SigningKey"] = "test-signing-key-minimum-32-characters-long-for-hmacsha256",
                 ["Jwt:Issuer"] = "test-issuer",
@@ -76,8 +95,12 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                 services.Remove(dbContextDescriptor);
             }
 
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseInMemoryDatabase(_dbName));
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(currentDbConnectionString);
+                var auditInterceptor = sp.GetRequiredService<AuditSaveChangesInterceptor>();
+                options.AddInterceptors(auditInterceptor);
+            });
 
             ReplaceRedis(services);
 
@@ -111,7 +134,6 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                     .ReturnsAsync(true);
                 return mock.Object;
             });
-
 
             services.AddAuthentication(options =>
             {
@@ -160,13 +182,20 @@ public class IntegrationApiFactory : WebApplicationFactory<Program>
                     .WithUsername(RabbitUser)
                     .WithPassword(RabbitPassword)
                     .Build();
+                _postgresContainer = new PostgreSqlBuilder()
+                    .WithDatabase("UserProfileTestDb")
+                    .WithUsername("postgres")
+                    .WithPassword("postgres")
+                    .Build();
 
                 _redisContainer.StartAsync().GetAwaiter().GetResult();
                 _rabbitContainer.StartAsync().GetAwaiter().GetResult();
+                _postgresContainer.StartAsync().GetAwaiter().GetResult();
 
                 _redisConnectionString = $"{_redisContainer.Hostname}:{_redisContainer.GetMappedPublicPort(6379)},allowAdmin=true";
                 _rabbitHost = _rabbitContainer.Hostname;
                 _rabbitPort = _rabbitContainer.GetMappedPublicPort(5672);
+                _postgreSqlConnectionString = _postgresContainer.GetConnectionString();
                 InfrastructureUnavailableReason = null;
             }
             catch (Exception ex)

@@ -62,6 +62,73 @@ public static class SeedRolesAndPermissionsExtensions
 
         await EnsureRoleClaimsAsync(roleManager, Roles.Client, clientPermissions);
 
+        var managerPermissions = new List<string>
+        {
+            Permissions.UserProfileProfileRead,
+            Permissions.UserProfileAdditionalInfoRead,
+            Permissions.UserProfilePhotoRead,
+
+            Permissions.BillingBalanceRead,
+            Permissions.BillingDebtRead,
+            Permissions.BillingTransactionRead,
+            Permissions.BillingPaymentHistoryRead,
+            Permissions.BillingInvoiceRead,
+            Permissions.BillingInvoiceAdminRead,
+
+            Permissions.VenueTariffRead,
+            Permissions.VenuePromotionRead,
+            Permissions.VenueThemeRead,
+            Permissions.VenueLoyaltyRead,
+            Permissions.VenueResourceRead,
+
+            Permissions.VenueVisitCreate,
+            Permissions.VenueVisitRead,
+            Permissions.VenueVisitEnd,
+            Permissions.VenueVisitApprove,
+            Permissions.VenueVisitReject,
+            Permissions.VenueVisitViewPending,
+
+            Permissions.AccountSelfRead,
+            Permissions.AccountPhoneStatusRead,
+            
+            Permissions.AuditLogRead
+        };
+
+        await EnsureRoleClaimsAsync(roleManager, Roles.Manager, managerPermissions);
+
+        var receptionistPermissions = new List<string>
+        {
+            Permissions.UserProfileProfileRead,
+            Permissions.UserProfilePhotoRead,
+            Permissions.UserProfileAdditionalInfoRead,
+
+            Permissions.BillingBalanceRead,
+            Permissions.BillingDebtRead,
+            Permissions.BillingTransactionCreate,
+            Permissions.BillingTransactionRead,
+            Permissions.BillingPaymentInitialize,
+            Permissions.BillingPaymentHistoryRead,
+            Permissions.BillingInvoiceRead,
+            Permissions.BillingInvoicePay,
+
+            Permissions.VenueTariffRead,
+            Permissions.VenueThemeRead,
+            Permissions.VenueResourceRead,
+            Permissions.VenueLoyaltyRead,
+
+            Permissions.VenueVisitCreate,
+            Permissions.VenueVisitRead,
+            Permissions.VenueVisitEnd,
+            Permissions.VenueVisitApprove,
+            Permissions.VenueVisitReject,
+            Permissions.VenueVisitViewPending,
+
+            Permissions.AccountSelfRead,
+            Permissions.AccountPhoneStatusRead
+        };
+
+        await EnsureRoleClaimsAsync(roleManager, Roles.Receptionist, receptionistPermissions);
+
         try
         {
             await cache.RemoveByTagAsync(BuildingBlocks.Permissions.PermissionClaimsCacheKeys.PermissionsTag);

@@ -22,40 +22,42 @@ public static class VenueSeedExtensions
             {
                 Name = "Базовая",
                 Emoji = "☕",
-                Colors = "{\"accent\":\"brand\"}"
+                Colors = "{\"type\":\"gradient\",\"colors\":[\"#4f46e5\",\"#06b6d4\"],\"angle\":135,\"textColor\":\"#ffffff\",\"blur\":0,\"patterns\":[{\"type\":\"dots\",\"color\":\"rgba(255, 255, 255, 0.15)\",\"scale\":1.2,\"opacity\":0.4}]}"
             },
             new Theme
             {
                 Name = "Тихая",
                 Emoji = "📚",
-                Colors = "{\"accent\":\"green\"}"
+                Colors = "{\"type\":\"gradient\",\"colors\":[\"#115e59\",\"#0f766e\"],\"angle\":135,\"textColor\":\"#ffffff\",\"blur\":0,\"patterns\":[{\"type\":\"lines\",\"color\":\"rgba(255, 255, 255, 0.08)\",\"scale\":1.0,\"opacity\":0.3}]}"
             },
             new Theme
             {
                 Name = "Ночная",
                 Emoji = "🌙",
-                Colors = "{\"accent\":\"purple\"}"
+                Colors = "{\"type\":\"mesh\",\"colors\":[\"#0f172a\",\"#3b82f6\",\"#1e1b4b\",\"#581c87\",\"#09090b\"],\"textColor\":\"#ffffff\",\"blur\":0,\"patterns\":[{\"type\":\"noise\",\"opacity\":0.15},{\"type\":\"dots\",\"color\":\"rgba(255, 255, 255, 0.25)\",\"scale\":0.8,\"opacity\":0.6}]}"
             },
             new Theme
             {
                 Name = "Промо",
                 Emoji = "🎉",
-                Colors = "{\"accent\":\"pink\"}"
+                Colors = "{\"type\":\"gradient\",\"colors\":[\"#ec4899\",\"#f43f5e\",\"#e11d48\"],\"angle\":45,\"textColor\":\"#ffffff\",\"blur\":0,\"patterns\":[{\"type\":\"dots\",\"color\":\"rgba(255, 255, 255, 0.2)\",\"scale\":1.5,\"opacity\":0.5}]}"
             }
         };
 
-        var existingNames = await dbContext.Themes
-            .Select(x => x.Name)
-            .ToListAsync();
+        foreach (var required in requiredThemes)
+        {
+            var existing = await dbContext.Themes.FirstOrDefaultAsync(x => x.Name == required.Name);
+            if (existing != null)
+            {
+                existing.Emoji = required.Emoji;
+                existing.Colors = required.Colors;
+            }
+            else
+            {
+                await dbContext.Themes.AddAsync(required);
+            }
+        }
 
-        var missing = requiredThemes
-            .Where(item => existingNames.All(existing => !string.Equals(existing, item.Name, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        if (missing.Count == 0)
-            return;
-
-        await dbContext.Themes.AddRangeAsync(missing);
         await dbContext.SaveChangesAsync();
     }
 
@@ -219,18 +221,25 @@ public static class VenueSeedExtensions
             }
         };
 
-        var existingNames = await dbContext.Promotions
-            .Select(x => x.Name)
-            .ToListAsync();
+        foreach (var required in requiredPromotions)
+        {
+            var existing = await dbContext.Promotions.FirstOrDefaultAsync(x => x.Name == required.Name);
+            if (existing != null)
+            {
+                existing.Description = required.Description;
+                existing.DiscountPercent = required.DiscountPercent;
+                existing.ValidFrom = required.ValidFrom;
+                existing.ValidTo = required.ValidTo;
+                existing.IsActive = required.IsActive;
+                existing.Type = required.Type;
+                existing.TariffId = required.TariffId;
+            }
+            else
+            {
+                await dbContext.Promotions.AddAsync(required);
+            }
+        }
 
-        var missing = requiredPromotions
-            .Where(item => existingNames.All(existing => !string.Equals(existing, item.Name, StringComparison.OrdinalIgnoreCase)))
-            .ToList();
-
-        if (missing.Count == 0)
-            return;
-
-        await dbContext.Promotions.AddRangeAsync(missing);
         await dbContext.SaveChangesAsync();
     }
 

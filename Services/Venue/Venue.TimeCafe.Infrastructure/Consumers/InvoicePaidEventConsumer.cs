@@ -3,7 +3,6 @@ namespace Venue.TimeCafe.Infrastructure.Consumers;
 public class InvoicePaidEventConsumer(
     IUnitOfWork uow,
     IPublisher publisher,
-    IPublishEndpoint publishEndpoint,
     ILogger<InvoicePaidEventConsumer> logger) : IConsumer<InvoicePaidEvent>
 {
     public async Task Consume(ConsumeContext<InvoicePaidEvent> context)
@@ -53,7 +52,7 @@ public class InvoicePaidEventConsumer(
 
         if (visit.UserId.HasValue)
         {
-            await publishEndpoint.Publish(new BuildingBlocks.Events.VisitCompletedEvent
+            await context.Publish(new BuildingBlocks.Events.VisitCompletedEvent
             {
                 VisitId = visit.VisitId,
                 UserId = visit.UserId.Value,

@@ -22,8 +22,10 @@ public class VisitCompletedEventConsumerTests
         var snapshotMock = new Mock<IOptionsSnapshot<LoyaltyOptions>>();
         snapshotMock.Setup(x => x.Value).Returns(loyaltyOptions.Value);
 
+        var cacheMock = new Mock<HybridCache>();
+
         var logger = new Mock<ILogger<VisitCompletedEventConsumer>>();
-        _consumer = new VisitCompletedEventConsumer(_dbContext, snapshotMock.Object, logger.Object);
+        _consumer = new VisitCompletedEventConsumer(_dbContext, snapshotMock.Object, cacheMock.Object, logger.Object);
     }
 
     [Fact]
