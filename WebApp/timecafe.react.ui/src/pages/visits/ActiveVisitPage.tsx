@@ -149,6 +149,12 @@ export const ActiveVisitPage = () => {
     useEffect(() => {
         if (loadingActiveVisit) return;
         let hasNoVisit = !activeVisit;
+        if (activeVisit?.status === VisitStatus.Rejected) {
+            const isRead = localStorage.getItem(`read_rejected_visit_${activeVisit.visitId}`) === "true";
+            if (isRead) {
+                hasNoVisit = true;
+            }
+        }
         if (visitError) {
             const is404 = (visitError as any).status === 404;
             if (is404) {
@@ -283,6 +289,9 @@ export const ActiveVisitPage = () => {
     };
 
     const handleGoToStart = () => {
+        if (activeVisit?.status === VisitStatus.Rejected) {
+            localStorage.setItem(`read_rejected_visit_${activeVisit.visitId}`, "true");
+        }
         if (userId) {
             dispatch(venueApi.util.invalidateTags([{ type: "ActiveVisit", id: userId }]));
         }

@@ -53,7 +53,8 @@ public class VisitRepository(
                                from t in tGroup.DefaultIfEmpty()
                                join r in _context.Resources on v.ResourceId equals r.ResourceId into rGroup
                                from r in rGroup.DefaultIfEmpty()
-                               where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment)
+                               where v.UserId == userId && (v.Status == VisitStatus.Pending || v.Status == VisitStatus.Approved || v.Status == VisitStatus.Active || v.Status == VisitStatus.WaitingForPayment || v.Status == VisitStatus.Rejected)
+                               orderby v.EntryTime descending
                                select new VisitWithTariffDto
                                {
                                    VisitId = v.VisitId,

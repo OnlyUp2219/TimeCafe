@@ -243,7 +243,7 @@ var mockSms = Environment.GetEnvironmentVariable("VITE_USE_MOCK_SMS") ?? "true";
 var mockEmail = Environment.GetEnvironmentVariable("VITE_USE_MOCK_EMAIL") ?? "true";
 var isRelease = builder.Configuration["TimeCafe__AppHostRelease"] == "true";
 
-var frontend = builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
+var frontend = builder.AddNpmApp("frontend", "../WebApp/timecafe.react.ui", isRelease ? "preview" : "dev")
     .WithReference(yarpProxy)
     .WithHttpEndpoint(port: 9301, isProxied: false)
     .WithHttpsEndpoint(port: 9302)
@@ -251,11 +251,6 @@ var frontend = builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui
     .WithEnvironment("BROWSER", "none")
     .WithEnvironment("VITE_USE_MOCK_SMS", mockSms)
     .WithEnvironment("VITE_USE_MOCK_EMAIL", mockEmail);
-
-if (isRelease)
-{
-    frontend.WithLaunchCommand("npm run preview");
-}
 
 if (!string.IsNullOrEmpty(customApiUrl))
 {
