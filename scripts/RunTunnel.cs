@@ -163,7 +163,49 @@ else
 }
 
 Console.ForegroundColor = ConsoleColor.Cyan;
-Console.WriteLine("\nЗапуск проекта TimeCafe.AppHost...");
+Console.WriteLine("\nВыберите режим запуска платформы:");
+Console.WriteLine("1. Debug   (быстрый запуск, HMR для фронтенда, отладка бэкенда) [По умолчанию]");
+Console.WriteLine("2. Release (оптимизированный бэкенд, сжатый production-бандл фронтенда)");
+Console.Write("Ваш выбор (1/2): ");
+Console.ResetColor();
+
+var modeInput = Console.ReadLine();
+bool isRelease = modeInput == "2";
+
+if (isRelease)
+{
+    Console.ForegroundColor = ConsoleColor.Yellow;
+    Console.WriteLine("\n[Release] Сборка production-бандла фронтенда (npm run build)...");
+    Console.ResetColor();
+
+    try
+    {
+        var npmBuildInfo = new ProcessStartInfo
+        {
+            FileName = "cmd",
+            Arguments = "/c npm run build",
+            WorkingDirectory = Path.Combine(rootPath, "WebApp", "timecafe.react.ui"),
+            UseShellExecute = false
+        };
+        if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+        {
+            npmBuildInfo.FileName = "npm";
+            npmBuildInfo.Arguments = "run build";
+        }
+
+        using var npmProc = Process.Start(npmBuildInfo);
+        npmProc?.WaitForExit();
+    }
+    catch (Exception buildEx)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"Не удалось собрать фронтенд: {buildEx.Message}");
+        Console.ResetColor();
+    }
+}
+
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine(isRelease ? "\nЗапуск проекта TimeCafe.AppHost в режиме [Release]..." : "\nЗапуск проекта TimeCafe.AppHost в режиме [Debug]...");
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("Туннели будут работать в фоне. Для остановки нажмите Ctrl + C\n");
 Console.ResetColor();
@@ -177,9 +219,17 @@ try
     var appHostStartInfo = new ProcessStartInfo
     {
         FileName = "dotnet",
-        Arguments = $"run --project \"{Path.Combine(rootPath, "TimeCafe.AppHost")}\"",
+        Arguments = isRelease
+            ? $"run -c Release --project \"{Path.Combine(rootPath, "TimeCafe.AppHost")}\""
+            : $"run --project \"{Path.Combine(rootPath, "TimeCafe.AppHost")}\"",
         UseShellExecute = false
     };
+
+    if (isRelease)
+    {
+        appHostStartInfo.EnvironmentVariables["TimeCafe__AppHostRelease"] = "true";
+    }
+
     using var appHostProc = Process.Start(appHostStartInfo);
     appHostProc.WaitForExit();
 }

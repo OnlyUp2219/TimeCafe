@@ -17,7 +17,10 @@ public class OnlineInvoicePaymentStrategy(IUnitOfWork uow) : IInvoicePaymentStra
 
         var balance = await _uow.Balances.GetByIdAsync(invoice.UserId.Value, cancellationToken);
         if (balance == null)
-            return Result.Fail(new BalanceNotFoundError(invoice.UserId.Value));
+        {
+            balance = Balance.Create(invoice.UserId.Value);
+            await _uow.Balances.CreateAsync(balance, cancellationToken);
+        }
 
         var withdrawResult = balance.Withdraw(invoice.TotalAmount);
         if (withdrawResult.IsFailed)

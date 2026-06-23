@@ -1,4 +1,4 @@
-import {type FC, useCallback, useEffect, useRef, useState} from "react";
+import { type FC, useCallback, useEffect, useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import {
     Button,
@@ -11,17 +11,17 @@ import {
     DialogTitle,
     Spinner,
 } from "@fluentui/react-components";
-import {DismissRegular} from "@fluentui/react-icons";
-import {type PhoneCodeRequest, useSavePhoneNumberMutation, useVerifyPhoneConfirmationMutation, type SendPhoneResponse, useLazyGetPhoneVerificationStatusQuery} from "@store/api/authApi";
-import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {handleVerificationError} from "@shared/auth/phoneVerification";
-import {validatePhoneNumber} from "@utility/validate";
-import {useRateLimitedRequest} from "@hooks/useRateLimitedRequest";
-import {httpClient} from "@api/httpClient";
-import {withRateLimit} from "@utility/rateLimitHelper";
-import {PhoneInputStep} from "./PhoneInputStep";
-import {CodeVerificationStep} from "./CodeVerificationStep";
-
+import { DismissRegular } from "@fluentui/react-icons";
+import { type PhoneCodeRequest, useSavePhoneNumberMutation, useVerifyPhoneConfirmationMutation, type SendPhoneResponse, useLazyGetPhoneVerificationStatusQuery } from "@store/api/authApi";
+import { getUserMessageFromUnknown } from "@api/errors/getUserMessageFromUnknown";
+import { handleVerificationError } from "@shared/auth/phoneVerification";
+import { validatePhoneNumber } from "@utility/validate";
+import { useRateLimitedRequest } from "@hooks/useRateLimitedRequest";
+import { httpClient } from "@api/httpClient";
+import { withRateLimit } from "@utility/rateLimitHelper";
+import { PhoneInputStep } from "./PhoneInputStep";
+import { CodeVerificationStep } from "./CodeVerificationStep";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 interface PhoneVerificationModalProps {
     isOpen: boolean;
@@ -36,14 +36,15 @@ interface PhoneVerificationModalProps {
 type Step = "input" | "verify";
 
 export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
-                                                                            isOpen,
-                                                                            onClose,
-                                                                            currentPhoneNumber = "",
-                                                                            currentPhoneNumberConfirmed = false,
-                                                                            onSuccess,
-                                                                            onPhoneNumberSaved,
-                                                                            autoSendCodeOnOpen = false,
-                                                                        }) => {
+    isOpen,
+    onClose,
+    currentPhoneNumber = "",
+    currentPhoneNumberConfirmed = false,
+    onSuccess,
+    onPhoneNumberSaved,
+    autoSendCodeOnOpen = false,
+}) => {
+    const { sizes } = useComponentSize();
     const normalizePhone = useCallback((value: string): string => {
         const digits = value.replaceAll(/\D/g, "");
         return digits ? `+${digits}` : value;
@@ -74,11 +75,11 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
     const [savePhoneMutation] = useSavePhoneNumberMutation();
     const [verifyPhoneMutation] = useVerifyPhoneConfirmationMutation();
 
-    const {countdown, isBlocked, sendRequest} = useRateLimitedRequest<SendPhoneResponse>(
+    const { countdown, isBlocked, sendRequest } = useRateLimitedRequest<SendPhoneResponse>(
         'sms-verification',
         async () => {
             const endpoint = USE_MOCK_SMS ? "/auth/twilio/generateSMS-mock" : "/auth/twilio/generateSMS";
-            return withRateLimit(() => httpClient.post<SendPhoneResponse>(endpoint, {phoneNumber: phoneNumberRef.current, code: ""}));
+            return withRateLimit(() => httpClient.post<SendPhoneResponse>(endpoint, { phoneNumber: phoneNumberRef.current, code: "" }));
         }
     );
 
@@ -164,7 +165,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
         phoneNumberRef.current = normalizedPhone;
 
         try {
-            await savePhoneMutation({phoneNumber: normalizedPhone}).unwrap();
+            await savePhoneMutation({ phoneNumber: normalizedPhone }).unwrap();
             onPhoneNumberSaved?.(normalizedPhone);
         } catch (err: unknown) {
             setError(getUserMessageFromUnknown(err) || "Ошибка при сохранении номера телефона.");
@@ -294,8 +295,9 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                             <Button
                                 appearance="subtle"
                                 aria-label="close"
-                                icon={<DismissRegular/>}
+                                icon={<DismissRegular />}
                                 onClick={handleClose}
+                                size={sizes.button}
                             />
                         }
                     >
@@ -349,7 +351,8 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                 <Button
                                     appearance="subtle"
                                     onClick={handleResendCode}
-                                    disabled={loading}>
+                                    disabled={loading}
+                                    size={sizes.button}>
                                     Отправить код повторно
                                 </Button>
                             )}
@@ -359,12 +362,13 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                     <DialogActions position="end">
                         {step === "input" ? (
                             <>
-                                <Button appearance="secondary" onClick={handleClose} disabled={loading}>
+                                <Button appearance="secondary" onClick={handleClose} disabled={loading} size={sizes.button}>
                                     Отмена
                                 </Button>
                                 <Button
                                     appearance="primary"
                                     onClick={handleSendCode}
+                                    size={sizes.button}
                                     disabled={
                                         loading ||
                                         !phoneNumber.trim() ||
@@ -372,7 +376,7 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                     }
                                 >
                                     {loading
-                                        ? <Spinner size="tiny"/>
+                                        ? <Spinner size="tiny" />
                                         : countdown > 0
                                             ? `Получить код (${formatCountdown(countdown)})`
                                             : "Получить код"}
@@ -384,19 +388,21 @@ export const PhoneVerificationModal: FC<PhoneVerificationModalProps> = ({
                                     appearance="secondary"
                                     onClick={handleBack}
                                     disabled={loading || (isBlocked && !attemptsExhausted)}
+                                    size={sizes.button}
                                 >
                                     {isBlocked && !attemptsExhausted ? `Изменить (${formatCountdown(countdown)})` : "Изменить номер"}
                                 </Button>
                                 <Button
                                     appearance="primary"
                                     onClick={handleVerifyCode}
+                                    size={sizes.button}
                                     disabled={
                                         loading ||
                                         verificationCode.length !== 6 ||
                                         attemptsExhausted
                                     }
                                 >
-                                    {loading ? <Spinner size="tiny"/> : "Подтвердить"}
+                                    {loading ? <Spinner size="tiny" /> : "Подтвердить"}
                                 </Button>
                             </>
                         )}

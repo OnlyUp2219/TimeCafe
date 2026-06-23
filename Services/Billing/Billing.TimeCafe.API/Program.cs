@@ -38,6 +38,7 @@ builder.Services.AddCarter();
 builder.Services.AddHealthChecksConfiguration(builder.Configuration);
 
 builder.Services.AddHostedService<Billing.TimeCafe.API.Services.StripeCliRunner>();
+builder.Services.AddHostedService<Billing.TimeCafe.API.Services.StripePendingPaymentsCleaner>();
 
 var app = builder.Build();
 

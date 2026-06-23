@@ -15,6 +15,31 @@ var services = new[]
     new { Name = "Audit", Infra = "Services/Audit/Audit.TimeCafe.Infrastructure", Api = "Services/Audit/Audit.TimeCafe.API" }
 };
 
+var env = new System.Collections.Generic.Dictionary<string, string>();
+var currentDir = Directory.GetCurrentDirectory();
+var envPath = Path.Combine(currentDir, ".env");
+if (!File.Exists(envPath))
+{
+    envPath = Path.Combine(Directory.GetParent(currentDir)?.FullName ?? currentDir, ".env");
+}
+
+if (File.Exists(envPath))
+{
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        if (string.IsNullOrWhiteSpace(line) || line.StartsWith("#")) continue;
+        var parts = line.Split('=', 2);
+        if (parts.Length == 2)
+        {
+            env[parts[0].Trim()] = parts[1].Trim().Trim('"');
+        }
+    }
+}
+
+var pgUser = env.TryGetValue("POSTGRES_USER", out var user) ? user : "admin";
+var pgPassword = env.TryGetValue("POSTGRES_PASSWORD", out var pass) ? pass : "Admin123!";
+var pgPort = "5433"; 
+
 foreach (var service in services)
 {
     Console.ForegroundColor = ConsoleColor.Cyan;
@@ -29,38 +54,46 @@ foreach (var service in services)
         continue;
     }
 
-    Console.WriteLine($"Creating migration for {service.Name}...");
+    var dbName = service.Name switch
+    {
+        "Auth" => env.TryGetValue("AUTH_DB", out var d) ? d : "timecafe_auth",
+        "UserProfile" => env.TryGetValue("PROFILE_DB", out var d) ? d : "timecafe_profile",
+        "Venue" => env.TryGetValue("VENUE_DB", out var d) ? d : "timecafe_venue",
+        "Billing" => env.TryGetValue("BILLING_DB", out var d) ? d : "timecafe_billing",
+        "Audit" => env.TryGetValue("AUDIT_DB", out var d) ? d : "timecafe_audit",
+        _ => $"timecafe_{service.Name.ToLower()}"
+    };
+    var connectionString = $"Host=localhost;Port={pgPort};Database={dbName};Username={pgUser};Password={pgPassword}";
+
+    Console.WriteLine($"Updating database for {service.Name}...");
 
     try
     {
         using var process = new Process();
         process.StartInfo.FileName = "dotnet";
-        process.StartInfo.Arguments = $"ef migrations add AddMassTransitOutbox --project {service.Infra} --startup-project {service.Api}";
+        process.StartInfo.Arguments = $"ef database update --project {service.Infra} --startup-project {service.Api}";
         process.StartInfo.UseShellExecute = false;
+        process.StartInfo.EnvironmentVariables["ConnectionStrings__DefaultConnection"] = connectionString;
         process.Start();
         process.WaitForExit();
 
-        if (process.ExitCode == 0)
+        if (process.ExitCode != 0)
         {
-            Console.WriteLine($"Updating database for {service.Name}...");
-            using var updateProcess = new Process();
-            updateProcess.StartInfo.FileName = "dotnet";
-            updateProcess.StartInfo.Arguments = $"ef database update --project {service.Infra} --startup-project {service.Api}";
-            updateProcess.StartInfo.UseShellExecute = false;
-            updateProcess.Start();
-            updateProcess.WaitForExit();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"[ERROR] Failed to update database for {service.Name}. Process exited with code {process.ExitCode}.");
+            Console.ResetColor();
         }
         else
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Failed to create migration for {service.Name}.");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"[SUCCESS] Database updated for {service.Name}.");
             Console.ResetColor();
         }
     }
     catch (Exception ex)
     {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"Error running ef tools: {ex.Message}");
+        Console.WriteLine($"Error running ef database update: {ex.Message}");
         Console.ResetColor();
     }
 }

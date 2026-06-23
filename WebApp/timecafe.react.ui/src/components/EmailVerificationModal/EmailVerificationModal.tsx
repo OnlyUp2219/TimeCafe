@@ -1,4 +1,4 @@
-import {useEffect, useMemo, useState, type FC} from "react";
+import { useEffect, useMemo, useState, type FC } from "react";
 import {
     Body1,
     Button,
@@ -13,10 +13,11 @@ import {
     Input,
     Spinner,
 } from "@fluentui/react-components";
-import {DismissRegular} from "@fluentui/react-icons";
-import {useRequestEmailChangeMutation, useConfirmEmailChangeMutation} from "@store/api/authApi";
-import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
-import {validateEmail} from "@utility/validate";
+import { DismissRegular } from "@fluentui/react-icons";
+import { useRequestEmailChangeMutation, useConfirmEmailChangeMutation } from "@store/api/authApi";
+import { getUserMessageFromUnknown } from "@api/errors/getUserMessageFromUnknown";
+import { validateEmail } from "@utility/validate";
+import { useComponentSize } from "@hooks/useComponentSize";
 
 interface EmailVerificationModalProps {
     isOpen: boolean;
@@ -29,12 +30,13 @@ interface EmailVerificationModalProps {
 type Step = "input" | "sent";
 
 export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
-                                                                            isOpen,
-                                                                            onClose,
-                                                                            currentEmail = "",
-                                                                            currentEmailConfirmed = false,
-                                                                            onSuccess,
-                                                                        }) => {
+    isOpen,
+    onClose,
+    currentEmail = "",
+    currentEmailConfirmed = false,
+    onSuccess,
+}) => {
+    const { sizes } = useComponentSize();
     const [step, setStep] = useState<Step>("input");
     const [email, setEmail] = useState(currentEmail);
     const [loading, setLoading] = useState(false);
@@ -84,7 +86,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
 
         setLoading(true);
         try {
-            const response = await requestEmailChange({newEmail: email.trim()}).unwrap();
+            const response = await requestEmailChange({ newEmail: email.trim() }).unwrap();
             setCallbackUrl(response?.callbackUrl ?? null);
             setSentEmail(email.trim());
             setStep("sent");
@@ -131,13 +133,13 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
         void (async () => {
             setLoading(true);
             try {
-                const {userId, token, newEmail} = parseCallbackParams(callbackUrl);
+                const { userId, token, newEmail } = parseCallbackParams(callbackUrl);
                 if (!userId || !token || !newEmail) {
                     setError("Некорректная ссылка подтверждения");
                     return;
                 }
 
-                await confirmEmailChange({userId, newEmail, token}).unwrap();
+                await confirmEmailChange({ userId, newEmail, token }).unwrap();
 
                 onSuccess(email.trim());
                 onClose();
@@ -158,8 +160,9 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                             <Button
                                 appearance="subtle"
                                 aria-label="close"
-                                icon={<DismissRegular/>}
+                                icon={<DismissRegular />}
                                 onClick={onClose}
+                                size={sizes.button}
                             />
                         }
                     >
@@ -178,6 +181,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                                     required
                                     validationMessage={validationError || error || undefined}
                                     validationState={validationError || error ? "error" : "none"}
+                                    size={sizes.field}
                                 >
                                     <Input
                                         type="email"
@@ -189,6 +193,7 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                                         }}
                                         placeholder="name@example.com"
                                         disabled={loading}
+                                        size={sizes.input}
                                     />
                                 </Field>
                             </>
@@ -214,31 +219,33 @@ export const EmailVerificationModal: FC<EmailVerificationModalProps> = ({
                     <DialogActions position="end">
                         {step === "input" ? (
                             <>
-                                <Button appearance="secondary" onClick={onClose} disabled={loading}>
+                                <Button appearance="secondary" onClick={onClose} disabled={loading} size={sizes.button}>
                                     Отмена
                                 </Button>
                                 <Button
                                     appearance="primary"
                                     onClick={handleSendLink}
+                                    size={sizes.button}
                                     disabled={
                                         loading ||
                                         !email.trim()
                                     }
                                 >
-                                    {loading ? <Spinner size="tiny"/> : "Отправить ссылку"}
+                                    {loading ? <Spinner size="tiny" /> : "Отправить ссылку"}
                                 </Button>
                             </>
                         ) : (
                             <>
-                                <Button appearance="secondary" onClick={handleBack} disabled={loading}>
+                                <Button appearance="secondary" onClick={handleBack} disabled={loading} size={sizes.button}>
                                     Изменить email
                                 </Button>
                                 <Button
                                     appearance="primary"
                                     onClick={handleAssumeVerified}
+                                    size={sizes.button}
                                     disabled={loading || !hasMockLink}
                                 >
-                                    {loading ? <Spinner size="tiny"/> : "Я подтвердил"}
+                                    {loading ? <Spinner size="tiny" /> : "Я подтвердил"}
                                 </Button>
                             </>
                         )}

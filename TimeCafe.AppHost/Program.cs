@@ -86,7 +86,7 @@ builder.AddContainer("kibana", "docker.elastic.co/kibana/kibana", "9.2.3")
 
 // Базы данных
 var authDb = postgres.AddDatabase("AuthDb", databaseName: "timecafe_auth");
-var userProfileDb = postgres.AddDatabase("UserProfileDb", databaseName: "timecafe_userprofile");
+var userProfileDb = postgres.AddDatabase("UserProfileDb", databaseName: "timecafe_profile");
 var venueDb = postgres.AddDatabase("VenueDb", databaseName: "timecafe_venue");
 var billingDb = postgres.AddDatabase("BillingDb", databaseName: "timecafe_billing");
 var auditDb = postgres.AddDatabase("AuditDb", databaseName: "timecafe_audit");
@@ -132,6 +132,8 @@ userProfileApi
     .WithEnvironment("S3__BucketName", builder.Configuration["S3_BUCKET_NAME"])
     .WithEnvironment("Sightengine__ApiUser", builder.Configuration["SIGHTENGINE_API_USER"])
     .WithEnvironment("Sightengine__ApiSecret", builder.Configuration["SIGHTENGINE_API_SECRET"])
+    .WithEnvironment("Sightengine__ApiUrl", builder.Configuration["SIGHTENGINE_API_URL"])
+    .WithEnvironment("Sightengine__Models", builder.Configuration["SIGHTENGINE_MODELS"])
     .WaitFor(userProfileDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
 
 // Billing Service
@@ -144,7 +146,20 @@ billingApi
     .WithEnvironment("Stripe__PublishableKey", builder.Configuration["STRIPE_PUBLISHABLE_KEY"])
     .WithEnvironment("Stripe__SecretKey", builder.Configuration["STRIPE_SECRET_KEY"])
     .WithEnvironment("Stripe__WebhookSecret", builder.Configuration["STRIPE_WEBHOOK_SECRET"])
+    .WithEnvironment("Stripe__DefaultCurrency", builder.Configuration["STRIPE_DEFAULT_CURRENCY"])
+    .WithEnvironment("Stripe__DefaultReturnUrl", builder.Configuration["STRIPE_DEFAULT_RETURN_URL"])
+    .WithEnvironment("Stripe__DisableCliRunner", "true")
     .WaitFor(billingDb).WaitFor(authApi).WaitFor(redis).WaitFor(rabbitmq);
+
+var stripeSecretKey = builder.Configuration["STRIPE_SECRET_KEY"];
+if (!string.IsNullOrEmpty(stripeSecretKey) && !stripeSecretKey.Contains("your-stripe"))
+{
+    builder.AddContainer("stripe-cli", "stripe/stripe-cli")
+        .WithArgs("listen", "--forward-to", "host.docker.internal:8010/billing/payments/webhook/stripe")
+        .WithEnvironment("STRIPE_API_KEY", stripeSecretKey)
+        .WithEnvironment("STRIPE_CLI_TELEMETRY_OPTOUT", "1")
+        .WithLifetime(ContainerLifetime.Session);
+}
 
 // Venue Service
 var venueApi = builder.AddProject<Projects.Venue_TimeCafe_API>("venue-api")
@@ -224,12 +239,23 @@ builder.AddContainer("grafana", "grafana/grafana", "latest")
     .WaitFor(prometheus);
 
 var customApiUrl = Environment.GetEnvironmentVariable("VITE_API_BASE_URL");
+var mockSms = Environment.GetEnvironmentVariable("VITE_USE_MOCK_SMS") ?? "true";
+var mockEmail = Environment.GetEnvironmentVariable("VITE_USE_MOCK_EMAIL") ?? "true";
+var isRelease = builder.Configuration["TimeCafe__AppHostRelease"] == "true";
+
 var frontend = builder.AddJavaScriptApp("frontend", "../WebApp/timecafe.react.ui")
     .WithReference(yarpProxy)
     .WithHttpEndpoint(port: 9301, isProxied: false)
     .WithHttpsEndpoint(port: 9302)
     .WithExternalHttpEndpoints()
-    .WithEnvironment("BROWSER", "none");
+    .WithEnvironment("BROWSER", "none")
+    .WithEnvironment("VITE_USE_MOCK_SMS", mockSms)
+    .WithEnvironment("VITE_USE_MOCK_EMAIL", mockEmail);
+
+if (isRelease)
+{
+    frontend.WithLaunchCommand("npm run preview");
+}
 
 if (!string.IsNullOrEmpty(customApiUrl))
 {

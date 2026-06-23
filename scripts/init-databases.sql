@@ -1,6 +1,6 @@
 -- Initialize TimeCafe databases (first run only)
-CREATE DATABASE "AuthDB";
-CREATE DATABASE "ProfileDB";
-CREATE DATABASE "VenueDB";
-CREATE DATABASE "BillingDB";
-CREATE DATABASE "AuditDB";
+CREATE DATABASE timecafe_auth;
+CREATE DATABASE timecafe_profile;
+CREATE DATABASE timecafe_venue;
+CREATE DATABASE timecafe_billing;
+CREATE DATABASE timecafe_audit;

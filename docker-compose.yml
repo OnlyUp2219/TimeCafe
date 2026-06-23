@@ -317,6 +317,7 @@ services:
       - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
       - Stripe__DefaultCurrency=${STRIPE_DEFAULT_CURRENCY}
       - Stripe__DefaultReturnUrl=${STRIPE_DEFAULT_RETURN_URL}
+      - Stripe__DisableCliRunner=true
       - Serilog__WriteTo__0__Args__configure__2__Args__nodeUris=${ELASTICSEARCH_NODE_URIS}
     ports:
       - "8004:8004"
@@ -413,6 +414,20 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: timecafe-stripe-cli
+    command: listen --forward-to http://yarp-proxy:8010/billing/payments/webhook/stripe
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_CLI_TELEMETRY_OPTOUT=1
+    depends_on:
+      yarp-proxy:
+        condition: service_healthy
+    networks:
+      - timecafe-network
+    restart: unless-stopped
 
 networks:
   timecafe-network:

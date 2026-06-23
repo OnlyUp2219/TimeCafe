@@ -8,7 +8,7 @@ Console.ResetColor();
 string containerName = "timecafe-postgres";
 string dbUser = "admin";
 string dbPass = "Admin123!";
-string[] databases = { "Auth.TimeCafe", "UserProfile.TimeCafe", "Venue.TimeCafe", "Billing.TimeCafe" };
+string[] databases = { "timecafe_auth", "timecafe_profile", "timecafe_venue", "timecafe_billing", "timecafe_audit" };
 
 string truncateSql = "DO $$ DECLARE r RECORD; BEGIN FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename <> '__EFMigrationsHistory') LOOP EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; END FOR; END $$;";
 

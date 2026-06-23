@@ -26,6 +26,9 @@ public class UpdateProfileCommandHandler(IUnitOfWork uow, IPublisher publisher) 
                 return Result.Fail(new ProfileNotFoundError());
 
             request.User.PhotoUrl = existing.PhotoUrl;
+            request.User.VisitCount = existing.VisitCount;
+            request.User.PersonalDiscountPercent = existing.PersonalDiscountPercent;
+            request.User.CreatedAt = existing.CreatedAt;
 
             if (existing.ProfileStatus == ProfileStatus.Banned)
             {

@@ -25,6 +25,7 @@ import {getUserMessageFromUnknown} from "@api/errors/getUserMessageFromUnknown";
 import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUser";
 import {getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
 import {useComponentSize} from "@hooks/useComponentSize";
+import {profileApi} from "@store/api/profileApi";
 
 export interface PhoneFormCardProps {
     loading?: boolean;
@@ -37,6 +38,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const [clearPhoneMutation] = useClearPhoneNumberMutation();
     const phoneNumber = useAppSelector((state) => state.auth.phoneNumber);
     const phoneNumberConfirmed = useAppSelector((state) => state.auth.phoneNumberConfirmed);
+    const userId = useAppSelector((state) => state.auth.userId);
 
     const [showPhoneModal, setShowPhoneModal] = useState(false);
     const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -51,6 +53,9 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
     const handlePhoneVerified = async () => {
         try {
             await hydrateAuthFromCurrentUser(dispatch);
+            if (userId) {
+                dispatch(profileApi.util.invalidateTags([{ type: "Profile", id: userId }]));
+            }
         } catch {
             void 0;
         }

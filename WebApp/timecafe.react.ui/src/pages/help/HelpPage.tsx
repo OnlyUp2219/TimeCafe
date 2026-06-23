@@ -406,47 +406,48 @@ export const HelpPage = () => {
                 </Card>
             )}
 
-            {/* Секция 4: Документация API для разработчиков */}
-            <Card size={sizes.card} className="flex flex-col gap-6">
-                <div className="flex items-center gap-3">
-                    <Code20Regular className="text-(--colorBrandForeground1) text-3xl" />
-                    <Title2>4. API для Разработчиков (OpenAPI / Scalar)</Title2>
-                </div>
-
-                <div className="flex flex-col gap-4">
-                    <Body1>
-                        Архитектура TimeCafe предполагает возможность легкой интеграции со сторонними системами (например, вашими внутренними ERP,
-                        ботами в Telegram или мобильными приложениями). Для этого мы предоставляем полнофункциональное REST API.
-                    </Body1>
-
-                    <Title3>Особенности нашего API</Title3>
-                    <ul className="list-disc ml-6 flex flex-col gap-2">
-                        <li><Body1Strong>Microservices Gateway:</Body1Strong> Вам не нужно обращаться к каждому сервису по отдельности. Единая точка входа — шлюз YARP Proxy (порт 8010).</li>
-                        <li><Body1Strong>Авторизация:</Body1Strong> Используется Bearer JWT Token. Для межсервисного взаимодействия применяются gRPC вызовы.</li>
-                        <li><Body1Strong>Идемпотентность:</Body1Strong> Финансовые операции (например, списания) защищены ключами идемпотентности, что исключает двойные списания при сетевых сбоях.</li>
-                        <li><Body1Strong>Result Pattern:</Body1Strong> API не возвращает неожиданных HTTP 500. Все бизнес-ошибки инкапсулированы в стандартизированный JSON-ответ с перечнем кодов ошибок.</li>
-                    </ul>
-
-                    <Body1>
-                        Вместо устаревшего Swagger UI мы используем современный инструмент <strong>Scalar API Reference</strong>.
-                        Он позволяет не только читать документацию, но и содержит встроенного HTTP-клиента для тестирования запросов
-                        и автоматической генерации кода на 20+ языках программирования (Python, Go, Java, cURL и др.).
-                    </Body1>
-
-                    <div className="mt-4">
-                        <Button
-                            appearance="primary"
-                            size="large"
-                            icon={<Code20Regular />}
-                            as="a"
-                            href="/scalar/v1"
-                            target="_blank"
-                        >
-                            Запустить интерактивную песочницу Scalar API
-                        </Button>
+            {isAdmin && (
+                <Card size={sizes.card} className="flex flex-col gap-6">
+                    <div className="flex items-center gap-3">
+                        <Code20Regular className="text-(--colorBrandForeground1) text-3xl" />
+                        <Title2>4. API для Разработчиков (OpenAPI / Scalar)</Title2>
                     </div>
-                </div>
-            </Card>
+
+                    <div className="flex flex-col gap-4">
+                        <Body1>
+                            Архитектура TimeCafe предполагает возможность легкой интеграции со сторонними системами (например, вашими внутренними ERP,
+                            ботами в Telegram или мобильными приложениями). Для этого мы предоставляем полнофункциональное REST API.
+                        </Body1>
+
+                        <Title3>Особенности нашего API</Title3>
+                        <ul className="list-disc ml-6 flex flex-col gap-2">
+                            <li><Body1Strong>Microservices Gateway:</Body1Strong> Вам не нужно обращаться к каждому сервису по отдельности. Единая точка входа — шлюз YARP Proxy (порт 8010).</li>
+                            <li><Body1Strong>Авторизация:</Body1Strong> Используется Bearer JWT Token. Для межсервисного взаимодействия применяются gRPC вызовы.</li>
+                            <li><Body1Strong>Идемпотентность:</Body1Strong> Финансовые операции (например, списания) защищены ключами идемпотентности, что исключает двойные списания при сетевых сбоях.</li>
+                            <li><Body1Strong>Result Pattern:</Body1Strong> API не возвращает неожиданных HTTP 500. Все бизнес-ошибки инкапсулированы в стандартизированный JSON-ответ с перечнем кодов ошибок.</li>
+                        </ul>
+
+                        <Body1>
+                            Вместо устаревшего Swagger UI мы используем современный инструмент <strong>Scalar API Reference</strong>.
+                            Он позволяет не только читать документацию, но и содержит встроенного HTTP-клиента для тестирования запросов
+                            и автоматической генерации кода на 20+ языках программирования (Python, Go, Java, cURL и др.).
+                        </Body1>
+
+                        <div className="mt-4">
+                            <Button
+                                appearance="primary"
+                                size="large"
+                                icon={<Code20Regular />}
+                                as="a"
+                                href="/scalar/v1"
+                                target="_blank"
+                            >
+                                Запустить интерактивную песочницу Scalar API
+                            </Button>
+                        </div>
+                    </div>
+                </Card>
+            )}
 
             {/* Секция 5: Поддержка */}
             <Card size={sizes.card} className="flex flex-col gap-4">

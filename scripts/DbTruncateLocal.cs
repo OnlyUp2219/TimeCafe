@@ -9,7 +9,7 @@ string dbUser = "admin";
 string dbPass = "Admin123!";
 string dbHost = "localhost";
 string dbPort = "5433";
-string[] databases = { "Auth.TimeCafe", "UserProfile.TimeCafe", "Venue.TimeCafe", "Billing.TimeCafe" };
+string[] databases = { "timecafe_auth", "timecafe_profile", "timecafe_venue", "timecafe_billing", "timecafe_audit" };
 
 string truncateSql = @"
 DO $$ 

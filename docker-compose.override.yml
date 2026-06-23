@@ -16,6 +16,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_USE_POLLING_FILE_WATCHER=1
+  audit-service:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_USE_POLLING_FILE_WATCHER=1
   yarp-proxy:
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker

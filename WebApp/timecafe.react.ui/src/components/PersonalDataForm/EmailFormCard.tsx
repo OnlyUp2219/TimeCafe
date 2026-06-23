@@ -1,5 +1,13 @@
-﻿import { NO_DATA } from "@shared/const/placeholders";
-import { createElement, useState, type FC } from "react";import { Body1Strong, Body2, Button, Card, Title2, Tooltip, Caption1 } from "@fluentui/react-components";import { Edit20Filled, MailRegular } from "@fluentui/react-icons";import { EmailVerificationModal } from "@components/EmailVerificationModal/EmailVerificationModal";import { useAppDispatch, useAppSelector } from "@store/hooks";import { hydrateAuthFromCurrentUser } from "@shared/auth/hydrateAuthFromCurrentUser";import { useComponentSize } from "@hooks/useComponentSize";import { getPersonalDataStatusIcon } from "@components/PersonalDataForm/personalDataStatus";
+import { NO_DATA } from "@shared/const/placeholders";
+import { createElement, useState, type FC } from "react";
+import { Body1Strong, Body2, Button, Card, Title2, Tooltip, Caption1 } from "@fluentui/react-components";
+import { Edit20Filled, MailRegular } from "@fluentui/react-icons";
+import { EmailVerificationModal } from "@components/EmailVerificationModal/EmailVerificationModal";
+import { useAppDispatch, useAppSelector } from "@store/hooks";
+import { hydrateAuthFromCurrentUser } from "@shared/auth/hydrateAuthFromCurrentUser";
+import { useComponentSize } from "@hooks/useComponentSize";
+import { getPersonalDataStatusIcon } from "@components/PersonalDataForm/personalDataStatus";
+import { profileApi } from "@store/api/profileApi";
 
 export interface EmailFormCardProps {
     loading?: boolean;
@@ -11,6 +19,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
     const dispatch = useAppDispatch();
     const authEmail = useAppSelector((state) => state.auth.email);
     const authEmailConfirmed = useAppSelector((state) => state.auth.emailConfirmed);
+    const userId = useAppSelector((state) => state.auth.userId);
     const [showEmailModal, setShowEmailModal] = useState(false);
 
     const effectiveEmail = (authEmail ?? "").trim();
@@ -22,6 +31,9 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
     const handleEmailVerified = async () => {
         try {
             await hydrateAuthFromCurrentUser(dispatch);
+            if (userId) {
+                dispatch(profileApi.util.invalidateTags([{ type: "Profile", id: userId }]));
+            }
         } catch {
             void 0;
         }
@@ -86,5 +98,3 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
         </Card>
     );
 };
-
-

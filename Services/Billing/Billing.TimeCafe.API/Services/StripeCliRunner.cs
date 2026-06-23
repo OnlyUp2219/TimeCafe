@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -7,19 +8,22 @@ namespace Billing.TimeCafe.API.Services;
 public class StripeCliRunner : IHostedService
 {
     private readonly IHostEnvironment _env;
+    private readonly IConfiguration _config;
     private readonly ILogger<StripeCliRunner> _logger;
     private Process? _process;
 
-    public StripeCliRunner(IHostEnvironment env, ILogger<StripeCliRunner> logger)
+    public StripeCliRunner(IHostEnvironment env, IConfiguration config, ILogger<StripeCliRunner> logger)
     {
         _env = env;
+        _config = config;
         _logger = logger;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!_env.IsDevelopment())
+        if (!_env.IsDevelopment() || _config.GetValue<bool>("Stripe:DisableCliRunner") || _config.GetValue<bool>("Stripe__DisableCliRunner"))
         {
+            _logger.LogInformation("Stripe CLI automatic listener is disabled (Non-development mode or disabled via configuration).");
             return Task.CompletedTask;
         }
 
@@ -27,13 +31,7 @@ public class StripeCliRunner : IHostedService
         {
             try
             {
-                var stripePath = "stripe";
-                var specificPath = @"D:\ЗАГРУЗКИ\Stripe\stripe.exe";
-                if (File.Exists(specificPath))
-                {
-                    stripePath = specificPath;
-                }
-
+                var stripePath = ResolveStripePath();
                 _logger.LogInformation("Starting Stripe CLI automatic listener from {Path}...", stripePath);
 
                 var startInfo = new ProcessStartInfo
@@ -94,5 +92,50 @@ public class StripeCliRunner : IHostedService
         }
 
         return Task.CompletedTask;
+    }
+
+    private string ResolveStripePath()
+    {
+        // 1. Попытка взять из конфигурации
+        var configPath = _config["Stripe:CliPath"] ?? _config["Stripe__CliPath"];
+        if (!string.IsNullOrWhiteSpace(configPath) && File.Exists(configPath))
+        {
+            return configPath;
+        }
+
+        // 2. Попытка найти scripts/stripe.exe относительно корня решения
+        var baseDir = AppContext.BaseDirectory;
+        var dir = new DirectoryInfo(baseDir);
+        while (dir != null)
+        {
+            var exePath = Path.Combine(dir.FullName, "scripts", "stripe.exe");
+            if (File.Exists(exePath))
+            {
+                return exePath;
+            }
+
+            var exePathNoFolder = Path.Combine(dir.FullName, "stripe.exe");
+            if (File.Exists(exePathNoFolder))
+            {
+                return exePathNoFolder;
+            }
+
+            if (dir.GetFiles("*.slnx").Any() || dir.GetFiles("*.sln").Any())
+            {
+                break;
+            }
+
+            dir = dir.Parent;
+        }
+
+        // 3. Резервный захардкоженный путь из оригинальной версии
+        var defaultOldPath = @"D:\ЗАГРУЗКИ\Stripe\stripe.exe";
+        if (File.Exists(defaultOldPath))
+        {
+            return defaultOldPath;
+        }
+
+        // 4. Попытка вызвать глобальный stripe из PATH
+        return "stripe";
     }
 }
