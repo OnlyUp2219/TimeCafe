@@ -25,7 +25,8 @@ public class GetProfileByIdQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProf
                 (int)mappedProfile.ProfileStatus,
                 mappedProfile.CreatedAt,
                 mappedProfile.VisitCount,
-                mappedProfile.PersonalDiscountPercent));
+                mappedProfile.PersonalDiscountPercent,
+                mappedProfile.BanReason));
         }
         catch (Exception ex)
         {

@@ -13,7 +13,8 @@ public record ProfileDto(
     int ProfileStatus,
     DateTimeOffset CreatedAt,
     int VisitCount,
-    decimal? PersonalDiscountPercent);
+    decimal? PersonalDiscountPercent,
+    string? BanReason);
 
 public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetProfilesPageQuery, PagedResponse<ProfileDto>>
 {
@@ -40,7 +41,8 @@ public class GetProfilesPageQueryHandler(IUnitOfWork uow) : IQueryHandler<GetPro
                     (int)p.ProfileStatus,
                     p.CreatedAt,
                     p.VisitCount,
-                    p.PersonalDiscountPercent));
+                    p.PersonalDiscountPercent,
+                    p.BanReason));
 
             var totalPages = (totalCount + pageSize - 1) / pageSize;
 

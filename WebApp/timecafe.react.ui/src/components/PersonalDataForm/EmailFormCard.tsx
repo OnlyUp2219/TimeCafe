@@ -8,6 +8,7 @@ import { hydrateAuthFromCurrentUser } from "@shared/auth/hydrateAuthFromCurrentU
 import { useComponentSize } from "@hooks/useComponentSize";
 import { getPersonalDataStatusIcon } from "@components/PersonalDataForm/personalDataStatus";
 import { profileApi } from "@store/api/profileApi";
+import { venueApi } from "@store/api/venueApi";
 
 export interface EmailFormCardProps {
     loading?: boolean;
@@ -33,6 +34,7 @@ export const EmailFormCard: FC<EmailFormCardProps> = ({ loading = false, classNa
             await hydrateAuthFromCurrentUser(dispatch);
             if (userId) {
                 dispatch(profileApi.util.invalidateTags([{ type: "Profile", id: userId }]));
+                dispatch(venueApi.util.invalidateTags(["UserLoyalty"]));
             }
         } catch {
             void 0;

@@ -50,6 +50,7 @@ import { useComponentSize } from "@hooks/useComponentSize";
 import type { BillingTransaction } from "@app-types/billing";
 import { TransactionType } from "@app-types/billing";
 import type { VisitWithTariff } from "@app-types/visitWithTariff";
+import { VisitStatus } from "@app-types/visit";
 import { Permissions } from "@shared/auth/permissions";
 import { HasPermission } from "@components/Guard/HasPermission";
 import { DismissableError } from "@components/DismissableError/DismissableError";
@@ -166,7 +167,7 @@ export const UserDetailPage = () => {
         return "";
     }, [user?.email, user?.name]);
 
-    const contactLine = [user?.email, profile?.phoneNumber].filter(Boolean).join(" · ") || NO_DATA;
+    const contactLine = [user?.email, user?.phoneNumber].filter(Boolean).join(" · ") || NO_DATA;
 
     const txColumnSizingOptions: TableColumnSizingOptions = useMemo(() => ({
         date: { minWidth: 130, defaultWidth: 160 },
@@ -274,7 +275,11 @@ export const UserDetailPage = () => {
             renderHeaderCell: () => "Время проведения",
             renderCell: (v) => (
                 <TableCellLayout truncate>
-                    {v.exitTime ? formatDurationMs(new Date(v.exitTime).getTime() - new Date(v.entryTime).getTime()) : "В процессе"}
+                    {v.status === VisitStatus.Pending || v.status === VisitStatus.Approved || v.status === VisitStatus.Rejected || v.status === VisitStatus.Cancelled
+                        ? "0 мин."
+                        : v.exitTime
+                            ? formatDurationMs(new Date(v.exitTime).getTime() - new Date(v.entryTime).getTime())
+                            : "В процессе"}
                 </TableCellLayout>
             ),
         }),
@@ -403,15 +408,15 @@ export const UserDetailPage = () => {
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Дата рождения</Body1>
-                                         <Body1Strong>{formatDate(profile?.birthDate)}</Body1Strong>
+                                        <Body1Strong>{formatDate(profile?.birthDate)}</Body1Strong>
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Email</Body1>
-                                        <Body1Strong>{profile?.email || user.email}</Body1Strong>
+                                        <Body1Strong>{user.email || NO_DATA}</Body1Strong>
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Телефон</Body1>
-                                        <Body1Strong>{profile?.phoneNumber || NO_DATA}</Body1Strong>
+                                        <Body1Strong>{user.phoneNumber || NO_DATA}</Body1Strong>
                                     </div>
                                     <div className="flex flex-col gap-0.5">
                                         <Body1 className="text-(--colorNeutralForeground3)">Статус профиля</Body1>

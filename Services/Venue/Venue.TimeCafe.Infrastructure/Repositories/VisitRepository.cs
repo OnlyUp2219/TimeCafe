@@ -38,7 +38,10 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -77,7 +80,7 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt
                                })
                               .AsNoTracking()
                               .FirstOrDefaultAsync(cancellationToken),
@@ -113,7 +116,10 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason
                                })
                               .AsNoTracking()
                               .ToListAsync(cancellationToken),
@@ -150,7 +156,10 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -188,7 +197,10 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt,
+                                   ApprovedByUserId = v.ApprovedByUserId,
+                                   ApprovedAt = v.ApprovedAt,
+                                   RejectionReason = v.RejectionReason
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)
@@ -250,7 +262,7 @@ public class VisitRepository(
                                    TariffRoundingRule = t != null ? t.RoundingRule : null,
                                    PlannedMinutes = v.PlannedMinutes,
                                    GuestsCount = v.GuestsCount,
-                                   IsFinishRequested = v.IsFinishRequested
+                                   IsFinishRequested = v.IsFinishRequested, FinishRequestedAt = v.FinishRequestedAt
                                })
                               .AsNoTracking()
                               .Skip((pageNumber - 1) * pageSize)

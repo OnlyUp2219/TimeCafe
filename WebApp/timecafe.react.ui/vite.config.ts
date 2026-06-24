@@ -48,4 +48,9 @@ export default defineConfig({
         port: 9301,
         allowedHosts: true,
     },
+    preview: {
+        host: '127.0.0.1',
+        port: 9301,
+        allowedHosts: true,
+    },
 });

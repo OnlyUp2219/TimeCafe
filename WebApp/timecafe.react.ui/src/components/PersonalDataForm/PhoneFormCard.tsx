@@ -26,6 +26,7 @@ import {hydrateAuthFromCurrentUser} from "@shared/auth/hydrateAuthFromCurrentUse
 import {getPersonalDataStatusIcon} from "@components/PersonalDataForm/personalDataStatus";
 import {useComponentSize} from "@hooks/useComponentSize";
 import {profileApi} from "@store/api/profileApi";
+import {venueApi} from "@store/api/venueApi";
 
 export interface PhoneFormCardProps {
     loading?: boolean;
@@ -55,6 +56,7 @@ export const PhoneFormCard: FC<PhoneFormCardProps> = ({loading = false, classNam
             await hydrateAuthFromCurrentUser(dispatch);
             if (userId) {
                 dispatch(profileApi.util.invalidateTags([{ type: "Profile", id: userId }]));
+                dispatch(venueApi.util.invalidateTags(["UserLoyalty"]));
             }
         } catch {
             void 0;

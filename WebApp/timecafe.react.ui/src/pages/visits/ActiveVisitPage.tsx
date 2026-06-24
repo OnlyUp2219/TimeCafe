@@ -104,11 +104,19 @@ export const ActiveVisitPage = () => {
     const [exitComplete, setExitComplete] = useState(false);
     const [receiptOpen, setReceiptOpen] = useState(false);
 
-    const [gracePeriodEnd, setGracePeriodEnd] = useState<number | null>(null);
+    const [localGracePeriodEnd, setLocalGracePeriodEnd] = useState<number | null>(null);
     const [graceSecondsLeft, setGraceSecondsLeft] = useState(0);
 
     const [graceAcknowledged, setGraceAcknowledged] = useState(false);
     const autoPayAttemptedRef = useRef<string | null>(null);
+
+    const gracePeriodEnd = useMemo(() => {
+        if (localGracePeriodEnd) return localGracePeriodEnd;
+        if (activeVisit?.isFinishRequested && activeVisit?.finishRequestedAt) {
+            return Date.parse(activeVisit.finishRequestedAt) + 3 * 60 * 1000;
+        }
+        return null;
+    }, [localGracePeriodEnd, activeVisit?.isFinishRequested, activeVisit?.finishRequestedAt]);
 
     useEffect(() => {
         if (activeVisit?.visitId) {
@@ -127,13 +135,11 @@ export const ActiveVisitPage = () => {
     };
 
     useEffect(() => {
-        if (activeVisit?.isFinishRequested && !gracePeriodEnd && !graceAcknowledged) {
-            setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
-        } else if (!activeVisit?.isFinishRequested && gracePeriodEnd) {
-            setGracePeriodEnd(null);
+        if (!activeVisit?.isFinishRequested) {
+            setLocalGracePeriodEnd(null);
             handleSetGraceAcknowledged(false);
         }
-    }, [activeVisit?.isFinishRequested, gracePeriodEnd, graceAcknowledged, activeVisit?.visitId]);
+    }, [activeVisit?.isFinishRequested]);
 
     useEffect(() => {
         if (!gracePeriodEnd) return;
@@ -205,11 +211,15 @@ export const ActiveVisitPage = () => {
             const delta = Date.parse(activeVisit.exitTime) - startedAtMs;
             return Math.max(0, Math.floor(delta / 1000));
         }
+        if (activeVisit?.isFinishRequested && activeVisit?.finishRequestedAt) {
+            const delta = Date.parse(activeVisit.finishRequestedAt) - startedAtMs;
+            return Math.max(0, Math.floor(delta / 1000));
+        }
         if (!isActive) return 0;
         const ms = startedAtMs || now;
         const delta = now - ms;
         return Math.max(0, Math.floor(delta / 1000));
-    }, [startedAtMs, now, isActive, activeVisit?.status, activeVisit?.exitTime]);
+    }, [startedAtMs, now, isActive, activeVisit?.status, activeVisit?.exitTime, activeVisit?.isFinishRequested, activeVisit?.finishRequestedAt]);
 
     const elapsedMinutes = useMemo(() => Math.max(1, Math.ceil(elapsedSeconds / 60)), [elapsedSeconds]);
 
@@ -238,7 +248,7 @@ export const ActiveVisitPage = () => {
         try {
             await requestEndVisit({ visitId: activeVisit.visitId, payFromBalance: payFromBalanceFlag }).unwrap();
             setConfirmOpen(false);
-            setGracePeriodEnd(Date.now() + 3 * 60 * 1000);
+            setLocalGracePeriodEnd(Date.now() + 3 * 60 * 1000);
             showToast("Запрос на выход успешно отправлен", "success", "Готово");
             void refetch();
         } catch (err) {
@@ -365,7 +375,7 @@ export const ActiveVisitPage = () => {
                     onExitClick={() => setConfirmOpen(true)}
                     onGraceStripeCheckout={handleGraceStripeCheckout}
                     onAcknowledgeGrace={() => {
-                        setGracePeriodEnd(null);
+                        setLocalGracePeriodEnd(null);
                         handleSetGraceAcknowledged(true);
                     }}
                     onChangePaymentMethod={() => handleSetGraceAcknowledged(false)}

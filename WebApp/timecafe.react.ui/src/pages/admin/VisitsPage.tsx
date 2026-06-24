@@ -45,16 +45,17 @@ const formatCost = (cost: number | null, status: VisitStatus) => {
         return formatMoney(0);
     }
     return formatMoney(cost);
-};
-
-const getVisitDurationMs = (visit: VisitWithTariff, now: Date) => {
+};const getVisitDurationMs = (visit: VisitWithTariff, now: Date) => {
+    if (visit.status === VisitStatus.Pending || 
+        visit.status === VisitStatus.Approved || 
+        visit.status === VisitStatus.Rejected || 
+        visit.status === VisitStatus.Cancelled) {
+        return 0;
+    }
     const start = new Date(visit.entryTime).getTime();
     const end = visit.exitTime ? new Date(visit.exitTime).getTime() : now.getTime();
     return Math.max(0, end - start);
 };
-
-
-
 export const VisitsPage = () => {
     const navigate = useNavigate();
     const { sizes } = useComponentSize();

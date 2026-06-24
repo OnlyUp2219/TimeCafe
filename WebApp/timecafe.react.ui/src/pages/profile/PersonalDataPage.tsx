@@ -47,8 +47,8 @@ export const PersonalDataPage = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const userId = useAppSelector((state) => state.auth.userId);
-    const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId });
-    const { data: loyalty } = useGetUserLoyaltyQuery(userId, { skip: !userId });
+    const { data: profile } = useGetProfileByUserIdQuery(userId, { skip: !userId, refetchOnMountOrArgChange: true });
+    const { data: loyalty } = useGetUserLoyaltyQuery(userId, { skip: !userId, refetchOnMountOrArgChange: true });
 
     const { showToast, ToasterElement } = useProgressToast();
     const [logoutMutation] = useLogoutMutation();

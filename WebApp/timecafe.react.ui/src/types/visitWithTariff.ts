@@ -16,6 +16,7 @@ export type VisitWithTariff =
         approvedAt: string | null;
         rejectionReason: string | null;
         isFinishRequested: boolean;
+        finishRequestedAt: string | null;
 
         tariffName: string;
         tariffPricePerMinute: number;

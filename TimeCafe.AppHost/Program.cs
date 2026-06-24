@@ -241,7 +241,7 @@ builder.AddContainer("grafana", "grafana/grafana", "latest")
 var customApiUrl = Environment.GetEnvironmentVariable("VITE_API_BASE_URL");
 var mockSms = Environment.GetEnvironmentVariable("VITE_USE_MOCK_SMS") ?? "true";
 var mockEmail = Environment.GetEnvironmentVariable("VITE_USE_MOCK_EMAIL") ?? "true";
-var isRelease = builder.Configuration["TimeCafe__AppHostRelease"] == "true";
+var isRelease = Environment.GetEnvironmentVariable("TimeCafe__AppHostRelease") == "true" || builder.Configuration["TimeCafe:AppHostRelease"] == "true";
 
 var frontend = builder.AddNpmApp("frontend", "../WebApp/timecafe.react.ui", isRelease ? "preview" : "dev")
     .WithReference(yarpProxy)
