@@ -31,7 +31,7 @@ public class PaymentValidationExtensionsTests
         var result = validator.Validate(model);
 
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.ErrorMessage == "Минимальная сумма платежа 100 ₽");
+        result.Errors.Should().Contain(e => e.ErrorMessage == "Минимальная сумма платежа 100 Br");
     }
 
     [Fact]

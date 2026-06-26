@@ -52,7 +52,7 @@ public sealed class VisitTimerStoppedEventConsumer : IConsumer<VisitTimerStopped
 
             await _publisher.Publish(new InvoiceChangedEvent(invoice.InvoiceId, invoice.UserId, invoice.VisitId), cancellationToken);
 
-            _logger.LogInformation("Успешно создан инвойс {InvoiceId} для визита {VisitId} на сумму {Amount}₽", invoice.InvoiceId, evt.VisitId, evt.Amount);
+            _logger.LogInformation("Успешно создан инвойс {InvoiceId} для визита {VisitId} на сумму {Amount} Br", invoice.InvoiceId, evt.VisitId, evt.Amount);
 
             if (evt.PayFromBalance && evt.UserId.HasValue)
             {

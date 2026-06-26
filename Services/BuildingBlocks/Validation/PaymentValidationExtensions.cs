@@ -3,12 +3,12 @@ namespace BuildingBlocks.Validation;
 public static class PaymentValidationExtensions
 {
     public static IRuleBuilderOptions<T, decimal> ValidPaymentAmount<T>(
-        this IRuleBuilder<T, decimal> ruleBuilder, decimal minAmount = 50)
+        this IRuleBuilder<T, decimal> ruleBuilder, decimal minAmount = 2)
     {
         return ruleBuilder
             .GreaterThan(0).WithMessage("Сумма должна быть больше нуля")
-            .GreaterThanOrEqualTo(minAmount).WithMessage($"Минимальная сумма платежа {minAmount} ₽")
-            .LessThanOrEqualTo(1000000m).WithMessage("Максимальная сумма платежа 1 000 000 ₽");
+            .GreaterThanOrEqualTo(minAmount).WithMessage($"Минимальная сумма платежа {minAmount} Br")
+            .LessThanOrEqualTo(1000000m).WithMessage("Максимальная сумма платежа 1 000 000 Br");
     }
 
     public static IRuleBuilderOptions<T, string?> ValidUrlWithPlaceholder<T>(
