@@ -7,7 +7,7 @@ import {useComponentSize} from "@hooks/useComponentSize";
 type TopUpCardProps = {
     draftAmountText: string;
     onDraftAmountTextChange: (value: string) => void;
-    onPresetAdd: (deltaRub: number) => void;
+    onPresetAdd: (delta: number) => void;
     onSubmit: () => void;
     loading?: boolean;
 };
@@ -35,7 +35,7 @@ export const TopUpCard = ({
                 size={sizes.input}
             />
             <div className="flex flex-wrap gap-3">
-                {[100, 200, 500, 1000].map((val) => (
+                {[5, 10, 20, 50].map((val) => (
                     <Button
                         key={val}
                         appearance="outline"

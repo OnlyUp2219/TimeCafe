@@ -148,7 +148,7 @@ export const BillingPage = () => {
         const value = Number(draftAmountText);
         const safeValue = Number.isFinite(value) ? value : 0;
         const topUpRub = Math.round(safeValue * 100) / 100;
-        if (topUpRub < 50) return;
+        if (topUpRub < 2) return;
 
         const isStarted = await openCheckout(topUpRub, "Пополнение баланса");
         if (isStarted) {
@@ -159,7 +159,7 @@ export const BillingPage = () => {
     const onPayDebt = useCallback(async () => {
         if (debtRub <= 0) return;
 
-        const amount = Math.max(50, Math.ceil(debtRub * 100) / 100);
+        const amount = Math.max(2, Math.ceil(debtRub * 100) / 100);
         setDraftAmountText(String(amount));
         await openCheckout(amount, "Погашение задолженности");
     }, [debtRub, openCheckout]);

@@ -17,7 +17,7 @@ export const formatRoundingRule = (rule: string | null | undefined): string => {
     return rule;
 };
 
-export { formatMoney, formatMoneyByN, formatRub } from "./formatMoney";
+export { formatMoney, formatMoneyByN, formatByn } from "./formatMoney";
 
 
 export const safeParseJson = (str?: string | null): any => {

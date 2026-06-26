@@ -11,7 +11,7 @@ import {
 import {ResponsiveContainer, VerticalBarChart, type VerticalBarChartDataPoint} from "@fluentui/react-charts";
 
 import type {BillingActivityPoint} from "@app-types/billing";
-import {formatRub} from "@utility/formatMoney";
+import {formatByn} from "@utility/formatMoney";
 import {formatDateShort} from "@utility/dateUtils";
 
 type ActivityChartCardProps = {
@@ -77,7 +77,7 @@ export const ActivityChartCard = ({points}: ActivityChartCardProps) => {
                                 <Caption1Strong block>
                                     {props.legend}: {dateLabel}
                                 </Caption1Strong>
-                                <Title3>{formatRub(Number(props.y), 0)}</Title3>
+                                <Title3>{formatByn(Number(props.y))}</Title3>
                             </div>
                         );
                     }}
@@ -88,7 +88,7 @@ export const ActivityChartCard = ({points}: ActivityChartCardProps) => {
 
             <div className="flex flex-wrap justify-between items-center">
                 <Caption1>Всего за неделю</Caption1>
-                <Caption1Strong>{formatRub(weekTotalRub, 0)}</Caption1Strong>
+                <Caption1Strong>{formatByn(weekTotalRub)}</Caption1Strong>
             </div>
         </Card>
     );

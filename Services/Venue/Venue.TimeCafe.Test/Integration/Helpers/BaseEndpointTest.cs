@@ -77,7 +77,18 @@ public abstract class BaseEndpointTest(IntegrationApiFactory factory) : IClassFi
             PricePerMinute = price,
             BillingType = billingType,
             IsActive = isActive,
-            CreatedAt = DateTimeOffset.UtcNow
+            Description = "Полное описание тестового тарифа с подробностями",
+            Summary = "Краткая информация о тарифе",
+            Features = new List<string> { "Бесплатный кофе", "Настольные игры", "Wi-Fi" },
+            AudienceTags = new List<string> { "Тест", "Гости" },
+            MinSessionMinutes = 15,
+            RoundingRule = "FiveMinutes",
+            MaxGuests = 4,
+            CancellationPolicy = "Гибкие условия отмены",
+            IsRecommended = true,
+            SortOrder = 1,
+            CreatedAt = DateTimeOffset.UtcNow,
+            LastModified = DateTimeOffset.UtcNow
         };
 
         context.Tariffs.Add(tariff);

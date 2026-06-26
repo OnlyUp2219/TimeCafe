@@ -98,13 +98,13 @@ export const LandingPage: FC = () => {
                 title: "Поминутно",
                 description: "Идеально для коротких встреч и спонтанных визитов. Оплата производится за каждую секунду проведенного времени.",
                 highlight: "Гибко",
-                price: `3 ${CURRENCY_SYMBOL} / мин`,
+                price: `0.10 ${CURRENCY_SYMBOL} / мин`,
             },
             {
                 title: "Почасово",
                 description: "Выгоднее для длительной работы в коворкинге или долгих игровых сессий с друзьями.",
                 highlight: "Популярно",
-                price: `150 ${CURRENCY_SYMBOL} / час`,
+                price: `6.00 ${CURRENCY_SYMBOL} / час`,
             },
         ],
         []
@@ -185,7 +185,7 @@ export const LandingPage: FC = () => {
                                 </div>
                                 <div className="text-right">
                                     <Caption1 block style={{ color: 'var(--colorNeutralForeground2)' }} className="mb-1">Текущий счет</Caption1>
-                                    <Title3 style={{ color: 'var(--colorBrandForeground1)' }}>155 {CURRENCY_SYMBOL}</Title3>
+                                    <Title3 style={{ color: 'var(--colorBrandForeground1)' }}>10.20 {CURRENCY_SYMBOL}</Title3>
                                 </div>
                             </div>
 

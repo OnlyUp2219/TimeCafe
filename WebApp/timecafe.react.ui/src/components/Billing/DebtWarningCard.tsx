@@ -1,7 +1,7 @@
 import {Badge, Body1, Card, Title3} from "@fluentui/react-components";
 import {Warning20Filled} from "@fluentui/react-icons";
 import {TooltipButton} from "@components/TooltipButton/TooltipButton";
-import {formatRub} from "@utility/formatMoney";
+import {formatByn} from "@utility/formatMoney";
 import "@pages/billing/billing.css";
 import {useComponentSize} from "@hooks/useComponentSize";
 
@@ -33,7 +33,7 @@ export const DebtWarningCard = ({debtRub, onPay, loading = false}: DebtWarningCa
                 <div className="flex flex-col gap-1">
                     <Title3 block>Внимание: задолженность</Title3>
                     <Body1 block>
-                        Ваш баланс ниже нуля. Пожалуйста, погасите долг {formatRub(debtRub, 0)}
+                        Ваш баланс ниже нуля. Пожалуйста, погасите долг {formatByn(debtRub)}
                     </Body1>
                 </div>
             </div>

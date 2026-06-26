@@ -13,7 +13,7 @@ import {
 import {ResponsiveContainer, VerticalBarChart, type VerticalBarChartDataPoint} from "@fluentui/react-charts";
 
 import type {BillingActivityPoint} from "@app-types/billing";
-import {formatRub} from "@utility/formatMoney";
+import {formatByn} from "@utility/formatMoney";
 import {formatDateShort} from "@utility/dateUtils";
 import {useComponentSize} from "@hooks/useComponentSize";
 
@@ -69,7 +69,7 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
                 </Body1>
                 <div className="flex flex-wrap items-baseline gap-3">
                     <LargeTitle truncate wrap={false}>
-                        {formatRub(balanceRub, 0)}
+                        {formatByn(balanceRub)}
                     </LargeTitle>
                     {deltaBadge}
                 </div>
@@ -114,7 +114,7 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
                                             <Caption1 block>
                                                 {props.legend}: {dateLabel}
                                             </Caption1>
-                                            <Title3>{formatRub(Number(props.y), 0)}</Title3>
+                                            <Title3>{formatByn(Number(props.y))}</Title3>
                                         </div>
                                     </div>
                                 );
@@ -126,7 +126,7 @@ export const BalanceActivityCard = ({balanceRub, monthDeltaPercent, activity}: B
 
                     <div className="flex flex-wrap justify-between items-center">
                         <Caption1>Всего за неделю</Caption1>
-                        <Caption1>{formatRub(weekTotalRub, 0)}</Caption1>
+                        <Caption1>{formatByn(weekTotalRub)}</Caption1>
                     </div>
                 </div>
             ) : (

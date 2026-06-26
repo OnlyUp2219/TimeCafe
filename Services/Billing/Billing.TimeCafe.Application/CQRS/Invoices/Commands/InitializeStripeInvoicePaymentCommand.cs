@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Options;
+using Billing.TimeCafe.Application.Services.Payments;
+
 namespace Billing.TimeCafe.Application.CQRS.Invoices.Commands;
 
 public record InitializeStripeInvoicePaymentCommand(Guid InvoiceId, string SuccessUrl, string CancelUrl) : ICommand<InitializeStripeInvoicePaymentResponse>;
@@ -17,11 +20,13 @@ public record InitializeStripeInvoicePaymentResponse(string SessionId, string Ch
 public class InitializeStripeInvoicePaymentCommandHandler(
     IUnitOfWork uow,
     IStripePaymentClient stripePaymentClient,
-    IPublisher publisher) : ICommandHandler<InitializeStripeInvoicePaymentCommand, InitializeStripeInvoicePaymentResponse>
+    IPublisher publisher,
+    IOptionsSnapshot<StripeOptions> options) : ICommandHandler<InitializeStripeInvoicePaymentCommand, InitializeStripeInvoicePaymentResponse>
 {
     private readonly IUnitOfWork _uow = uow;
     private readonly IStripePaymentClient _stripePaymentClient = stripePaymentClient;
     private readonly IPublisher _publisher = publisher;
+    private readonly IOptionsSnapshot<StripeOptions> _options = options;
 
     public async Task<Result<InitializeStripeInvoicePaymentResponse>> Handle(InitializeStripeInvoicePaymentCommand request, CancellationToken cancellationToken = default)
     {
@@ -51,12 +56,14 @@ public class InitializeStripeInvoicePaymentCommandHandler(
             return Result.Fail<InitializeStripeInvoicePaymentResponse>(paymentResult.Errors);
 
         var payment = paymentResult.Value;
+        var settings = _options.Value;
+        var currency = settings.DefaultCurrency;
         
         var stripeRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
             invoice.UserId ?? Guid.Empty,
-            invoice.TotalAmount,
-            "rub",
+            Math.Round(invoice.TotalAmount * settings.BynToUsdRate, 2, MidpointRounding.AwayFromZero),
+            currency,
             $"Оплата счёта #{invoice.InvoiceId}",
             request.SuccessUrl,
             request.CancelUrl,

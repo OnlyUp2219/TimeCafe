@@ -16,7 +16,9 @@ public class StripeOptions
 
     [Required]
     [MinLength(3)]
-    public string DefaultCurrency { get; set; } = "rub";
+    public string DefaultCurrency { get; set; } = "usd";
+
+    public decimal BynToUsdRate { get; set; } = 0.353m;
 
     [Url]
     public string? DefaultReturnUrl { get; set; }

@@ -54,10 +54,10 @@ export const DevDebugPage: React.FC = () => {
     const [stripeUserId, setStripeUserId] = useState("");
     const [stripePaymentId, setStripePaymentId] = useState<string>(() => crypto.randomUUID());
     const [stripeExtId, setStripeExtId] = useState(() => `pi_test_${Math.random().toString(36).substring(2, 10)}`);
-    const [stripeAmount, setStripeAmount] = useState(1000);
+    const [stripeAmount, setStripeAmount] = useState(10);
     const [stripeInvoiceId, setStripeInvoiceId] = useState("");
     const [simulateWebhook, { isLoading: isSimulating }] = useSimulateStripeWebhookMutation();
-    const [checkoutAmount, setCheckoutAmount] = useState(100);
+    const [checkoutAmount, setCheckoutAmount] = useState(10);
     const [checkoutDescription, setCheckoutDescription] = useState("Тестовое пополнение через DevDebugPage");
     const [initializeCheckout, { isLoading: isInitializingCheckout }] = useInitializeStripeCheckoutMutation();
 
@@ -355,7 +355,7 @@ export const DevDebugPage: React.FC = () => {
                         />
                     </Field>
 
-                    <Field label="Сумма оплаты (в рублях)" required>
+                    <Field label="Сумма оплаты (в бел. рублях)" required>
                         <Input
                             type="number"
                             value={String(checkoutAmount)}
@@ -438,12 +438,12 @@ export const DevDebugPage: React.FC = () => {
                         </div>
                     </Field>
 
-                    <Field label="Сумма пополнения (в рублях)">
+                    <Field label="Сумма пополнения (в бел. рублях)">
                         <Input
                             type="number"
                             value={String(stripeAmount)}
                             onChange={(_, data) => setStripeAmount(Number(data.value) || 0)}
-                            placeholder="1000"
+                            placeholder="10"
                         />
                     </Field>
 

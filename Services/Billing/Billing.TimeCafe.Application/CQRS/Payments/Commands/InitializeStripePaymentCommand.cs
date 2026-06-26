@@ -60,7 +60,7 @@ public sealed class InitializeStripePaymentCommandHandler(
         var createRequest = new StripeCreatePaymentRequest(
             payment.PaymentId,
             payment.UserId.Value,
-            payment.Amount,
+            Math.Round(payment.Amount * settings.BynToUsdRate, 2, MidpointRounding.AwayFromZero),
             currency,
             description,
             returnUrl);

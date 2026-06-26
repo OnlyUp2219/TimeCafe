@@ -3,9 +3,9 @@ import { NO_DATA } from "@shared/const/placeholders";
 
 export const formatMoneyByN = (value: number, maximumFractionDigits = 2): string => {
     try {
-        return new Intl.NumberFormat("ru-RU", {
+        return new Intl.NumberFormat("be-BY", {
             style: "currency",
-            currency: "RUB",
+            currency: "BYN",
             maximumFractionDigits,
         }).format(value);
     } catch {
@@ -18,6 +18,6 @@ export const formatMoney = (v: number | null | undefined, maximumFractionDigits 
     return formatMoneyByN(v, maximumFractionDigits);
 };
 
-export const formatRub = (value: number, maximumFractionDigits = 0): string => {
+export const formatByn = (value: number, maximumFractionDigits = 2): string => {
     return formatMoneyByN(value, maximumFractionDigits);
 };

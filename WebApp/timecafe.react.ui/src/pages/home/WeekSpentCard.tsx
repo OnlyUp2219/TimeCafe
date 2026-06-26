@@ -2,7 +2,7 @@ import type {FC} from "react";
 import {Button, Caption1, Divider, Subtitle2Stronger, Title3} from "@fluentui/react-components";
 import {ArrowTrendingLines20Regular, Calendar20Regular} from "@fluentui/react-icons";
 import {HoverTiltCard} from "@components/HoverTiltCard/HoverTiltCard";
-import {formatRub} from "@utility/formatMoney";
+import {formatByn} from "@utility/formatMoney";
 import {useComponentSize} from "@hooks/useComponentSize";
 
 interface WeekSpentCardProps {
@@ -26,7 +26,7 @@ export const WeekSpentCard: FC<WeekSpentCardProps> = ({spent, onNavigate}) => {
             </div>
 
             <div className="flex flex-col gap-1.5">
-                <Title3 className="font-semibold">{formatRub(spent, 0)}</Title3>
+                <Title3 className="font-semibold">{formatByn(spent)}</Title3>
                 <div className="flex items-center gap-1.5 text-(--colorNeutralForeground3)">
                     <Calendar20Regular style={{ fontSize: "14px" }} className="shrink-0 text-(--colorNeutralForeground3)" />
                     <Caption1 className="text-(--colorNeutralForeground3)">Расходы за последние 7 дней</Caption1>

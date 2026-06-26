@@ -1,6 +1,6 @@
 import {Body1, Caption1, Card, Display} from "@fluentui/react-components";
 
-import {formatRub} from "@utility/formatMoney";
+import {formatByn} from "@utility/formatMoney";
 
 type BalanceSummaryCardProps = {
     balanceRub: number;
@@ -21,7 +21,7 @@ export const BalanceSummaryCard = ({balanceRub, monthDeltaPercent}: BalanceSumma
 
             <div className="flex flex-wrap items-baseline gap-3">
                 <Display truncate wrap={false}>
-                    {formatRub(balanceRub, 0)}
+                    {formatByn(balanceRub)}
                 </Display>
                 {deltaText ? <Caption1 block>{deltaText}</Caption1> : null}
             </div>

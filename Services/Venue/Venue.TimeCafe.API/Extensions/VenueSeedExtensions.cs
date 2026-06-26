@@ -77,7 +77,7 @@ public static class VenueSeedExtensions
                 Name = "Стандартный",
                 Description = "Идеально для большинства визитов — без ограничений и с прозрачным расчётом.",
                 BillingType = BillingType.PerMinute,
-                PricePerMinute = 3.60m,
+                PricePerMinute = 0.10m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Базовая"),
                 Summary = "Классический тариф для отдыха и общения.",
@@ -85,6 +85,8 @@ public static class VenueSeedExtensions
                 AudienceTags = ["Популярный", "Для компаний"],
                 MinSessionMinutes = 30,
                 RoundingRule = "5min",
+                MaxGuests = null,
+                CancellationPolicy = "Бесплатная отмена за 24 часа",
                 IsRecommended = true,
                 SortOrder = 1,
                 CreatedAt = now,
@@ -95,7 +97,7 @@ public static class VenueSeedExtensions
                 Name = "Тихая зона",
                 Description = "Спокойная атмосфера и минимальный шум — для работы и учёбы.",
                 BillingType = BillingType.PerMinute,
-                PricePerMinute = 3.00m,
+                PricePerMinute = 0.09m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Тихая"),
                 Summary = "Идеально для работы и учебы в тишине.",
@@ -103,6 +105,9 @@ public static class VenueSeedExtensions
                 AudienceTags = ["Для работы", "Для учебы"],
                 MinSessionMinutes = 60,
                 RoundingRule = "15min",
+                MaxGuests = 1,
+                CancellationPolicy = "Бесплатная отмена за 1 час",
+                IsRecommended = false,
                 SortOrder = 2,
                 CreatedAt = now,
                 LastModified = now,
@@ -112,7 +117,7 @@ public static class VenueSeedExtensions
                 Name = "Ночной",
                 Description = "Для поздних визитов: мягкий свет, меньше людей и приятный темп.",
                 BillingType = BillingType.Hourly,
-                PricePerMinute = 3.00m, // 180 rub per hour
+                PricePerMinute = 0.08m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Ночная"),
                 Summary = "Для тех, кто любит ночную атмосферу.",
@@ -121,6 +126,8 @@ public static class VenueSeedExtensions
                 MinSessionMinutes = 120,
                 RoundingRule = "60min",
                 MaxGuests = 4,
+                CancellationPolicy = "Отмена за 12 часов",
+                IsRecommended = false,
                 SortOrder = 3,
                 CreatedAt = now,
                 LastModified = now,
@@ -130,7 +137,7 @@ public static class VenueSeedExtensions
                 Name = "Промо",
                 Description = "Тариф для акций и промокодов.",
                 BillingType = BillingType.Hourly,
-                PricePerMinute = 4.00m, // 240 rub per hour
+                PricePerMinute = 0.12m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Промо"),
                 Summary = "Специальный тариф для мероприятий.",
@@ -138,6 +145,9 @@ public static class VenueSeedExtensions
                 AudienceTags = ["Акции"],
                 MinSessionMinutes = 60,
                 RoundingRule = "60min",
+                MaxGuests = null,
+                CancellationPolicy = "Отмена невозможна",
+                IsRecommended = false,
                 SortOrder = 4,
                 CreatedAt = now,
                 LastModified = now,
@@ -147,7 +157,7 @@ public static class VenueSeedExtensions
                 Name = "Ранний",
                 Description = "Лёгкий тариф для утренних визитов.",
                 BillingType = BillingType.PerMinute,
-                PricePerMinute = 2.40m,
+                PricePerMinute = 0.07m,
                 IsActive = true,
                 ThemeId = ResolveThemeId("Базовая"),
                 Summary = "Скидка для жаворонков.",
@@ -155,6 +165,9 @@ public static class VenueSeedExtensions
                 AudienceTags = ["Утро"],
                 MinSessionMinutes = 15,
                 RoundingRule = "5min",
+                MaxGuests = null,
+                CancellationPolicy = "Бесплатная отмена",
+                IsRecommended = false,
                 SortOrder = 5,
                 CreatedAt = now,
                 LastModified = now,
@@ -176,8 +189,10 @@ public static class VenueSeedExtensions
                 existing.MinSessionMinutes = required.MinSessionMinutes;
                 existing.RoundingRule = required.RoundingRule;
                 existing.MaxGuests = required.MaxGuests;
+                existing.CancellationPolicy = required.CancellationPolicy;
                 existing.IsRecommended = required.IsRecommended;
                 existing.SortOrder = required.SortOrder;
+                existing.IsActive = required.IsActive;
                 existing.LastModified = now;
             }
             else

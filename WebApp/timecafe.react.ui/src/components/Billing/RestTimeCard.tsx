@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Caption1, Card, Title2, Dropdown, Option, Input, Label } from "@fluentui/react-components";
 import { formatDurationMinutes } from "@utility/formatDurationMinutes";
-import { formatRub } from "@utility/formatMoney";
+import { formatByn } from "@utility/formatMoney";
 import type { Tariff } from "@app-types/tariff";
 import { useComponentSize } from "@hooks/useComponentSize";
 import "@pages/billing/billing.css";
@@ -52,7 +52,7 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                                 const isDiscounted = p < t.pricePerMinute;
                                 return (
                                 <Option key={t.tariffId} value={t.tariffId} text={t.name}>
-                                    {t.name} ({isDiscounted ? `${formatRub(p, 2)}/мин (скидка)` : `${formatRub(t.pricePerMinute, 0)}/мин`})
+                                    {t.name} ({isDiscounted ? `${formatByn(p)}/мин (скидка)` : `${formatByn(t.pricePerMinute)}/мин`})
                                 </Option>
                                 );
                             })}
@@ -60,7 +60,7 @@ export const RestTimeCard = ({ availableRub, tariffs, initialTariffId }: RestTim
                     </div>
 
                     <div className="flex flex-col gap-1">
-                        <Label size="small">Если пополнить на (₽)</Label>
+                        <Label size="small">Если пополнить на (Br)</Label>
                         <Input
                             size={sizes.input}
                             type="number"
