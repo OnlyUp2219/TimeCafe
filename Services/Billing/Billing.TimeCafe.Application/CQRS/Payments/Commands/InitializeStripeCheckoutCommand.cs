@@ -64,7 +64,7 @@ public sealed class InitializeStripeCheckoutCommandHandler(
         var createRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
             payment.UserId.Value,
-            Math.Round(payment.Amount * settings.BynToUsdRate, 2, MidpointRounding.AwayFromZero),
+            payment.Amount,
             currency,
             description,
             successUrl,

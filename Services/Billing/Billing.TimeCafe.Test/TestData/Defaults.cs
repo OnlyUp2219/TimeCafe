@@ -20,7 +20,7 @@ public static class Defaults
     public static decimal MediumAmount => 200m;
     public static decimal LargeAmount => 300m;
     public static decimal ExtraLargeAmount => 400m;
-    public static decimal BelowMinimumAmount => 30m;
+    public static decimal BelowMinimumAmount => 1m;
     public static decimal PremiumSubscriptionAmount => 750m;
 
     public static string StripePaymentIntentId => StripeTestData.PaymentIntents.Default;

@@ -62,7 +62,7 @@ public class InitializeStripeInvoicePaymentCommandHandler(
         var stripeRequest = new StripeCreateCheckoutSessionRequest(
             payment.PaymentId,
             invoice.UserId ?? Guid.Empty,
-            Math.Round(invoice.TotalAmount * settings.BynToUsdRate, 2, MidpointRounding.AwayFromZero),
+            invoice.TotalAmount,
             currency,
             $"Оплата счёта #{invoice.InvoiceId}",
             request.SuccessUrl,
