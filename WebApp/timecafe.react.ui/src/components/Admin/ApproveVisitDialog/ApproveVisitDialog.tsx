@@ -218,8 +218,8 @@ export const ApproveVisitDialog = ({
                                             <Money20Regular /> Стоимость:
                                         </span>
                                         <span className="font-semibold text-(--colorBrandForegroundLink)">
-                                            {visit.tariffPricePerMinute} {CURRENCY_SYMBOL} / мин
-                                            {visit.tariffBillingType === 1 && ` (${visit.tariffPricePerMinute * 60} ${CURRENCY_SYMBOL}/ч)`}
+                                            {visit.tariffPricePerMinute.toFixed(2)} {CURRENCY_SYMBOL} / мин
+                                            {visit.tariffBillingType === 1 && ` (${(visit.tariffPricePerMinute * 60).toFixed(2)} ${CURRENCY_SYMBOL}/ч)`}
                                         </span>
                                     </div>
                                     {(visit.tariffMinSessionMinutes || visit.tariffRoundingRule) && (

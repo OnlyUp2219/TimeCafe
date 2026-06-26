@@ -92,8 +92,8 @@ export const TariffDetailsDialog: FC<TariffDetailsDialogProps> = ({
                                         <div className="flex flex-col gap-2">
                                             <Subtitle2>Стоимость</Subtitle2>
                                             <Body1>
-                                                {tariff.pricePerMinute} {CURRENCY_SYMBOL} / мин
-                                                ({tariff.pricePerMinute * 60} {CURRENCY_SYMBOL} / час)
+                                                {tariff.pricePerMinute.toFixed(2)} {CURRENCY_SYMBOL} / мин
+                                                ({(tariff.pricePerMinute * 60).toFixed(2)} {CURRENCY_SYMBOL} / час)
                                             </Body1>
                                         </div>
 
